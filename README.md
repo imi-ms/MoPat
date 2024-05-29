@@ -1,13 +1,13 @@
 # Mobile Patient Survey (MoPat)
-MoPat is a web-based platform designed to transform conventional paper-based questionnaires into a digital format. The application is universally usable across a range of devices, including desktop computers, tablets, and smartphones. Thanks to its full compatibility with all major operating systems such as Windows, MacOS, Linux, iOS, and Android via the web browser, MoPat offers users the flexibility to access the questionnaire service on any device with network access. By automatically exporting the questionnaire results into different systems, MoPat can be used in combination with other systems. <br />
+MoPat is a web-based platform designed to transform conventional paper-based questionnaires into a digital format. The application is universally usable across a range of devices, including desktop computers, tablets, and smartphones. Thanks to its full compatibility with all major operating systems such as Windows, MacOS, Linux, iOS, and Android via the web browser, MoPat offers users the flexibility to access the questionnaire service on any device with network access. By automatically exporting the questionnaire results into different systems, MoPat can integrate with other systems. <br />
 **DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes only.** 
 
-Currently MoPat supports the automatic export with the following data formats: 
+Currently MoPat supports the automatic export with the following data formats or systems: 
 
-- [CDISC ODM](https://www.cdisc.org/standards/data-exchange/odm) 
-- [HL7 FHIR](https://hl7.org/fhir/) 
-- [HL7 v2](https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185) 
-- [REDCap](https://www.project-redcap.org/) 
+- [CDISC ODM v1.3.2](https://www.cdisc.org/standards/data-exchange/odm) 
+- [HL7 FHIR R3](https://hl7.org/fhir/) (R4B coming soon) 
+- [HL7 v2.3](https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185) 
+- [REDCap v14+](https://www.project-redcap.org/) 
 
 
 
