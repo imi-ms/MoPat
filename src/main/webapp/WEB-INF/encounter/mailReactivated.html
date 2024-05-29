@@ -1,0 +1,15 @@
+<!--/*
+    * Error page that shows when the remind mail has been ractivated.     
+*/-->
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="cancel">
+			<span
+				class="errorText"
+				th:text="${messages.get(#locale, 'encounterScheduled.heading.mailReactivated', 'Reactivate mail succeded.')}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

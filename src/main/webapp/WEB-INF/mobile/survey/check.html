@@ -1,0 +1,934 @@
+<!--/*
+    * View for MoPats survey view. Displays the page for checking the case number. 
+*/-->
+<th:block
+	layout:decorate="~{layout/mobile}"
+	th:with="contenttype='content'"
+>
+	<th:block layout:fragment="content">
+		<form
+			name="survey"
+			th:object="${encounterDTO}"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="check"
+			data-ajax="false"
+		>
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='emptyCaseNumber', 
+                value=${#strings.isEmpty(encounterDTO.caseNumber)})}"
+			>
+			</addVar>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='emptyPatientID', 
+                value=${#strings.isEmpty(encounterDTO.patientID)})}"
+			>
+			</addVar>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='hasAnyErrors', 
+                value=${#bools.isTrue(#fields.hasAnyErrors())})}"
+			>
+			</addVar>
+
+			<div>
+				<input
+					name="patientDataService"
+					id="patientDataService"
+					type="hidden"
+					th:value="${patientDataService}"
+				/>
+				<!--/* if at least two services are activated show the radio button group */-->
+				<th:block
+					th:if="${(register and searchHIS) or (register and pseudonym) or (searchHIS and pseudonym)}"
+				>
+					<div class="isHISContainer">
+						<div>
+							<label for="radioSelectHIS">
+								<h4>
+									<b>
+										<th:block
+											th:text="${messages.get(#locale, 'survey.label.chooseService', 'Choose service to determine patient data')}" 
+										/>
+									</b>
+								</h4>
+							</label>
+							<fieldset
+								id="radioSelectHIS"
+								data-role="controlgroup"
+								data-type="horizontal"
+							>
+								<div class="btn-group flex-wrap w-100">
+									<th:block th:if="${register}">
+										<input
+											name="radio-choice-h-2"
+											id="register"
+											class="btn-check"
+											value="register"
+											th:checked="${patientDataService == 'register'}"
+											type="radio"
+										/>
+										<label
+											for="register"
+											class="col-md-auto col-12 btn btn-outline-primary"
+											th:text="${messages.get(#locale, 'survey.label.registerService', 'Registration')}"
+										></label>
+									</th:block>
+									<th:block th:if="${searchHIS}">
+										<input
+											name="radio-choice-h-2"
+											id="isHIS"
+											class="btn-check"
+											value="searchHIS"
+											th:checked="${patientDataService == 'searchHIS'}"
+											type="radio"
+										/>
+										<label
+											for="isHIS"
+											class="col-md-auto col-12 btn btn-outline-primary"
+											th:text="${messages.get(#locale, 'survey.label.isHIS', 'Determine patient data autom.')}"
+										></label>
+									</th:block>
+									<th:block th:if="${pseudonym}">
+										<input
+											name="radio-choice-h-2"
+											id="pseudonymization"
+											class="btn-check"
+											th:checked="${patientDataService == 'pseudonym'}"
+											value="pseudonym"
+											type="radio"
+										/>
+										<label
+											for="pseudonymization"
+											class="col-md-auto col-12 btn btn-outline-primary"
+											th:text="${messages.get(#locale, 'survey.label.pseudonymizationService', 'Pseudonymization')}"
+										></label>
+									</th:block>
+								</div>
+							</fieldset>
+						</div>
+					</div>
+				</th:block>
+			</div>
+
+			<div class="moveHeaderSpace">
+				<div class="row align-items-center">
+					<label
+						id="caseNumberLabel"
+						for="caseNumber"
+						class="col-lg-2 col-md-12 col-form-label"
+					>
+						<b>
+							<th:block
+								th:text="|${messages.get(#locale, 'survey.label.caseNumber', 'Case number:')}:|"
+							/>
+						</b>
+					</label>
+					<div class="col-lg-6 col-md-6">
+						<div class="input-group v-space">
+							<a
+								id="scanButton"
+								href="#popupDiv"
+								data-rel="popup"
+								data-position-to="window"
+								data-transition="pop"
+								class="btn btn-outline-primary box-shadow"
+								data-bs-toggle="modal"
+								data-bs-target="#videoModal"
+							>
+								<i class="bi bi-camera-fill"></i>
+							</a>
+
+							<input
+								th:placeholder="${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}"
+								value=""
+								th:type="${not #strings.isEmpty(caseNumberType)} ? ${caseNumberType} : 'text'"
+								autocomplete="off"
+								autocorrect="off"
+								autocapitalize="off"
+								spellcheck="false"
+								class="form-control"
+								th:field="*{caseNumber}"
+								onchange="checkCaseNumber($(this));"
+							/>
+						</div>
+					</div>
+
+					<div class="col-lg-4 col-md-6">
+						<button
+							class="btn-mobile form-control v-space"
+							id="checkButton"
+							value="register"
+							type="submit"
+							data-inline="true"
+							th:text="${messages.get(#locale, 'survey.check.button.register', 'Register')}"
+						>
+						</button>
+					</div>
+				</div>
+
+				<div
+					class="modal modal-xl fade"
+					id="videoModal"
+					data-backdrop="static"
+					data-keyboard="false"
+					tabindex="-1"
+					aria-labelledby="staticBackdrop"
+					aria-hidden="true"
+				>
+					<div class="modal-dialog modal-dialog-centered">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button 
+									type="button"
+									class="btn-close"
+									data-bs-dismiss="modal"
+									aria-label="Close"
+								></button>
+							</div>
+							<div class="modal-body">
+								<div
+									id="barcodeInfoText"
+									style="width: 100%"
+								>
+									<span>
+										<b>
+											<th:block
+												th:text="${messages.get(#locale, 'survey.check.barcodereader.header', 'Barcode scanner')}" 
+											/>
+										</b>
+										<br/>
+									</span>
+									<div class="d-flex justify-content-between align-items-center mb-5">
+										<span
+											th:text="${messages.get(#locale, 'survey.check.barcodereader.content', 'Please hold the barcode in front of your camera:')}"
+										>
+										</span>
+
+										<button 
+											type="button"
+											class="btn-mobile"
+											onclick="switchCamera(this)"
+										>
+											<span
+												th:text="${messages.get(#locale, 'survey.check.barcodereader.switchCamera', 'Switch camera')}"
+												class="me-2"
+											></span>
+											<i class="bi bi-camera-fill"></i>
+											<i class="bi bi-arrow-clockwise"></i>
+										</button>
+									</div>
+								</div>
+								<div class="d-flex justify-content-center align-items-center">
+									<video
+										class="col-12"
+										id="video"
+										playsinline="true"
+										style="max-width: 600px; max-height: 600px"
+									></video>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!--/*  */-->
+				<div>
+					<div
+						id="errors"
+						style="width: 100%"
+					>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='*', errorClazz='errorSuccess')}"
+						/>
+
+						<span
+							th:if="${patientDataService == 'inactive'}"
+							style="color: red"
+							class="errorSuccess"
+							th:text="${messages.get(#locale, 'survey.patient.noService', 'No service activated')}"
+						>
+						</span>
+
+						<span
+							id="incompleteDataError"
+							class="errorSuccess"
+							style="color: red; display: none"
+							th:text="${messages.get(#locale, 'survey.pseudonym.missingData', 'Missing patient data to create pseudonym, please complete your input.')}"
+						>
+						</span>
+
+						<span
+							id="caseNumberEmptyError"
+							class="errorSuccess"
+							style="color: red; display: none"
+							th:text="${messages.get(#locale, 'encounter.error.caseNumberIsEmpty', 'The case number shouldn''t only consist of space characters.')}"
+						>
+						</span>
+					</div>
+					<div id="success">
+						<th:block th:if="${#bools.isTrue(registerSuccess)}">
+							<span
+								style="color: green"
+								class="errorSuccess"
+								th:block
+								th:text="${messages.get(#locale, 'survey.patient.registerSuccess', 'Register success')}"
+							>
+							</span>
+						</th:block>
+						<span
+							id="pseudonymSuccess"
+							class="errorSuccess"
+							style="color: green; display: none"
+							th:text="${messages.get(#locale, 'survey.patient.registerPseudonymSuccess', 'Not specified')}"
+						>
+						</span>
+					</div>
+					<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
+					<!--/* So: If you change this, please update the audit log call in SurveyController.checkCaseNumber! */-->
+					<th:block th:if="${not #fields.hasErrors('*')}">
+						<div
+							class="mt-3"
+							id="patientData"
+						>
+							<div id="patientDataLabel">
+								<div class="row mb-3">
+									<label
+										class="col-4"
+										for="caseNumber"
+										id="firstnameLabel"
+									>
+										<b>
+											<th:block
+												th:text="|${messages.get(#locale, 'survey.label.firstname', 'Firstname')}:|"
+											/>
+										</b>
+									</label>
+									<label
+										class="col-8 personalDataLabel"
+										th:text="${encounterDTO.firstname}"
+									></label>
+								</div>
+								<div class="row mb-3">
+									<label
+										class="col-4"
+										for="lastname"
+										id="lastnameLabel"
+									>
+										<b>
+											<th:block
+												th:text="|${messages.get(#locale, 'survey.label.lastname', 'Lastname')}:|"
+											/>
+										</b>
+									</label>
+									<label
+										class="col-8 personalDataLabel"
+										th:text="${encounterDTO.lastname}"
+									></label>
+								</div>
+								<div class="row mb-3">
+									<label
+										class="col-4"
+										for="birthdate"
+										id="born"
+									>
+										<b>
+											<th:block
+												th:text="|${messages.get(#locale, 'survey.label.born', 'Born')}:|"
+											/>
+										</b>
+									</label>
+									<!--/* TODO: <fmt:setLocale value="${pageContext.response.locale.toString()}" scope="session"/> */-->
+									<label
+										class="col-8 personalDataLabel"
+										th:text="${#dates.format(encounterDTO.birthdate)}"
+									></label>
+								</div>
+								<div
+									class="row mb-3"
+									id="genderWrapper"
+								>
+									<label
+										class="col-4"
+										for="gender"
+										id="gender"
+									>
+										<b>
+											<th:block
+												th:text="|${messages.get(#locale, 'survey.label.gender', 'Gender')}:|"
+											/>
+										</b>
+									</label>
+
+									<th:block
+										th:with="
+                                        case1=${not #strings.isEmpty(encounterDTO.gender) && encounterDTO.gender == 'MALE'},
+                                        case2=${not #strings.isEmpty(encounterDTO.gender) && encounterDTO.gender == 'FEMALE'}"
+									>
+										<th:block th:if="${case1}">
+											<label
+												class="col-8"
+												th:text="${messages.get(#locale, 'survey.label.male', 'Male')}"
+											></label>
+										</th:block>
+
+										<th:block th:if="${case2}">
+											<label
+												class="col-8"
+												th:text="${messages.get(#locale, 'survey.label.female', 'Female')}"
+											></label>
+										</th:block>
+
+										<th:block th:if="${not case1 && not case2}">
+											<label
+												class="col-8"
+												th:text="${messages.get(#locale, 'survey.label.notSpecified', 'Not specified')}"
+											></label>
+										</th:block>
+									</th:block>
+								</div>
+							</div>
+							<div
+								class="mt-3"
+								id="patientDataInput"
+							>
+								<div class="row mb-3 align-items-center">
+									<label
+										class="col-lg-2 col-md-12 col-form-label"
+										for="firstname"
+										id="firstnameLabel"
+									>
+										<b
+											><th:block
+												th:text="|${messages.get(#locale, 'survey.label.firstname', 'Firstname')}:|"
+										/></b>
+									</label>
+									<div class="col-lg-6 col-md-12">
+										<input
+											th:field="*{firstname}"
+											class="personalDataInput form-control"
+										/>
+									</div>
+									<span
+										id="firstnameError"
+										class="col-lg-4 col-md-12 errorSuccess"
+										for="firstname"
+									></span>
+								</div>
+								<div class="row mb-3 align-items-center">
+									<label
+										class="col-lg-2 col-md-12 col-form-label"
+										for="lastname"
+										id="lastnameLabel"
+									>
+										<b>
+											<th:block
+												th:text="|${messages.get(#locale, 'survey.label.lastname', 'Lastname')}:|"
+										/></b>
+									</label>
+									<div class="col-lg-6 col-md-12">
+										<input
+											th:field="*{lastname}"
+											class="personalDataInput form-control"
+										/>
+									</div>
+								</div>
+								<div
+									id="nameError"
+									class="row mb-3 errorSuccess"
+								>
+									<span
+										style="color: red"
+										th:text="${messages.get(#locale, 'survey.patient.nameError', 'The pre- and postname''s inputs accept only the characters ''a-z'', ''A-Z'' and ''-''.')}"
+									>
+									</span>
+								</div>
+								<div class="row mb-3">
+									<label
+										class="col-lg-2 col-md-12 col-form-label"
+										for="birthdate"
+										id="born"
+									>
+										<b
+											><th:block
+												th:text="|${messages.get(#locale, 'survey.label.born', 'Born')}:|"
+										/></b>
+									</label>
+									<!--/* TODO: <fmt:setLocale value="${pageContext.response.locale.toString()}" scope="session"/> */-->
+									<div class="col-lg-6 col-md-12">
+										<input
+											type="date"
+											th:field="*{birthdate}"
+											class="personalDataInput form-control"
+											th:value="${#dates.format(encounterDTO.birthdate)}"
+										/>
+									</div>
+									<span
+										id="dateError"
+										class="col-lg-4 col-md-12 errorSuccess"
+										for="birthdate"
+										style="display: none; color: red"
+										th:text="${messages.get(#locale, 'survey.error.date', 'Specified date doesn''t accord with the given formats dd.MM.yyyy or MM/dd/yyyy')}"
+									>
+									</span>
+								</div>
+							</div>
+						</div>
+					</th:block>
+				</div>
+			</div>
+		</form>
+		<form
+			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="GET"
+			action="bundles"
+			data-ajax="false"
+		>
+			<div
+				id="showBundleDiv"
+				class="d-flex v-space"
+			>
+				<div class="ms-auto">
+					<input
+						name="patientDataService"
+						id="patientDataServiceShowBundle"
+						type="hidden"
+						th:value="${patientDataService}"
+					/>
+					<!--/* show enabled button if patient id found or his is disabled and a casenumber is given */-->
+					<th:block
+						th:if="${(not vars['emptyPatientID'] || not vars['emptyCaseNumber']) && not vars['hasAnyErrors']}"
+					>
+						<button
+							class="btn btn-mobile btn-highlight"
+							id="showBundles"
+							value="showBundles"
+							data-inline="true"
+							th:text="${messages.get(#locale, 'survey.check.button.showBundles', 'Show Bundles')}"
+						>
+						</button>
+					</th:block>
+					<!--/* otherwise show a disabled button */-->
+					<th:block
+						th:unless="${(not vars['emptyPatientID'] || not vars['emptyCaseNumber']) && not vars['hasAnyErrors']}"
+					>
+						<button
+							class="btn btn-mobile"
+							id="showBundles"
+							value="showBundles"
+							data-inline="true"
+							disabled="disabled"
+							th:text="${messages.get(#locale, 'survey.check.button.showBundles', 'Show Bundles')}"
+						>
+						</button>
+					</th:block>
+				</div>
+			</div>
+		</form>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+        var contextPath = /*[[${contextPath}]]*/ '/';
+
+        var caseNumberType = /*[[${caseNumberType}]]*/ "";
+		var labelCaseNumber =
+			/*[[${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}]]*/ "Case number";
+		var labelPseudonym =
+			/*[[${messages.get(#locale, 'survey.label.pseudonym', 'Pseudonym')}]]*/ "Pseudonym";
+
+		var codeReader;
+
+		var videoDeviceIndex = 0;
+		var videoDeviceId = ""; 
+
+		/*[-
+		* Changes the input Id to the next available one
+		* Will revert back to index 0 if the last id was reached
+		* and the function is called again
+		-]*/
+		function switchCamera(event) {
+			/*[- Reset to clear all existing instances -]*/
+			codeReader.reset();
+			codeReader = new ZXing.BrowserBarcodeReader();
+			codeReader.getVideoInputDevices().then(function(inputDevices) {
+				if (inputDevices.length > 0) {
+					if (inputDevices.length -1 > videoDeviceIndex) {
+						videoDeviceIndex++;
+					} else {
+						videoDeviceIndex = 0; 
+					}
+					videoDeviceId = inputDevices[videoDeviceIndex].deviceId; 
+					setTimeout(loadVideoDiv(), 1);
+				}
+			});
+		}
+
+		/*[- Remove the help button on the check page -]*/
+		$("#helpButton").remove();
+
+		/*[-
+		* Loads the video div with the currently set videoDeviceId
+		-]*/
+		function loadVideoDiv() {
+				/*[- Check if the scan was successful and fill in the result -]*/
+				codeReader
+					.decodeFromInputVideoDevice(videoDeviceId, "video")
+					.then(function (result) {
+						document.getElementById("caseNumber").value = result.text;
+						$("#videoModal").hide();
+						codeReader.reset();
+						$("#checkButton").click();
+					})
+					.catch(function (err) {});
+		}
+
+		/*[- Run after page is ready (fully loaded) -]*/
+		/*[- Make a autofocus if the browser does not support touch -]*/
+		$(document).ready(function () {
+			/*[- Set the heading of the page -]*/
+			$("#title").html(
+				/*[[${messages.get(#locale, 'survey.title.searchCaseNumber', 'Search for case number')}]]*/ "Search for case number"
+			);
+
+			/*[- Register the code reader and the onclick event of the scanButton -]*/
+			if (Modernizr.getusermedia === true) {
+				codeReader = new ZXing.BrowserBarcodeReader();
+				codeReader.getVideoInputDevices().then(function (videoInputDevices) {
+					/*[- Only attach the functionality if there is at least one camera device -]*/
+					if (videoInputDevices.length > 0) {
+						/*[- Select the first camera device by default -]*/
+						var videoDeviceId = videoInputDevices[0].deviceId;
+
+						/*[- Add the EventListener for the click event to the scan button -]*/
+						document
+							.getElementById("scanButton")
+							.addEventListener("click", function () {
+								setTimeout(loadVideoDiv(), 1); 
+							});
+
+						$("#videoModal").on("hidden.bs.modal", function () {
+							codeReader.reset();
+						});
+					} else {
+						$("#scanButton").remove();
+					}
+				});
+			} else {
+				$("#scanButton").remove();
+			}
+
+			if (Modernizr.touchevents === false) {
+				$("#caseNumber").focus();
+			}
+
+			/*[- Register the onChange event for the registration service changer -]*/
+			$("#radioSelectHIS").change(function () {
+				handleRegistrationServiceChange(
+					$("[name='radio-choice-h-2']:checked").val(),
+					false
+				);
+			});
+
+			/*[- Register the onChange event for the field birthdate for validation purposes -]*/
+			$("#birthdate").change(function () {
+				if (validateDate($(this).val())) {
+					$("#checkButton").prop("disabled", false);
+					$("#dateError").hide();
+				} else {
+					$("#checkButton").prop("disabled", true);
+					$("#dateError").show();
+				}
+			});
+
+			/*[- Set change event for the first- and lastname input fields for validation purposes -]*/
+			$("#patientDataInput")
+				.find("input")
+				.not("#birthdate")
+				.each(function () {
+					$(this).change(function () {
+						if (validateName($(this).val())) {
+							$("#checkButton").prop("disabled", false);
+							$("#nameError").hide();
+						} else {
+							$("#checkButton").prop("disabled", true);
+							$("#nameError").show();
+						}
+					});
+				});
+
+			/*[- Register the onClick event for the showBundles button to prevent sending false data -]*/
+			$("#showBundles").click(function () {
+				if ($("#patientDataService").val() === "pseudonym") {
+					$(".personalData").prop("disabled", true);
+					$("#caseNumber").prop("disabled", false);
+				}
+			});
+
+			/*[- Check if the browser has no native datepicker -]*/
+			if (Modernizr.inputtypes.date === false) {
+				/*[- Get the bundle language and set the datepickers language to it -]*/
+				var currentLanguage = /*[[${#locale.toString()}]]*/ "en_GB";
+				currentLanguage = currentLanguage.substring(
+					0,
+					currentLanguage.indexOf("_")
+				);
+				$.datepicker.setDefaults($.datepicker.regional[currentLanguage]);
+				/*[- If german language is selected use german date format -]*/
+				if (currentLanguage === "de") {
+					$("input[type=date]").date({
+						dateFormat: "dd.mm.yy",
+					});
+				} else {
+					/*[- Else use the ISO date format -]*/
+					$("input[type=date]").date({
+						dateFormat: "yy-mm-dd",
+					});
+				}
+			}
+
+			/*[- Set the current registration service -]*/
+			handleRegistrationServiceChange($("#patientDataService").val(), true);
+		});
+
+		function checkCaseNumber(element) {
+			if (
+				element.val().match(/(\s|&nbsp;|<br>)+/) &&
+				!element.val().match(/[\w]+/)
+			) {
+				$("#caseNumberEmptyError").show();
+				$("#checkButton").prop("disabled", true);
+			} else {
+				$("#caseNumberEmptyError").hide();
+				$("#checkButton").prop("disabled", false);
+			}
+		}
+
+		/*[-
+        * Handles the change of the registration service.
+        * 
+        * @param value {string} The radio buttons value to specify the action
+        * @param onload {boolean} Indicates whether this method is called onload or not.
+        -]*/
+		function handleRegistrationServiceChange(value, onload) {
+			if (onload === false) {
+				/*[- Hide error and success messages -]*/
+				$(".errorSuccess").hide();
+				$("#caseNumber").val("");
+				$("#showBundles").prop("disabled", true);
+				$(".personalDataInput").val("");
+			} else {
+				if (
+					$("#caseNumber").val() !== "" &&
+					$("encounterDTO.errors").val() === ""
+				) {
+					$("#showBundles").prop("disabled", false);
+				}
+			}
+
+			/*[- Set the registration service -]*/
+			$("#patientDataService").val(value);
+			$("#patientDataServiceShowBundle").val(value);
+			/*[- Enable caseNumber and change its placeholder and label to default value -]*/
+			$("#caseNumber").prop("disabled", false);
+			$("#caseNumber").prop("placeholder", labelCaseNumber);
+			$("#caseNumberLabel").html("<b>" + labelCaseNumber + "</b>");
+			$("#checkButton").prop("disabled", false);
+			$(".personalDataInput").attr("disabled", true);
+
+			switch (value) {
+				case "searchHIS":
+					$("#patientData").show();
+					customizeCheckButton(
+						"searchHIS",
+						/*[[${messages.get(#locale, 'survey.check.button.search', 'Search')}]]*/ "Search",
+						null,
+						"submit"
+					);
+					$("#genderWrapper").show();
+					$("#incompleteDataError").hide();
+					$("#patientDataInput").hide();
+					/*[- Reset the type of the caseNumber input field -]*/
+					$("#caseNumber").attr("type", caseNumberType);
+					if ($("#caseNumber").val() !== "") {
+						$("#patientDataLabel").show();
+					} else {
+						$("#patientDataLabel").hide();
+					}
+					/*[- Show the button for the barcode scanner if one exists -]*/
+					if ($("#scanButton").length !== 0) {
+						$("#scanButton").show();
+						//$('#caseNumber').parent().css('width', $('#caseNumber').parent().parent().innerWidth() - 45 + 'px');
+						//$('#caseNumber').parent().addClass('controlgroup-textinput ui-btn ui-first-child');
+						if ($("#videoDiv").is(":visible")) {
+							$("#videoDiv").slideUp();
+							codeReader.reset();
+						}
+					}
+					break;
+				case "pseudonym":
+					$("#patientData").show();
+					customizeCheckButton(
+						"pseudonym",
+						/*[[${messages.get(#locale, 'survey.check.button.generatePseudonym', 'Generate pseudonym')}]]*/ "Generate pseudonym",
+						"generatePseudonym();",
+						"button"
+					);
+					/*[- Disable caseNumber field and change its placeholder and label to Pseudonym and enable -]*/
+					$("#caseNumber").prop("disabled", true);
+					$("#caseNumber").prop("placeholder", labelPseudonym);
+					$("#caseNumberLabel").html("<b>" + labelPseudonym + ":</b>");
+					/*[- Pseudonym is always of type text -]*/
+					$("#caseNumber").attr("type", "text");
+					/*[- Show the personal data to enter firstname, lastname and birthdate -]*/
+					$(".personalDataInput").prop("disabled", false);
+					$("#patientDataInput").show();
+					$("#patientDataLabel").hide();
+					$("#scanButton").hide();
+					/*[- Hide the button for the barcode scanner if one exists -]*/
+					if ($("#scanButton").length !== 0) {
+						$("#scanButton").hide();
+						//$('#caseNumber').parent().css('width', '100%');
+						//$('#caseNumber').parent().removeClass('controlgroup-textinput ui-btn ui-first-child');
+						//$('#caseNumber').parent().css('margin', '0');
+						if ($("#videoDiv").is(":visible")) {
+							$("#videoDiv").slideUp();
+							codeReader.reset();
+						}
+					}
+					break;
+				case "register":
+					customizeCheckButton(
+						"register",
+						/*[[${messages.get(#locale, 'survey.check.button.register', 'Register')}]]*/ "Register",
+						null,
+						"submit"
+					);
+					/*[- Reset the type of the caseNumber input field -]*/
+					$("#caseNumber").attr("type", caseNumberType);
+					$("#patientData").hide();
+					/*[- Show the button for the barcode scanner if one exists -]*/
+					if ($("#scanButton").length !== 0) {
+						$("#scanButton").show();
+						//$('#caseNumber').parent().css('width', $('#caseNumber').parent().parent().innerWidth() - 45 + 'px');
+						//$('#caseNumber').parent().addClass('controlgroup-textinput ui-btn ui-first-child');
+						if ($("#videoDiv").is(":visible")) {
+							$("#videoDiv").slideUp();
+							codeReader.reset();
+						}
+					}
+					break;
+			}
+		}
+
+		/*[-
+        * Rerieves a pseudonym with given personal data of the patient from the configured pseudonymization service.
+        * 
+        * @returns {string} The generated pseudonym from the pseudonymization service.
+        -]*/
+		function generatePseudonym() {
+			if (
+				$("#firstname").val() !== "" &&
+				$("#lastname").val() !== "" &&
+				$("#birthdate").val() !== ""
+			) {
+				$("#incompleteDataError").hide();
+
+				var birthDate = $("#birthdate").val();
+
+				/*[- Calculate the birthdate if its value is in german format -]*/
+				if (
+					$("#birthdate")
+						.val()
+						.match(/^(0?[1-9]|[12][0-9]|3[0-1]).(0?[1-9]|1[0-2]).\d{4}$/)
+				) {
+					var birthDay = /\d\d/.exec(birthDate);
+					var birthMonth = /\d\d/.exec(/.\d\d./.exec(birthDate));
+					var birthYear = /\d\d\d\d/.exec(birthDate);
+					birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
+				}
+
+				var pseudonym = PseudonymizationService.getPseudonym(
+					$("#firstname").val(),
+					$("#lastname").val(),
+					birthDate
+				);
+				$("#caseNumber").val(pseudonym);
+
+				if (pseudonym) {
+					$.ajax({
+						url:
+							contextPath + "/mobile/survey/pseudonym?pseudonym=" + pseudonym,
+						type: "POST",
+						error: function (jqXHR, textStatus, errorThrown) {
+							alert(
+								"Oops. Beim generieren eines Pseudonyms ist was schiefgelaufen!"
+							);
+						},
+						success: function () {
+							$("#showBundles").attr("disabled", false);
+							$("#pseudonymSuccess").show();
+						},
+					});
+				} else {
+					alert(
+						/*[[${messages.get(#locale, 'survey.pseudonymization.notSuccessfull', 'Could not generate pseudonym. Please check the settings for the pseudonymization server.')}]]*/ "Could not generate pseudonym. Please check the settings for the pseudonymization server."
+					);
+				}
+			} else {
+				$("#incompleteDataError").show();
+			}
+		}
+
+		/*[-
+        * Change the checkButton according to the appropriate registration service.
+        * 
+        * @param {string} value The new value of the checkButton.
+        * @param {string} text The new label for the checkButton.
+        * @param {string} action The new javascript code fot the onChange event.
+        * @param {button|submit} type The new type of the button.
+        -]*/
+		function customizeCheckButton(value, text, action, type) {
+			$("#checkButton").val(value);
+			$("#checkButton").text(text);
+			$("#checkButton").attr("onclick", action);
+			$("#checkButton").attr("type", type);
+		}
+	</script>
+
+	<!--/* Put date functions in separate tag without "th:inline" as regex messes with the syntax */-->
+	<script>
+		/*[-
+        * Indicates whether the given date value matches the iso-standard (YYYY-MM-DD),
+        * german (DD.MM.YYYY) or english (DD/MM/YYYY) date pattern or not.
+        * 
+        * @param {string} dateValue The date value to validate.
+        * @returns {boolean} Returns true if the date value maches the german or english date pattern, false otherwise
+        -]*/
+
+		function validateDate(dateValue) {
+			return (
+				dateValue.match(
+					/^(0?[1-9]|1[0-2])[/](0?[1-9]|[12][0-9]|3[0-1])[/]\d{4}$/
+				) ||
+				dateValue.match(
+					/^(0?[1-9]|[12][0-9]|3[0-1])[.](0?[1-9]|1[0-2])[.]\d{4}$/
+				) ||
+				dateValue.match(/^\d{4}\-(0?[1-9]|1[0-2])\-(0?[1-9]|[12][0-9]|3[0-1])$/)
+			);
+		}
+
+		function validateName(nameValue) {
+			return nameValue.match(/^[a-z|A-Z|\-]*$/);
+		}
+	</script>
+</th:block>

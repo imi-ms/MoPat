@@ -1,0 +1,775 @@
+<!--/*
+    Page layout for mobile / survey view
+    
+    Basic HTML grid filled up with metadata and basic HTML5 component layout.
+
+    Can be extended with parameters for further scripts and links
+*/-->
+<!DOCTYPE html>
+<html
+	th:lang="${#locale.getLanguage()}"
+	th:with="queryString=${queryString}"
+>
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, target-densityDpi=device-dpi"
+		/>
+		<meta
+			name="format-detection"
+			content="telephone=no"
+		/>
+
+		<!--/* Basics */-->
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.0}"
+		/>
+
+		<th:block
+			layout:replace="~{fragments/resourceFragment :: mobileCSS}"
+		></th:block>	
+
+		<th:block layout:fragment="addLinks"></th:block>
+
+		<!--[if lte IE 8]>
+			<link
+				rel="stylesheet"
+				type="text/css"
+				th:href="@{/css/ie/ie8.css}"
+			/>
+		<![endif]-->
+
+		<!--/* JQuery Basics */-->
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.0}"></script>
+
+		<!--/* Modernizr to query specific device types */-->
+		<script th:src="@{/js/modernizr/modernizr-custom.js?version=3.0}"></script>
+
+		<!--/* Bootstrap */-->
+		<script th:src="@{/js/bootstrap/bootstrap.min.js?version=3.0}"></script>
+
+		<!--/* Always import dialog from non mobile helper directory */-->
+		<script th:src="@{/js/helper/dialog.js?version=3.0}"></script>
+
+		<th:block 
+			layout:replace="~{fragments/resourceFragment :: mobileJS}"
+		></th:block>
+
+		<th:block layout:fragment="addScripts"></th:block>
+
+		<!--/* <c:set var="insertmobileinit" value="true"/> */-->
+
+		<script th:inline="javascript">
+			/*[- Check if a mobile screen is used -]*/
+			const isMobile = window.matchMedia(
+				"screen and (max-width: 40rem), screen and (max-height: 40rem)"
+			);
+			/*[- Get the context path. -]*/
+			var contextPath = /*[[${contextPath}]]*/ "/";
+
+			function handleExit() {
+				if (MobileApplication.isInternetAvailable() === true) {
+					/*[- If internet connection is available open close dialog -]*/
+					var closeDialog = document.getElementById("closeDialog");
+					bootstrap.Modal.getOrCreateInstance(closeDialog).show();
+				} else {
+					var noInternetConnectionDialog = document.getElementById(
+						"noInternetConnectionDialog"
+					);
+					bootstrap.Modal.getOrCreateInstance(
+						noInternetConnectionDialog
+					).show();
+				}
+			}
+		</script>
+
+		<th:block layout:insert="~{fragments/bodyImages :: bodyImages}"></th:block>
+
+		<link
+			rel="apple-touch-icon"
+			th:href="@{/images/apple-touch-icon.png}"
+		/>
+		<title>MoPat</title>
+	</head>
+
+	<body th:attr="onload=${onLoad}">
+		<div
+			class="flex-container"
+			data-role="page"
+		>
+			<!-- Modal -->
+			<div
+				class="offcanvas offcanvas-end"
+				id="additionalInformation"
+				tabindex="-1"
+				role="dialog"
+				aria-labelledby="additionalInformationLabel"
+			>
+				<div class="offcanvas-header">
+					<h4
+						class="offcanvas-title"
+						id="additionalInformationLabel"
+						th:text="${messages.get(#locale, 'layout.label.additionalInformation', 'Additional Information')}"
+					></h4>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="offcanvas"
+						aria-label="Close"
+					></button>
+				</div>
+
+				<div class="offcanvas-body">
+					<div class="d-grid gap-2">
+						<a
+							id="helpButton"
+							href="#"
+							class="btn btn-mobile"
+							th:text="${messages.get(#locale, 'layout.label.help', 'Help')}"
+						>
+						</a>
+						<a
+							href="#supportDialog"
+							id="supportButton"
+							class="btn btn-mobile"
+							data-bs-toggle="modal"
+							data-bs-target="#supportDialog"
+							th:text="Support"
+						>
+						</a>
+						<a
+							href="#imprintDialog"
+							id="impressumButton"
+							data-bs-toggle="modal"
+							data-bs-target="#imprintDialog"
+							class="btn btn-mobile"
+							th:text="#{layout.label.imprint}"
+						>
+							Imprint
+						</a>
+
+						<a
+							href="#"
+							id="closeDialogButton"
+							onclick="handleExit()"
+							class="btn btn-mobile"
+							data-bs-toggle="modal"
+							data-bs-target="#closeDialog"
+							th:text="${messages.get(#locale, 'layout.label.closeApplication', 'Exit MoPat')}"
+						>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="d-none d-bp-block additionalInformation">
+				<a
+					id="additionalInformationButton"
+					class="btn btn-white btn-mobile btn-additionalInformation"
+					data-bs-toggle="offcanvas"
+					href="#additionalInformation"
+				>
+					<div class="bi-rotate">
+						<h1><i class="bi bi-info-circle"></i></h1>
+					</div>
+				</a>
+			</div>
+
+			<!--/* Add the survey menu to the dom */-->
+			<th:block
+				layout:insert="~{fragments/structures :: mobileNavMenu(
+                title='MoPat',
+                id='surveyMobileMenu'
+            )}"
+			>
+				<th:block layout:fragment="menuContent">
+					<!--/* Menu content is the same as the additional information menu */-->
+					<a
+						id="helpButton"
+						href="#"
+						class="link"
+						th:text="${messages.get(#locale, 'layout.label.help', 'Help')}"
+					>
+					</a>
+					<a
+						href="#supportDialog"
+						id="supportButton"
+						class="link"
+						data-bs-toggle="modal"
+						data-bs-target="#supportDialog"
+						th:text="Support"
+					>
+					</a>
+					<a
+						href="#imprintDialog"
+						id="impressumButton"
+						data-bs-toggle="modal"
+						data-bs-target="#imprintDialog"
+						class="link"
+						th:text="#{layout.label.imprint}"
+					>
+						Imprint
+					</a>
+
+					<a
+						href="#"
+						id="closeDialogButton"
+						onclick="handleExit()"
+						class="link"
+						data-bs-toggle="modal"
+						data-bs-target="#closeDialog"
+						th:text="${messages.get(#locale, 'layout.label.closeApplication', 'Exit MoPat')}"
+					>
+					</a>
+				</th:block>
+			</th:block>
+
+			<div
+				class="modal fade"
+				id="helpPopup"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="helpPopupLabel"
+				data-bs-backdrop="false"
+			>
+				<div class="modal-dialog help-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="helpPopupLabel"
+								th:text="${messages.get(#locale, 'helpMode.label.header', 'Help text')}"
+							>
+							</h1>
+						</div>
+						<div class="modal-body">
+							<div id="helpPopupContent"></div>
+						</div>
+						<div class="modal-footer">
+							<button
+								class="btn btn-mobile"
+								th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+								data-bs-dismiss="modal"
+							>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="supportDialog"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="supportDialogLabel"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="supportDialogLabel"
+								th:text="Support"
+							>
+							</h1>
+						</div>
+						<div class="modal-body">
+							<th:block th:text="#{layout.label.supportDialog}"
+								>Support dialog</th:block
+							>: <br /><br />
+							<!--/* The configurationDao is injected into the view */-->
+							<th:block
+								th:text="|Hotline: ${configurationDao?.supportPhone}|"
+							/><br />
+							<a
+								th:href="|mailto:${configurationDao?.supportEMail}?subject=[MoPat-Support]|"
+								th:text="|E-Mail: ${configurationDao?.supportEMail}|"
+							>
+							</a>
+						</div>
+						<div class="modal-footer">
+							<button
+								class="btn btn-mobile"
+								th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+								data-bs-dismiss="modal"
+							>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="imprintDialog"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="imprintDialogLabel"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="imprintDialogLabel"
+								th:text="${messages.get(#locale, 'layout.label.imprint', 'Imprint')}"
+							>
+							</h1>
+						</div>
+						<div class="modal-body">
+							<div>
+								Universität Münster<br />
+								Schlossplatz 2, 48149 Münster<br />
+								Telephone: +49 (251) 83-0<br />
+								Fax: +49 (251) 83-3 20 90<br />
+								E-mail: verwaltung@uni-muenster.de<br /><br />
+								The University of Münster is a statutory body and an institution
+								of the Land of North Rhine- Westphalia. It is represented by the
+								Rector, Professor Dr. Johannes Wessels.<br /><br />
+								Turnover tax identification number: DE 126118759<br /><br />
+								Edited in accordance with §5 TMG by:<br />
+								Prof. Dr. Julian Varghese<br />
+								Institute of Medical Informatics<br />
+								Albert-Schweizer-Campus 1, Building A11<br />
+								48149 Münster, Germany<br />
+								Telephone: +49 (251) 83-55262<br />
+								E-mail:
+								<a href="mailto:imi@uni-muenster.de">imi@uni-muenster.de</a
+								><br />
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button
+								class="btn btn-mobile"
+								th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+								data-bs-dismiss="modal"
+							>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="closeDialog"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="closeDialogTitle"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="closeDialogTitle"
+								th:text="|${messages.get(#locale, 'layout.label.closeApplication', 'Exit MoPat')}?|"
+							>
+							</h1>
+						</div>
+						<div class="modal-body">
+							<p
+								th:text="|${messages.get(#locale, 'layout.label.closeApplicationDialog',
+                                    'Do you really want to cancel the current questionnaire and exit MoPat')}?|"
+							>
+							</p>
+						</div>
+						<div class="modal-footer">
+							<div class="btn-group">
+								<a
+									class="btn btn-mobile hyphenate me-2"
+									th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+									data-bs-dismiss="modal"
+									data-ajax="true"
+								>
+								</a>
+								<a
+									class="btn btn-mobile btn-red hyphenate ms-2"
+									th:href="@{/mobile/user/login__${configurationDao != null ? '?lang=' + configurationDao.defaultLanguage : ''}__}"
+									onclick="nextState = null; initLogin();"
+									th:text="${messages.get(#locale, 'layout.button.close', 'Cancel and exit')}"
+								>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="noInternetConnectionDialog"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="noInternetConnectionTitle"
+				data-bs-backdrop="static"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="noInternetConnectionTitle"
+								th:text="${messages.get(#locale, 'layout.label.noInternetConnectionTitle', 'No Connection')}"
+							>
+							</h1>
+						</div>
+						<div
+							class="modal-body"
+							th:text="${messages.get(#locale, 'layout.label.noInternetConnection', 'No connection')}"
+						></div>
+						<div class="modal-footer">
+							<button
+								class="btn btn-mobile"
+								th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+								data-bs-dismiss="modal"
+							>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="questionConfirmDialog"
+				tabindex="1"
+				role="dialog"
+				aria-labelledby="questionConfirmTitle"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="helpPopupLabel"
+								th:text="|${messages.get(#locale, 'survey.questionnaire.label.skipQuestionTrue', 'Skip question')}?|"
+							>
+							</h1>
+						</div>
+						<div class="modal-body">
+							<p
+								th:text="|${messages.get(#locale, 'survey.questionnaire.label.required',
+                                    'This answer is required. Do you want to skip this question anyway')}?|"
+							>
+							</p>
+						</div>
+						<div class="modal-footer">
+							<div class="btn-group">
+								<button
+									class="me-2 btn btn-mobile"
+									onclick="setSwitchQuestion(false);
+                                                    bootstrap.Modal.getOrCreateInstance($('#questionConfirmDialog')[0]).hide();"
+									th:text="${messages.get(#locale, 'survey.questionnaire.label.skipQuestionFalse', 'Do not skip question')}"
+								>
+								</button>
+								<button
+									class="ms-2 btn btn-mobile btn-red"
+									onclick="setSwitchQuestion(true);
+                                                    bootstrap.Modal.getOrCreateInstance($('#questionConfirmDialog')[0]).hide();"
+									th:text="${messages.get(#locale, 'survey.questionnaire.label.skipQuestionTrue', 'Skip question')}"
+								>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="submitDialog"
+				tabindex="1"
+				role="dialog"
+				data-bs-backdrop="static"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-body">
+							<div
+								class="d-flex resizable justify-content-center align-items-center"
+							>
+								<p
+									th:utext="|${messages.get(#locale, 'layout.label.dataTransmission', 'Transmitting data')} …|"
+								></p>
+							</div>
+							<div class="d-flex justify-content-center align-items-center">
+								<img th:attr="src=@{/css/jQuery/images/ajax-loader.gif}" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="modal fade"
+				id="successDialog"
+				tabindex="1"
+				role="dialog"
+				data-bs-backdrop="static"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-body">
+							<span
+								class="d-flex resizable justify-content-center align-items-center"
+								style="color: green"
+							>
+								<p
+									th:text="${messages.get(#locale, 'layout.success.dataTransmission', 'Data has been transmitted successfully')}"
+								></p>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<a
+				href="#successDialog"
+				id="successDialogButton"
+				data-rel="popup"
+				data-position-to="window"
+				data-transition="pop"
+				style="width: 80%"
+			>
+			</a>
+
+			<div
+				data-role="header"
+				class="header"
+				data-position="fixed"
+				data-tap-toggle="false"
+				th:classappend="|${#bools.isTrue(isLogin) ? 'login-header' : ''} ${#bools.isTrue(stickyHeader) ? 'stickyHeader' : ''}|"
+			>
+				<th:block
+					layout:insert="~{fragments/mobileHeader :: header}"
+				></th:block>
+			</div>
+
+			<th:block layout:fragment="beforeContent"></th:block>
+
+			<div
+				th:classappend="${#bools.isTrue(isLogin) ? 'loginContainer' : 'layoutContainer'}"
+			>
+				<div
+					id="content"
+					data-role="content"
+					class="px-5"
+					th:classappend="${contenttype}"
+				>
+					<div
+						class="d-flex py-1 titleHeader"
+						th:classappend="|${#bools.isTrue(isLogin) ? 'header login-header' : ''} ${#bools.isTrue(hideTitle) ? 'd-none' : ''}|"
+					>
+						<th:block sec:authorize="isFullyAuthenticated()">
+							<div role="heading">
+								<b
+									id="title"
+									class="titleContent"
+								></b>
+							</div>
+						</th:block>
+					</div>
+					<th:block layout:fragment="content"></th:block>
+				</div>
+				<div
+					id="footer"
+					class="footer"
+					data-role="footer"
+				>
+					<th:block
+						layout:insert="~{fragments/mobileFooter :: footer}"
+					></th:block>
+				</div>
+			</div>
+		</div>
+
+		<th:block layout:fragment="headerScriptContainer">
+			<th:block
+				layout:insert="~{fragments/mobileHeader :: headerScriptContainer}"
+			/>
+		</th:block>
+		<th:block layout:fragment="scriptContainer"></th:block>
+
+		<!--/* Container for scroll indicator that gets added and animated via css classes */-->
+		<div
+			id="arrowContainer"
+			class="scrollArrowContainer"
+			onclick="scrollDown()"
+		>
+			<span></span>
+			<span></span>
+			<span></span>
+		</div>
+		<div
+			id="shadowIndicator"
+			class="shadowIndicator"
+			aria-hidden="true"
+		></div>
+
+		<!--/* Script to show scroll indicator */-->
+		<script>
+			var arrowTimeout = 0;
+
+			/*[- Check if the content is scrollable -]*/
+			function isScrollable() {
+				return document.body.scrollHeight > window.innerHeight;
+			}
+
+			function viewPaneIsNotAtTheBottom() {
+				return (
+					window.pageYOffset + window.innerHeight < document.body.scrollHeight
+				);
+			}
+
+			function scrollArrowIsNotShown() {
+				return !$("#arrowContainer").hasClass("show");
+			}
+
+			/*[-   the arrow icon based on scroll position and content height -]*/
+			function toggleScrollIndicators() {
+				var arrowElement = document.getElementById("arrowContainer");
+				var shadowElement = document.getElementById("shadowIndicator");
+
+				if (isScrollable() && viewPaneIsNotAtTheBottom()) {
+					if (scrollArrowIsNotShown()) {
+						arrowElement.classList.add("show");
+						shadowElement.classList.add("off-bottom");
+
+						///*[- Disable after 10s (equal to 5 animation cycles) -]*/
+						arrowTimeout = setTimeout(function () {
+							arrowElement.classList.remove("show");
+						}, 10000);
+					}
+				} else {
+					arrowElement.classList.remove("show");
+					shadowElement.classList.remove("off-bottom");
+
+					/*
+					 * Clear timeout so the timeout is only
+					 * triggered if the arrow element is shown nonstop
+					 */
+					clearTimeout(arrowTimeout);
+					arrowTimeout = 0;
+				}
+			}
+
+			// Create the help Mode when the help button was clicked
+			$('#helpButton').click(function () {
+				// Close the panel and set the buttons active
+				var additionalInformationPanel = document.getElementById("additionalInformation");
+				bootstrap.Offcanvas.getOrCreateInstance(additionalInformationPanel).hide();  
+				// Set the panel-button text to end help
+				$('#additionalInformationButton').empty();
+				$('#additionalInformationButton').append(strings['layout.label.exitHelp']);
+				$('#additionalInformationButton').removeAttr('href');
+				$('#additionalInformationButton').removeAttr('data-bs-toggle');
+				//Increase the button size
+				$('#additionalInformationButton').width($('#additionalInformationButton').width() * 2);
+				$('#additionalInformationButton').height($('#additionalInformationButton').height() * (2 / 3));
+				// Set the background overlay
+				jQuery('<div/>', {
+					id: 'overlay',
+					class: 'overlayBackground helpMode'
+				}).appendTo('body');
+				// Set an overlay over the overlay to not adopt its opacity
+				jQuery('<div/>', {
+					id: 'infoIconOverlay',
+					class: 'helpMode'
+				}).appendTo('body');
+				// Activate the help mode
+				helpMode.showHelp();
+			});
+
+			// End the help mode when it is active and the panel button was clicked
+			$('#additionalInformationButton').click(function () {
+				// Check if the help mode is active and there is a overlay over the background
+				if ($('.helpMode')[0]) {
+					// Set the button text to default
+					$('#additionalInformationButton').empty();
+
+					var additionalInformationWrapper = $("<div/>", {
+						"class": "bi-rotate"
+					}); 
+
+					additionalInformationWrapper.append(
+						$("<h1/>").append(
+							$("<i/>", {
+								"class": "bi bi-info-circle"
+							})
+						)
+					); 
+					
+					$(additionalInformationWrapper).appendTo("#additionalInformationButton");
+					$('#additionalInformationButton').removeAttr("style");
+					// Deactivate the helpMode
+					helpMode.hideHelp();
+					// Add the href to the panel button
+					setTimeout(function () {
+						$('#additionalInformationButton').attr('data-bs-toggle', 'offcanvas')
+						$('#additionalInformationButton').attr('href', '#additionalInformation');
+					}, 250);
+				}
+			});
+
+			// Deactivate all activated buttons upon closing the help modal 
+			$("#helpPopup").on("hide.bs.modal", function(e) {
+				$(".bi-active").each(function() {
+					$(this).removeClass("bi-active");
+				});
+			});
+
+			//Since the backdrop for the help modal is disabled we have to adjust the overlay to mimic the same functionality
+			$("#helpPopup").on("click", function(e) {
+				bootstrap.Modal.getOrCreateInstance($("#helpPopup")[0]).hide();  
+			})
+
+
+			function scrollDown() {
+				window.scrollBy({
+					top: window.innerHeight / 2,
+					left: 0,
+					behavior: "smooth",
+				});
+			}
+
+			const targetDiv = document.querySelector("#content");
+
+			if (targetDiv) {
+				const observer = new MutationObserver((mutationsList) => {
+					/*[- Toggle scroll check for all dom changes -]*/
+					toggleScrollIndicators();
+				});
+
+				const observerConfig = { childList: true, subtree: true };
+
+				observer.observe(targetDiv, observerConfig);
+			} else {
+				/*[- Catch missing content div -]*/
+			}
+
+			/*[- Scroll event listener -]*/
+			window.addEventListener("scroll", toggleScrollIndicators);
+
+			/*[- Initial check and setup on page load -]*/
+			window.addEventListener("load", function () {
+				toggleScrollIndicators();
+			});
+
+			window.addEventListener("resize", toggleScrollIndicators);
+
+			window.addEventListener("resize", helpMode.repositionHelpIcons);
+		</script>
+	</body>
+</html>

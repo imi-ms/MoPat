@@ -1,0 +1,21 @@
+<!--/*
+    * Layout for mobileQuestionnaire view that 
+    * extends the login layout and adds onLoad functions 
+    * as well as several scripts and stylesheets 
+    * that are necessary to display Questionnaires 
+    * in MoPats mobile view 
+*/-->
+<th:block
+	layout:decorate="~{layout/login}"
+	th:with="onLoad='notifyBack();'"
+>
+	<th:block layout:fragment="header"></th:block>
+
+	<th:block layout:fragment="addScripts">
+		<script th:src="@{/js/svg/svg.min.js?version=3.0}"></script>
+		<script th:src="@{/js/zxing/zxing.min.js?version=3.0}"></script>
+		<script th:src="@{/js/jQuery/jquery-barcode.min.js?version=3.0}"></script>
+	</th:block>
+
+	<th:block layout:fragment="content"></th:block>
+</th:block>

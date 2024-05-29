@@ -1,0 +1,731 @@
+<!--/*
+	* View to create a new user invitation 
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'user.heading.userInvitation', 'User invitation')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				th:object="${invitationDTO}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				action="edit"
+			>
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+				<input
+					hidden="true"
+					id="invitationId"
+					value="${invitation?.id}"
+				/>
+
+				<th:block th:if="${not #lists.isEmpty(invitationDTO.invitationUsers)}">
+					<th:block
+						th:each="invitationUser, loop: ${invitationDTO.invitationUsers}"
+					>
+						<fieldset class="personalizedData">
+							<legend
+								class="personalizedDataLegend"
+								onclick="toggleFieldsets(this);"
+								th:text="|${loop.index + 1}. ${messages.get(#locale, 'invitation.label.user', 'User')}|"
+							>
+							</legend>
+							<div class="row form-group">
+								<div class="col-lg-3">
+									<input
+										layout:replace="~{fragments/forms :: inputWithLabel(
+											for='firstName', required=true, path='invitationUsers[__${loop.index}__].firstName',
+											clazz='form-control personalDataInput firstname', showErrors=true,
+											text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+
+									/>
+								</div>
+								<div class="col-lg-3">
+									<input
+										layout:replace="~{fragments/forms :: inputWithLabel(
+											for='lastName', required=true, path='invitationUsers[__${loop.index}__].lastName',
+											clazz='form-control personalDataInput lastname', showErrors=true,
+											text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+
+									/>
+								</div>
+								<div class="col-lg-4">
+									<label
+										class="required"
+										for="email"
+										th:text="${messages.get(#locale, 'user.label.email', 'Email')}"
+									></label>
+									<th:block th:if="${invitationDTO.id != null}">
+										<input
+											class="form-control"
+											th:value="${invitationDTO.invitationUsers[loop.index].email}"
+											type="email"
+											disabled="true"
+										/>
+										<input
+											type="hidden"
+											th:field="*{invitationUsers[__${loop.index}__].email}"
+										/>
+									</th:block>
+									<th:block th:unless="${invitationDTO.id != null}">
+										<input
+											class="form-control personalDataInput email"
+											th:field="*{invitationUsers[__${loop.index}__].email}"
+											type="email"
+										/>
+									</th:block>
+									<error
+										layout:replace="~{fragments/forms :: errorField(path='invitationUsers[__${loop.index}__].email')}"
+									/>
+								</div>
+
+								<div
+									th:if="${#strings.isEmpty(invitationDTO.id)}"
+									class="col-lg-2"
+								>
+									<label for="button">&nbsp;</label>
+									<button
+										style="margin-top: 0px !important"
+										class="btn btn-primary form-control removeInvitationButton"
+										type="button"
+										onclick="removeInvitationDiv(this);"
+									>
+										<i class="bi bi-dash-circle-fill"></i>
+										&nbsp; [[${messages.get(#locale,
+										'invitation.button.removeUser', 'Remove user')}]]
+									</button>
+								</div>
+							</div>
+						</fieldset>
+					</th:block>
+				</th:block>
+
+				<th:block th:if="${#lists.isEmpty(invitationDTO.invitationUsers)}">
+					<fieldset class="personalizedData">
+						<legend
+							class="personalizedDataLegend"
+							onclick="toggleFieldsets(this);"
+						>
+							<th:block
+								th:text="|1. ${messages.get(#locale, 'invitation.label.user', 'User')}|"
+							/>
+						</legend>
+						<div class="row form-group">
+							<div class="col-lg-3">
+								<input
+									layout:replace="~{fragments/forms :: inputWithLabel(
+									for='firstName', required=true, path='invitationUsers[0].firstName',
+									clazz='form-control personalDataInput firstname', showErrors=true,
+									text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+
+								/>
+							</div>
+							<div class="col-lg-3">
+								<input
+									layout:replace="~{fragments/forms :: inputWithLabel(
+									for='lastName', required=true, path='invitationUsers[0].lastName',
+									clazz='form-control personalDataInput lastname', showErrors=true,
+									text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+
+								/>
+							</div>
+							<div class="col-lg-4">
+								<label
+									class="required"
+									for="email"
+									th:text="${messages.get(#locale, 'user.label.email', 'Email')}"
+								></label>
+								<th:block th:if="${invitationDTO.id != null}">
+									<input
+										class="form-control"
+										th:value="${invitationDTO.invitationUsers[0].email}"
+										type="email"
+										disabled="true"
+									/>
+									<input
+										type="hidden"
+										th:field="*{invitationUsers[0].email}"
+									/>
+								</th:block>
+								<th:block th:unless="${invitationDTO.id != null}">
+									<input
+										class="form-control personalDataInput email"
+										th:field="*{invitationUsers[0].email}"
+										type="email"
+									/>
+								</th:block>
+								<error
+									layout:replace="~{fragments/forms :: errorField(path='invitationUsers[0].email')}"
+								/>
+							</div>
+							<div class="col-lg-2">
+								<label for="button">&nbsp;</label>
+								<button
+									style="margin-top: 0px !important"
+									class="btn btn-primary form-control removeInvitationButton"
+									type="button"
+									disabled="disabled"
+									onclick="removeInvitationDiv(this);"
+								>
+									<i class="bi bi-dash-circle-fill"></i>
+									&nbsp; [[${messages.get(#locale,
+									'invitation.button.removeUser', 'Remove user')}]]
+								</button>
+							</div>
+						</div>
+					</fieldset>
+				</th:block>
+
+				<div
+					th:if="${#strings.isEmpty(invitationDTO.id)}"
+					class="row form-group align-items-end"
+				>
+					<div class="col-lg-4 mb-2">
+						<button
+							id="addInvitationButton"
+							class="btn btn-primary form-control"
+							type="button"
+							onclick="addInvitationDiv();"
+						>
+							<i class="bi bi-plus-circle-fill"></i>
+							&nbsp; [[${messages.get(#locale, 'invitation.button.addUser', 'Add
+							user')}]]
+						</button>
+					</div>
+
+					<div class="col-lg-8 col-12 mb-2">
+						<label for="csvInput">
+							<th:block
+								th:text="${messages.get(#locale, 'invitation.label.file', 'File')}"
+							/>
+							<span
+								class="bi bi-info-circle-fill"
+								th:title="${messages.get(#locale, 'invitation.label.fileInfo', 'File Info')}"
+							>
+							</span>
+						</label>
+						<input
+							id="csvInput"
+							type="file"
+							class="form-control"
+							onchange="addUsersFromFile();"
+						/>
+					</div>
+				</div>
+
+				<hr />
+
+				<div class="form-group">
+					<label
+						for="authority"
+						th:text="${messages.get(#locale, 'user.label.role', 'Role:')}"
+					></label>
+					<select
+						name="role"
+						class="form-control"
+					>
+						<th:block th:each="item: ${roleList}">
+							<!--/* Every user has one authority. Get the first one with help of the iterator */-->
+							<th:block th:if="${invitationDTO.role == item.textValue}">
+								<option
+									selected
+									th:value="${item.textValue}"
+									th:text="${item.textValue}"
+								></option>
+							</th:block>
+							<th:block th:unless="${invitationDTO.role == item.textValue}">
+								<option
+									th:value="${item.textValue}"
+									th:text="${item.textValue}"
+								></option>
+							</th:block>
+						</th:block>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label
+						for="language"
+						th:text="${messages.get(#locale, 'user.label.language', 'Language')}"
+					></label>
+					<select
+						th:value="${invitationDTO.locale}"
+						th:field="*{locale}"
+						class="form-control"
+					>
+						<option value="de_DE">
+							<label
+								for="german"
+								th:text="${messages.get(#locale, 'localization.languageCode.de', 'Missing language code')}"
+							></label>
+						</option>
+						<option value="en_GB">
+							<label
+								for="english"
+								th:text="${messages.get(#locale, 'localization.languageCode.en', 'Missing language code')}"
+							></label>
+						</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label
+						for="personalText"
+						th:text="${messages.get(#locale, 'user.label.message', 'Message')}"
+					></label>
+					<textarea
+						cols="40"
+						rows="10"
+						class="form-control"
+						th:value="${invitationDTO.personalText}"
+						th:field="*{personalText}"
+					></textarea>
+				</div>
+
+				<th:block th:text="${counter.clear()}" />
+
+				<div class="container-fluid doubleList">
+					<div class="row removableFlex toggleCollapseTable">
+						<div class="col-md-5 mb-2">
+							<div class="list-group">
+								<!--/* Title of the table */-->
+								<div class="row removableFlex list-group-item">
+									<div
+										class="col-11"
+										th:text="${messages.get(#locale, 'user.heading.assignedClinics', 'Assigned clinics')}"
+									>
+									</div>
+									<div class="col-1">
+										<a
+											data-bs-toggle="collapse"
+											class="bi bi-plus-lg"
+											onclick="DragNDropList.toggleCollapseTable(this)"
+										></a>
+										<a
+											data-bs-toggle="collapse"
+											class="bi bi-dash-lg"
+											onclick="DragNDropList.toggleCollapseTable(this)"
+											style="display: none"
+										></a>
+									</div>
+								</div>
+
+								<!--/* Header of the table */-->
+								<div class="row removableFlex list-group-item active">
+									<div class="col-12">Name</div>
+								</div>
+
+								<!--/* Body of the table */-->
+								<div
+									id="assignedClinicsTable"
+									class="sortable collapsable assignedTable"
+								>
+									<div
+										class="row removableFlex list-group-item placeholderRow notDraggable"
+										style="display: none"
+									>
+										<div class="col-12">&nbsp;</div>
+									</div>
+									<th:block
+										th:if="${#lists.isEmpty(invitationDTO.assignedClinics)}"
+									>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="emptyRow"
+										>
+											<div
+												class="col-12"
+												th:text="${messages.get(#locale, 'user.table.UserClinicsEmpty', 'No clinics assigned')}"
+											>
+											</div>
+										</div>
+									</th:block>
+									<th:block
+										th:unless="${#lists.isEmpty(invitationDTO.assignedClinics)}"
+									>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="emptyRow"
+											style="display: none"
+										>
+											<div
+												class="col-12"
+												th:text="${messages.get(#locale, 'user.table.UserClinicsEmpty', 'No clinics assigned')}"
+											>
+											</div>
+										</div>
+										<th:block th:each="item: ${invitationDTO.assignedClinics}">
+											<div class="row removableFlex list-group-item draggable">
+												<input
+													type="hidden"
+													th:name="|assignedClinics[${counter.get()}].id|"
+													th:value="${item.id}"
+												/>
+												<div class="col-11">
+													<th:block th:text="${item.name}" />
+													<input
+														type="hidden"
+														th:name="|assignedClinics[${counter.get()}].name|"
+														th:value="${item.name}"
+													/>
+												</div>
+												<div class="col-1">
+													<a
+														data-bs-toggle="collapse"
+														onClick="move($(this), $('#assignedClinicsTable'), $('#availableClinicsTable'))"
+													>
+														<span class="bi bi-chevron-right"></span>
+													</a>
+												</div>
+											</div>
+											<!--/* Increment the index */-->
+											<th:block th:text="${counter.increment()}" />
+										</th:block>
+									</th:block>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-md-1 d-md-block d-none doubleListIcon">
+							<span
+								style="float: right"
+								class="bi bi-chevron-left"
+							></span>
+						</div>
+						<div class="col-md-1 d-md-block d-none doubleListIcon">
+							<span class="bi bi-chevron-right"></span>
+						</div>
+
+						<div class="col-md-5 mb-2">
+							<div class="list-group">
+								<!--/* Title of the table */-->
+								<div class="row removableFlex list-group-item">
+									<div
+										class="col-11"
+										th:text="${messages.get(#locale, 'user.heading.availableClinics', 'Available clinics')}"
+									>
+									</div>
+									<div class="col-1">
+										<a
+											data-bs-toggle="collapse"
+											class="bi bi-plus-lg"
+											onclick="DragNDropList.toggleCollapseTable(this)"
+										></a>
+										<a
+											data-bs-toggle="collapse"
+											class="bi bi-dash-lg"
+											onclick="DragNDropList.toggleCollapseTable(this)"
+											style="display: none"
+										></a>
+									</div>
+								</div>
+
+								<!--/* Header of the table */-->
+								<div class="row removableFlex list-group-item active">
+									<div class="col-1"></div>
+									<div class="col-11">Name</div>
+								</div>
+
+								<!--/* Body of the table */-->
+								<div
+									id="availableClinicsTable"
+									class="sortable collapsable availableTable"
+								>
+									<div
+										class="row removableFlex list-group-item placeholderRow notDraggable"
+										style="display: none"
+									>
+										<div class="col-12">&nbsp;</div>
+									</div>
+									<th:block th:if="${#lists.isEmpty(availableClinics)}">
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="emptyRow"
+										>
+											<div
+												class="col-12"
+												th:text="${messages.get(#locale, 'user.table.UserClinicsEmpty', 'No clinics available')}"
+											>
+											</div>
+										</div>
+									</th:block>
+									<th:block th:unless="${#lists.isEmpty(availableClinics)}">
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="emptyRow"
+											style="display: none"
+										>
+											<div
+												class="col-12"
+												th:text="${messages.get(#locale, 'user.table.UserClinicsEmpty', 'No clinics available')}"
+											>
+											</div>
+										</div>
+										<th:block th:each="item, index: ${availableClinics}">
+											<div class="row removableFlex list-group-item draggable">
+												<!--/*<form:hidden path="assignedClincs" /> */-->
+												<input
+													disabled="true"
+													type="hidden"
+													th:name="|assignedClinics[${counter.get()}].id|"
+													th:value="${item.id}"
+												/>
+												<div class="col-1">
+													<a
+														data-bs-toggle="collapse"
+														onClick="move($(this), $('#availableClinicsTable'), $('#assignedClinicsTable'))"
+													>
+														<span class="bi bi-chevron-left"></span>
+													</a>
+												</div>
+												<div class="col-11">
+													<th:block th:text="${item.name}" />
+													<input
+														disabled="true"
+														type="hidden"
+														th:name="|assignedClinics[${counter.get()}].name|"
+														th:value="${item.name}"
+													/>
+												</div>
+											</div>
+											<!--/* Increment the index */-->
+											<th:block th:text="${counter.increment()}" />
+										</th:block>
+									</th:block>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div
+					th:if="${not #strings.isEmpty(preview)}"
+					class="form-group"
+				>
+					<div
+						th:text="${messages.get(#locale, 'user.label.preview', 'Preview')}"
+					></div>
+					<pre><span style="white-space:pre;" th:text="${preview}"></span></pre>
+				</div>
+				<th:block th:if="${invitationDTO.id != null}">
+					<button
+						type="submit"
+						class="btn btn-primary"
+						value="save"
+						id="inviteButton"
+						name="action"
+						th:text="${messages.get(#locale, 'invitation.button.saveAndSend', 'Save and send')}"
+					>
+					</button>
+				</th:block>
+				<th:block th:unless="${invitationDTO.id != null}">
+					<button
+						type="submit"
+						class="btn btn-primary"
+						value="invite"
+						id="inviteButton"
+						name="action"
+						th:text="${messages.get(#locale, 'user.button.invite', 'Invite')}"
+					>
+					</button>
+				</th:block>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="preview"
+					id="inviteButton"
+					name="action"
+					th:text="${messages.get(#locale, 'user.button.preview', 'Preview')}"
+				>
+				</button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="cancel"
+					id="inviteButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		if ($("#invitationId").val() > 0) {
+			$(".collapsable").hide();
+		} else {
+			$(".bi-plus-lg").hide();
+			$(".bi-dash-lg").show();
+		}
+
+		function toggleFieldsets(element) {
+			$(element).siblings().slideToggle("slow");
+		}
+
+		function move(element) {
+			/*[- ensure that the chosen element is moved to the correct table -]*/
+			if ($.contains($("#availableClinicsTable")[0], $(element)[0])) {
+				startTable = $("#availableClinicsTable");
+				targetTable = $("#assignedClinicsTable");
+			}
+
+			if ($.contains($("#assignedClinicsTable")[0], $(element)[0])) {
+				startTable = $("#assignedClinicsTable");
+				targetTable = $("#availableClinicsTable");
+			}
+
+			DragNDropList.moveElementToTargetList(element, targetTable);
+		}
+
+		$(".sortable").sortable({
+				group: "clinics",
+				sort: true, 
+				animation:150,
+				easing: "cubic-bezier(1, 0, 0, 1)",
+				draggable: ".list-group-item",
+				filter: ".notDraggable",
+				onStart: function(e) {
+					startTable = $(e.from);
+					targetTable = $(e.from); 
+				},
+				onChange: function(e) {
+					DragNDropList.onChange(e); 
+				} 
+
+			});
+
+		function removeInvitationDiv(element) {
+			if ($(".personalizedData").length > 1) {
+				var currentIndex = getLastNumberInString(
+					$(element).parents().siblings(".personalizedDataLegend").html()
+				);
+				$(element).parents(".personalizedData").remove();
+				if ($(".personalizedData").length === 1) {
+					$(".removeInvitationButton").attr("disabled", "disabled");
+				}
+
+				$(".personalizedDataLegend").each(function () {
+					if (+getLastNumberInString($(this).html()) > +currentIndex) {
+						$(this).html(decrementLastNumberInString($(this).html()));
+					}
+				});
+			}
+		}
+
+		function addInvitationDiv() {
+			var lastDiv = $(".personalizedData").last();
+			var newDiv = lastDiv.clone();
+			$(newDiv)
+				.find(".personalizedDataLegend")
+				.html(
+					incrementLastNumberInString(
+						$(newDiv).find(".personalizedDataLegend").html()
+					)
+				);
+			$(newDiv)
+				.find(".personalDataInput")
+				.each(function () {
+					$(this).attr(
+						"name",
+						incrementLastNumberInString($(this).attr("name"))
+					);
+					$(this).attr("id", incrementLastNumberInString($(this).attr("id")));
+					$(this).val("");
+				});
+			lastDiv.after(newDiv);
+			$(".removeInvitationButton").removeAttr("disabled");
+		}
+
+		function addUsersFromFile() {
+			if (typeof FileReader != "undefined") {
+				var reader = new FileReader();
+				reader.onload = function (e) {
+					/*[- Splitting of rows in the csv file -]*/
+					var csvrows = e.target.result.split("\n");
+					for (var i = 0; i < csvrows.length; i++) {
+						if (csvrows[i] != "") {
+							/*[- Splitting of the values in this row -]*/
+							var csvcols = csvrows[i].split(",");
+							if (csvcols.length === 3) {
+								addUserFromFile(csvcols[0], csvcols[1], csvcols[2]);
+							}
+						}
+					}
+					removeEmptyUsers();
+				};
+				reader.readAsText($("#csvInput")[0].files[0]);
+				$("#csvInput").fileinput("clear");
+			} else {
+				alert("Sorry! Your browser does not support HTML5!");
+			}
+		}
+
+		function addUserFromFile(firstname, lastname, emailaddress) {
+			var lastDiv = $(".personalizedData").last();
+			var newDiv = lastDiv.clone();
+			$(newDiv)
+				.find(".personalizedDataLegend")
+				.html(
+					incrementLastNumberInString(
+						$(newDiv).find(".personalizedDataLegend").html()
+					)
+				);
+			$(newDiv)
+				.find(".personalDataInput")
+				.each(function () {
+					$(this).attr(
+						"name",
+						incrementLastNumberInString($(this).attr("name"))
+					);
+					$(this).attr("id", incrementLastNumberInString($(this).attr("id")));
+					$(this).val("");
+				});
+			$(newDiv).find(".firstname").val(firstname);
+			$(newDiv).find(".lastname").val(lastname);
+			$(newDiv).find(".email").val(emailaddress);
+			lastDiv.after(newDiv);
+			$(".removeInvitationButton").removeAttr("disabled");
+		}
+
+		function removeEmptyUsers() {
+			$("fieldset").each(function () {
+				if (
+					$(this).find(".firstname").val() === "" &&
+					$(this).find(".lastname").val() === "" &&
+					$(this).find(".email").val() === ""
+				) {
+					$(this).find(".removeInvitationButton").click();
+				}
+			});
+		}
+
+		function incrementLastNumberInString(string) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, function (match) {
+				return parseInt(match, 10) + 1;
+			});
+		}
+
+		function decrementLastNumberInString(string) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, function (match) {
+				return parseInt(match, 10) - 1;
+			});
+		}
+
+		function replaceLastNumberInString(string, newValue) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, newValue);
+		}
+
+		function getLastNumberInString(string) {
+			return string.match(/[0-9]+(?!.*[0-9])/);
+		}
+	</script>
+</th:block>

@@ -1,0 +1,980 @@
+<!--/*
+    * View that shows all planned encounters    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'encounter.heading.title', 'Existing encounters')}"
+>
+	<th:block layout:fragment="content">
+		<th:block th:if="${success != null}">
+			<div
+				id="notification"
+				class="alert alert-success"
+				th:text="${success}"
+			>
+			</div>
+		</th:block>
+		<th:block th:if="${failure != null}">
+			<div
+				id="notification"
+				class="alert alert-danger"
+				th:text="${failure}"
+			>
+			</div>
+		</th:block>
+		<ul
+			class="nav nav-tabs"
+			id="encounterTabs"
+			role="tablist"
+			style="margin-top: 2px"
+		>
+			<li
+				class="nav-item"
+				role="presentation"
+			>
+				<button
+					class="nav-link active"
+					id="encounter-tablink"
+					data-bs-toggle="tab"
+					data-bs-target="#encounterTab"
+					role="tab"
+					aria-controls="profile"
+					aria-selected="true"
+					th:text="${messages.get(#locale, 'encounter.label.encounters', 'All Encounters')}"
+				>
+				</button>
+			</li>
+			<li class="nav-item">
+				<button
+					class="nav-link"
+					id="encounterScheduled-tablink"
+					data-bs-toggle="tab"
+					data-bs-target="#encounterScheduledTab"
+					role="tab"
+					aria-controls="profile"
+					aria-selected="true"
+					th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledAll', 'All scheduled encounters')}"
+				>
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div
+				id="encounterTab"
+				class="tab-pane fade show active"
+				role="tabpanel"
+				aria-labelledby="encounter-tablink"
+			>
+				<div class="table-responsive">
+					<table
+						class="table table-hover pagedTable responsive"
+						style="width: 100%"
+					>
+						<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
+						<!--/* So: If you change this, please update the audit log call in EncounterController.listEncounter! */-->
+						<thead>
+							<tr>
+								<th
+									data-priority="1"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.caseNumber', 'Case number')}"
+								></th>
+								<th
+									data-priority="3"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.bundle', 'Bundle')}"
+								></th>
+								<th
+									data-priority="4"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.startDate', 'Start Date')}"
+								></th>
+								<th
+									data-priority="5"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.endDate', 'End Date')}"
+								></th>
+								<th
+									data-priority="6"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.export', 'Export')}"
+								></th>
+								<th
+									data-priority="2"
+									class="actionColumn"
+									th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+								></th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:if="${not #lists.isEmpty(allEncounters)}">
+								<th:block th:each="item: ${allEncounters}">
+									<tr style="text-align: center">
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.caseNumber)}"
+												th:text="${item.caseNumber}"
+											>
+											</th:block>
+										</td>
+										<td>
+											<th:block th:if="${item.bundleDTO != null}">
+												<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+													<a
+														class="link"
+														th:href="@{/bundle/fill?id=__${item.bundleDTO.id}__}"
+														th:text="${item.bundleDTO.name}"
+													></a>
+												</th:block>
+												<th:block
+													sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN')"
+												>
+													<a th:text="${item.bundleDTO.name}"></a>
+												</th:block>
+											</th:block>
+										</td>
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.startTime)}"
+												th:text="${#dates.format(item.startTime)}"
+											>
+											</th:block>
+										</td>
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.endTime)}"
+												th:text="${#dates.format(item.endTime)}"
+											>
+											</th:block>
+										</td>
+										<td th:text="${item.successfullExports}"></td>
+										<td class="actionColumn">
+											<a
+												class="link"
+												th:href="|show?id=${item.id}|"
+											>
+												<i
+													class="bi-eye-fill"
+													th:title="${messages.get(#locale, 'encounter.export.show', 'Show exports')}"
+												>
+												</i>
+											</a>
+										</td>
+									</tr>
+								</th:block>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+				<div class="panel-body">
+					<a
+						th:href="@{/mobile/survey/index}"
+						class="btn btn-primary"
+						id="executeEncounter"
+						th:text="${messages.get(#locale, 'admin.navigation.executeSurvey', 'Execute survey')}"
+					>
+					</a>
+				</div>
+			</div>
+			<div
+				id="encounterScheduledTab"
+				class="tab-pane fade"
+				aria-labelledby="encounterScheduled-tablink"
+			>
+				<div class="table-responsive">
+					<table
+						id="encounterScheduled"
+						class="table table-hover pagedTable responsive"
+						style="width: 100%"
+					>
+						<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
+						<!--/* So: If you change this, please update the audit log call in EncounterController.listEncounter! */-->
+						<thead>
+							<tr style="text-align: center">
+								<th style="text-align: center"></th>
+								<th
+									data-priority="1"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.caseNumber', 'Case number')}"
+								></th>
+								<th
+									data-priority="5"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.bundle', 'Bundle')}"
+								></th>
+								<th
+									data-priority="6"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.startDate', 'Startdate')}"
+								></th>
+								<th
+									data-priority="4"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounter.label.endDate', 'Enddate')}"
+								></th>
+								<th
+									data-priority="7"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounterScheduled.label.email', 'EMail')}"
+								></th>
+								<th
+									data-priority="8"
+									style="text-align: center"
+									th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledSerialType', 'EncounterScheduledSerialType')}"
+								></th>
+								<th
+									data-priority="2"
+									class="actionColumn"
+									th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+								></th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:if="${not #lists.isEmpty(allEncounterScheduled)}">
+								<th:block th:each="item: ${allEncounterScheduled}">
+									<tr style="text-align: center">
+										<th:block
+											th:if="${item.encounterDTOs == null || #lists.isEmpty(item.encounterDTOs)}"
+										>
+											<td th:id="${item.id}"></td>
+										</th:block>
+										<th:block
+											th:if="${item.encounterDTOs == null || not #lists.isEmpty(item.encounterDTOs)}"
+										>
+											<td
+												class="toggle"
+												th:id="${item.id}"
+											>
+												<i
+													class="bi bi-plus-lg"
+													style="cursor: pointer"
+												></i>
+											</td>
+										</th:block>
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.caseNumber)}"
+												th:text="${item.caseNumber}"
+											>
+											</th:block>
+										</td>
+										<td>
+											<th:block th:if="${item.bundleDTO != null}">
+												<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+													<a
+														class="link"
+														th:href="@{/bundle/fill?id=__${item.bundleDTO.id}__}"
+														th:text="${item.bundleDTO.name}"
+													></a>
+												</th:block>
+												<th:block
+													sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN')"
+												>
+													<a th:text="${item.bundleDTO.name}"></a>
+												</th:block>
+											</th:block>
+										</td>
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.startDate)}"
+												th:text="${#dates.format(item.startDate)}"
+											>
+											</th:block>
+										</td>
+										<td>
+											<th:block
+												th:if="${item.encounterScheduledSerialType != 'UNIQUELY' && not #strings.isEmpty(item.endDate)}"
+											>
+												<th:block th:text="${#dates.format(item.endDate)}" />
+											</th:block>
+											<th:block
+												th:if="${item.encounterScheduledSerialType == 'UNIQUELY'}"
+											>
+												-
+											</th:block>
+										</td>
+										<td>
+											<th:block th:if="${not #strings.isEmpty(item.email)}">
+												<th:block
+													th:with="
+													case1=${#bools.isTrue(item.mailStatus == 'ADDRESS_REJECTED')},
+                                                    case2=${
+														#bools.isTrue(
+															item.mailStatus == 'DEACTIVATED_PATIENT' ||
+															item.mailStatus == 'INTERRUPTED'
+														)
+													}"
+												>
+													<th:block th:if="${case1}">
+														<span
+															class="data-email"
+															data-bs-toggle="modal"
+															th:href="|#${item.id}_emailForm|"
+															style="color: red; cursor: pointer"
+															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
+															th:text="${item.email}"
+														>
+														</span>
+													</th:block>
+													<th:block th:if="${case2}">
+														<span th:text="${item.email}"></span>
+													</th:block>
+													<th:block th:if="${not case1 && not case2}">
+														<span
+															class="data-email"
+															data-bs-toggle="modal"
+															th:href="|#${item.id}_emailForm|"
+															style="cursor: pointer"
+															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
+															th:text="${item.email}"
+														></span>
+													</th:block>
+												</th:block>
+												<div
+													class="modal fade"
+													th:id="|${item.id}_emailForm|"
+													data-backdrop="static"
+													data-keyboard="false"
+													tabindex="-1"
+													aria-hidden="true"
+													th:aria-labelledby="|${item.id}_emailFormLabel|"
+												>
+													<div class="modal-dialog">
+														<div class="modal-content">
+															<div class="modal-header">
+																<h5
+																	class="modal-title"
+																	th:id="|${item.id}_emailFormLabel|"
+																	th:text="|${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Edit email')}: ${item.email}|"
+																></h5>
+																<button 
+																	type="button" 
+																	class="btn-close" 
+																	data-bs-dismiss="modal" 
+																	aria-hidden="true"
+																></button>
+															</div>
+															<div class="modal-body">
+																<form
+																	enctype="application/x-www-form-urlencoded"
+																	method="POST"
+																	action="editEmail"
+																>
+																	<div class="form-group">
+																		<label
+																			for="email"
+																			th:text="${messages.get(#locale, 'encounterScheduled.label.newEmail', 'New email address')}"
+																		></label>
+																		<input
+																			class="form-control"
+																			id="email"
+																			name="email"
+																			type="text"
+																			th:placeholder="${item.email}"
+																			onchange="validateEmail(this)"
+																			value=""
+																		/>
+																		<input
+																			class="form-control"
+																			id="encounterScheduledId"
+																			name="encounterScheduledId"
+																			hidden="true"
+																			type="text"
+																			th:value=${item.id}
+																		/>
+																		<span
+																			class="d-none"
+																			th:id="|${item.id}_invalid-mail-error|"
+																			style="color: red;"
+																			th:text="${messages.get(#locale, 'encounterScheduled.error.invalidMail', 'Invalid email address')}"
+																		></span>
+																	</div>
+																	<div class="d-flex justify-content-end submitDiv">
+																		<button 
+																			type="submit" 
+																			class="btn btn-primary"
+																			disabled="disabled"
+																			th:text="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Edit email')}"
+																		></button>
+																	</div>
+																</form>
+															</div>
+														</div>
+													</div>
+												</div>
+											</th:block>
+										</td>
+										<td>
+											<th:block
+												th:if="${not #strings.isEmpty(item.encounterScheduledSerialType)}"
+											>
+												<th:block
+													th:switch="${item.encounterScheduledSerialType.toString()}"
+												>
+													<th:block
+														th:case="'UNIQUELY'"
+														th:text="${messages.get(#locale, 'encounterScheduled.label.period.uniquely', 'Uniquely')}"
+													>
+													</th:block>
+													<th:block
+														th:case="'REPEATEDLY'"
+														th:text="${messages.get(#locale, 'encounterScheduled.label.period.multipleTimes',
+                                                                    messages.buildArguments('__${item.repeatPeriod}__'), 'Multiple Times')}"
+													>
+													</th:block>
+													<th:block
+														th:case="'WEEKLY'"
+														th:text="${messages.get(#locale, 'encounterScheduled.label.period.weekly', 'Weekly')}"
+													>
+													</th:block>
+													<th:block
+														th:case="'MONTHLY'"
+														th:text="${messages.get(#locale, 'encounterScheduled.label.period.monthly', 'Monthly')}"
+													>
+													</th:block>
+												</th:block>
+											</th:block>
+										</td>
+										<td class="actionColumn">
+											<div class="d-none d-xl-block">
+												<th:block th:switch="${item.mailStatus.name()}">
+													<th:block th:case="'ACTIVE'">
+														<a
+															class="link"
+															th:href="|toggleMailStatus?id=${item.id}|"
+														>
+															<i
+																class="bi-stop-fill"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
+															>
+															</i>
+														</a>
+													</th:block>
+													<th:block th:case="'ADDRESS_REJECTED'">
+														<i
+															onclick="editEmail($(this).parents('tr').find('.data-email'))"
+															class="bi-exclamation-triangle-fill"
+															style="cursor: pointer"
+															th:title="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
+														>
+														</i>
+													</th:block>
+													<th:block th:case="'CONSENT_PENDING'">
+														<i
+															class="bi-clock-fill"
+															th:title="${messages.get(#locale, 'encounterScheduled.button.consentPending', 'Waiting for the patient's agreement')}"
+														>
+														</i>
+													</th:block>
+													<th:block th:case="'DEACTIVATED_ENCOUNTER_MANAGER'">
+														<a
+															class="link"
+															th:href="|toggleMailStatus?id=${item.id}|"
+														>
+															<i
+																class="bi-play-circle-fill"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
+															>
+															</i>
+														</a>
+													</th:block>
+													<th:block th:case="'DEACTIVATED_PATIENT'">
+														<a
+															class="reactivationLink link"
+															th:href="|toggleMailStatus?id=${item.id}|"
+														>
+															<i
+																class="bi-send-fill"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
+															>
+															</i>
+														</a>
+													</th:block>
+													<th:block th:case="'INTERRUPTED'">
+														<i
+															class="bi-exclamation-circle-fill"
+															th:title="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
+														>
+														</i>
+													</th:block>
+												</th:block>
+												<th:block th:if="${item.mailStatus != 'INTERRUPTED'}">
+													<th:block
+														th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+													>
+														<a
+															class="interruptLink link"
+															th:href="|interrupt?encounterScheduledId=${item.id}|"
+														>
+															<i
+																class="bi-x-circle-fill"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
+															>
+															</i>
+														</a>
+													</th:block>
+													<th:block
+														th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+													>
+														<a
+															class="link"
+															th:href="|remove?encounterScheduledId=${item.id}|"
+														>
+															<i
+																class="bi-trash-fill"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
+															>
+															</i>
+														</a>
+													</th:block>
+												</th:block>
+											</div>
+											<!--/*Action dropdown for smaller resolutions*/-->
+											<div class="d-block d-xl-none">
+												<a
+													class="link"
+													data-bs-toggle="offcanvas"
+													th:href="|#${item.id}_offcanvas|"
+												>
+													<i
+														class="bi bi-three-dots"
+														style="font-size: 1.5rem"
+													></i>
+												</a>
+												<th:block
+													layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=|${item.caseNumber}: ${item.email}|, id=|${item.id}_offcanvas|)}"
+												>
+													<th:block layout:fragment="optionsContent">
+														<th:block th:switch="${item.mailStatus}">
+															<a
+																th:case="'ACTIVE'"
+																class="link"
+																th:href="|toggleMailStatus?id=${item.id}|"
+																th:text="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
+															>
+															</a>
+															<a
+																th:case="'ADDRESS_REJECTED'"
+																onclick=""
+																class="link"
+																style="cursor: pointer"
+																th:text="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
+															>
+															</a>
+															<a th:case="'CONSENT_PENDING'">
+																<span
+																	class="link"
+																	th:text="${messages.get(#locale, 'encounterScheduled.button.consentPending', 'Waiting for the patient's agreement')}"
+																></span>
+															</a>
+															<a
+																th:case="'DEACTIVATED_ENCOUNTER_MANAGER'"
+																class="link"
+																th:href="|toggleMailStatus?id=${item.id}|"
+																th:text="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
+															>
+															</a>
+															<a
+																th:case="'DEACTIVATED_PATIENT'"
+																class="reactivationLink link"
+																th:href="|toggleMailStatus?id=${item.id}|"
+																th:text="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
+															>
+															</a>
+															<a th:case="'INTERRUPTED'">
+																<span
+																	th:text="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
+																></span>
+															</a>
+															<th:block
+																th:if="${item.mailStatus != 'INTERRUPTED'}"
+															>
+																<a
+																	th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+																	class="interruptLink link"
+																	th:href="|interrupt?encounterScheduledId=${item.id}|"
+																	th:text="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
+																>
+																</a>
+																<a
+																	th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+																	class="dropdown-item link"
+																	th:href="|remove?encounterScheduledId=${item.id}|"
+																	th:text="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
+																>
+																</a>
+															</th:block>
+														</th:block>
+													</th:block>
+												</th:block>
+											</div>
+										</td>
+									</tr>
+								</th:block>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+				<div class="panel-body">
+					<a
+						href="schedule"
+						class="btn btn-primary"
+						id="scheduleEncounter"
+						th:text="${messages.get(#locale, 'admin.navigation.scheduleSurvey', 'Schedule survey')}"
+					>
+					</a>
+				</div>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var strings = new Array();
+		strings["encounter.label.endDate"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.endDate', 'Enddate')}]]*/ "Enddate";
+		strings["encounter.label.startDate"] =
+			/*[[${messages.get(#locale, 'encounter.label.startDate', 'Startdate')}]]*/ "Startdate";
+		strings["encounter.label.export"] =
+			/*[[${messages.get(#locale, 'encounter.label.export', 'Export')}]]*/ "";
+		strings["encounter.label.lastReminderDate"] =
+			/*[[${messages.get(#locale, 'encounter.label.lastReminderDate', 'Last reminder date on')}]]*/ "Last reminder date on";
+		strings["encounterScheduled.label.assignedEncounters"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.assignedEncounters', 'Assigned Encounters')}]]*/ "Assigned Encounters";
+		strings["encounterScheduled.label.bundle"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.bundle', 'Bundle')}]]*/ "Bundle";
+		strings["admin.table.actions"] =
+			/*[[${messages.get(#locale, 'admin.table.actions', 'Actions')}]]*/ "Actions";
+		strings["encounterScheduled.label.cancelEncounterDialog"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.cancelEncounterDialog', 'Do you really want to cancel scheduled encounter?')}]]*/ "Do you really want to cancel scheduled encounter?";
+		strings["encounterScheduled.label.sendMail"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.sendMail', 'Do you really want to send a remind mail?')}]]*/ "Do you really want to send a remind mail?";
+		strings["encounterScheduled.label.reactivationDialog"] =
+			/*[[${messages.get(#locale, 'encounterScheduled.label.reactivationDialog', 'Are you sure to send a reactivation link?')}]]*/ "Are you sure to send a reactivation link?";
+		strings["button.save"] =
+			/*[[${messages.get(#locale, 'button.save', 'Save')}]]*/ "Save";
+		strings["button.cancel"] =
+			/*[[${messages.get(#locale, 'button.cancel', 'Cancel')}]]*/ "Cancel";
+
+		var encounterScheduledDTOs = /*[[${encounterScheduledDTOs}]]*/ "";
+		var currentLanguage = /*[[${#locale.toString()}]]*/ "en_GB";
+		var datePattern = "";
+		var timePattern = "HH:mm:ss";
+
+		var dateTimeFormatter; 
+
+		switch (currentLanguage) {
+			case "de_DE":
+				dateTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+					dateStyle: 'full',
+					timeStyle: 'short',
+				});
+				break;
+			case "en_GB":
+			case "en_US":
+				dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+					dateStyle: 'full',
+					timeStyle: 'short',
+				});
+				break;
+		}
+
+		$(document).ready(function () {
+			$(".interruptLink").click(function (e) {
+				if (
+					confirm(strings["encounterScheduled.label.cancelEncounterDialog"])
+				) {
+					return true;
+				} else {
+					e.preventDefault();
+					return false;
+				}
+			});
+
+			$(".reactivationLink").click(function (e) {
+				if (confirm(strings["encounterScheduled.label.reactivationDialog"])) {
+					return true;
+				} else {
+					e.preventDefault();
+					return false;
+				}
+			});
+		});
+
+		/*[- Reset the colspan of the empty row of the tables, because the tabs reset colspan to zero. -]*/
+		function tabChange() {
+			$("table .dataTables_empty").attr("colspan", 6);
+			$("#encounterScheduled .dataTables_empty").attr("colspan", 8);
+		}
+
+		/*[-
+        * Creates a new row for a encounterScheduled to show all encounters 
+        * of the given encounterScheduled.
+        * 
+        * @param {type} 'click' Event that triggers this function.
+        * @param {type} 'td.toggle' DOM-elements which got the action
+        * @param {type} function() action to do, if the dom element is clicked.
+        -]*/
+		$("#encounterScheduled tbody").on("click", "td.toggle", function () {
+			var tr = $(this).closest("tr");
+			var row = $("#encounterScheduled").DataTable().row(tr);
+
+			if (row.child.isShown()) {
+				/*[- This row is already open - close it -]*/
+				row.child.hide();
+				tr.removeClass("shown");
+				switchClass($(this).find("span"), "bi-dash-lg", "bi-plus-lg")
+			} else {
+				/*[- Open this row -]*/
+				row.child(format(tr.children().first().attr("id"))).show();
+				tr.addClass("shown");
+				switchClass($(this).find("span"), "bi-plus-lg", "bi-dash-lg")
+			}
+
+			$(".reminderLink").click(function (e) {
+				if (confirm(strings["encounterScheduled.label.sendMail"])) {
+					return true;
+				} else {
+					e.preventDefault();
+					return false;
+				}
+			});
+		});
+
+		function switchClass(element, class1, class2) {
+			$(element).removeClass(class1);
+			$(element).addClass(class2); 
+		}
+
+		/*[-
+        * Formats the new row with all encounters that belong to a given encounterScheduled.
+        * 
+        * @param {type} id of the given encounterScheduled object.
+        * @returns {format.tableRow|$}  The new row with all needed informations to show.
+        -]*/
+		function format(id) {
+			var tableRow = $(
+				"<tr style='text-align: center'><td></td><td><b>" +
+					strings["encounterScheduled.label.assignedEncounters"] +
+					"</td><td>" +
+					"</b></td><td class='start'><b>" +
+					strings["encounter.label.startDate"] +
+					"</b></td><td class='end'><b>" +
+					strings["encounter.label.endDate"] +
+					"</b></td><td class='export'><b>" +
+					strings["encounter.label.export"] +
+					"</b></td><td class='lastReminderDate'><b>" +
+					strings["encounter.label.lastReminderDate"] +
+					"</b></td><td class='action'><br></td></tr>"
+			);
+
+			/*[- fill arrays with data -]*/
+			for (var i = 0; i < encounterScheduledDTOs.length; i++) {
+				if (
+					encounterScheduledDTOs[i] !== null
+				) {
+					var encounterObject = JSON.parse(encounterScheduledDTOs[i]);
+					if (encounterObject.id === parseInt(id)) {
+						var encounterScheduled = encounterObject;
+						var encounters = encounterScheduled.encounterDTOs;
+						for (var j = 0; j < encounters.length; j++) {
+							var encounter = encounters[j];
+							var mailButton = "";
+							var copyButton = "";
+
+							if (
+								encounterScheduled.completed === false &&
+								encounterScheduled.mailStatus === "ACTIVE" &&
+								encounter.endTime === null
+							) {
+								mailButton =
+									"<a class='reminderLink link' href='sendEmail?id=" +
+									encounter.id +
+									"'><span class='bi bi-envelope' title='" +
+									/*[[${messages.get(#locale, 'encounterScheduled.button.resend', 'Resend email')}]]*/ ""
+									+"'></span>";
+								copyButton =
+									"<a class='copyLink link' href='' onclick='copyLinkToClipboard(this, " +
+									'"' +
+									encounter.uuid +
+									'"' +
+									", " +
+									'"' +
+									encounterScheduled.locale.toString() +
+									'"' +
+									"); return false;'><span class='bi bi-clipboard-fill' title='" +
+									/*[[${messages.get(#locale, 'encounterScheduled.button.copyLink', 'Copy link to clipboard')}]]*/ ""
+									+"'></span>";
+							}
+
+							var startTime = "";
+							var endTime = "";
+							var exports = "";
+							var lastReminderDate = "";
+
+							if (encounter.startTime !== null) {
+								var startDate = new Date(encounter.startTime);
+								startTime = dateTimeFormatter.format(startDate); 
+							}
+
+							if (encounter.endTime !== null) {
+								var endDate = new Date(encounter.endTime);
+								endTime = dateTimeFormatter.format(endDate);
+							}
+
+							if (encounter.successfullExports !== null) {
+								exports = encounter.successfullExports;
+							}
+
+							if (encounter.lastReminderDate !== null) {
+								var lastReminder = new Date(encounter.lastReminderDate);
+								lastReminderDate = dateTimeFormatter.format(lastReminder);
+							}
+
+							tableRow
+								.find(".start")
+								.html(
+									tableRow.find(".start").html() + "<div>" + startTime + "</div>"
+								);
+							tableRow
+								.find(".end")
+								.html(
+									tableRow.find(".end").html() + "<div>" + endTime + "</div>"
+								);
+							tableRow
+								.find(".export")
+								.html(
+									tableRow.find(".export").html() + "<div>" + exports + "</div>"
+								);
+							tableRow
+								.find(".lastReminderDate")
+								.html(
+									tableRow.find(".lastReminderDate").html() +
+										"<div>" +
+										lastReminderDate +
+										"</div>"
+								);
+							tableRow
+								.find(".action")
+								.html(
+									tableRow.find(".action").html() +
+										"<div class='actionColumn' style='width: 100%; text-align: center;'>" +
+										mailButton +
+										copyButton +
+										"<a class='link' href='show?id=" +
+										encounter.id +
+										"'><span class='bi bi-eye' title='" +
+										/*[[${messages.get(#locale, 'encounter.export.show', 'Show exports')}]]*/ ""
+										+"'></span></div>"
+								);
+						}
+					}
+				}
+			}
+
+			return tableRow;
+		}
+
+		/*[-
+        * Copies the link of the given Encounter UUID and the given locale to the clipboard
+        * 
+        * @param {type} trigger Trigger of this function
+        * @param {String} uuid UUID of the Encounter
+        * @param {String} locale Locale of the Encounter as a String
+        -]*/
+		function copyLinkToClipboard(trigger, uuid, locale) {
+			/*[- Create a small textarea for the copytext -]*/
+			var textArea = document.createElement("textarea");
+			textArea.style.position = "fixed";
+			textArea.style.top = 0;
+			textArea.style.left = 0;
+			textArea.style.width = "2em";
+			textArea.style.height = "2em";
+			textArea.style.padding = 0;
+			textArea.style.border = "none";
+			textArea.style.outline = "none";
+			textArea.style.boxShadow = "none";
+			textArea.style.background = "transparent";
+
+			/*[- Fill the textarea with the right URL -]*/
+			var baseUrl = /*[[${requestURL}]]*/ "";
+			baseUrl = baseUrl.replace(
+				/*[[${requestURL}]]*/ "",
+				/*[[${contextPath}]]*/ ""
+			);
+			textArea.value =
+				baseUrl + "/mobile/survey/encounter?hash=" + uuid + "&lang=" + locale;
+
+			/*[- Add the textarea and select the text -]*/
+			document.body.appendChild(textArea);
+			textArea.select();
+
+			/*[- Try to copy the text -]*/
+			var successful = document.execCommand("copy");
+
+			/*[- And remove the textarea -]*/
+			document.body.removeChild(textArea);
+
+			/*[- Change the icon for 1500 ms -]*/
+			if (successful === true) {
+				switchClass($(trigger).children(".bi"), "bi-clipboard-fill", "bi-check-lg");
+			} else {
+				switchClass($(trigger).children(".bi"), "bi-clipboard-fill", "bi-x-lg");
+			}
+			setTimeout(function () {
+				$(trigger)
+					.children(".bi")
+					.removeClass("bi-check-lg bi-x-lg");
+				$(trigger).children(".bi").addClass("bi-clipboard-fill");
+			}, 1500);
+		}
+
+		/*[- function to return to the last chosen tab after redirecting to this page. -]*/
+		$(function () {
+			/*[- for bootstrap 3 use 'shown.bs.tab', for bootstrap 2 use 'shown' in the next line -]*/
+			$('a[data-bs-toggle="tab"]').on("shown.bs.tab", function (e) {
+				/*[- save the latest tab; use cookies if you like 'em better: -]*/
+				localStorage.setItem("lastTab", $(this).attr("href"));
+			});
+
+			/*[- go to the latest tab, if it exists, or to encounter series tab, if parameter is true -]*/
+			var lastTab;
+			if ('${pageContext.request.getParameter("series")}' === "true") {
+				lastTab = "#encounterScheduledTab";
+			} else {
+				lastTab = localStorage.getItem("lastTab");
+			}
+			if (lastTab) {
+				$('[href="' + lastTab + '"]').tab("show");
+			}
+		});
+	</script>
+
+
+	<script>
+		var dialog;
+
+		/*[- function to set up the dialog box to edit email address of scheduled encounters -]*/
+
+		function validateEmail(item) {
+			var emailRegex =
+				/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+			var email = $(item).val();
+
+
+			if (emailRegex.test(email)) {
+				$(item).parent().find("span").addClass("d-none");
+				$(item).parent().parent().find("div[class*='submitDiv']").find("button").removeAttr("disabled");
+			} else {
+				$(item).parent().find("span").removeClass("d-none");
+				$(item).parent().parent().find("div[class*='submitDiv']").find("button").attr("disabled", "disabled");
+
+			}
+		}
+	</script>
+</th:block>

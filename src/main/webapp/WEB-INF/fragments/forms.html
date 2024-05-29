@@ -1,0 +1,395 @@
+<!--/*
+    * This file contains all fragment used in forms 
+    * with optional error handling 
+    * They can each be used with the layout:insert or layout:replace command
+    * Some parameters are optional, some are required.
+*/-->
+
+<!--/*################################################################################*/-->
+<!--/*############################# Standard Form blocks #############################*/-->
+<!--/*################################################################################*/-->
+
+<th:block layout:fragment="label(text, for, required)">
+	<label
+		th:for="${for}"
+		th:classappend="${#bools.isTrue(required)} ? 'required' : ''"
+		th:text="${text}"
+	></label>
+</th:block>
+
+<!--/* Input field. Clazz and id are optional */-->
+<th:block layout:fragment="input(clazz, id, path, showErrors)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/* Plain input. Can be used, if no field is present and id, name and value are set manually  */-->
+<th:block layout:fragment="plainInput(clazz, type, id, name, value)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:type="${not #strings.isEmpty(type)} ? ${type} : ''"
+		th:name="${not #strings.isEmpty(name)} ? ${name} : ''"
+		th:value="${not #strings.isEmpty(value)} ? ${value} : ''"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+	/>
+</th:block>
+
+<!--/*Optional: id, clazz*/-->
+<th:block layout:fragment="numberInput(clazz, id, path, min, step, showErrors)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		type="number"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+		th:min="${not #strings.isEmpty(min)} ? ${min} : ''"
+		th:step="${not #strings.isEmpty(step)} ? ${step} : ''"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/* Date field. Clazz and id are optional */-->
+<th:block layout:fragment="dateInput(clazz, id, path, min, max, showErrors)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+		type="date"
+		max="${not #strings.isEmpty(max)} ? ${max} : ''"
+		min="${not #strings.isEmpty(min)} ? ${min} : ''"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/* File field. Clazz and id are optional */-->
+<th:block layout:fragment="fileInput(clazz, id, path, showErrors,imageBase64)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+		th:attr="data-path=${imageBase64}"
+		type="file"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/* Input field. Clazz and id are optional */-->
+<th:block layout:fragment="emailInput(clazz, id, path, showErrors)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		type="email"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/* Password field. Clazz and id are optional */-->
+<th:block layout:fragment="passwordInput(clazz, id, path, showErrors)">
+	<input
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:field="*{__${path}__}"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+		type="password"
+	/>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/*Optional: clazz*/-->
+<th:block layout:fragment="textarea(clazz, path, showErrors)">
+	<textarea
+		th:field="*{__${path}__}"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+	>
+	</textarea>
+	<!--/* Error block */-->
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<!--/*Optional: text, clazz, onclick*/-->
+<th:block layout:fragment="checkbox(path, text, showErrors, clazz, onclick)">
+	<div class="checkbox">
+		<label>
+			<input
+				type="checkbox"
+				th:field="*{__${path}__}"
+				th:text="${text}"
+				th:class="${#strings.isEmpty(clazz)} ? '' : ${clazz}"
+				th:attr="onclick=${#strings.isEmpty(onclick)} ? '' : ${onclick}"
+			/>
+			<!--/* Error block */-->
+			<th:block th:if="${#bools.isTrue(showErrors)}">
+				<th:block
+					layout:insert="~{fragments/forms :: errorField(path=${path})}"
+				/>
+			</th:block>
+		</label>
+	</div>
+</th:block>
+
+<th:block layout:fragment="select(path, items, showErrors)">
+	<select th:field="*{__${path}__}">
+		<option
+			th:each="i: ${items}"
+			th:value="${i}"
+			th:text="${i}"
+		></option>
+	</select>
+
+	<th:block th:if="${#bools.isTrue(showErrors)}">
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="hidden(path)">
+	<input
+		type="hidden"
+		th:field="*{__${path}__}"
+	/>
+</th:block>
+
+<!--/* Fragment that shows the error for a specific path */-->
+<th:block layout:fragment="errorField(path, errorClazz)">
+	<div
+		th:if="${#fields.hasErrors(path)}"
+		th:errors="*{__${path}__}"
+		th:class="${not #strings.isEmpty(errorClazz)} ? ${errorClazz} : ''"
+		th:text="${#fields.errors(path)}"
+		style="color: red"
+	>
+	</div>
+</th:block>
+
+<!--/*################################################################################*/-->
+<!--/*####################           ...WithLabel Block           ####################*/-->
+<!--/*################################################################################*/-->
+
+<!--/* Combine input and label fragments */-->
+<th:block
+	layout:fragment="inputWithLabel(text, for, required, clazz, id, path, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: input(clazz=${clazz}, id=${id}, path=${path}, showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combines plainInput and label fragments */-->
+<th:block
+	layout:fragment="plainInputWithLabel(text, for, required, clazz, type, id, name, value)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: plainInput(clazz=${clazz}, id=${id}, name=${name}, value=${value}, type=${type})}"
+	/>
+</th:block>
+
+<!--/* Combine number and label fragments */-->
+<th:block
+	layout:fragment="numberWithLabel(for, text, required, clazz, id, path, min, step, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: numberInput(clazz=${clazz},id=${id},path=${path},min=${min},step=${step},showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combine date and label fragments */-->
+<th:block
+	layout:fragment="dateWithLabel(for, text, required, clazz, id, path, min, max, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: dateInput(clazz=${clazz},id=${id},path=${path},max=${max}, min=${min}, showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combine file and label fragments */-->
+<th:block
+	layout:fragment="fileWithLabel(for, text, required, clazz, id, path, showErrors,imageBase64)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+	<th:block
+		layout:insert="~{fragments/forms :: fileInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors},imageBase64=${imageBase64})}"
+	/>
+</th:block>
+
+<!--/* Combine email and label fragments */-->
+<th:block
+	layout:fragment="emailWithLabel(for, text, required, clazz, id, path, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: emailInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combine password and label fragments */-->
+<th:block
+	layout:fragment="passwordWithLabel(for, text, required, clazz, id, path, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: passwordInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combines textarea and label fragments */-->
+<th:block
+	layout:fragment="textareaWithLabel(for, text, required, clazz, path, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: textarea(clazz=${clazz},path=${path},showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/* Combines textarea and label fragments */-->
+<th:block
+	layout:fragment="selectWithLabel(for, text, required, path, items, showErrors)"
+>
+	<th:block
+		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
+	/>
+
+	<th:block
+		layout:insert="~{fragments/forms :: select(path=${path}, items=${items}, showErrors=${showErrors})}"
+	/>
+</th:block>
+
+<!--/*################################################################################*/-->
+<!--/*######################## Other elements used with forms ########################*/-->
+<!--/*################################################################################*/-->
+
+<!--/*Inserts the value localeCode into var holder and uses 'getLocalTitleAndFlagName'
+    * to put other variables into the scope. 
+    * Add label with localeTitle and flag    
+*/-->
+<th:block layout:fragment="languageLabel(localeCode)">
+	<th:block
+		layout:insert="~{helper/var :: add(key='localeCode', value=${localeCode})}"
+	/>
+	<th:block
+		layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+	></th:block>
+	<!--/* Add the locale Title and flag */-->
+	<label class="languageLabel">
+		<th:block th:text="|${vars['localeTitle']}&nbsp;|" />
+		<img
+			loading="lazy"
+			th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+			height="20"
+		/>
+	</label>
+</th:block>
+
+<!--/* Language Dropdown menu with "added languages" panel" */-->
+<th:block layout:fragment="languageDropdown">
+	<div
+		id="languageDropdown"
+		class="dropdown"
+	>
+		<a
+			class="dropdown-toggle"
+			style="font-size: 120%"
+			data-bs-toggle="dropdown"
+			aria-expanded="true"
+		>
+			<th:block
+				th:text="${messages.get(#locale, 'question.label.addLanguage', 'Add new language')}"
+			/>
+		</a>
+
+		<ul
+			id="addLanguageDropdown"
+			class="dropdown-menu scrollable-menu"
+		>
+			<th:block th:each="locale: ${availableLocales}">
+				<li>
+					<th:block
+						layout:insert="~{helper/var :: add(key='localeCode', value=${locale.toString()})}"
+					/>
+
+					<!--/* Get the localized locale title and the flag name for the variable localeCode */-->
+					<th:block
+						layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+					></th:block>
+
+					<a
+						class="dropdown-item"
+						th:id="${locale.toString()}"
+						onclick="Localization.addNewLanguage($(this))"
+						ondragstart="return false;"
+						href="#"
+					>
+						<img
+							loading="lazy"
+							th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+							height="20"
+						/>
+						<th:block th:text="|&nbsp;${vars['localeTitle']}|" />
+					</a>
+				</li>
+			</th:block>
+		</ul>
+	</div>
+	<br />
+
+	<div class="form-group">
+		<label
+			th:text="${messages.get(#locale, 'question.label.addedLanguages', 'Added languages')}"
+		></label>
+		<div class="card">
+			<div
+				class="card-body"
+				id="addedLanguages"
+			></div>
+		</div>
+	</div>
+</th:block>

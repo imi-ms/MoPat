@@ -1,0 +1,19 @@
+<!--/*
+    * Fetches the localeTitle and flagName for every localeCode in var
+    * and displays a flag icon with the correct title     
+*/-->
+<th:block th:each="localeCode: ${vars['localeCodes']}">
+	<th:block
+		layout:insert="~{helper/var :: add(key='localeCode', value=${localeCode})}"
+	/>
+	<!--/* Get the localized locale title and the flag name for the variable localeCode */-->
+	<th:block
+		layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+	></th:block>
+	<!--/* Display the appropriate flag and the corresponding localized language title */-->
+	<img
+		th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+		th:title="${vars['localeTitle']}"
+		height="20"
+	/>
+</th:block>

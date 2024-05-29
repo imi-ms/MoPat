@@ -1,0 +1,541 @@
+/**
+*
+* All styling to create the mobile layout of mopat
+* with a fixed header, fixed footer and content that
+* is using the remaining space
+*
+**/
+
+@import "includes/colors";
+@import "includes/variables";
+@import "includes/sizes";
+
+body {
+    background-color: @color-gray-background;
+    color: @color-black;
+}
+
+.flex-container {
+    display: flex; 
+    flex-direction: column;
+    min-height: 100vh
+}
+
+// Custom classes that can be used like bootstraps d-xx-block / d-xx-flex classes 
+// but get triggered at the size breakpoint defined in the variables file
+.d-bp-block {
+    @media only screen and (min-width: @element-breakpoint) {
+        display: block !important; 
+    }
+}
+
+.d-bp-flex {
+    @media only screen and (min-width: @element-breakpoint) {
+        display: flex !important; 
+    }
+}
+
+.d-bp-none {
+    @media only screen and (min-width: @element-breakpoint) {
+        display: none !important; 
+    }
+}
+
+//Custom grid classes
+.col-bp-12 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+.col-bp-11 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 91.66666667%;
+    }
+}
+
+.col-bp-10 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 83.33333333%;
+    }
+}
+
+.col-bp-9 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 75%;
+    }
+}
+
+.col-bp-8 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 66.66666667%;
+    }
+}
+
+.col-bp-7 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 58.33333333%;
+    }
+}
+
+.col-bp-6 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+}
+
+.col-bp-5 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 41.66666667%;
+    }
+}
+
+.col-bp-4 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 33.33333333%;
+    }
+}
+
+.col-bp-3 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+}
+
+.col-bp-2 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+    }
+}
+
+.col-bp-1 {
+    @media only screen and (min-width: @element-breakpoint) {
+        flex: 0 0 auto;
+        width: 8.33333333%;
+    }
+}
+
+.header {
+    width: 100%;
+
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 5px; 
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 10px; 
+    }
+    
+    &.login-header { 
+        background-color: transparent !important;
+        border: 0 !important; 
+        border-color: transparent !important; 
+
+        //Remove background and border for all child elements on login page
+        & > * {
+            border: 0 !important; 
+            border-color: transparent !important; 
+        }
+
+    }
+}
+
+.bi-list {
+    color: @color-blue-dark;
+    font-size: 2rem;
+}
+
+.stickyHeader {
+    position: sticky;
+    top: 0;
+    background-color: @color-gray-background;
+    transition: @transition-value;
+    z-index: 1; 
+
+    &.active {
+        box-shadow: @box-shadow-material-lg;
+    }
+}
+
+#scrollQuestionTitle {
+    position: absolute;
+    margin-top: -50px; //To achieve a "scroll-in/" effect 
+    visibility: hidden;
+    opacity: 0;
+    background-color: @color-gray-background;
+    transition: all @transition-time ease-in-out;
+    overflow: hidden;
+
+    &.auto-height{
+        height: auto;
+    }
+    &.no-height{
+        height: 0;
+    }
+    &.active {
+        margin-top: 0px; 
+        visibility: visible;
+        box-shadow: @box-shadow-material-lg; 
+        opacity: 1;
+        overflow: visible;
+        height: auto;
+    }
+
+    // To be used when hiding the div to not have a "scroll-out" effect
+    &.transition {
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+}
+
+
+.navbar-logo {
+    @media only screen and (max-width: @element-breakpoint) {
+        height: 60px;
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        height: 70px;
+    }
+}
+
+
+.offcanvas-body {
+
+    a, span {
+        color: @color-black;
+    }
+
+    a {
+        text-align: left;
+        padding-top:10px;
+        padding-bottom:10px;
+
+        &:hover {
+            background-color: @color-gray-lighter;
+        }
+
+        &.accountLink, &b {
+            font-size: 1.4rem; 
+            padding-top: 20px; 
+            padding-bottom: 20px; 
+            border-bottom: solid 0.05rem;
+            border-color: @color-gray-border;
+        }
+    }
+
+    .link {
+        text-decoration: none !important;
+    }
+
+    .smallLink {
+        font-size: 0.8rem !important; 
+    }
+
+    .borderBottom {
+        border-bottom: solid 0.05rem;
+        border-color: @color-gray-border;
+    }
+    .borderTop {
+        border-top: solid 0.05rem;
+        border-color: @color-gray-border;
+    }
+} 
+
+.titleHeader {
+    border-bottom: solid 1px; 
+    border-color: @color-gray-border; 
+    padding-bottom: .25em; 
+    margin-bottom: 1em; 
+
+    &.login-header {
+        display: none !important; 
+    }
+}
+
+.titleContent {
+    font-weight: 700; 
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: 140%; 
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: 170%;
+    }
+
+}
+
+.questionnaireTitle {
+    font-weight: 700; 
+    text-align: center;
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: 120%; 
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: 140%;
+    }
+    color: @color-blue-light; 
+}
+
+.layoutContainer {
+    margin: 10px;
+
+    @media only screen and (min-width: @element-breakpoint) {
+        margin-right: 65px !important; 
+        margin-bottom: 20px;
+    }
+
+    
+    box-shadow: @box-shadow-material-lg;
+    border-radius: @border-radius;
+    display:flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.loginContainer {
+    box-shadow: 0 !important;
+    display: flex;
+    flex-direction: column;
+    flex-grow:1;
+}
+
+.content {
+    padding-top: 20px; 
+    flex-grow: 1;
+    background-color: @color-white;
+    border-radius: @border-radius @border-radius 0 0; 
+    border-bottom: solid 1px; 
+    border-color: @color-gray-border;
+
+    .mainPage {
+        @media only screen and (max-width: @element-breakpoint) {
+            margin-left: auto; 
+            margin-right: auto; 
+        }
+    }
+}
+
+
+.centeredContent {
+    margin-top: auto; 
+    margin-bottom: auto; 
+}
+
+//For the scrolling indicator
+.scrollArrowContainer {
+    display: none; 
+    position: fixed;
+    padding: 20px;
+
+    @media only screen and (max-width: @element-breakpoint) {
+        bottom:-1em;
+        right: -1em
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        bottom:-1em;
+        right:1em;
+    }
+
+    transform: translate(-50%, -50%);
+
+    span {
+        @media only screen and (max-width: @element-breakpoint) {
+            width: 1em;
+            height: 1em;
+            margin: -5px;
+        }
+    
+        @media only screen and (min-width: @element-breakpoint) {
+            width: 1.5em;
+            height: 1.5em;
+            margin: -10px;
+        }
+
+        display: block;
+        border-bottom: 5px solid @color-blue-dark;
+        border-right: 5px solid @color-blue-dark;
+        transform: rotate(45deg);
+        
+
+        &:nth-child(2) {
+            animation-delay: -0.2s;
+        }
+        &:nth-child(3) {
+            animation-delay: -0.4s;
+        }
+    }
+
+    &.show {
+        display: block !important;
+        span {
+            animation: animate 2s infinite;
+        }
+    }
+}
+
+@keyframes animate {
+    0% {
+        transform: rotate(45deg) translate(-10px, -10px);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(45deg) translate(10px, 10px);
+        opacity: 0;
+    }
+}
+
+//Add bottom shade if content is scrollable 
+.shadowIndicator {
+    bottom:0;      
+    left:0;
+    pointer-events:none;
+    position:fixed;
+    right:0;
+    top:0;
+    transition:all .2s ease-out;
+    z-index: 1000; //Display above everything else
+
+    //Top shadow
+    &.off-top {
+    box-shadow:0 1em 1em -1em black inset;
+    }
+    //Bottom shadow
+    &.off-bottom {    
+        box-shadow:0 -2em 2em -1.5em black inset;
+    }
+}
+
+
+/* Inserting this collapsed row between two flex items will make 
+ * the flex item that comes after it break to a new row */
+.break {
+    flex-basis: 100%;
+    height: 0;
+}
+
+.footer {
+    background-color: @color-white !important;
+    width: 100%;
+    border: 0px !important;
+    border-radius: 0 0 @border-radius @border-radius;
+
+    .loginFooter {
+        background: @color-gray-background !important;
+        border-radius: 0;
+    }
+}
+
+.bottom-footer {
+    border-radius: 0 0 @border-radius @border-radius;
+
+    .footer-text {
+        font-weight: 700;
+        text-align: center; 
+
+        @media only screen and (min-width: @element-breakpoint) {
+            font-size:1.0rem;
+        }
+
+        @media only screen and (max-width: @element-breakpoint) {
+            font-size: 0.75rem; 
+            text-align: center !important;
+        }
+    }
+
+    .footer-bar {
+        @media only screen and (min-width: @element-breakpoint) {
+            width: 100%;
+        }
+
+        #mopatImageFooter,
+        #logoImageFooter {
+            height: 60px;
+        }
+    }
+
+    .mopat-logo, .klinik-logo{
+        width: 25vw;
+    }
+    #mopatImageFooter, #logoImageFooter{
+        height: 40px; 
+    }
+
+    .flex{
+        gap: 10px;
+        margin: 5px 0px;
+
+        @media only screen and (min-width: @element-breakpoint) {
+            width: 290px;
+        }
+        
+        @media only screen and (max-width: @element-breakpoint) {
+            width: 220px;
+        }
+        
+    }
+
+    .footer-bar {
+        gap: 20px;
+    }
+}
+
+
+
+.imageFooter {
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-right: 65px !important; 
+    }
+}
+
+/* These settings are used to adjust the locale select element size to it's content */
+/* Use the same sizes for the temporary select element as the localeChanger */
+#localeChanger {
+    transition: 0s; 
+}
+#widthTmpSelect {
+    @media only screen and (max-width: @element-breakpoint) {
+        padding: 5px;
+        font-weight: 700;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    } 
+    display: none;
+}
+
+  
+.form-group {
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-weight: 500;
+        font-size: 100%;
+    }
+
+    //from bootstrap form-control-lg
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+}

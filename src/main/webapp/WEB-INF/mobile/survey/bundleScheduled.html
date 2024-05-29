@@ -1,0 +1,185 @@
+<!--/*
+    * View for MoPats survey view. Shows all scheduled bundles     
+*/-->
+<th:block layout:decorate="~{layout/mobile}">
+	<th:block layout:fragment="content">
+		<form
+			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="schedule"
+			data-ajax="false"
+		>
+			<div style="margin-bottom: 10px">
+				<b>
+					<th:block
+						th:text="|${messages.get(#locale, 'survey.label.caseNumber', 'Case number')} ${encounterDTO.caseNumber}|"
+					/>
+				</b>
+			</div>
+			<div
+				id="guiLanguageWarning"
+				style="display: none; white-space: normal !important"
+				class="ui-btn ui-corner-all ui-btn-icon-left ui-icon-alert"
+				th:text="${messages.get(#locale, 'survey.bundles.warning.guiLanguageNotAvailable', 'Available Bundles')}"
+			>
+			</div>
+			<!--/* Stores the GUI language, which corresponds to the chosen bundleLanguage */-->
+			<input
+				type="hidden"
+				id="guiLanguage"
+				name="guiLanguage"
+				value=""
+			/>
+			<div class="ui-grid-b bundleSelect">
+				<div class="ui-block-a bundleEntry">
+					<div data-role="fieldcontain">
+						<div
+							class="encounterListHeader ui-li ui-li-divider ui-btn ui-bar-b"
+							data-role="list-divider"
+							th:text="${messages.get(#locale, 'survey.bundles.label.availableBundles', 'Available Bundles')}"
+						>
+						</div>
+						<input
+							th:value="${encounterDTO.bundleDTO.id}"
+							th:id="|hidden_${encounterDTO.bundleDTO.id}|"
+							type="hidden"
+							disabled="disabled"
+						/>
+						<input
+							type="radio"
+							th:id="${encounterDTO.bundleDTO.id}"
+							checked="checked"
+						/>
+						<label
+							th:for="${encounterDTO.bundleDTO.id}"
+							th:text="${encounterDTO.bundleDTO.name}"
+						></label>
+					</div>
+				</div>
+				<div
+					th:id="|bundleLanguageList_${encounterDTO.bundleDTO.id}|"
+					class="ui-block-b bundleLanguagesList"
+				>
+					<div data-role="fieldcontain">
+						<div
+							class="encounterListHeader ui-li ui-li-divider ui-btn ui-bar-b"
+							data-role="list-divider"
+							th:text="${messages.get(#locale, 'bundle.label.availableLanguages', 'Available languages')}"
+						>
+						</div>
+						<th:block
+							th:if="${#lists.isEmpty(encounterDTO.bundleDTO.getAvailableLanguages())}"
+						>
+							<div
+								class="ui-btn ui-corner-all ui-btn-icon-left ui-icon-alert"
+								th:id="|noLanguage_${encounterDTO.bundleDTO.id}|"
+								th:text="${messages.get(#locale, 'bundle.label.noLanguagesAvailable', 'No languages available')}"
+							>
+							</div>
+						</th:block>
+						<th:block
+							th:unless="${#lists.isEmpty(encounterDTO.bundleDTO.getAvailableLanguages())}"
+						>
+							<th:block
+								th:each="localeCodeTemp, index: ${encounterDTO.bundleDTO.getAvailableLanguages()}"
+								var="localeCodeTemp"
+								varStatus="index"
+							>
+								<addVar
+									layout:replace="~{helper/var :: add(
+                                    key='localeCode', 
+                                    value=${localeCodeTemp})}"
+								>
+								</addVar>
+								<!--/* Get the localized localeTitle and the flagName for the variable localeCode */-->
+								<th:block
+									layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+								/>
+								<th:block th:if="${index.index == '0'}">
+									<input
+										type="radio"
+										name="bundleLanguage"
+										th:id="|bundleLanguage_${encounterDTO.bundleDTO.id}_${vars['localeCode']}|"
+										checked="checked"
+										th:value="${vars['localeCode']}"
+									/>
+								</th:block>
+								<th:block th:unless="${index.index == '0'}">
+									<input
+										type="radio"
+										name="bundleLanguage"
+										th:id="|bundleLanguage_${encounterDTO.bundleDTO.id}_${vars['localeCode']}|"
+										th:value="${vars['localeCode']}"
+									/>
+								</th:block>
+								<label
+									th:for="|bundleLanguage_${encounterDTO.bundleDTO.id}_${vars['localeCode']}|"
+								>
+									<img
+										th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+										style="position: relative; top: 2px"
+										th:title="${vars['localeTitle']}"
+										height="15"
+										th:text="|&nbsp;${vars['localeTitle']}|"
+									/>
+								</label>
+							</th:block>
+						</th:block>
+					</div>
+				</div>
+				<div
+					th:id="|encounter_${vars['localeCode']}|"
+					class="ui-block-c"
+				>
+					<div data-role="fieldcontain">
+						<div
+							class="encounterListHeader ui-li ui-li-divider ui-btn ui-bar-c"
+							data-role="list-divider"
+							th:text="${messages.get(#locale, 'survey.bundles.label.startTime', 'Starting time')}"
+						>
+						</div>
+						<input
+							type="radio"
+							id="encounterUUID"
+							th:value="${encounterDTO.uuid}"
+							checked="checked"
+						/>
+						<label
+							for="encounterUUID"
+							th:text="${#dates.format(encounterDTO.startTime)}"
+						></label>
+					</div>
+				</div>
+			</div>
+			<div class="ui-grid-b">
+				<div class="ui-block-a">
+					<button
+						class="ui-btn ui-shadow ui-corner-all"
+						type="submit"
+						id="startSurveyButton"
+						data-inline="true"
+						th:text="${messages.get(#locale, 'survey.bundles.button.startSurvey', 'Start questionnaires')}"
+					>
+					</button>
+				</div>
+			</div>
+		</form>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var bundleId = /*[[${encounterDTO.bundleDTO.id}]]*/ "";
+
+		$("#title").html(
+			/*[[${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}]]*/ "Select bundle"
+		);
+		$(function () {
+			document.getElementById(bundleId).click();
+		});
+	</script>
+</th:block>

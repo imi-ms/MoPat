@@ -1,0 +1,340 @@
+<!--/*
+    * View that shows all avaialble questionnaires    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'questionnaire.heading.title', 'Questionnaires')}"
+>
+	<th:block layout:fragment="content">
+		<th:block th:if="${messageSuccess != null}">
+			<div
+				id="notification"
+				class="alert alert-success"
+			>
+				<th:block th:text="${messageSuccess}" />
+			</div>
+		</th:block>
+		<th:block th:if="${messageFail != null}">
+			<div
+				id="notification"
+				class="alert alert-danger"
+			>
+				<th:block th:text="${messageFail}" />
+			</div>
+		</th:block>
+		<div class="table-responsive">
+			<table
+				id="questionnaireTable"
+				class="table table-hover pagedTable responsive"
+				style="width: 100%"
+			>
+				<colgroup>
+					<col width="20%" />
+					<col width="20%" />
+					<col width="20%" />
+					<col width="22%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							data-priority="1"
+							th:text="${messages.get(#locale, 'questionnaire.label.name', 'Name:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.displayName', 'Display name:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.questionLanguages', 'Question languages:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.containedInBundles', 'Contained in bundles:')}"
+						></th>
+						<th
+							data-priority="2"
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:if="not ${#lists.isEmpty(allQuestionnaires)}">
+						<th:block th:each="item: ${allQuestionnaires}">
+							<tr>
+								<td>
+									<th:block th:if="not ${#strings.isEmpty(item.name)}">
+										<a
+											class="link"
+											th:href="@{fill?id=__${item.id}__}"
+										>
+											<th:block th:text="${item.name}" />
+										</a>
+									</th:block>
+								</td>
+								<td style="text-align: left">
+									<th:block
+										layout:insert="~{helper/var :: add(key='groupedLocalizedTextByCountries', 
+                                                            value=${localizedDisplayNamesForQuestionnaire[item.id]})}"
+									/>
+									<a
+										class="link"
+										th:href="@{fill?id=__${item.id}__}"
+									>
+										<th:block
+											layout:insert="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+										></th:block>
+									</a>
+								</td>
+								<td style="text-align: left">
+									<th:block
+										layout:insert="~{helper/var :: add(key='localeCodes', 
+                                                            value=${availableLanguagesInQuestionForQuestionnaires[item.id]})}"
+									/>
+									<th:block
+										layout:insert="~{helper/localeHelper/showLocalizedTextsAndFlags}"
+									></th:block>
+								</td>
+								<td style="text-align: left">
+									<ul style="margin-bottom: 0px">
+										<th:block
+											th:each="bundleQuestionnaire: ${item.getBundleQuestionnaires()}"
+										>
+											<li>
+												<a
+													class="link"
+													th:href="@{/bundle/fill?id=__${bundleQuestionnaire.bundle.id}__}"
+												>
+													<th:block
+														th:text="${bundleQuestionnaire.bundle.name}"
+													/>
+												</a>
+											</li>
+										</th:block>
+									</ul>
+								</td>
+								<td class="actionColumn">
+									<div class="d-none d-xl-block">
+										<th:block th:fragment="actionFragment">
+											<a
+												class="link"
+												th:href="@{fill?id=__${item.id}__}"
+											>
+												<i
+													class="bi-pencil-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.edit', 'Edit')}"
+												></i>
+											</a>
+											<a
+												class="link"
+												th:href="@{/question/list?id=__${item.id}__}"
+											>
+												<i
+													class="bi-list-task"
+													th:title="${messages.get(#locale, 'questionnaire.button.editQuestions', 'Edit')}"
+												></i>
+											</a>
+											<a
+												class="link"
+												th:href="@{/mapping/list?id=__${item.id}__}"
+											>
+												<i
+													class="bi-share-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.showExportTemplates', 'Show export templates')}"
+												></i>
+											</a>
+											<a
+												class="link"
+												th:href="@{/score/list?id=__${item.id}__}"
+											>
+												<i
+													class="bi-plus-square-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
+												></i>
+											</a>
+
+											<div class="dropdown">
+												<a class="dropdown-icon link"
+													><i class="bi-download"></i
+												></a>
+												<div class="dropdown-content">
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=FHIR}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
+														>FHIR</a
+													>
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=MoPat}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.mopat', 'Download questionnaire in MoPat format')}"
+														>MoPat</a
+													>
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=ODM}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.odm', 'Download questionnaire in ODM format')}"
+														>ODM</a
+													>
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=ODMExportTemplate}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.odmExportTemplate', 'Download questionnaire as ODM export template')}"
+														>ODM Export Template</a
+													>
+													<a
+														disabled="disabled"
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=PDF}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.pdf', 'Download questionnaire in PDF format')}"
+														>PDF</a
+													>
+												</div>
+											</div>
+											<a
+												class="link removeQuestionnaireLink"
+												th:attr="data-hasConditions=${item.isHasConditions()}"
+												th:href="@{remove?id=__${item.id}__}"
+											>
+												<i
+													class="bi-trash-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Remove')}"
+												></i>
+											</a>
+										</th:block>
+									</div>
+									<!--/*Action dropdown for smaller resolutions*/-->
+									<div class="d-block d-xl-none">
+										<a
+											class="link"
+											data-bs-toggle="offcanvas"
+											th:href="|#${item.id}_offcanvas|"
+											><i
+												class="bi bi-three-dots"
+												style="font-size: 1.5rem"
+											></i
+										></a>
+										<th:block
+											layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${item.name}, id=|${item.id}_offcanvas|)}"
+										>
+											<th:block layout:fragment="optionsContent">
+												<a
+													class="link"
+													th:href="@{fill?id=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.edit', 'Edit')}"
+												></a>
+												<a
+													class="link"
+													th:href="@{/question/list?id=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.editQuestions', 'Edit')}"
+												></a>
+												<a
+													class="link"
+													th:href="@{/mapping/list?id=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.showExportTemplates', 'Show export templates')}"
+												></a>
+												<a
+													class="link"
+													th:href="@{/score/list?id=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
+												></a>
+												<a
+													class="link"
+													th:attr="data-hasConditions=${item.isHasConditions()}"
+													th:href="@{remove?id=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.remove', 'Remove')}"
+												></a>
+
+												<span
+													class="optionsTitle"
+													th:text="${messages.get(#locale, 'questionnaire.button.download', 'Download')}"
+												></span>
+												<a
+													class="link"
+													th:href="@{download?id=__${item.id}__&type=FHIR}"
+													th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
+													>FHIR</a
+												>
+												<a
+													class="link"
+													th:href="@{download?id=__${item.id}__&type=MoPat}"
+													th:title="${messages.get(#locale, 'questionnaire.button.download.mopat', 'Download questionnaire in MoPat format')}"
+													>MoPat</a
+												>
+												<a
+													class="link"
+													th:href="@{download?id=__${item.id}__&type=ODM}"
+													th:title="${messages.get(#locale, 'questionnaire.button.download.odm', 'Download questionnaire in ODM format')}"
+													>ODM</a
+												>
+												<a
+													class="link"
+													th:href="@{download?id=__${item.id}__&type=ODMExportTemplate}"
+													th:title="${messages.get(#locale, 'questionnaire.button.download.odmExportTemplate', 'Download questionnaire as ODM export template')}"
+													>ODM Export Template</a
+												>
+												<a
+													disabled="disabled"
+													class="link"
+													th:href="@{download?id=__${item.id}__&type=PDF}"
+													th:title="${messages.get(#locale, 'questionnaire.button.download.pdf', 'Download questionnaire in PDF format')}"
+													>PDF</a
+												>
+											</th:block>
+										</th:block>
+									</div>
+								</td>
+							</tr>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+			<div class="panel-body">
+				<form
+					th:object="${questionnaire}"
+					method="GET"
+					action="fill"
+				>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						id="addQuestionnaire"
+					>
+						<th:block
+							th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaire')}"
+						/>
+					</button>
+				</form>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<!--/* Functionality of the remove button */-->
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var deleteQuestionnaireWithConditions =
+			/*[[#{questionnaire.warning.deleteQuestionnaireWithConditions}]]*/ "The questionnaire is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the questionnaire anyway?";
+
+		$(".removeQuestionnaireLink").click(function (e) {
+			/*[- Initialize the result as true if there are no conditions asssociated -]*/
+			var result = true;
+
+			var hasConditions = $(this).attr("data-hasConditions");
+
+			/*[- Check if the questionnaire has any corresponding conditions -]*/
+			if (hasConditions === "true") {
+				/*[- Let the user confirm, that these conditions will also be deleted -]*/
+				result = confirm(deleteQuestionnaireWithConditions);
+			}
+			if (result === true) {
+				return true;
+			} else {
+				return false;
+				e.preventDefault();
+			}
+		});
+	</script>
+</th:block>

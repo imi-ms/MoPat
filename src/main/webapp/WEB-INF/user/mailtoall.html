@@ -1,0 +1,124 @@
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'user.heading.mailToAll', 'Send an email to all users')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				action="mailtoall"
+			>
+				<div
+					id="errors"
+					style="width: 100%; color: red"
+				>
+					<th:block th:each="error: ${errors}">
+						<th:block th:text="${error}" /><br />
+					</th:block>
+				</div>
+				<div class="form-group">
+					<label
+						class="required"
+						for="subject"
+						th:text="${messages.get(#locale, 'user.label.subject', 'Subject')}"
+					></label>
+					<input
+						class="form-control"
+						id="subject"
+						name="subject"
+						th:value="${subject}"
+					/>
+				</div>
+				<div class="form-group">
+					<label
+						class="required"
+						for="content"
+						th:text="${messages.get(#locale, 'user.label.message', 'Message')}"
+					></label>
+					<textarea
+						class="form-control"
+						cols="40"
+						rows="10"
+						name="content"
+						th:text="${content}"
+					></textarea>
+				</div>
+				<div class="form-group">
+					<label
+						for="language"
+						th:text="${messages.get(#locale, 'user.label.language', 'Language:')}"
+					></label>
+					<select
+						class="form-control"
+						id="language"
+						name="language"
+					>
+						<option
+							value="de_DE"
+							th:selected="${language.language == 'de'}"
+							th:text="|${messages.get(#locale, 'localization.languageCode.de', 'Missing language code')} 
+                            (${messages.get(#locale, 'localization.countryCode.DE', 'Missing country code')})|"
+						>
+						</option>
+						<option
+							value="en_GB"
+							th:selected="${language.language == 'en'}"
+							th:text="|${messages.get(#locale, 'localization.languageCode.en', 'Missing language code')} 
+                            (${messages.get(#locale, 'localization.countryCode.GB', 'Missing country code')})|"
+						>
+						</option>
+					</select>
+				</div>
+				<th:block th:if="${#bools.isTrue(preview)}">
+					<h3
+						th:text="${messages.get(#locale, 'user.label.preview', 'Preview')}"
+					></h3>
+					<div class="form-group">
+						<label
+							th:text="${messages.get(#locale, 'user.label.subject', 'Subject')}"
+						></label>
+						<input
+							class="form-control"
+							name="previewSubject"
+							th:value="${subject}"
+							disabled="true"
+						/>
+					</div>
+					<div class="form-group">
+						<label
+							th:text="${messages.get(#locale, 'user.label.content', 'Content')}"
+						></label>
+						<textarea
+							class="form-control"
+							cols="40"
+							rows="10"
+							name="previewContent"
+							disabled="true"
+							th:text="${previewContent}"
+						></textarea>
+					</div>
+				</th:block>
+
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="preview"
+					id="mailButton"
+					name="action"
+					th:text="${messages.get(#locale, 'user.button.preview', 'Preview')}"
+				>
+				</button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="send"
+					id="mailButton"
+					name="action"
+					th:text="${messages.get(#locale, 'user.button.send', 'Send')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

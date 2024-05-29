@@ -1,0 +1,16 @@
+<!--/*
+    * Error page that shows, when an internal error occurred    
+*/-->
+
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="accessDenied centeredContent">
+			<span
+				class="errorText"
+				th:text="${messages.get(#locale, 'error.heading.internalservererror', 'Internal Server Error')}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

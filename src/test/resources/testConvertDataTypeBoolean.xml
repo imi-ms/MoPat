@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ODM
+	CreationDateTime="2014-07-07T14:28:00"
+	FileOID="1.3.6.1.4.1.13158.101.2.1.1"
+	FileType="Snapshot"
+	xmlns="http://www.cdisc.org/ns/odm/v1.3"
+	xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 http://www.cdisc.org/ns/odm/v1.3 "
+	ODMVersion="1.3.2">
+	<Study OID="1.3.6.1.4.1.13158.101.2.1.1.1">
+		<MetaDataVersion Name="MetaDataVersion1" OID="1.3.6.1.4.1.13158.101.2.1.1.1.1">
+			<StudyEventDef Name="StudyEventDef" Type="Scheduled" OID="1.3.6.1.4.1.13158.101.2.1.1.1.1.1" Repeating="No">
+				<FormRef Mandatory="Yes" FormOID="1.3.6.1.4.1.13158.101.2.1.1.1.1.2" />
+			</StudyEventDef>
+			<FormDef Name="Fragebogenname" OID="1.3.6.1.4.1.13158.101.2.1.1.1.1.2" Repeating="Yes">
+				<Description>
+					<TranslatedText xml:lang="de-DE">
+						Die Beschreibung des Fragebogens
+					</TranslatedText>
+				</Description>
+				<ItemGroupRef ItemGroupOID="1.3.6.1.4.1.13158.101.2.1.1.1.1.3" Mandatory="Yes" />
+			</FormDef>
+			<ItemGroupDef Repeating="No" Name="ItemGroupDef" OID="1.3.6.1.4.1.13158.101.2.1.1.1.1.3">
+				<ItemRef Mandatory="Yes" ItemOID="1.3.6.1.4.1.13158.101.2.1.1.1.1.4" />
+			</ItemGroupDef>
+			<ItemDef Name="ItemDef" DataType="boolean" OID="1.3.6.1.4.1.13158.101.2.1.1.1.1.4">
+				<Question>
+					<TranslatedText xml:lang="de-DE">
+						Dies ist die Testfrage.
+					</TranslatedText>
+				</Question>
+			</ItemDef>
+		</MetaDataVersion>
+	</Study>
+</ODM>

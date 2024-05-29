@@ -1,0 +1,119 @@
+<!--/*
+    * View to list all available clinic entries    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=#{clinic.heading.title}"
+>
+	<th:block layout:fragment="content">
+		<th:block th:if="${messageSuccess ne null}">
+			<div
+				id="notification"
+				class="alert alert-success"
+			>
+				<th:block th:text="${messageSuccess}"></th:block>
+			</div>
+		</th:block>
+		<div class="table-responsive">
+			<table
+				class="table table-hover pagedTable responsive"
+				style="width: 100%"
+			>
+				<thead>
+					<tr>
+						<th>
+							<th:block th:text="#{clinic.label.name}">Name:</th:block>
+						</th>
+						<th class="actionColumn">
+							<th:block th:text="#{admin.table.actions}">Actions</th:block>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:if="not ${#lists.isEmpty(allClinics)}">
+						<!--/* iterating over all clinics to show their basic attributes and links */-->
+						<th:block th:each="clinic: ${allClinics}">
+							<tr>
+								<td>
+									<th:block th:if="not ${#strings.isEmpty(clinic.name)}">
+										<a
+											class="link"
+											th:href="@{edit?id=__${clinic.id}__}"
+										>
+											<th:block th:text="${clinic.name}" />
+										</a>
+									</th:block>
+								</td>
+								<td class="actionColumn">
+									<div class="d-none d-xl-block">
+										<a
+											class="link"
+											th:href="@{edit?id=__${clinic.id}__}"
+										>
+											<i
+												class="bi-pencil-fill"
+												th:title="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
+											></i>
+										</a>
+										<a
+											class="link"
+											th:href="@{remove?id=__${clinic.id}__}"
+										>
+											<i
+												class="bi-trash-fill"
+												th:title="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
+											></i>
+										</a>
+									</div>
+									<!--/*Action dropdown for smaller resolutions*/-->
+									<div class="d-block d-xl-none">
+										<a
+											class="link"
+											data-bs-toggle="offcanvas"
+											th:href="|#${clinic.id}_offcanvas|"
+											><i
+												class="bi bi-three-dots"
+												style="font-size: 1.5rem"
+											></i
+										></a>
+										<th:block
+											layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${clinic.name}, id=|${clinic.id}_offcanvas|)}"
+										>
+											<th:block layout:fragment="optionsContent">
+												<a
+													class="link"
+													th:href="@{edit?id=__${clinic.id}__}"
+													th:text="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
+												></a>
+												<a
+													class="link"
+													th:href="@{remove?id=__${clinic.id}__}"
+													th:text="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
+												></a>
+											</th:block>
+										</th:block>
+									</div>
+								</td>
+							</tr>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+			<div class="panel-body">
+				<form
+					method="GET"
+					th:action="@{edit}"
+					th:object="${clinic}"
+				>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						id="addClinic"
+						th:text="#{clinic.button.add}"
+						>Add clinic</button
+					>
+				</form>
+			</div>
+		</div>
+	</th:block>
+</th:block>

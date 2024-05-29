@@ -1,0 +1,91 @@
+<!--/*
+    * View to upload a new export template for a questionnaire    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'mapping.heading.uploadtemplate', 'Upload new export template')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				id="uploadForm"
+				th:object="${export}"
+				enctype="multipart/form-data"
+				method="POST"
+				action="uploadtemplate"
+			>
+				<div
+					id="errors"
+					style="width: 100%"
+				>
+					<error layout:replace="~{fragments/forms :: errorField(path='*')}" />
+				</div>
+				<input
+					name="questionnaire_id"
+					th:value="${questionnaire.id}"
+					type="hidden"
+				/>
+				<div class="form-group">
+					<label
+						for="type"
+						th:text="${messages.get(#locale, 'mapping.label.type', 'Type')}"
+					>
+					</label>
+					<select
+						id="type"
+						name="type"
+						class="form-control"
+					>
+						<th:block th:each="item: ${exportTemplateTypeList}">
+							<th:block
+								th:if="${not #strings.isEmpty(item.importer) && not #strings.isEmpty(item.exporter)}"
+							>
+								<option
+									th:value="${item}"
+									th:text="${item}"
+								></option>
+							</th:block>
+						</th:block>
+					</select>
+				</div>
+				<div class="form-group">
+					<label
+						class="required"
+						for="name"
+						th:text="${messages.get(#locale, 'mapping.label.name', 'Name')}"
+					>
+					</label>
+					<input
+						class="form-control"
+						id="name"
+						name="name"
+					/>
+				</div>
+				<div class="form-group">
+					<label
+						class="required"
+						for="file"
+						th:text="${messages.get(#locale, 'mapping.label.filename', 'Filename')}"
+					>
+					</label>
+					<br />
+					<input
+						type="file"
+						name="file"
+						id="file"
+					/>
+				</div>
+
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="upload"
+					id="uploadButton"
+					name="action"
+					th:text="${messages.get(#locale, 'mapping.button.upload', 'Upload')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

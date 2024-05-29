@@ -1,0 +1,73 @@
+<!--/*
+    * Thymeleaf fragment for the footer available in MoPats admin / manager view    
+*/-->
+<div layout:fragment="footer">
+	<!--/*<div id="footer" class="footer py-2">
+        <div class="d-flex justify-content-between align-items-center mx-4">
+            <th:block th:if="${configurationDao?.logo != null}">
+                <div class="mb-2">
+                    <img id="logoImageFooter" class="footer-img" th:src="${configurationDao?.logo}" />
+                </div>
+                <div>
+                    <img id="mopatImageFooter" class="footer-img" th:attr="src=@{/images/lettering.svg}" alt="MoPat" />
+                </div>
+            </th:block>
+        </div>
+    </div> */-->
+	<div class="d-flex align-items-center flex-column bottom-footer">
+		<div
+			class="d-flex d-bp-none flex-row flex-nowrap justify-content-center align-items-center flex"
+		>
+			<div
+				class="mopat-logo d-flex me-1"
+				th:classappend="${configurationDao?.getLogo() != null ? 'justify-content-left' : 'justify-content-center'}"
+			>
+				<img
+					id="mopatImageFooter"
+					class="footer-img"
+					th:attr="src=@{/images/lettering.svg}"
+					alt="MoPat"
+				/>
+			</div>
+			<th:block th:if="${configurationDao?.getLogo() != null}">
+				<div
+					class="d-flex d-bp-none klinik-logo justify-content-end d-flex ms-1"
+				>
+					<img
+						id="logoImageFooter"
+						class="footer-img"
+						th:src="${configurationDao?.getLogo()}"
+					/>
+				</div>
+			</th:block>
+		</div>
+		<div
+			class="footer-bar d-flex align-items-center"
+			th:classappend="${configurationDao?.getLogo() != null ? 'justify-content-between' : 'justify-content-center'}"
+		>
+			<div class="d-bp-flex d-none">
+				<img
+					id="mopatImageFooter"
+					class="footer-img"
+					th:attr="src=@{/images/lettering.svg}"
+					alt="MoPat"
+				/>
+			</div>
+			<span class="footer-text text-center"
+				>&copy;
+				<th:block th:utext="#{layout.footer.copyright}">
+					2023 Institute of Medical Informatics, University of Münster
+				</th:block>
+			</span>
+			<th:block th:if="${configurationDao?.getLogo() != null}">
+				<div class="d-bp-flex d-none justify-content-end d-flex">
+					<img
+						id="logoImageFooter"
+						class="footer-img"
+						th:src="${configurationDao?.getLogo()}"
+					/>
+				</div>
+			</th:block>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,65 @@
+<!--/*
+    * Layout for error pages    
+*/-->
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.0}"></script>
+		<script
+			defer
+			th:src="@{/js/modernizr/modernizr-custom.js?version=3.0}"
+		></script>
+
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.0}"
+		/>
+
+		<!--/* Set thymeleaf variable "deployment" to "LOCAL" to add all css files independently, so that debugging is possible 
+               Set to "PRODUCTIVE" to only add minified MoPat.css. Make sure the independent css files are not deleted in the pom 
+            */-->
+
+		<th:block
+			layout:replace="~{fragments/resourceFragment :: adminCSS}"
+		></th:block>
+		<th:block layout:fragment="addLinks"></th:block>
+
+		<title>MoPat</title>
+	</head>
+
+	<body th:attr="onload=${onLoad}">
+		<div
+			class="flex-container errorPage"
+			data-role="page"
+		>
+			<div
+				id="content"
+				class="content"
+			>
+				<th:block layout:fragment="content"></th:block>
+			</div>
+			<div
+				id="footer"
+				class="footer"
+				data-role="footer"
+			>
+				<th:block layout:fragment="footer">
+					<th:block layout:replace="~{fragments/footer :: footer}"></th:block>
+				</th:block>
+			</div>
+
+			<th:block layout:fragment="scriptContainer"></th:block>
+		</div>
+	</body>
+</html>

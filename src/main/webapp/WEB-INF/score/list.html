@@ -1,0 +1,149 @@
+<!--/*
+    * View that show all available scores for a questionnaire    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'score.heading.title', 'Scores')} 
+                + '&nbsp;' + '&ldquo;' 
+                + ${questionnaire.name} + '&rdquo;'"
+>
+	<th:block layout:fragment="content">
+		<div class="table-responsive">
+			<table class="table table-hover pagedTable">
+				<colgroup>
+					<col width="82%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							th:text="${messages.get(#locale, 'score.label.name', 'Name')}"
+						></th>
+						<th
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:if="${not #lists.isEmpty(scores)}">
+						<th:block th:each="item: ${scores}">
+							<tr th:id="${item.id}">
+								<td th:text="${item.name}"></td>
+								<td class="actionColumn">
+									<a
+										class="link"
+										th:href="@{fill?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
+									>
+										<i
+											class="bi-pencil-fill"
+											th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
+										></i>
+									</a>
+									<a
+										class="link"
+										th:href="@{remove?id=__${item.id}__}"
+										th:onclick="|return confirm_delete(__${item.hasExportRules()}__, '__${item.getDependingScoreNames()}__');|"
+									>
+										<i
+											class="bi-trash-fill"
+											th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
+										></i>
+									</a>
+								</td>
+							</tr>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+			<div class="panel-body">
+				<form
+					th:object="${score}"
+					method="GET"
+					action="fill"
+				>
+					<input
+						name="questionnaireId"
+						th:value="${questionnaire.id}"
+						type="hidden"
+					/>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						id="addScore"
+						th:text="${messages.get(#locale, 'score.button.addScore', 'Add score')}"
+					>
+					</button>
+				</form>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var dependingScoresList;
+		var labelDeleteScoreWithExportRuleWarning =
+			/*[[${messages.get(#locale, 'score.label.deleteScoreWithExportRuleWarning', 'The removal of the score will also delete all attached export rules. Do you really want to continue?')}]]*/ "The removal of the score will also delete all attached export rules. Do you really want to continue?";
+		var labelDeleteScoreWithExportRuleAndScoresWarning =
+			/*[[${messages.get(#locale, 'score.label.deleteScoreWithExportRuleAndScoresWarning', 'The removal of the score will also delete all attached export rules and all following other scores (and their export rules), that use this one.{0}Do you really want to continue?')}]]*/ "The removal of the score will also delete all attached export rules and all following other scores (and their export rules), that use this one.{0}Do you really want to continue?";
+		var labelDeleteScoreWithScoresWarning =
+			/*[[${messages.get(#locale, 'score.label.deleteScoreWithScoresWarning', 'The removal of the score will also delete all following other scores (and their export rules) that use this one.{0}Do you really want to continue?')}]]*/ "The removal of the score will also delete all following other scores (and their export rules) that use this one.{0}Do you really want to continue?";
+
+		/*[-  
+            * Updates the list of depending scores
+            * 
+            * @param dependingScoreNames Array of names of the depending scores
+        -]*/
+		function updateDependingScores(dependingScoreNames) {
+			dependingScoresList = "\n";
+			for (var i = 0; i < dependingScoreNames.length; i++) {
+				dependingScoresList +=
+					"    \u2022 " + dependingScoreNames[i].trim() + "\n";
+			}
+		}
+
+		/*[-  
+            * Confirmation dialog if score should be deleted which has export rules attached
+            * 
+            * @param {Boolean} hasExportRules Indicates if the score that should be deleted has any export rules attached
+            * @param {String} dependingScoreNames String with all names of depending scores separated by comma
+            * @returns {Boolean} True if the user has chosen to delete this score, false otherwise.
+        -]*/
+		function confirm_delete(hasExportRules, dependingScoreNames) {
+			var hasScores = dependingScoreNames.length > 2;
+			if (hasExportRules === true && hasScores === true) {
+				/*[- Make an Array of Strings from the given String, and cut the brackets -]*/
+				updateDependingScores(
+					dependingScoreNames
+						.substring(1, dependingScoreNames.length - 1)
+						.split(",")
+				);
+				var message = labelDeleteScoreWithExportRuleAndScoresWarning.replace(
+					"{0}",
+					dependingScoresList
+				);
+				return confirm(message);
+			} else if (hasExportRules === true) {
+				var message = labelDeleteScoreWithExportRuleWarning;
+				return confirm(message);
+			} else if (hasScores) {
+				/*[- Make an Array of Strings from the given String, and cut the brackets -]*/
+				updateDependingScores(
+					dependingScoreNames
+						.substring(1, dependingScoreNames.length - 1)
+						.split(",")
+				);
+				var message = labelDeleteScoreWithScoresWarning.replace(
+					"{0}",
+					dependingScoresList
+				);
+				return confirm(message);
+			}
+			return true;
+		}
+	</script>
+</th:block>

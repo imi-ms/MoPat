@@ -1,0 +1,148 @@
+/**
+*
+* Style for the mapping page
+*
+**/
+
+
+@import "includes/colors";
+@import "includes/variables";
+@import "includes/sizes";
+
+/* EXPORT MAPPING */
+.map-question-box {
+    border-bottom: 4px solid @color-gray-darker;
+    margin-bottom: 0px;
+    background-color: @color-gray-lighter;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.map-questiontext {
+    overflow: hidden;
+    width: 100%;
+
+    &-nohover {
+        max-height: 2.5em;
+    }
+}
+
+
+.map-answer {
+    border-top: 1px dashed @color-black;
+    background-color: @color-mapping-lightblue;
+    padding: 5px;
+    min-height: 1.6em;
+    font-weight: bold;
+}
+
+.map-node {
+    border: 1px solid @color-black;
+    background-color: @color-gray-background;
+    padding: 2px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    vertical-align: middle;
+    font-size: 0.9em;
+    width: 200px;
+    /* z-index: 10; */
+    text-align: center;
+    font-weight: normal;
+
+    &-placeholder {
+        border: 1px dotted @color-black;
+        padding: 2px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        width: 200px;
+        z-index: -1;
+        text-align: center;
+        font-weight: normal;
+        float: right;
+    }
+
+    &-selected {
+        background-color:@color-mapping-yellow;
+    }
+}
+
+
+.node-assigned {
+    //float: right;
+    background-color: @color-mapping-yellow;
+    /* border-color: #8a1f11; */
+}
+
+.has-node,.node-hover {
+    background-color: @color-mapping-green;
+}
+
+#questionnaireNodes .state-disabled {
+    opacity: 1;
+}
+
+.map-settings {
+    background-color: @color-mapping-blue;
+    padding: 5px;
+    margin-top: 5px;
+
+    &-type {
+        width: 100%;
+    }
+
+    &-int {
+        background-color: @color-mapping-blue;
+        width: 90%;
+    }
+
+    &-float {
+        background-color: @color-mapping-blue;
+        width: 90%;
+    }
+}
+
+.scrolledOutNodes {
+    position: fixed !important;
+    top: 5vh !important; 
+    right: 0px !important; 
+    left: auto !important; 
+    overflow-y: scroll !important;
+    max-height: 90vh;
+    box-shadow: @box-shadow-material-sm;
+}
+  
+#exportMappingContainer {
+    width: 100%; 
+    z-index: 99999;
+}
+
+#questionnaireNodes {
+    width: 80%;
+}
+
+#templateNodes {
+    background-color: #c3dbef;
+    padding: 5px;
+    border: 1px solid #000000;
+    position: absolute; 
+    top: 0; 
+    left: 80.5%;
+}
+
+.question-header {
+    overflow: hidden;
+    width: 100%;
+    margin: 0 5px;
+}
+
+.question-type {
+    font-weight: bold;
+}
+
+
+.formatting-text {
+    margin-right: 10px;
+    min-width: 100px;
+}

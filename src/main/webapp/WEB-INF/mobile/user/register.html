@@ -1,0 +1,307 @@
+<!--/*
+    * View that shows if a new user received a registration link    
+*/-->
+<th:block
+	layout:decorate="~{layout/mobile}"
+	th:with="contenttype='content', isLogin='false'"
+>
+	<th:block layout:fragment="content">
+		<div id="heading">
+			<h4
+				><b
+					th:text="${messages.get(#locale, 'user.heading.userRegistration', 'User registration')}"
+				></b
+			></h4>
+		</div>
+		<div data-role="content">
+			<form
+				name="user"
+				th:object="${user}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				action="register"
+				data-ajax="false"
+				style="width: 95%"
+			>
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+				<input
+					type="hidden"
+					name="hash"
+					th:value="${hash}"
+				/>
+				<th:block th:if="${activateLdap}">
+					<div
+						class="row mb-3 align-items-center"
+						data-role="fieldcontain"
+					>
+						<div class="col-lg-3 col-md-12">
+							<label
+								class="col-form-label"
+								for="isLdap"
+								th:with="message=${messages.get(#locale, 'user.label.domainUser', messages.buildArguments('__${domain}__'), 'User of domain')}"
+							>
+								<b th:text="${message}"></b>
+							</label>
+						</div>
+
+						<div class="col-lg-5 col-md-12">
+							<select
+								class="btn select-mobile form-select"
+								name="isLdap"
+								id="isLdap"
+								data-role="slider"
+							>
+								<option 
+									value="false"
+									th:selected="${#bools.isFalse(isLdap)}"
+									th:text="${messages.get(#locale, 'user.label.no', 'No')}"
+								></option>
+								<option 
+									value="true"
+									th:selected="${#bools.isTrue(isLdap)}"
+									th:text="${messages.get(#locale, 'user.label.yes', 'Yes')}"
+								></option>
+							</select>
+						</div>
+					</div>
+				</th:block>
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="username"
+							id="usernameLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.username', 'Username')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							th:field="*{username}"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="off"
+							spellcheck="false"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12 errorSuccess">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='username')}"
+						/>
+					</div>
+				</div>
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="newPassword"
+							id="newPasswordLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.newPassword', 'New password:')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							th:field="*{newPassword}"
+							type="password"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
+						/>
+					</div>
+				</div>
+
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+					id="passwordApproveWrapper"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="newPasswordApprove"
+							id="newPasswordApproveLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							id="newPasswordApprove"
+							name="newPasswordApprove"
+							type="password"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
+						/>
+					</div>
+				</div>
+
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="firstname"
+							id="firstnameLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.firstname', 'Firstname')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							th:field="*{firstname}"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='firstname')}"
+						/>
+					</div>
+				</div>
+
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="lastname"
+							id="lastnameLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.lastname', 'Lastname')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							th:field="*{lastname}"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='lastname')}"
+						/>
+					</div>
+				</div>
+
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
+							for="email"
+							id="emailLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.email', 'Email')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<input
+							class="form-control"
+							th:field="*{email}"
+						/>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='email')}"
+						/>
+					</div>
+				</div>
+
+				<div class="row mb-3 align-content-center">
+					<div class="col-lg-8 col-md-12">
+						<button
+							class="btn btn-mobile btn-highlight w-100 mt-4"
+							type="submit"
+							value="register"
+							id="registerButton"
+							name="action"
+							style="width: 100%"
+							th:text="${messages.get(#locale, 'user.button.register', 'Register')}"
+						>
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		$("#closeDialogButton").remove();
+		$("#helpButton").remove();
+
+		$("#isLdap").change(function () {
+			if ($(this).val() === "true") {
+				$(
+					"#usernameLabel"
+				).text(/*[[|${messages.get(#locale, 'user.label.username', 'Username')} (${domain})|]]*/);
+				$(
+					"#newPasswordLabel"
+				).text(/*[[|${messages.get(#locale, 'user.label.password', 'Password')} (${domain})|]]*/);
+				$("#passwordApproveWrapper").hide();
+			} else {
+				$(
+					"#usernameLabel"
+				).text(/*[[${messages.get(#locale, 'user.label.username', 'Username')}]]*/);
+				$(
+					"#newPasswordLabel"
+				).text(/*[[${messages.get(#locale, 'user.label.newPassword', 'New password')}]]*/);
+				$("#passwordApproveWrapper").show();
+			}
+		});
+
+		$("#isLdap").val(/*[[${#strings.toString(isLdap)}]]*/ 'true').trigger("change");
+	</script>
+</th:block>

@@ -1,0 +1,2747 @@
+<!--/*
+    * View for editing of a new or existing question
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'question.heading.editQuestion', 'Edit question')},
+                onLoad='handleQuestionTypes(true);'"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				name="questionDTO"
+				th:object="${questionDTO}"
+				enctype="multipart/form-data"
+				method="POST"
+				action="edit"
+			>
+				<th:block th:if="${not questionDTO.isModifiable()}">
+					<div
+						id="errors"
+						class="alert alert-danger"
+						style="width: 100%"
+					>
+						<th:block
+							th:text="${messages.get(#locale, 'question.error.notModifiable', 'This question is not editable due to already existing responses from surveys')}"
+						/>
+					</div>
+				</th:block>
+
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+				<input
+					type="hidden"
+					name="questionnaireId"
+					id="questionnaireId"
+					th:value="${questionDTO.questionnaireId != null} ? ${questionDTO.questionnaireId} : ${questionnaireId}"
+				/>
+				<addVar
+					layout:replace="~{helper/var :: add(key='checkAvailableLanguages', value=${not (#strings.isEmpty(question.id)) or #bools.isTrue(duplicate)})}"
+				/>
+				<th:block th:if="${#fields.hasErrors('*')}">
+					<addVar
+						layout:replace="~{helper/var :: add(key='checkAvailableLanguages', value=${#bools.isTrue(true)})}"
+					/>
+				</th:block>
+
+				<addVar
+					layout:replace="~{helper/var :: add(key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
+				/>
+				<th:block th:if="${#strings.isEmpty(vars['currentLanguage'])}">
+					<addVar
+						layout:replace="~{helper/var :: add(key='currentLanguage', value=${#locale.toString})}"
+					/>
+				</th:block>
+
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<languageDropdown
+							layout:replace="fragments/forms :: languageDropdown"
+						/>
+
+						<div class="form-group">
+							<label
+								for="questionType"
+								th:text="${messages.get(#locale, 'question.label.questiontype', 'Question type')}"
+							>
+							</label>
+							<selectOptions
+								layout:replace="~{fragments/selectOptions :: selectOptions(
+                                clazz='form-control',
+                                path='questionType',
+                                items=${questionTypeList},
+                                itemLabel='textValue',
+                                itemValue='textValue',
+                                localize=${#bools.isTrue(true)},
+                                onChangeFunction='handleQuestionTypes(false)',
+                                id='questionTypeDropDown')}"
+							>
+							</selectOptions>
+							<th:block
+								layout:insert="~{fragments/forms :: errorField(path='questionType')}"
+							/>
+						</div>
+
+						<localableTextarea
+							layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                            collection=${questionDTO.localizedQuestionText},
+                            collapsableId='localizedQuestionTextCollapsableText',
+                            inputType='textarea',
+                            inputClazz='form-control wysiwyg localablePostElement',
+                            path='localizedQuestionText[#INDEXFIELD]',
+                            firstRequiredLocalableElement=true)}"
+						>
+							<th:block layout:fragment="collapseLabel">
+								<label
+									for="questionText"
+									class="required labelQuestionText"
+									th:text="${messages.get(#locale, 'question.label.questiontext', 'Question')}"
+								>
+								</label>
+							</th:block>
+						</localableTextarea>
+
+						<checkbox
+							layout:replace="~{fragments/forms :: checkbox(
+                            path='isRequired',
+                            text=${messages.get(#locale, 'question.label.isRequired', 'Necessary for completeness')},
+                            showErrors=true)}"
+						>
+						</checkbox>
+
+						<checkbox
+							layout:replace="~{fragments/forms :: checkbox(
+                            path='isEnabled',
+                            text=${messages.get(#locale, 'question.label.isEnabled', 'Question enabled')},
+                            showErrors=true)}"
+						>
+						</checkbox>
+
+						<!--/* handling answers */-->
+						<addVar
+							layout:replace="~{helper/var :: add(key='answerExist',
+                            value=${questionDTO.questionType != null &&
+                                (questionDTO.questionType.name() eq 'MULTIPLE_CHOICE' ||
+                                questionDTO.questionType.name() eq 'DROP_DOWN') &&
+                                questionDTO.answers != null && !questionDTO.answers.isEmpty()})}"
+						>
+						</addVar>
+						<!--/* MULTIPLE CHOICE */-->
+						<div
+							class="my-2"
+							id="multipleChoice"
+						>
+							<fieldset id="answerField">
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'question.label.multipleChoiceDropDown', 'Multiple choice/drop down:')}"
+								>
+								</legend>
+								<div class="row my-1">
+									<div class="col-sm-6 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='minNumberAnswers', required=true, path='minNumberAnswers',
+                                            clazz='form-control', min='0', step='1', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
+										>
+										</number>
+									</div>
+									<div class="col-sm-6 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='maxNumberAnswers', required=true, path='maxNumberAnswers',
+                                            clazz='form-control', min='1', step='1', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
+										>
+										</number>
+									</div>
+								</div>
+								<div class="row my-1">
+									<div class="col-12 form-group">
+										<label
+											class="required"
+											for="codedValueType"
+											th:text="${messages.get(#locale, 'question.label.codedValueType', 'Type of Indentificationcodes')}"
+										>
+										</label>
+										<selectOptions
+											layout:replace="~{fragments/selectOptions :: selectOptions(
+                                            id='codedValueType',
+                                            clazz='form-control',
+                                            path='codedValueType',
+                                            items=${codedValueTypes},
+                                            itemLabel='textValue',
+                                            itemValue='textValue',
+                                            localize=${#bools.isTrue(true)},
+                                            onChangeFunction='switchCodedValue()')}"
+										>
+										</selectOptions>
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='codedValueType')}"
+										/>
+									</div>
+								</div>
+								<th:block th:if="${#bools.isTrue(vars['answerExist'])}">
+									<!--/* [bt] I assume there is at least one answer for the given question, since multiple choice-questions should at least contain one answer to choose from */-->
+									<th:block th:each="answer: ${questionDTO.answers}">
+										<th:block th:if="${answer.value.localizedLabel ne null}">
+											<th:block th:if="${answer.value.id ne -1}">
+												<!--/* show warning if this answer has any associated conditions */-->
+												<addVar
+													layout:replace="~{helper/var :: add(
+                                                    key='hasConditions',
+                                                    value=${answer.value.getHasConditionsAsTarget() || answer.value.getHasConditionsAsTrigger()})}"
+												>
+												</addVar>
+												<addVar
+													layout:replace="~{helper/var :: add(
+                                                    key='hasExportRules',
+                                                    value=${answer.value.getHasExportRule()})}"
+												>
+												</addVar>
+
+												<div
+													class="panel panel-default multipleChoiceAnswerPanel mt-2"
+													th:value="${answer.key}"
+													id="backgroundWarning"
+													th:classappend="${#bools.isTrue(vars['hasConditions']) || #bools.isTrue(vars['hasExportRules'])} ? 'alert-warning' : ''"
+												>
+													<input
+														type="hidden"
+														th:field="*{answers[__${answer.key}__].id}"
+													/>
+													<input
+														type="hidden"
+														th:field="*{answers[__${answer.key}__].hasConditionsAsTrigger}"
+													/>
+													<input
+														type="hidden"
+														th:field="*{answers[__${answer.key}__].hasExportRule}"
+													/>
+													<div
+														class="panel-heading"
+														th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+													>
+													</div>
+													<div
+														class="panel-body"
+														th:style="${#bools.isTrue(vars['hasConditions'])} ? 'padding-bottom: 0px' : ''"
+														id="panelBody"
+													>
+														<div class="form-group">
+															<localableTextarea
+																layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                                                collection=${questionDTO.localizedQuestionText},
+                                                                collapsableId='localizedLabelCollapsableText',
+                                                                inputType='textarea',
+                                                                inputClazz='form-control localablePostElement',
+                                                                path='answers[__${answer.key}__].localizedLabel[#INDEXFIELD]')}"
+															>
+																<th:block layout:fragment="collapseLabel">
+																	<label
+																		for="answertext"
+																		class="required"
+																		th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+																	>
+																	</label>
+																</th:block>
+															</localableTextarea>
+
+															<checkbox
+																layout:replace="~{fragments/forms :: checkbox(
+                                                                path='answers[__${answer.key}__].isEnabled',
+                                                                text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
+                                                                showErrors=false)}"
+															>
+															</checkbox>
+
+															<checkbox
+																layout:replace="~{fragments/forms :: checkbox(
+                                                                path='answers[__${answer.key}__].isOther',
+                                                                text=${messages.get(#locale, 'question.label.answerOther', 'Append freetext if this answer is selected')},
+                                                                showErrors=false,
+                                                                clazz='isOtherCheckbox',
+                                                                onclick='clickIsOtherBoxes(this);')}"
+															>
+															</checkbox>
+
+															<div class="row my-1">
+																<div class="col-sm-4 col-12">
+																	<input
+																		layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                        for='codedValue',
+                                                                        required=true,
+                                                                        path='answers[__${answer.key}__].codedValue',
+                                                                        clazz='form-control codedValueInput',
+                                                                        showErrors=true,
+                                                                        text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
+																	/>
+																</div>
+																<div class="col-sm-4 col-12">
+																	<input
+																		layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                        for='score',
+                                                                        required=false,
+                                                                        path='answers[__${answer.key}__].value',
+                                                                        clazz='form-control',
+                                                                        showErrors=true,
+                                                                        text=${messages.get(#locale, 'question.label.score', 'Score')})}"
+																	/>
+																</div>
+																<div class="col-sm-4 col-12">
+																	<label for="button">&nbsp;</label>
+																	<button
+																		id="deleteAnswerButton"
+																		class="form-control btn btn-primary mt-0"
+																		type="button"
+																		onclick="deleteAnswerDiv(this);"
+																		th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
+																	>
+																	</button>
+																</div>
+															</div>
+															<th:block
+																th:if="${#bools.isTrue(vars['hasConditions']) && #bools.isTrue(vars['hasExportRules'])}"
+															>
+																<div
+																	style="padding-top: 10px"
+																	id="warningMessage"
+																	th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditionsAndExportRules',
+                                                                        'This answer has conditions and export rules. When you delete this answer the conditions and export rules will also be deleted.'
+                                                                    )}"
+																>
+																</div>
+															</th:block>
+															<th:block
+																th:if="${#bools.isTrue(vars['hasConditions'])}"
+															>
+																<div
+																	style="padding-top: 10px"
+																	id="warningMessage"
+																	th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditions',
+                                                                        'This answer has conditions. When you delete this answer the conditions will also be deleted.'
+                                                                    )}"
+																>
+																</div>
+															</th:block>
+															<th:block
+																th:if="${#bools.isTrue(vars['hasExportRules'])}"
+															>
+																<div
+																	style="padding-top: 10px"
+																	id="warningMessage"
+																	th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithExportRules',
+                                                                        'This answer has export rules. When you delete this answer the export rules will also be deleted.'
+                                                                    )}"
+																>
+																</div>
+															</th:block>
+														</div>
+													</div>
+												</div>
+											</th:block>
+											<th:block th:if="${answer.value.id eq -1}">
+												<div
+													class="multipleChoiceAnswerPanel"
+													th:value="${answer.key}"
+												>
+													<input
+														type="hidden"
+														th:field="*{answers[__${answer.key}__].id}"
+													/>
+												</div>
+											</th:block>
+										</th:block>
+									</th:block>
+								</th:block>
+								<th:block th:unless="${#bools.isTrue(vars['answerExist'])}">
+									<div
+										class="panel panel-default multipleChoiceAnswerPanel mt-2"
+										value="0"
+									>
+										<input
+											id="answers0.id"
+											type="hidden"
+											value=""
+											name="answers[0].id"
+										/>
+										<input
+											type="hidden"
+											th:field="*{answers[0].hasConditionsAsTrigger}"
+										/>
+										<input
+											type="hidden"
+											th:field="*{answers[0].hasExportRule}"
+										/>
+										<div
+											class="panel-heading"
+											th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+										></div>
+										<div
+											class="panel-body"
+											id="panelBody"
+										>
+											<div class="form-group">
+												<localableTextarea
+													layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                                    collection=${questionDTO.localizedQuestionText},
+                                                    collapsableId='localizedLabelCollapsableText',
+                                                    inputType='textarea',
+                                                    inputClazz='form-control localablePostElement',
+                                                    path='answers[0].localizedLabel[#INDEXFIELD]')}"
+												>
+													<th:block layout:fragment="collapseLabel">
+														<label
+															for="answertext"
+															class="required"
+															th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+														>
+														</label>
+													</th:block>
+												</localableTextarea>
+
+												<checkbox
+													layout:replace="~{fragments/forms :: checkbox(
+                                                    path='answers[0].isEnabled',
+                                                    text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
+                                                    showErrors=false)}"
+												>
+												</checkbox>
+
+												<checkbox
+													layout:replace="~{fragments/forms :: checkbox(
+                                                    path='answers[0].isOther',
+                                                    text=${messages.get(#locale, 'question.label.answerOther', '
+                                                    Append freetext if this question is selected')},
+                                                    showErrors=false,
+                                                    clazz='isOtherCheckbox',
+                                                    onclick='clickIsOtherBoxes(this);')}"
+												>
+												</checkbox>
+
+												<div class="row my-1">
+													<div class="col-sm-4 col-12">
+														<input
+															layout:replace="~{fragments/forms :: inputWithLabel(
+                                                            for='codedValue',
+                                                            required=true,
+                                                            path='answers[0].codedValue',
+                                                            clazz='form-control codedValueInput',
+                                                            showErrors=true,
+                                                            text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
+
+														/>
+													</div>
+													<div class="col-sm-4 col-12">
+														<input
+															layout:replace="~{fragments/forms :: inputWithLabel(
+                                                            for='score',
+                                                            required=false,
+                                                            path='answers[0].value',
+                                                            clazz='form-control',
+                                                            showErrors=true,
+                                                            text=${messages.get(#locale, 'question.label.score', 'Score')})}"
+
+														/>
+													</div>
+													<div class="col-sm-4 col-12">
+														<label for="button">&nbsp;</label>
+														<button
+															id="deleteAnswerButton"
+															class="form-control btn btn-primary mt-0"
+															type="button"
+															onclick="deleteAnswerDiv(this);"
+															th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
+														>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</th:block>
+								<button
+									id="addAnswerButton"
+									class="btn btn-primary"
+									type="button"
+									onclick="addAnswerDiv();"
+									th:text="${messages.get(#locale, 'question.button.addAnswer', 'Add answer')}"
+								>
+								</button>
+							</fieldset>
+						</div>
+
+						<!--/* SLIDER */-->
+						<div
+							class="my-2"
+							id="slider"
+						>
+							<fieldset
+								id="sliderField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'question.label.sliderCheckbox', 'Slider/checkboxes')}"
+								>
+								</legend>
+
+								<checkbox
+									layout:replace="~{fragments/forms :: checkbox(
+                                    path='answers[0].vertical',
+                                    showErrors=true,
+                                    text=${messages.get(#locale, 'question.label.vertical', 'Vertical')})}"
+								>
+								</checkbox>
+
+								<div
+									class="row my-1"
+									id="slider1"
+								>
+									<!--/* Cannot be created by fragment because of "onblur" attribute */-->
+									<div class="col-sm-4 col-12 form-group">
+										<label
+											class="required"
+											for="minValue"
+											th:text="${messages.get(#locale, 'question.label.minValue', 'Minimum')}"
+										>
+										</label>
+										<input
+											type="number"
+											step="0.01"
+											class="form-control"
+											onblur="checkSlider(false)"
+											th:field="*{answers[0].minValue}"
+											id="min"
+										/>
+									</div>
+
+									<div class="col-sm-4 col-12 form-group">
+										<label
+											class="required"
+											for="maxValue"
+											th:text="${messages.get(#locale, 'question.label.maxValue', 'Maximum')}"
+										>
+										</label>
+										<input
+											type="number"
+											step="0.01"
+											class="form-control"
+											onblur="checkSlider(false)"
+											th:field="*{answers[0].maxValue}"
+											id="max"
+										/>
+									</div>
+
+									<div class="col-sm-4 col-12 form-group">
+										<label
+											class="required"
+											for="stepsize"
+											th:text="${messages.get(#locale, 'question.label.stepsize', 'Step size')}"
+										>
+										</label>
+										<input
+											type="number"
+											min="0.01"
+											step="0.01"
+											onblur="checkSlider(false)"
+											class="form-control"
+											id="stepsize"
+											th:field="*{answers[0].stepsize}"
+										/>
+									</div>
+
+									<!--/* Add error messages to var scope to get them later in JS */-->
+
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='errorMinValue',
+                                        value=${#fields.hasErrors('answers[0].minValue') ? #fields.errors('answers[0].minValue')?.get(0) : ''})}"
+									>
+									</addVar>
+
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='errorMaxValue',
+                                        value=${#fields.hasErrors('answers[0].maxValue') ? #fields.errors('answers[0].maxValue')?.get(0) : ''})}"
+									>
+									</addVar>
+
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='errorStepsize',
+                                        value=${#fields.hasErrors('answers[0].stepsize') ? #fields.errors('answers[0].stepsize')?.get(0) : ''})}"
+									>
+									</addVar>
+
+									<div
+										id="sliderErrors"
+										class="alert alert-danger"
+									>
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue')}"
+										/>
+
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue')}"
+										/>
+
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize')}"
+										/>
+									</div>
+								</div>
+
+								<div class="row my-1" id="iconField">
+									<div
+										id="showIconsContainer"
+										class="col-12"
+									>
+										<label for="showIcons">
+											<input
+												type="checkbox"
+												id="showIcons"
+												onchange="toggleIconPicker(this)"
+												th:field="*{answers[0].showIcons}"
+											/>
+											<th:block
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.activateSliderIcons',
+                                                        'Show icons above the Slider')}"
+											>
+											</th:block>
+										</label>
+									</div>
+
+									<div
+										id="numberOfIconsWrapper"
+										class="col-12 d-none"
+									>
+										<!-- <div class="col-12">
+											<label for="iconTemplateSelector">
+												Vorlagen für Symbolkonfigurationen
+											</label>
+											<select
+												id="iconTemplateSelector"
+												onchange="setIconTemplates(this);"
+												class="form-control form-select"
+											>
+												<option
+													value=""
+													disabled
+													selected
+													>Wählen Sie eine Vorlage für die Symbolanzeige
+													aus...</option
+												>
+												<option value="EMOJI_ICONS"
+													>Gefühlsskala visualisiert durch Emojis</option
+												>
+												<option value="THUMBS"
+													>Positiv / Negativ visualisiert durch Emojis</option
+												>
+											</select>
+										</div> -->
+										<div class="col-12">
+											<label
+												for="numberOfIcons"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+                                                    'Number of icons')}"
+											>
+											</label>
+
+											<select
+												id="numberOfIcons"
+												onchange="showIconElements(this);"
+												class="form-control form-select"
+											>
+												<option
+													value="2"
+													selected="selected"
+													>2</option
+												>
+												<option value="3">3</option>
+												<option value="5">5</option>
+											</select>
+										</div>
+
+										<div class="col-12 py-4">
+											<div
+												class="col-12 d-none d-flex flex-row justify-content-between"
+												id="icon-select"
+											></div>
+											<input
+												type="range"
+												class="form-range px-3"
+												id="rangeSlider"
+												disabled
+											/>
+										</div>
+									</div>
+
+									<!--/* This will never be shown. Instead it is cloned by Javascript and inserted into "iconSelectionWrapper" */-->
+									<div class="d-none">
+										<div
+											class="row"
+											id="iconSelectionCloningWrapper"
+										>
+											<div class="col-lg-10 col-md-7 col-12">
+												<div class="input-group mb-3">
+													<div class="input-group-prepend">
+														<span
+															class="input-group-text h-100 selected-icon boxShadowMaterialSm iconpicker"
+														></span>
+													</div>
+													<input
+														disabled="disabled"
+														id="icon"
+														type="text"
+														class="form-control"
+														hidden="true"
+													/>
+													<select
+														disabled="disabled"
+														onchange=""
+														class="form-control form-select"
+														id="iconPosition"
+														hidden="true"
+													>
+													</select>
+												</div>
+											</div>
+										</div>
+										<div
+											id="sliderIconError"
+											class="alert alert-danger"
+										></div>
+										<!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
+										<th:block
+											th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].icons}"
+										>
+											<!--/* Add position errors for SliderIconDTO with index */-->
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='errorSliderIconPosition__${iconDTOIndex.index}__',
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                        : ''})}"
+											>
+											</addVar>
+											<!--/* Add value errors for SliderIconDTO with index */-->
+
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='errorSliderIconIcon__${iconDTOIndex.index}__',
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                        : ''})}"
+											>
+											</addVar>
+										</th:block>
+									</div>
+
+									<!--/* Filled by JS depending on the value of the "numberOfIcons" select */-->
+									<div
+										id="iconSelectionWrapper"
+										class="d-none"
+									></div>
+								</div>
+
+								<error
+									layout:replace="~{fragments/forms :: errorField(path='answers[0].icons')}"
+								/>
+
+								<div class="row my-1">
+									<div class="col-sm-4 col-12">
+										<!--/* Checkbox for showValueOnButton */-->
+										<span
+											id="showValueOnButtonContainer"
+											class="checkbox"
+										>
+											<label for="showValueOnButton">
+												<input
+													type="checkbox"
+													th:field="*{answers[0].showValueOnButton}"
+													value="false"
+												/>
+												<th:block
+													th:text="${messages.get(#locale, 'question.label.showValueOnButton',
+                                                    'Show current value on button'
+                                                )}"
+												/>
+											</label>
+										</span>
+									</div>
+								</div>
+								<!--/* END OF DISABLED BLOCK */-->
+
+								<localableTextarea
+									layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                    collection=${questionDTO.localizedQuestionText},
+                                    collapsableId='localizedMinimumTextSliderCollapsableText',
+                                    inputType='textarea',
+                                    inputClazz='form-control localablePostElement wysiwyg',
+                                    path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
+								>
+									<th:block layout:fragment="collapseLabel">
+										<label
+											for="minimumText"
+											th:text="${messages.get(#locale, 'question.label.minimumText', 'Text at minimum position')}"
+										>
+										</label>
+									</th:block>
+								</localableTextarea>
+
+								<localableTextarea
+									layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                    collection=${questionDTO.localizedQuestionText},
+                                    collapsableId='localizedMaximumTextSliderCollapsableText',
+                                    inputType='textarea',
+                                    inputClazz='form-control localablePostElement wysiwyg',
+                                    path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
+								>
+									<th:block layout:fragment="collapseLabel">
+										<label
+											for="maximumText"
+											th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
+										>
+										</label>
+									</th:block>
+								</localableTextarea>
+							</fieldset>
+						</div>
+
+						<!--/* SLIDER FREETEXT */-->
+						<div
+							class="my-2"
+							id="sliderFreeText"
+						>
+							<fieldset
+								id="sliderFreeTextField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'NUMBER_CHECKBOX_TEXT', 'Numbered checkboxes + free text')}"
+								>
+								</legend>
+								<div class="row my-1">
+									<div class="col-sm-4 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='minValue', required=true, path='answers[0].minValue',
+                                            clazz='form-control', step='0.01', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.minValue', 'Minimum')})}"
+										>
+										</number>
+									</div>
+									<div class="col-sm-4 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='maxValue', required=true, path='answers[0].maxValue',
+                                            clazz='form-control', step='0.01', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.maxValue', 'Maximum')})}"
+										>
+										</number>
+									</div>
+									<div class="col-sm-4 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='stepsize', required=true, path='answers[0].stepsize',
+                                            clazz='form-control', step='0.01', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.stepsize', 'Step size')})}"
+										>
+										</number>
+									</div>
+								</div>
+
+								<localableInput
+									layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                    collection=${questionDTO.localizedQuestionText},
+                                    collapsableId='localizedFreetextCollapsableText',
+                                    inputType='input',
+                                    inputClazz='form-control localablePostElement',
+                                    path='answers[0].localizedFreetextLabel[#INDEXFIELD]')}"
+								>
+									<th:block layout:fragment="collapseLabel">
+										<label
+											for="freetextLabel"
+											th:text="${messages.get(#locale, 'question.label.freetextLabel', 'Freetext label')}"
+										>
+										</label>
+									</th:block>
+								</localableInput>
+
+								<localableTextarea
+									layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                    collection=${questionDTO.localizedQuestionText},
+                                    collapsableId='localizedMinimumTextNumberCheckboxCollapsableText',
+                                    inputType='textarea',
+                                    inputClazz='form-control localablePostElement wysiwyg',
+                                    path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
+								>
+									<th:block layout:fragment="collapseLabel">
+										<label
+											for="minimumText"
+											th:text="${messages.get(#locale, 'question.label.minimumText', 'text at minimum position')}"
+										>
+										</label>
+									</th:block>
+								</localableTextarea>
+
+								<localableTextarea
+									layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                    collection=${questionDTO.localizedQuestionText},
+                                    collapsableId='localizedMaximumTextNumberCheckboxCollapsableText',
+                                    inputType='textarea',
+                                    inputClazz='form-control localablePostElement wysiwyg',
+                                    path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
+								>
+									<th:block layout:fragment="collapseLabel">
+										<label
+											for="maximumText"
+											th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
+										>
+										</label>
+									</th:block>
+								</localableTextarea>
+							</fieldset>
+						</div>
+
+						<!--/* DATE */-->
+						<div
+							class="my-2"
+							id="date"
+						>
+							<fieldset
+								id="dateField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'DATE', 'Date')}"
+								>
+								</legend>
+								<div class="form-group">
+									<input
+										type="hidden"
+										th:field="*{answers[0].id}"
+									/>
+									<date
+										layout:replace="~{fragments/forms :: dateWithLabel(
+                                        for='startDate', required=false,
+                                        path='answers[0].startDate',
+                                        clazz='form-control', showErrors=true,
+                                        text=${messages.get(#locale, 'question.label.startDate', 'At least')})}"
+									>
+									</date>
+								</div>
+								<div class="form-group">
+									<date
+										layout:replace="~{fragments/forms :: dateWithLabel(
+                                        for='endDate', required=false,
+                                        path='answers[0].endDate',
+                                        clazz='form-control', showErrors=true,
+                                        text=${messages.get(#locale, 'question.label.endDate', 'Latest')})}"
+									>
+									</date>
+								</div>
+							</fieldset>
+						</div>
+
+						<!--/* NUMBER INPUT */-->
+						<div
+							class="my-2"
+							id="numberInput"
+						>
+							<fieldset
+								id="numberInputField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'NUMBER_INPUT', 'Number input')}"
+								>
+								</legend>
+								<div class="form-group">
+									<div class="row my-1">
+										<div class="col-sm-4 col-12">
+											<number
+												layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='minValue', required=false, path='answers[0].minValue',
+                                                clazz='form-control', step='0.01', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.minValue', 'Minimum')})}"
+											>
+											</number>
+										</div>
+										<div class="col-sm-4 col-12">
+											<number
+												layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='maxValue', required=false, path='answers[0].maxValue',
+                                                clazz='form-control', step='0.01', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.maxValue', 'Maximum')})}"
+											>
+											</number>
+										</div>
+										<div class="col-sm-4 col-12">
+											<number
+												layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='stepsize', required=false, path='answers[0].stepsize',
+                                                clazz='form-control', step='0.01', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.stepsize', 'Step size')})}"
+											>
+											</number>
+										</div>
+									</div>
+									<input
+										type="hidden"
+										th:field="*{answers[0].id}"
+									/>
+								</div>
+							</fieldset>
+						</div>
+
+						<!--/* IMAGE */-->
+						<div
+							class="my-2"
+							id="image"
+						>
+							<fieldset
+								id="imageField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'IMAGE', 'Image')}"
+								>
+								</legend>
+								<div class="form-group imageFile">
+									<input
+										type="hidden"
+										th:field="*{answers[0].id}"
+									/>
+									<file
+										layout:replace="~{fragments/forms :: fileWithLabel(
+                                        for='imageFile', required=true, showErrors=true,
+                                        path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile', clazz='form-control',
+                                        text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
+									>
+									</file>
+									<div
+										id="imageWarning"
+										class="alert alert-warning"
+									>
+										<th:block
+											th:text="${warning}"
+											escapeXml="false"
+										/>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<!--/* BODY_PART */-->
+						<addVar
+							layout:replace="~{helper/var :: add(
+                            key='bodyPartAnswerExists',
+                            value=${questionDTO.questionType != null &&
+                                    questionDTO.questionType.name() eq 'BODY_PART' &&
+                                    questionDTO.answers != null  &&
+                                    !questionDTO.answers.isEmpty()})}"
+						>
+						</addVar>
+						<div
+							class="my-2"
+							id="bodyPart"
+						>
+							<fieldset
+								id="bodyPartField"
+								disabled="true"
+							>
+								<legend
+									onclick="toggleFieldsets(this);"
+									th:text="${messages.get(#locale, 'BODY_PART', 'Body part selection')}"
+								>
+								</legend>
+								<div class="row my-1">
+									<div class="form-group">
+										<div class="col-12">
+											<label
+												for="imageType"
+												th:text="${messages.get(#locale, 'question.label.imageType', 'Image type')}"
+											>
+											</label>
+											<!--/* id="imageType" */-->
+											<select
+												id="imageTypeDropDown"
+												name="imageType"
+												class="form-control"
+												onchange="handleImageTypes()"
+											>
+												<th:block th:each="currentImageType: ${imageTypes}">
+													<option
+														th:id="${currentImageType}"
+														th:value="${currentImageType}"
+														th:attr="selected=${questionDTO.imageType ne null && questionDTO.imageType eq currentImageType} ? 'selected' : ''"
+														th:text="${messages.get(#locale, '__${currentImageType}__', '__${currentImageType}__')}"
+													>
+													</option>
+												</th:block>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="row my-1">
+									<div class="col-sm-6 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='minNumberAnswers', required=true, path='minNumberAnswers',
+                                            clazz='form-control', min='0', step='1', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
+										>
+										</number>
+									</div>
+									<div class="col-sm-6 col-12 form-group">
+										<number
+											layout:replace="~{fragments/forms :: numberWithLabel(
+                                            for='maxNumberAnswers', required=true, path='maxNumberAnswers',
+                                            clazz='form-control', min='1', step='1', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
+										>
+										</number>
+									</div>
+								</div>
+								<div class="row my-1">
+									<div
+										id="bodyPartPlaceholder"
+										class="col-md-2"
+									></div>
+									<th:block th:text="${counter.clear()}" />
+									<th:block th:each="image: ${imagePathBodyPartMap.keySet()}">
+										<addVar
+											layout:replace="~{helper/var :: add(
+                                            key='imageType', value='FRONT')}"
+										>
+										</addVar>
+										<th:block th:if="${#strings.contains(image, 'body_front')}">
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='imageType', value='FRONT')}"
+											>
+											</addVar>
+										</th:block>
+										<th:block th:if="${#strings.contains(image, 'body_back')}">
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='imageType', value='BACK')}"
+											>
+											</addVar>
+										</th:block>
+										<!--/* create a new column for each image that corresponds to the image type */-->
+										<div
+											class="col-md-6 col-12"
+											th:id="|svg-${vars['imageType']}|"
+										>
+											<div class="panel panel-default">
+												<div
+													class="svgDiv panel-body bodyPart-image-panel"
+													style="max-width: 50%; max-height: 600px"
+												>
+													<svg
+														width="100%"
+														height="100%"
+														viewBox="0 0 165 423"
+														style="
+															display: block;
+															margin-left: 50%;
+															max-height: 550px;
+														"
+													>
+														<image th:xlink:href="@{/__${image}__}"></image>
+														<g>
+															<th:block
+																th:each="bodyPart: ${imagePathBodyPartMap.get(image)}"
+															>
+																<th:block th:utext="${bodyPart.path}" />
+															</th:block>
+														</g>
+													</svg>
+													<!--/* Create an input field for all bodyParts to send the information about the selections to the server, if an answer already exists create an input field containing its id */-->
+													<th:block
+														th:each="bodyPart, bodyPartIndex: ${imagePathBodyPartMap.get(image)}"
+													>
+														<input
+															th:id="|text-${bodyPart.messageCode.replace('.', '-')}"
+															th:value="${bodyPart.messageCode}"
+															th:attr="data-param-index=${counter.get()}"
+															th:name="|answers[${counter.get()}].bodyPartMessageCode|"
+															disabled="disabled"
+															style="display: none"
+														/>
+														<th:block th:text="${counter.increment()}" />
+													</th:block>
+													<!--/* if the question existed before check all answers, that has been chosen to be selectable during survey and add an input field to send these informations to the server */-->
+													<th:block th:each="answer: ${questionDTO.answers}">
+														<input
+															th:id="|id-${answer?.value?.bodyPartMessageCode?.replace('.', '-')}|"
+															th:value="${answer.value.id}"
+															style="display: none"
+														/>
+													</th:block>
+												</div>
+											</div>
+											<button
+												type="button"
+												class="btn btn-primary"
+												onclick="selectAllBodyPartAnswers($(this));"
+												th:text="${messages.get(#locale, 'button.selectAll', 'Select all')}"
+											>
+											</button>
+											<button
+												type="button"
+												class="btn btn-primary"
+												onclick="deleteAllBodyPartAnswers($(this));"
+												th:text="${messages.get(#locale, 'button.deleteAll', 'Delete all')}"
+											>
+											</button>
+										</div>
+									</th:block>
+								</div>
+							</fieldset>
+						</div>
+					</div>
+				</div>
+				<input
+					id="saveButton"
+					name="action"
+					type="submit"
+					th:disabled="${#bools.isFalse(questionDTO.isModifiable())}"
+					class="btn btn-primary"
+					th:value="${messages.get(#locale, 'button.save', 'Save')}"
+				/>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="cancel"
+					id="cancelButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				>
+				</button>
+				<th:block
+					layout:insert="~{helper/localeHelper/deleteLanguageModal}"
+				></th:block>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var labelQuestionText =
+			/*[[${messages.get(#locale, 'question.label.questiontext', 'Question:')}]]*/ "Question:";
+		var labelInfoText =
+			/*[[${messages.get(#locale, 'question.label.infotext', 'Info text:')}]]*/ "Info text:";
+		var labelAnswerDelete =
+			/*[[${messages.get(#locale, 'question.label.answerDelete', 'The last answer cannot be deleted')}]]*/ "The last answer cannot be deleted";
+		var labelLastWarning =
+			/*[[${messages.get(#locale, 'question.label.lastWarning', 'You did not get it')}]]*/ "You did not get it";
+		var labelChangeQuestionTypeWarningStart =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningStart', 'The change of the question type will also delete the following:')}]]*/ "The change of the question type will also delete the following:";
+		var labelChangeQuestionTypeWarningExportRules =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningExportRules', 'Export rules')}]]*/ "Export rules";
+		var labelChangeQuestionTypeWarningEnd =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningEnd', 'Do you really want to continue?')}]]*/ "Do you really want to continue?";
+		var labelDeleteAnswerWarningStart =
+			/*[[${messages.get(#locale, 'question.label.deleteAnswerWarningStart', 'The removal of an answer will also delete the following:')}]]*/ "The removal of an answer will also delete the following:";
+		var errorSliderStepsizeDoesNotMatch =
+			/*[[${messages.get(#locale, 'question.error.sliderDifferenceMaxMinNotDivisibleByStepsize', 'The difference between max and min values is not divisible without remainder by the step size')}]]*/ "The difference between max and min values is not divisible without remainder by the step size";
+		var warningSliderTooMuchSteps =
+			/*[[${messages.get(#locale, 'sliderAnswer.validator.tooManySteps', 'There are more than 200 steps available. Alternatively you can also use the question type number input')}]]*/ "There are more than 200 steps available. Alternatively you can also use the question type number input";
+		var labelMoveDown =
+			/*[[${messages.get(#locale, 'answer.label.moveDown', 'Move down')}]]*/ "Move down";
+		var labelMoveUp =
+			/*[[${messages.get(#locale, 'answer.label.moveUp', 'Move up')}]]*/ "Move up";
+		var errorSliderStepsizeLessOrEqualToZero =
+			/*[[${messages.get(#locale, 'question.error.sliderStepsizeLessOrEqualToZero', 'The stepsize should not contain a value less or equal to zero')}]]*/ "The stepsize should not contain a value less or equal to zero";
+		var errorSliderIconMissingIconValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.missingIconValue', 'An icon for every field has to be selected, if the feature is enabled.')}]]*/ "An icon for every field has to be selected, if the feature is enabled.";
+		var errorSliderIconMissingPosition =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.missingPosition', 'The icon''s position is required.')}]]*/ "The icon's position is required.";
+		var errorSliderIconPositionAlreadyInUse =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionAlreadyInUse', 'The icon''s position of one ore more icons is identical. Please select different values.')}]]*/ "The icon's position of one ore more icons is identical. Please select different values.";
+		var errorSliderIconPositionBiggerThanMaxValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionBiggerThanMaxValue', 'The icon''s position cannot be larger thant the maximum slider value.')}]]*/ "The icon's position cannot be larger thant the maximum slider value.";
+		var errorSliderIconPositionSmallerThanMinValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionSmallerThanMinValue', 'The icon''s position cannot be smaller than the minimum slider value.')}]]*/ "The icon's position cannot be smaller than the minimum slider value.";
+		var warningImageTooSmall =
+			/*[[${messages.get(#locale, 'imageAnswer.validator.resolutionTooSmall', 'The resolution of the choosen image may be too small.')}]]*/ "The resolution of the choosen image may be too small.";
+		var noValidScoreMinMax =
+			/*[[${messages.get(#locale, 'question.error.noValidScoreMinMax', 'It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
+		var noValidScoreQuestionType =
+			/*[[${messages.get(#locale, 'question.error.noValidScoreQuestionType', 'A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
+		var warningIsOtherNotLastAnswer =
+			/*[[${messages.get(#locale, 'answer.warning.isOtherNotLastAnswer', 'This answer is marked as "other" and will be shown as the last answer of the question.')}]]*/ 'This answer is marked as "other" and will be shown as the last answer of the question.';
+
+		var deletedAnswerWithExportRule = false;
+		/*[- Get the current used language -]*/
+		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+
+		var errorStepsize = /*[[${vars['errorStepsize']}]]*/ "";
+		var errorMinValue = /*[[${vars['errorMinValue']}]]*/ "";
+		var errorMaxValue = /*[[${vars['errorMaxValue']}]]*/ "";
+
+		var sliderIconValueErrors = [];
+		var sliderIconPositionErrors = [];
+
+		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
+		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
+		/*[- Add the error messages from the model to the javascript arrays -]*/
+		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].icons}"]*/
+
+		sliderIconValueErrors.push(
+			"[(${vars['errorSliderIconIcon__${iconDTOIndex.index}__']})]"
+		);
+		sliderIconPositionErrors.push(
+			"[(${vars['errorSliderIconPosition__${iconDTOIndex.index}__']})]"
+		);
+
+		/*[/]*/
+
+		$(function () {
+			/*[- Init the multilingual language visualization of the question -]*/
+			Localization.initShowLocalizedPage(
+				currentLanguage, /*[[${vars['checkAvailableLanguages']}]]*/
+			);
+		});
+
+		$(document).ready(function () {
+			checkSlider(true);
+
+			if(numberOfIcons){
+				$('#numberOfIcons').val(numberOfIcons)
+			}
+			toggleIconpickerElements(
+				$("#iconSelectionCloningWrapper"),
+				"bi-hand-thumbs-up"
+			);
+
+			/*[- Check if current DTO already has sliderIcons enabled and trigger the dom manipulation -]*/
+			toggleIconPicker(document.querySelector("#showIcons"), currentIconDTOs);
+			/*[- Check if there are errors in the dom -]*/
+			checkIconErrorsInModel();
+
+			/*[- disable all input fields except the questionnaireId to prevent browser from validation -]*/
+			$("#cancelButton").click(function () {
+				$("input").each(function () {
+					if ($(this).attr("id") !== "questionnaireId") {
+						$(this).attr("disabled", true);
+					}
+				});
+			});
+
+			/*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/
+			$(".multipleChoiceAnswerPanel")
+				.find('[class*="localable-form-group-"]')
+				.each(function () {
+					$(this).width("98%");
+				});
+			$(".multipleChoiceAnswerPanel")
+				.find($(".row"))
+				.each(function () {
+					$(this).width("98%");
+				});
+			addMovebuttons();
+
+			/*[- Check if the browser has no native datepicker -]*/
+			if (Modernizr.inputtypes.date === false) {
+				/*[- If german language is selected use german date format -]*/
+				var localeString = /*[[${#locale.toString}]]*/ "en_GB";
+				if (localeString === "de_DE") {
+					$("input[type=date]").datepicker({
+						dateFormat: "dd.mm.yy",
+					});
+				} else {
+					/*[- Else use the ISO date format -]*/
+					$("input[type=date]").datepicker({
+						dateFormat: "yy-mm-dd",
+					});
+				}
+			}
+
+			/*[- Initialize the image upload field -]*/
+			var imgPath = /*[[@{__${questionDTO.answers[0].imagePath}__}]]*/ "";
+			var imageBase64= /*[[@{__${questionDTO.answers[0].imageBase64}__}]]*/ "";
+			if (imgPath !== "") {
+				img = new Image();
+				img.onload = function () {
+					$("#imageWarning").hide();
+					if (this.width < 400 || this.height < 300) {
+						$("#imageWarning").html(warningImageTooSmall);
+						$("#imageWarning").show();
+					}
+				};
+				img.src = imageBase64;
+			} else {
+				$("#imageFile").fileinput({
+					showUpload: false,
+					showRemove: false,
+					showPreview: true,
+					showClose: false,
+					language: currentLanguage,
+				});
+				$("#imageWarning").hide();
+			}
+
+			/*[- Prepare the isOther checkboxes -]*/
+			$(".isOtherCheckbox").each(function () {
+				/*[- Change the appearance of the isOther checkboxes to radio buttons -]*/
+				$(this).prop("type", "radio");
+
+				/*[- Add the right values and warning if needed -]*/
+				if ($(this).prop("checked")) {
+					$(this).prop("value", true);
+					currentAnswerPosition = parseInt(
+						$(this)
+							.prop("name")
+							.replace(/[^0-9\.]/g, ""),
+						10
+					);
+					/*[- Add a warning if this is not the last answer -]*/
+					if (
+						currentAnswerPosition !==
+						$(".multipleChoiceAnswerPanel").length - 1
+					) {
+						$(
+							".multipleChoiceAnswerPanel[value='" +
+								currentAnswerPosition +
+								"']"
+						).addClass("alert-warning");
+
+						var isOtherWarningDiv = document.createElement("div");
+						isOtherWarningDiv.id = "isOtherWarning";
+						isOtherWarningDiv.innerHTML = warningIsOtherNotLastAnswer;
+						$(
+							".multipleChoiceAnswerPanel[value='" +
+								currentAnswerPosition +
+								"']"
+						)
+							.find(".form-group")[0]
+							.append(isOtherWarningDiv);
+						$("#isOtherWarning").css("padding-top", "10px");
+					}
+				} else {
+					$(this).prop("value", false);
+				}
+			});
+
+			/*[- select before selected elements and set the onclick function -]*/
+			$(".shape").each(function () {
+				$(this).attr("onclick", "selectBodyPart($(this));");
+				/*[- if there's a input element associated with the given path element select -]*/
+				var answerId = $("#id-" + $(this).attr("id"));
+				if (answerId.length > 0) {
+					$(this).removeAttr("class");
+					$(this).attr("class", "shape-selected");
+					$("#text-" + $(this).attr("id")).attr("disabled", "");
+					answerId.attr(
+						"name",
+						"answers[" +
+							$("#text-" + $(this).attr("id")).attr("data-param-index") +
+							"].id"
+					);
+				}
+			});
+
+			handleImageTypes();
+			switchCodedValue();
+		});
+
+		/*[- Add onclick method to every isOther checkbox to act like a radio button -]*/
+		function clickIsOtherBoxes(elem, automated) {
+			/*[- Remember the state before the box was clicked -]*/
+			prevState = $(elem).prop("value");
+			$(".isOtherCheckbox").each(function () {
+				/*[- Uncheck all isOther checkboxes and remove possibly the warnings -]*/
+				$(this).prop("checked", false);
+				$(this).prop("value", false);
+				/*[- And remove the warning if necessary -]*/
+				currentAnswerPosition = parseInt(
+					$(this)
+						.prop("name")
+						.replace(/[^0-9\.]/g, ""),
+					10
+				);
+				if (
+					$(
+						".multipleChoiceAnswerPanel[value='" + currentAnswerPosition + "']"
+					).find("#warningMessage").length === 0
+				) {
+					$(
+						".multipleChoiceAnswerPanel[value='" + currentAnswerPosition + "']"
+					).removeClass("alert-warning");
+				}
+				$(".multipleChoiceAnswerPanel[value='" + currentAnswerPosition + "']")
+					.find("#isOtherWarning")
+					.remove();
+			});
+			/*[- Check the clicked isOther checkbox if it was not checked before -]*/
+			if (prevState === "false" || automated === true) {
+				$(elem).prop("checked", true);
+				$(elem).prop("value", true);
+				currentAnswerPosition = parseInt(
+					$(elem)
+						.prop("name")
+						.replace(/[^0-9\.]/g, ""),
+					10
+				);
+				/*[- Add a warning if this is not the last answer -]*/
+				if (
+					currentAnswerPosition !==
+					$(".multipleChoiceAnswerPanel").length - 1
+				) {
+					$(
+						".multipleChoiceAnswerPanel[value='" + currentAnswerPosition + "']"
+					).addClass("alert-warning");
+
+					var isOtherWarningDiv = document.createElement("div");
+					isOtherWarningDiv.id = "isOtherWarning";
+					isOtherWarningDiv.innerHTML = warningIsOtherNotLastAnswer;
+					$(".multipleChoiceAnswerPanel[value='" + currentAnswerPosition + "']")
+						.find(".form-group")[0]
+						.append(isOtherWarningDiv);
+					$("#isOtherWarning").css("padding-top", "10px");
+				}
+			}
+		}
+
+		function checkSlider(first) {
+			var max = $("#max").val();
+			var min = $("#min").val();
+			var stepsize = $("#stepsize").val();
+			/*[- At first call server error messages are displayed -]*/
+			if (
+				first === true &&
+				(errorStepsize !== "" || errorMinValue !== "" || errorMaxValue !== "")
+			) {
+				$("#sliderErrors").show();
+			} else if (max !== "" && min !== "" && stepsize !== "") {
+			/*[- Afterwards browser validation -]*/
+				$("#sliderErrors").show();
+				/*[- Must be multiplied to whole numbers, otherwise there will be rounding errors -]*/
+				if (stepsize <= 0) {
+					$("#sliderErrors").html(errorSliderStepsizeLessOrEqualToZero);
+					$("#sliderErrors")
+						.removeClass("alert-warning")
+						.addClass("alert-danger");
+				} else if (
+					(parseInt(max * 100) - parseInt(min) * 100) %
+						parseInt(stepsize * 100) !==
+					0
+				) {
+					$("#sliderErrors").html(errorSliderStepsizeDoesNotMatch);
+					$("#sliderErrors")
+						.removeClass("alert-warning")
+						.addClass("alert-danger");
+				} else if ((max - min) / stepsize + 1 > 200) {
+					$("#sliderErrors").html(warningSliderTooMuchSteps);
+					$("#sliderErrors")
+						.removeClass("alert-danger")
+						.addClass("alert-warning");
+				} else {
+					$("#sliderErrors").hide();
+				}
+			} else {
+				$("#sliderErrors").hide();
+			}
+		}
+
+		function addAnswerDiv() {
+			var length = $(".multipleChoiceAnswerPanel").length;
+			var original = getActiveAnswer("last");
+			/*[- Enable the deleteAnswerButton -]*/
+			$(original).find("#deleteAnswerButton").removeAttr("disabled");
+			var clone = $(original).clone();
+			$(clone).attr("value", length);
+			/*[- ID -]*/
+			clone.find('input[name$="id"]').val(null);
+			clone
+				.find('input[name$="id"]')
+				.attr("name", "answers[" + length + "].id");
+			/*[- score -]*/
+			clone
+				.find('input[name$="value"]')
+				.attr("name", "answers[" + length + "].value");
+			clone.find('input[name$="value"]').val(null);
+			/*[- coded value -]*/
+			clone
+				.find('input[name$="codedValue"]')
+				.attr("name", "answers[" + length + "].codedValue");
+			clone.find('input[name$="codedValue"]').val(null);
+			/*[- hasConditionAsTrigger -]*/
+			clone
+				.find('input[name$="hasConditionsAsTrigger"]')
+				.attr("name", "answers[" + length + "].hasConditionsAsTrigger");
+			clone.find('input[name$="hasConditionsAsTrigger"]').val(false);
+			/*[- hasExportRule -]*/
+			clone
+				.find('input[name$="hasExportRule"]')
+				.attr("name", "answers[" + length + "].hasExportRule");
+			clone.find('input[name$="hasExportRule"]').val(false);
+			/*[- isEnabled -]*/
+			clone
+				.find('input[name="answers[' + parseInt(length - 1) + '].isEnabled"]')
+				.attr("name", "answers[" + length + "].isEnabled");
+			clone.find('input[name="answers[' + length + '].isEnabled"]').val(true);
+			clone
+				.find('input[name="_answers[' + parseInt(length - 1) + '].isEnabled"]')
+				.attr("name", "_answers[" + length + "].isEnabled");
+			clone.find('input[name="_answers[' + length + '].isEnabled"]').val("on");
+			/*[- isOther -]*/
+			clone
+				.find('input[name="answers[' + parseInt(length - 1) + '].isOther"]')
+				.attr("name", "answers[" + length + "].isOther");
+			clone
+				.find('input[name="answers[' + length + '].isOther"]')
+				.attr("id", "answers" + length + ".isOther1");
+			clone
+				.find('input[name="answers[' + length + '].isOther"]')
+				.prop("checked", false);
+			clone
+				.find('input[name="answers[' + length + '].isOther"]')
+				.prop("value", false);
+
+			/*[- Create a unique string for the new answer. This string will be used to make the localized label collapsable -]*/
+			clone.find('a[href*="localizedLabelCollapsableText"]').each(function () {
+				var oldHrefForCollapsableElement = $(this).attr("href");
+				/*[- E.g. #localizedLabelCollapsableText_de_0 --> #localizedLabelCollapsableText_de_ -]*/
+				var newHrefForCollapsableElement = oldHrefForCollapsableElement.substr(
+					0,
+					oldHrefForCollapsableElement.lastIndexOf("_") + 1
+				);
+				/*[- E.g. #localizedLabelCollapsableText_de_ --> #localizedLabelCollapsableText_de_1 -]*/
+				newHrefForCollapsableElement = newHrefForCollapsableElement + length;
+				$(this).attr("href", newHrefForCollapsableElement);
+				/*[- E.g. localizedLabelCollapsableText_de_1 -]*/
+				$(this).next().attr("id", newHrefForCollapsableElement.substr(1));
+			});
+
+			/*[- Loop through all textareas of the new answer and increment the answer number in the name. Also set html to an empty string -]*/
+			clone.find("textarea").each(function () {
+				var oldNameOfTextarea = $(this).attr("name");
+				/*[- E.g. answers[0].localizedFreetextLabel[de] --> .localizedFreetextLabel[de] -]*/
+				var newNameForTextarea = oldNameOfTextarea.substr(
+					oldNameOfTextarea.indexOf(".")
+				);
+				newNameForTextarea = "answers[" + length + "]" + newNameForTextarea;
+				$(this).attr("name", newNameForTextarea);
+				$(this).html("");
+			});
+			/*[- remove warning -]*/
+			clone.removeClass("alert-warning");
+			clone.find("#panelBody").css("padding-bottom", "15px");
+			clone.find("#warningMessage").remove();
+
+			$(original).after(clone);
+
+			/*[- bind onclick function -]*/
+			clone.find($("[data-bs-toggle=collapse]")).click(function () {
+				collapsableClick($(this));
+			});
+			/*[- Check if this is the second answer and add a moveUp button -]*/
+			if (getNumberOfActiveAnswers() === 2) {
+				addMoveUpButton(clone.find("#panelBody .form-group")[0]);
+			}
+			/*[- Add to the precessor a moveDown button -]*/
+			addMoveDownButton($(original).find("#panelBody .form-group")[0]);
+
+			/*[- Check if an alert on the penultimate answer is needed -]*/
+			if (
+				$('input[id="answers' + parseInt(length - 1) + '.isOther1"]').prop(
+					"checked"
+				) === true
+			) {
+				$(
+					".multipleChoiceAnswerPanel[value='" + parseInt(length - 1) + "']"
+				).addClass("alert-warning");
+
+				var isOtherWarningDiv = document.createElement("div");
+				isOtherWarningDiv.id = "isOtherWarning";
+				isOtherWarningDiv.innerHTML = warningIsOtherNotLastAnswer;
+				$(".multipleChoiceAnswerPanel[value='" + parseInt(length - 1) + "']")
+					.find(".form-group")[0]
+					.append(isOtherWarningDiv);
+				$("#isOtherWarning").css("padding-top", "10px");
+			}
+		}
+
+		function toggleFieldsets(element) {
+			$(element).siblings().slideToggle("slow");
+		}
+
+		function deleteAnswerDiv(element) {
+			/*[- Delete the selected answerDiv only if it is not the last -]*/
+			var length = getNumberOfActiveAnswers();
+			if (length > 1) {
+				var i = $(element).parents(".multipleChoiceAnswerPanel").attr("value");
+				var parent = $(element).parents(".multipleChoiceAnswerPanel");
+
+				if (
+					parent.find("input[name$='hasConditionsAsTrigger']").val() === "true"
+				) {
+					deletedAnswerWithCondition = true;
+				}
+
+				if (parent.find("input[name$='hasExportRule']").val() === "true") {
+					deletedAnswerWithExportRule = true;
+				}
+				/*[- Remopve the moveUp or moveDown button if the first or last answer was deleted -]*/
+				if (parent[0] === getActiveAnswer("last")) {
+					parent.empty();
+					parent.css("display", "none");
+					parent.append(
+						'<input type="hidden" name="answers[' + i + '].id" value="-1"/>'
+					);
+					$(getActiveAnswer("last")).find(".moveDown").remove();
+				} else if (parent[0] === getActiveAnswer("first")) {
+					parent.empty();
+					parent.css("display", "none");
+					parent.append(
+						'<input type="hidden" name="answers[' + i + '].id" value="-1"/>'
+					);
+					$(getActiveAnswer("first")).find(".moveUp").remove();
+				} else {
+					parent.empty();
+					parent.css("display", "none");
+					parent.append(
+						'<input type="hidden" name="answers[' + i + '].id" value="-1"/>'
+					);
+				}
+			} else {
+				alert(labelAnswerDelete);
+			}
+			/*[- If there is only one answer left -]*/
+			if (length === 2) {
+				/*[- Disable the deleteAnswerButton -]*/
+				var lastAnswer = getActiveAnswer("last");
+				$(lastAnswer).find("#deleteAnswerButton").attr("disabled", "disabled");
+			}
+
+			$(".multipleChoiceAnswerPanel").last().remove();
+
+			/*[- Check if the new last answer has isOther checked and possibly remove the warning -]*/
+			lastAnswerPosition = $(".multipleChoiceAnswerPanel").length - 1;
+			if (
+				$('input[id="answers' + lastAnswerPosition + '.isOther1"]').prop(
+					"checked"
+				) === true
+			) {
+				/*[- And remove the warning if necessary -]*/
+				if (
+					$(
+						".multipleChoiceAnswerPanel[value='" + lastAnswerPosition + "']"
+					).find("#warningMessage").length === 0
+				) {
+					$(
+						".multipleChoiceAnswerPanel[value='" + lastAnswerPosition + "']"
+					).removeClass("alert-warning");
+				}
+				$(".multipleChoiceAnswerPanel[value='" + lastAnswerPosition + "']")
+					.find("#isOtherWarning")
+					.remove();
+			}
+		}
+		/*[- Check if the image is too small -]*/
+		$("#imageFile").change(function (e) {
+			var _URL = window.URL || window.webkitURL;
+			var file, img;
+			if ((file = this.files[0])) {
+				img = new Image();
+				img.onload = function () {
+					$("#imageWarning").hide();
+					if (this.width < 400 || this.height < 300) {
+						$("#imageWarning").html(warningImageTooSmall);
+						$("#imageWarning").show();
+					}
+				};
+				img.src = _URL.createObjectURL(file);
+			}
+		});
+
+		function handleQuestionTypes(onload) {
+			/*[- Disable all elements -]*/
+			$("#multipleChoice").children().attr("disabled", "disabled");
+			$("#answerField").children("legend").siblings().hide();
+
+			// $('#showIcons').prop('checked',false);
+			// $("#numberOfIconsWrapper").addClass("d-none");
+			// $("#iconSelectionWrapper").addClass("d-none");
+			// $("#iconField").hide();
+			// $("#showIconsContainer").hide();
+			$("#slider").children().attr("disabled", "disabled");
+			$("#sliderField").children("legend").siblings().hide();
+
+			$("#sliderFreeText").children().attr("disabled", "disabled");
+			$("#sliderFreeTextField").children("legend").siblings().hide();
+
+			$("#showValueOnButtonContainer").hide();
+
+			$("#date").children().attr("disabled", "disabled");
+			$("#dateField").children("legend").siblings().hide();
+
+			$("#numberInput").children().attr("disabled", "disabled");
+			$("#numberInputField").children("legend").siblings().hide();
+
+			$("#image").children().attr("disabled", "disabled");
+			$("#imageField").children("legend").siblings().hide();
+
+			$("#bodyPart").children().attr("disabled", "disabled");
+			$("#bodyPartField").children("legend").siblings().hide();
+
+			$(".labelQuestionText").html(labelQuestionText);
+
+			/*[- Enable the isRequired checkbox by default. The number 1 after
+            isRequired is automatically generated because of the path attribute in
+            the checkbox tag. -]*/
+			$("#isRequired1").removeAttr("disabled");
+
+			/*[- Switch over chosen QuestionType and enable associated elements -]*/
+			switch ($("#questionTypeDropDown").val()) {
+				case "MULTIPLE_CHOICE":
+					$("#multipleChoice").children().removeAttr("disabled");
+					$("#minNumberAnswers").removeAttr("readonly");
+					$("#maxNumberAnswers").removeAttr("readonly");
+					$("#answerField").children("legend").siblings().show();
+					/*[- If there is only one answer -]*/
+					if (getNumberOfActiveAnswers() === 1) {
+						/*[- Disable the deleteAnswerButton -]*/
+						var lastAnswer = getActiveAnswer("last");
+						$(lastAnswer)
+							.find("#deleteAnswerButton")
+							.attr("disabled", "disabled");
+					}
+					break;
+				case "DROP_DOWN":
+					$("#multipleChoice").children().removeAttr("disabled");
+					$("#minNumberAnswers").val(1);
+					$("#maxNumberAnswers").val(1);
+					$("#answerField").children("legend").siblings().show();
+					$("#minNumberAnswers").attr("readonly", "readonly");
+					$("#maxNumberAnswers").attr("readonly", "readonly");
+					/*[- If there is only one answer -]*/
+					if (getNumberOfActiveAnswers() === 1) {
+						/*[- Disable the deleteAnswerButton -]*/
+						var lastAnswer = getActiveAnswer("last");
+						$(lastAnswer)
+							.find("#deleteAnswerButton")
+							.attr("disabled", "disabled");
+					}
+					break;
+				case "SLIDER":
+					/*[- Enable the wysiwyg editor -]*/
+					$("#slider")
+						.find("div .note-editable")
+						.attr("contenteditable", "true");
+					$("#sliderField")
+						.find('input[name$=".vertical"]')
+						.attr("disabled", "disabled");
+					$("#sliderField")
+						.find('input[name$=".vertical"]')
+						.parent()
+						.css("cursor", "default");
+					$("#showValueOnButtonContainer").show();
+					$("#iconField").show();
+					$("#showIconsContainer").show();
+					$("#numberOfIconsWrapper").addClass("d-none");
+					$("#icon-select").addClass("d-none");
+					$("#slider").children().removeAttr("disabled");
+					$("#sliderField").children("legend").siblings().show();
+					break;
+				case "NUMBER_CHECKBOX":
+					/*[- Enable the wysiwyg editor -]*/
+					$("#slider")
+						.find("div .note-editable")
+						.attr("contenteditable", "true");
+					$("#slider").children().removeAttr("disabled");
+					$("#sliderField")
+						.find('input[name$=".vertical"]')
+						.removeAttr("disabled");
+					$("#sliderField")
+						.find('input[name$=".vertical"]')
+						.parent()
+						.css("cursor", "pointer");
+					$("#sliderField").children("legend").siblings().show();
+					$('#showIcons').prop('checked',false);
+					$("#numberOfIconsWrapper").addClass("d-none");
+					$("#iconSelectionWrapper").addClass("d-none");
+					$("#iconField").hide();
+					$("#showIconsContainer").hide();
+					break;
+				case "NUMBER_CHECKBOX_TEXT":
+					/*[- Enable the wysiwyg editor -]*/
+					$("#sliderFreeText")
+						.find("div .note-editable")
+						.attr("contenteditable", "true");
+					$("#sliderFreeText").children().removeAttr("disabled");
+					$("#sliderFreeTextField").children("legend").siblings().show();
+					break;
+				case "FREE_TEXT":
+				case "BARCODE":
+					break;
+				case "INFO_TEXT":
+					$(".labelQuestionText").html(labelInfoText);
+					$("#isRequired1").attr("disabled", "disabled");
+					$("#isRequired1").removeAttr("checked");
+					break;
+				case "DATE":
+					$("#date").children().removeAttr("disabled");
+					$("#dateField").children("legend").siblings().show();
+					break;
+				case "NUMBER_INPUT":
+					$("#numberInput").children().removeAttr("disabled");
+					$("#numberInputField").children("legend").siblings().show();
+					break;
+				case "IMAGE":
+					$("#image").children().removeAttr("disabled");
+					$("#imageField").children("legend").siblings().show();
+					break;
+				case "BODY_PART":
+					$("#bodyPart").children().removeAttr("disabled");
+					$("#bodyPartField").children("legend").siblings().show();
+					if (onload) {
+						handleImageTypes();
+					}
+					break;
+				default:
+					alert(labelLastWarning);
+					break;
+			}
+		}
+
+		function getNumberOfActiveAnswers() {
+			var length = 0;
+			$(".multipleChoiceAnswerPanel").each(function (i) {
+				if ($(this).find('input[name$="id"]').val() !== "-1") {
+					length++;
+				}
+			});
+			return length;
+		}
+
+		function getActiveAnswer(position) {
+			if (position === "first") {
+				return $(".multipleChoiceAnswerPanel")
+					.find('input[name$="id"]')
+					.not("[value='-1']")
+					.first()
+					.parent()[0];
+			} else if (position === "last") {
+				return $(".multipleChoiceAnswerPanel")
+					.find('input[name$="id"]')
+					.not("[value='-1']")
+					.last()
+					.parent()[0];
+			} else {
+				return $(".multipleChoiceAnswerPanel")
+					.find('input[name$="id"]')
+					.not("[value='-1']")
+					[position].parent()[0];
+			}
+		}
+
+		function addLanguage(selectedLanguageElement) {
+			/*[- Add the new language to all fieldsets -]*/
+			Localization.addNewLanguage(selectedLanguageElement);
+			/*[- Reduce the width of a multiple choice answer to 98% -]*/
+			$(".multipleChoiceAnswerPanel")
+				.find($(".localableLast"))
+				.each(function () {
+					$(this).width("98%");
+				});
+		}
+
+		function addMovebuttons() {
+			/*[- Insert move buttons to every answer -]*/
+			$(".multipleChoiceAnswerPanel")
+				.find($(".persisted"))
+				.parent()
+				.each(function (index) {
+					/*[- Don't add the moveUp button on the first element -]*/
+					if (index !== 0) {
+						addMoveUpButton(this);
+					}
+					/*[- Don't add the moveDown button on the last element -]*/
+					if (
+						index !==
+						$(".multipleChoiceAnswerPanel").find($(".persisted")).parent()
+							.length -
+							1
+					) {
+						addMoveDownButton(this);
+					}
+				});
+		}
+
+		function addMoveUpButton(element) {
+			/*[- Create moveUp span with bootstrap icon -]*/
+			var moveUp = document.createElement("span");
+			moveUp.setAttribute("class", "bi bi-menu-up");
+			moveUp.setAttribute("style", "float: right; font-size: 1.3em;");
+			/*[- Create moveUp anchor-tag with link to function -]*/
+			var moveUpTag = document.createElement("a");
+			moveUpTag.setAttribute("class", "link moveUp");
+			moveUpTag.setAttribute("title", labelMoveUp);
+			moveUpTag.setAttribute(
+				"onclick",
+				"switchValues(this.parentNode, 'moveUp')"
+			);
+			/*[- Append the span to the tag -]*/
+			moveUpTag.appendChild(moveUp);
+			/*[- Insert tag as first element -]*/
+			element.insertAdjacentElement("afterbegin", moveUpTag);
+		}
+
+		function addMoveDownButton(element) {
+			/*[- Create moveDown span with bootstrap icon -]*/
+			var moveDown = document.createElement("span");
+			moveDown.setAttribute("class", "bi bi-menu-up");
+			moveDown.setAttribute("style", "float: right; font-size: 1.3em;");
+			/*[- Create moveUp anchor-tag with link to function -]*/
+			var moveDownTag = document.createElement("a");
+			moveDownTag.setAttribute("class", "link moveDown");
+			moveDownTag.setAttribute("title", labelMoveDown);
+			moveDownTag.setAttribute(
+				"onclick",
+				"switchValues(this.parentNode, 'moveDown')"
+			);
+			/*[- Append the span to the tag -]*/
+			moveDownTag.appendChild(moveDown);
+			/*[- Insert tag as first element -]*/
+			element.insertBefore(moveDownTag, $(element).find(".row")[0].nextSibling);
+		}
+		/*[-
+            * Sets the selection mode of clicked path element.
+            * @param {type} elem clicked path element.
+        -]*/
+		function selectBodyPart(elem) {
+			if ($("#text-" + elem.attr("id")).attr("disabled") === "disabled") {
+				elem.removeAttr("class");
+				elem.attr("class", "shape-selected");
+				$("#text-" + elem.attr("id")).attr("disabled", false);
+				$("#id-" + elem.attr("id")).attr("disabled", false);
+			} else {
+				elem.removeAttr("class");
+				elem.attr("class", "shape");
+				$("#text-" + elem.attr("id")).attr("disabled", true);
+				$("#id-" + elem.attr("id")).attr("disabled", true);
+			}
+		}
+
+		/*[-
+            * Handles the image type selection. Distinguishes the different svg elements
+            * and toggles them on and off, depending on the selected value.
+        -]*/
+		function handleImageTypes() {
+			toggleSvg($("#svg-FRONT"), false);
+			toggleSvg($("#svg-BACK"), false);
+			$("#bodyPartPlaceholder").removeAttr("class");
+			/*[- var frontBodyPartCount = $('#svg-FRONT').find('path').size(); -]*/
+			switch ($("#imageTypeDropDown").find(":selected").val()) {
+				case "FRONT":
+					toggleSvg($("#svg-FRONT"), true);
+					$("#bodyPartPlaceholder").attr("class", "col-md-3");
+					break;
+				case "BACK":
+					toggleSvg($("#svg-BACK"), true);
+					$("#bodyPartPlaceholder").attr("class", "col-md-3");
+					/*[- frontBodyPartCount = -1 * frontBodyPartCount; -]*/
+					break;
+				case "FRONT_BACK":
+					toggleSvg($("#svg-FRONT"), true);
+					toggleSvg($("#svg-BACK"), true);
+					/*[- adjust the name of the back input fields to send the correct number of answer to the server -]*/
+					$("#bodyPartPlaceholder").removeAttr("class");
+					break;
+			}
+		}
+
+		/*[-
+            * Enables and shows the element and its input fields if isEnabled is true,
+            * otherwise disables it and hides it.
+            * @param {type} element which visibility has to be toggled.
+            * @param {type} isEnabled determines if the visibility has to be toggled on or off.
+        -]*/
+		function toggleSvg(element, isEnabled) {
+			if (isEnabled === true) {
+				element.css("display", "block");
+			} else {
+				element.css("display", "none");
+			}
+
+			element.find(".shape-selected").each(function () {
+				var messageCode = $(this).attr("id");
+				$("#text-" + messageCode).attr("disabled", !isEnabled);
+				$("#id-" + messageCode).attr("disabled", !isEnabled);
+			});
+		}
+
+		/*[-
+            * Deselects all path elements of the given image.
+            * @param {type} elem svg image whose path elements has to be deselected.
+        -]*/
+		function deleteAllBodyPartAnswers(elem) {
+			elem
+				.siblings(".panel")
+				.find(".shape-selected")
+				.each(function () {
+					selectBodyPart($(this));
+				});
+		}
+
+		/*[-
+            * Selects all path elements of the given image.
+            * @param {type} elem svg image whose path elements has to be selected
+        -]*/
+		function selectAllBodyPartAnswers(elem) {
+			elem
+				.siblings(".panel")
+				.find(".shape")
+				.each(function () {
+					selectBodyPart($(this));
+				});
+		}
+
+		function switchValues(element, direction) {
+			/*[- Find element to switch with -]*/
+			var otherElement;
+			if (direction === "moveUp") {
+				otherElement = $(
+					$(element).parent().parent()[0].previousElementSibling
+				).find(".form-group")[0];
+			} else {
+				otherElement = $(
+					$(element).parent().parent()[0].nextElementSibling
+				).find(".form-group")[0];
+			}
+			$(element).find(".collapsed").click();
+			$(otherElement).find(".collapsed").click();
+
+			/*[- Switch texts -]*/
+			var text;
+			$(element)
+				.find("textarea[id^=answers]")
+				.each(function (index) {
+					text = $(element).find("textarea[id^=answers]")[index].value;
+					$(element).find("textarea[id^=answers]")[index].value =
+						$(otherElement).find("textarea")[index].value;
+					$(otherElement).find("textarea[id^=answers]")[index].value = text;
+				});
+
+			/*[- Switch isEnabled -]*/
+			var isEnabled = $(element).find(
+				$("input[name^=answers][name$=isEnabled]")
+			)[0].checked;
+			$(element).find($("input[name^=answers][name$=isEnabled]"))[0].checked =
+				$(otherElement).find(
+					$("input[name^=answers][name$=isEnabled]")
+				)[0].checked;
+			$(otherElement).find(
+				$("input[name^=answers][name$=isEnabled]")
+			)[0].checked = isEnabled;
+
+			/*[- Switch isOther -]*/
+			var isOther = $(element).find($("input[name^=answers][name$=isOther]"))[0]
+				.checked;
+			$(element).find($("input[name^=answers][name$=isOther]"))[0].checked = $(
+				otherElement
+			).find($("input[name^=answers][name$=isOther]"))[0].checked;
+			$(otherElement).find(
+				$("input[name^=answers][name$=isOther]")
+			)[0].checked = isOther;
+
+			/*[- Switch isOther values -]*/
+			var isOtherValue = $(element).find(
+				$("input[name^=answers][name$=isOther]")
+			)[0].value;
+			$(element).find($("input[name^=answers][name$=isOther]"))[0].value = $(
+				otherElement
+			).find($("input[name^=answers][name$=isOther]"))[0].value;
+			$(otherElement).find($("input[name^=answers][name$=isOther]"))[0].value =
+				isOtherValue;
+
+			/*[- Switch score -]*/
+			var score = $(element).find($("input[name^=answers][name$=value]"))[0]
+				.value;
+			$(element).find($("input[name^=answers][name$=value]"))[0].value = $(
+				otherElement
+			).find($("input[name^=answers][name$=value]"))[0].value;
+			$(otherElement).find($("input[name^=answers][name$=value]"))[0].value =
+				score;
+
+			/*[- Check if isOther is checked on one element -]*/
+			if (
+				$(element)
+					.find($("input[id^=answers][id$=isOther1]"))
+					.prop("checked") === true
+			) {
+				clickIsOtherBoxes(
+					$(element).find($("input[id^=answers][id$=isOther1]")),
+					true
+				);
+			} else if (
+				$(otherElement)
+					.find($("input[id^=answers][id$=isOther1]"))
+					.prop("checked") === true
+			) {
+				clickIsOtherBoxes(
+					$(otherElement).find($("input[id^=answers][id$=isOther1]")),
+					true
+				);
+			}
+		}
+
+		function switchCodedValue() {
+			switch ($("#codedValueType").val()) {
+				case "STRING":
+					$(".codedValueInput").attr("type", "text");
+					$(".codedValueInput").removeAttr("step");
+					break;
+				case "INTEGER":
+					$(".codedValueInput").attr("type", "number");
+					$(".codedValueInput").attr("step", "1");
+					break;
+				case "FLOAT":
+					$(".codedValueInput").attr("type", "number");
+					$(".codedValueInput").attr("step", "0.01");
+					break;
+			}
+		}
+
+		/*[-
+        *
+        * Function to toggle the icon picker select element if
+        * Will be activated, when the checkbox is toggled
+        *
+        * @param {type} checkbox checkbox element to toggle icon selection
+        -]*/
+		function toggleIconPicker(checkbox, iconArray = null) {
+			if (checkbox.checked) {
+				$("#numberOfIconsWrapper").removeClass("d-none");
+				/*[- Toggle the change function of the select element -]*/
+				showIconElements(document.querySelector("#numberOfIcons"), iconArray);
+			} else {
+				$("#numberOfIconsWrapper").addClass("d-none");
+				clearIconFields();
+			}
+		}
+
+		function divideIntoPartitions(number, partitions) {
+			if (partitions <= 1) {
+				return [0, number];
+			}
+
+			var step = number / (partitions - 1);
+			var result = [];
+			for (var i = 0; i < partitions; i++) {
+				result.push(Math.round(step * i));
+			}
+
+			return result;
+		}
+
+		/*[-
+        *
+        * Function to show a fixed number of form elements for the icon settings
+        * Number of icons will be decided by the selectElement parameter of type <select>
+        *
+        * @param {type} selectElement <select> element from the dom to choose the number of icons
+        -]*/
+		function showIconElements(selectElement, iconArray = null) {
+			/*[- Clear currently added input fields from DOM -]*/
+			clearIconFields();
+
+			// Sort icons according to positions
+			if(iconArray != null){
+				iconArray.sort((a, b) => {
+				const posA = a.position;
+				const posB = b.position;
+				if (posA < posB) {
+					return -1;
+				}
+				if (posA > posB) {
+					return 1;
+				}
+				return 0;
+				});
+			}
+			var numberOfIcons = iconArray!= null ? iconArray.length : Number(selectElement.value);
+
+			if (numberOfIcons > 0) {
+				for (let i = 0; i < numberOfIcons; i++) {
+					/*[- Clone the elements from dom -]*/
+					var newIconDiv = cloneIconInputs(i, numberOfIcons);
+
+					/*[- Check if the method has been called with already set icon arrays e.g. from model -]*/
+					if (iconArray !== null && iconArray.length > 0) {
+						try {
+							/*[- Set the position and store the icon value in a variable -]*/
+							newIconDiv.find("#iconPosition").val(iconArray[i].position);
+							var startIconValue =
+								iconArray[i].icon !== "" &&
+								iconArray[i].icon !== null &&
+								iconArray[i].icon !== undefined
+									? iconArray[i].icon
+									: "bi-hand-thumbs-up";
+						} catch (error) {}
+					} else {
+						/*[- Set default icon value -]*/
+						var startIconValue = "bi-hand-thumbs-up";
+						var positions = divideIntoPartitions(100, numberOfIcons);
+						newIconDiv.find("#iconPosition").val(positions[i]);
+					}
+
+					/*[- Toggle the icon picker inputs with the stored icon value or the default value -]*/
+					toggleIconpickerElements(newIconDiv, startIconValue);
+
+					/*[- Add new div to dom -]*/
+					$("#icon-select").append(newIconDiv);
+				}
+
+				/*[- Show iconWrapper after adding elements to it -]*/
+				$("#icon-select").removeClass("d-none");
+			}
+		}
+
+		/*[-
+        *
+        * Function that clones the icon inputs from the DOM and adjusts the attributes
+        * to fit to a certain model attribute depicted by the given index
+        *
+        * @param index - Integer depicting a certain index in the answers[0].icons array from the model
+        * @param numberOfIcon - Integer depicting the number of icons to add to the dom
+        *
+        * @return - JQuery object for the new dom element
+        *
+        -]*/
+		function cloneIconInputs(index, numberOfIcons) {
+			/*[- Clone the form elements from DOM -]*/
+			var newIconDiv = $("#iconSelectionCloningWrapper").clone(true, true);
+			/*[- Change properties of cloned input fields to match different DTO attributes -]*/
+			var newIconValueInput = newIconDiv.find("#icon");
+			var newIconPositionInput = newIconDiv.find("#iconPosition");
+
+			newIconValueInput.removeAttr("disabled");
+			newIconValueInput.attr("name", "answers[0].icons[" + index + "].icon");
+			newIconPositionInput.removeAttr("disabled");
+			newIconPositionInput.attr(
+				"name",
+				"answers[0].icons[" + index + "].position"
+			);
+			fillIconSteps(newIconPositionInput, numberOfIcons);
+
+			newIconDiv.removeAttr("id");
+			newIconDiv.attr("id", "iconRow_" + index);
+
+			return newIconDiv;
+		}
+
+		/*[-
+        *
+        * Function to fill the possible position values depending on the number of icons selectable
+        * With the current solution the icons will only be placed at the correct position, if the space
+        * between them is equal, so only a fixed number of positions can be supplied.
+        *
+        * @param positionElement - JQuery object for a select element that should contain the position values
+        * @param numberOfIcons - Int that depicts the numberOfIcons selected in the DOM
+        -]*/
+		function fillIconSteps(positionElement, numberOfIcons) {
+			switch (numberOfIcons) {
+				case 2: {
+					var option = $("<option/>");
+					option.attr("value", "0");
+					option.text("0%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "100");
+					option.text("100%");
+					$(positionElement).append(option);
+					break;
+				}
+
+				case 3: {
+					var option = $("<option/>");
+					option.attr("value", "0");
+					option.text("0%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "50");
+					option.text("50%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "100");
+					option.text("100%");
+					$(positionElement).append(option);
+					break;
+				}
+
+				case 5: {
+					var option = $("<option/>");
+					option.attr("value", "0");
+					option.text("0%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "25");
+					option.text("25%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "50");
+					option.text("50%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "75");
+					option.text("75%");
+					$(positionElement).append(option);
+
+					option = $("<option/>");
+					option.attr("value", "100");
+					option.text("100%");
+					$(positionElement).append(option);
+					break;
+				}
+			}
+		}
+
+		/*[-
+        *
+        * FUnction to remove all current icon elements from the dom
+        * and hides the element by adding class "d-none"
+        *
+        -]*/
+		function clearIconFields() {
+			/*[- Remove child elements -]*/
+			$("#icon-select").empty();
+			/*[- Hide the wrapper from DOM -]*/
+			$("#icon-select").addClass("d-none");
+		}
+
+		/*[-
+        *
+        * Function to activate the functionality of the iconpicker input fields
+        * with the help of iconpicker.js
+        *
+        -]*/
+		async function toggleIconpickerElements(parentElement, startValue) {
+			//Init iconpicker for slider
+			const response = await fetch("/js/iconsets/bootstrap_subset.json");
+			const result = await response.json();
+			const element = parentElement.find(".iconpicker").get(0);
+			const iconpicker = new Iconpicker(element, {
+				icons: result,
+				showSelectedIn: $(parentElement).find(".selected-icon").get(0),
+				defaultValue: startValue,
+			});
+			iconpicker.set(); // Set as empty
+			iconpicker.set(startValue); // Reset with a value
+			$(window).trigger('resize');
+		}
+
+		/*[-
+        *
+        * Function to handle the validation of the sliderIcon form elements
+        * handles all errors that are in the model and were previously added
+        * to Javascript via thymeleaf
+        -]*/
+		function checkIconErrorsInModel() {
+			var numberOfIcons = getNumberOfSliderIconsInDOM();
+
+			for (let i = 0; i < numberOfIcons; i++) {
+				/*[- If there is an position error for the current icon in model -]*/
+				if (
+					sliderIconPositionErrors[i] !== undefined &&
+					sliderIconPositionErrors[i] !== ""
+				) {
+					appendErrorAfterSliderElement(
+						$("#iconRow_" + i),
+						splitErrorArrayString(sliderIconPositionErrors[i])
+					);
+				}
+
+				/*[- If there is an value error for the current icon in model -]*/
+				if (
+					sliderIconValueErrors[i] !== undefined &&
+					sliderIconValueErrors[i] !== ""
+				) {
+					appendErrorAfterSliderElement(
+						$("#iconRow_" + i),
+						splitErrorArrayString(sliderIconValueErrors[i])
+					);
+				}
+			}
+		}
+
+		/*[-
+        *
+        * Function to check the current inputs of the sliderIcon elements
+        * Will be triggered with the onchange event of the position select
+        *
+        * @pram {type} iconInputElement - the element that activated the event
+        *
+        -]*/
+		function checkDuplicatePosition(iconInputElement) {
+			/*[- Remove the "is duplicate position" error that is marked with a special id -]*/
+			$("div[id*='sliderIconError_duplicate']")
+				.parent("div[class='col-12']")
+				.remove();
+			/*[- Remove the current error message as it will be retriggered to prevent duplication of error fields -]*/
+			var sliderIconRow = $(iconInputElement).closest("div[id*=iconRow_]");
+			sliderIconRow.find("div[id*='sliderIconError']").remove();
+
+			var positionInputVal = sliderIconRow
+				.find("input[name^='answers[0].icons'][name$='.position']")
+				.val();
+
+			var currentIconPosition =
+				positionInputVal !== "" ? Number(positionInputVal) : undefined;
+
+			/*[- Handle onblur events by validating current dom elements; Validation is the same as the Spring bean -]*/
+			if (currentIconPosition !== undefined) {
+				let positionValues = [];
+				$("select[name^='answers[0].icons'][name$='.position']").each(function (
+					i,
+					position
+				) {
+					positionValues.push($(position).val());
+				});
+
+				if (findDuplicates(positionValues).length > 0) {
+					appendErrorAfterSliderElement(
+						$("div[id*=iconRow_]").last(),
+						errorSliderIconPositionAlreadyInUse,
+						true
+					);
+				}
+			}
+		}
+
+		/*[-
+        *
+        * Helper function to identify duplicated in an array
+        * Returns the duplicates in a Set
+        *
+        * @param {type} array - Array object which should be analyzed for duplicates
+        -]*/
+		function findDuplicates(array) {
+			const uniq = array
+				.map((elem) => {
+					return {
+						count: 1,
+						name: elem,
+					};
+				})
+				.reduce((result, b) => {
+					result[b.name] = (result[b.name] || 0) + b.count;
+
+					return result;
+				}, {});
+			return Object.keys(uniq).filter((a) => uniq[a] > 1);
+		}
+
+		/*[-
+        *
+        * Helper function to compute the current number of slider icons elements in the dom
+        * Returns an integer value
+        *
+        -]*/
+		function getNumberOfSliderIconsInDOM() {
+			return document.querySelectorAll("div[id*=iconRow_]").length;
+		}
+
+		/*[-
+        *
+        * Helper function to process an error array string
+        * Typically if a field has more than one error attatched to it in the model
+        * it will be displayed as an array. When loading the array in the javascript block
+        * the array gets transformed into a single string, so it has to be splitted again
+        *
+        * @param {type} stringValue - string which was transformed from an array
+        -]*/
+		function splitErrorArrayString(stringValue) {
+			return stringValue
+				.replace("[", "")
+				.replace("]", "")
+				.split(" , ")
+				.map(function (item) {
+					return item.trim();
+				});
+		}
+
+		/*[-
+        *
+        * Helper function to clone the iconError element from the dom and fill it with a given message
+        * The cloned div will be appended to the parameter element
+        *
+        * @param {type} element - JQuery element to which the errorDiv should be appended
+        * @param {type} message - message string that should be displayed in the error div
+        -]*/
+		function appendErrorAfterSliderElement(element, message, isLast = false) {
+			var clonedErrorDiv = $("#sliderIconError").clone();
+			if (isLast === true) {
+				clonedErrorDiv.attr("id", "sliderIconError_duplicate");
+			}
+
+			var wrapperDiv = $("<div/>", {
+				class: "col-12",
+			});
+
+			if (typeof message === "string") {
+				clonedErrorDiv.text(message);
+			} else if (Array.isArray(message)) {
+				message.forEach((messagePart) => {
+					var temporalParagraph = $("<div/>");
+					temporalParagraph.text(messagePart);
+
+					clonedErrorDiv.append(temporalParagraph);
+				});
+			}
+			wrapperDiv.append(clonedErrorDiv);
+			element.append(wrapperDiv);
+		}
+
+		function setIconTemplates(templateSelector) {
+			switch ($(templateSelector).val()) {
+				case "EMOJI_ICONS": {
+					$("#numberOfIcons").val("5");
+					showIconElements(
+						document.getElementById("numberOfIcons"),
+						EMOJI_ICONS
+					);
+					break;
+				}
+
+				case "THUMBS": {
+					$("#numberOfIcons").val("2");
+					showIconElements(document.getElementById("numberOfIcons"), THUMBS);
+					break;
+				}
+			}
+		}
+
+		const EMOJI_ICONS = [
+			{
+				icon: "bi-emoji-angry",
+				position: "0",
+			},
+			{
+				icon: "bi-emoji-frown",
+				position: "25",
+			},
+			{
+				icon: "bi-emoji-neutral",
+				position: "50",
+			},
+			{
+				icon: "bi-emoji-smile",
+				position: "75",
+			},
+			{
+				icon: "bi-emoji-laughing",
+				position: "100",
+			},
+		];
+
+		const THUMBS = [
+			{
+				icon: "bi-hand-thumbs-down",
+				position: "0",
+			},
+			{
+				icon: "bi-hand-thumbs-up",
+				position: "100",
+			},
+		];
+
+		$("form").submit(function () {
+			if ("${pageContext.response.locale.toString()}" === "de_DE") {
+				$(".hasDatepicker").each(function (index, datepicker) {
+					$(datepicker).val(
+						$.datepicker.formatDate(
+							"yy-mm-dd",
+							$.datepicker.parseDate("dd.mm.yy", $(datepicker).val())
+						)
+					);
+				});
+			}
+			/*[- Check if the existing score is valid -]*/
+			var questionDTOHasScores = /*[[${#bools.isTrue(questionDTO.hasScores)}]]*/ false;
+			if (questionDTOHasScores === true) {
+				var result = true;
+				var validScoreQuestionTypes = [
+					"MULTIPLE_CHOICE",
+					"SLIDER",
+					"NUMBER_CHECKBOX",
+					"NUMBER_CHECKBOX_TEXT",
+					"DROP_DOWN",
+					"NUMBER_INPUT",
+				];
+				/*[- Check if the new questiontype is a valid score question type -]*/
+				if (
+					validScoreQuestionTypes.includes($("#questionTypeDropDown").val()) ===
+					false
+				) {
+					result = confirm(noValidScoreQuestionType);
+				}
+				/*[- Check if the min and max answers equal 1 if multiple choice is chosen -]*/
+				if (
+					$("#questionTypeDropDown").val() === "MULTIPLE_CHOICE" &&
+					($("#minNumberAnswers").val() !== "1" ||
+						$("#maxNumberAnswers").val() !== "1")
+				) {
+					result = confirm(noValidScoreMinMax);
+				}
+				return result;
+			}
+
+			return true;
+		});
+
+	$(window).on('resize', function() {
+
+		var $absoluteDivList = $('.iconpicker-dropdown').toArray();
+		const viewportWidth = window.innerWidth;
+  		const viewportHeight = window.innerHeight;
+
+		$absoluteDivList.forEach(function(element, index) {
+		var containerRect = element.getBoundingClientRect();
+
+		$(element).find('ul').each(function(ulIndex, ulElement) {
+			var absoluteDivRect = ulElement.getBoundingClientRect();
+			var $ulElement = $(ulElement);
+			
+			if (absoluteDivRect.right > viewportWidth) {
+				$ulElement.css('left', 'auto')
+				$ulElement.css('right', '0')
+			}
+			else if (absoluteDivRect.left < 0) {
+				$ulElement.css('left', '0')
+				$ulElement.css('right', 'auto')
+			}
+		});
+		});
+
+		
+		
+
+		
+		});		
+	</script>
+</th:block>

@@ -1,0 +1,126 @@
+<!--/*
+    * View for MoPats mobile user view. The user can adjust information here     
+*/-->
+<th:block
+	layout:decorate="~{layout/mobile}"
+	th:with="contenttype='content'"
+>
+	<th:block layout:fragment="content">
+		<form
+			name="currentUser"
+			data-ajax="false"
+			th:object="${currentUser}"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="edit"
+		>
+			<p
+				th:if="${success ne null}"
+				th:text="${success}"
+			></p>
+			<input
+				type="hidden"
+				th:field="*{id}"
+			/>
+			<input
+				type="hidden"
+				th:value="${returnPage}"
+				name="returnPage"
+			/>
+			<div class="form-group">
+				<input
+					layout:replace="~{fragments/forms :: inputWithLabel(
+					for='firstname', required=false, path='firstname',
+					clazz='form-control', showErrors=true,
+					text=${messages.get(#locale, 'user.label.firstname', 'Firstname:')})}"
+				/>
+			</div>
+			<div class="form-group">
+				<input
+					layout:replace="~{fragments/forms :: inputWithLabel(
+					for='lastname', required=false, path='lastname',
+					clazz='form-control', showErrors=true,
+					text=${messages.get(#locale, 'user.label.lastname', 'Lastname:')})}"
+				/>
+			</div>
+			<div class="form-group">
+				<input
+					layout:replace="~{fragments/forms :: inputWithLabel(
+					for='email', required=false, path='email',
+					clazz='form-control', showErrors=true,
+					text=${messages.get(#locale, 'user.label.email', 'Email:')})}"
+				/>
+			</div>
+			<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: plainInputWithLabel(
+                            for='oldPassword', required=false, clazz='form-control',
+                            type='password', id='oldPassword', name='oldPassword', 
+                            text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
+					/>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
+					/>
+				</div>
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: plainInputWithLabel(
+                            for='newPassword', required=false, clazz='form-control', 
+                            type='password', id='newPassword', name='newPassword',
+                            text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
+					/>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
+					/>
+				</div>
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: plainInputWithLabel(
+                            for='newPasswordApprove', required=false, clazz='form-control',
+                            type='password', id='newPasswordApprove', name='newPasswordApprove',
+                            text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
+					/>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
+					/>
+				</div>
+			</th:block>
+			<div class="form-group">
+				<button
+					type="submit"
+					class="btn btn-mobile col-bp-4 col-12 mb-2"
+					value="cancel"
+					id="saveButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				>
+				</button>
+				<button
+					type="submit"
+					class="btn btn-mobile col-bp-4 col-12 mb-2"
+					value="save"
+					id="saveButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.save', 'Save')}"
+				>
+				</button>
+			</div>
+		</form>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+	$(document).ready(function () {
+			/*[- Set the heading of the page -]*/
+			$("#title").html(
+				/*[[${messages.get(#locale, 'user.heading.editProfile', 'Change password')}]]*/ "Change password"
+			);
+
+	});
+	</script>
+</th:block>

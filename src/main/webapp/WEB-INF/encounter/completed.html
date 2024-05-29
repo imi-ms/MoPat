@@ -1,0 +1,16 @@
+<!--/*
+    * Error page that shows, if a specific planned encounter has already been completed    
+*/-->
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="accessDenied">
+			<span
+				class="errorText"
+				th:text="${messages.get(#locale, 'encounterScheduled.heading.encounterCompleted', 
+                    'This survey is not available any more or was already completed.')}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

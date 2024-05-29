@@ -1,0 +1,112 @@
+/**
+*
+* Basic layout changes
+*
+**/
+
+@import "includes/colors";
+@import "includes/sizes";
+@import "includes/variables";
+
+*{
+    font-size: 14px;
+    line-height: 1.428;
+}
+
+html, body {
+    height: 100%; 
+    margin: 0;
+    padding: 0
+}
+
+.wrapper {
+    display: flex; 
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+body {
+    background-color: @color-gray-lighter;
+}
+
+form {
+    margin-bottom: 0px !important;
+}
+
+#site-title {
+    &.card-header {
+        margin-top: 15px; 
+        background-color: @color-white;
+
+        h1, h2, h3, h4, h5, h6 {
+            color: @color-black;
+        }
+    }
+}
+
+.main-card {
+    border-color: @color-gray-border;
+    border: 0;
+
+    //Add Card like layout when padding on the sides is applied
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        border-radius: @border-radius; 
+    }
+}
+
+.card-header {
+    border-color: @color-gray-border;
+}
+
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    @media only screen and (min-width:@b5-screen-xl-min) and (max-width: @b5-screen-xl-max) {
+        padding-right: var(--bs-gutter-x, 5rem);
+        padding-left: var(--bs-gutter-x, 5rem);
+    }
+
+    @media only screen and (min-width: @b5-screen-xxl-min) {
+        padding-right: var(--bs-gutter-x, 10.0rem);
+        padding-left: var(--bs-gutter-x, 10.0rem);
+    }
+
+    flex-grow: 1;
+}
+
+.main-container{
+    width: 100%;
+    //center container
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1920px; 
+    flex-grow: 1; 
+
+    position: relative;
+
+    //Add Card like layout when padding on the sides is applied
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        margin-top:20px; 
+    }
+}
+.main-container::before {
+    content: "";
+    position: absolute; 
+    top: 0;
+    left: 0; 
+    right: 0; 
+    bottom: -70px; 
+    background-color: @color-white; 
+    z-index: -1;
+    box-shadow: @box-shadow-material-lg;
+
+
+    //Add Card like layout when padding on the sides is applied
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        border-radius: @border-radius; 
+    }
+}
+
+

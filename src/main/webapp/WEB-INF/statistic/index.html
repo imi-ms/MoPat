@@ -1,0 +1,308 @@
+<!--/*
+    * View that shows a statistic for a given time period 
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'statistic.heading.statistic', 'Statistics')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<th:block
+				th:if="${statisticDTO.getMinDate() == null || statisticDTO.getMaxDate() == null }"
+			>
+				<label
+					th:text="${messages.get(#locale, 'statistic.error.noStatisticsAvailable', 'There are no statistics available so far.')}"
+				>
+				</label>
+			</th:block>
+			<th:block
+				th:unless="${statisticDTO.getMinDate() == null || statisticDTO.getMaxDate() == null }"
+			>
+				<!--/* <fmt:setLocale value="${pageContext.response.locale.toString()}" scope="session"/> */-->
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='minDate', 
+                    value=${#dates.format(statisticDTO.getMinDate(), 'yyyy-MM-dd')})}"
+				>
+				</addVar>
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='maxDate', 
+                    value=${#dates.format(statisticDTO.getMaxDate(), 'yyyy-MM-dd')})}"
+				>
+				</addVar>
+
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='displayDateFormat', 
+                    value=${#locale.toString() == 'de_DE'} ? 'dd.MM.yyyy' : 'yyyy-MM-dd')}"
+				>
+				</addVar>
+
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='minDateDisplay', 
+                    value=${#dates.format(statisticDTO.getMinDate(), '__${vars['displayDateFormat']}__')})}"
+				>
+				</addVar>
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='maxDateDisplay', 
+                    value=${#dates.format(statisticDTO.getMaxDate(), '__${vars['displayDateFormat']}__')})}"
+				>
+				</addVar>
+
+				<th:block
+					th:text="${messages.get(
+                    #locale, 
+                    'statistic.label.period', 
+                    messages.buildArguments('__${vars['minDateDisplay']}__', '__${vars['maxDateDisplay']}__'),
+                    'Periode')}">
+                </th:block>
+
+				<form
+					th:object="${statisticDTO}"
+					enctype="application/x-www-form-urlencoded"
+					method="POST"
+					action="index"
+				>
+					<div data-role="fieldcontain">
+						<date
+							layout:replace="~{fragments/forms :: dateWithLabel(
+                            for='startdate', required=false,
+                            path='startDate', clazz='form-control', showErrors=true,
+                            min='__${vars['minDate']}__', max='__${vars['maxDate']}__',
+                            text=${messages.get(#locale, 'statistic.label.startdate', 'Begin of the period:')})}"
+						>
+						</date>
+					</div>
+					<div data-role="fieldcontain">
+						<date
+							layout:replace="~{fragments/forms :: dateWithLabel(
+                            for='enddate', required=false,
+                            path='endDate', clazz='form-control', showErrors=true,
+                            min='__${vars['minDate']}__', max='__${vars['maxDate']}__',
+                            text=${messages.get(#locale, 'statistic.label.enddate', 'End of the period:')})}"
+						>
+						</date>
+					</div>
+					<div class="form-group">
+						<number
+							layout:replace="~{fragments/forms :: numberWithLabel(
+                            for='count', required=false, path='count',
+                            clazz='form-control', min='1', showErrors=true,
+                            text=${messages.get(#locale, 'statistic.label.count', 'Count:')})}"
+						>
+						</number>
+					</div>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						value="save"
+						th:text="${messages.get(#locale, 'statistic.button.calculate', 'Calculate')}"
+					>
+					</button>
+					<th:block th:if="${not #lists.isEmpty(statisticDTO.getStatistics())}">
+						<a
+							id="downloadLink"
+							style="display: none"
+						></a>
+						<button
+							id="statisticExport"
+							class="btn btn-primary"
+							th:with="excelText=
+                                        ${messages.get(#locale, 'statistic.export.name', 'Statistics')} + 
+                                        ${#dates.format(statisticDTO.getStartDate(), 'dd-MM-yyyy')} +
+                                        '_' +
+                                        ${#dates.format(statisticDTO.getEndDate(), 'dd-MM-yyyy')} +
+                                        '.xls'"
+							th:onclick="|tableToExcel('statistics', 'statistics', '__${excelText}__')|"
+							th:text="${messages.get(#locale, 'statistic.button.export', 'Export statistics')}"
+						>
+						</button>
+					</th:block>
+				</form>
+				<th:block th:if="${not #lists.isEmpty(statisticDTO.getStatistics())}">
+					<table
+						width="100%"
+						class="table hove"
+						id="statistics"
+					>
+						<colgroup>
+							<col width="25%" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th
+									th:text="${messages.get(#locale, 'statistic.label.date', 'Date')}"
+								></th>
+
+								<th
+									th:each="statistic: ${statisticDTO.getStatistics()}"
+									th:text="${#dates.format(statistic.getDate(), '__${vars['displayDateFormat']}__')}"
+								>
+								</th>
+							</tr>
+						</thead>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.questionnaireCount', 'Number of Questionnaires:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getQuestionnaireCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.bundleCount', 'Number of Bundles:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getBundleCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.clinicCount', 'Number of Clinics:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getClinicCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.userCount', 'Number of Users:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getUserCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.encounterCount', 'Number of encounters:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getEncounterCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.incompleteEncounterCount', 'Number of incomplete encounters:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getIncompleteEncounterCount}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.completeEncounterDeletedCount', 'Number of deleted complete encounters:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getCompleteEncounterDeletedCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.incompleteEncounterDeletedCount', 'Number of deleted incomplete encounters:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getIncompleteEncounterDeletedCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.ODMExportCount', 'Number of ODM exports:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getODMExportCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.ORBISExportCount', 'Number of ORBIS exports:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getORBISExportCount()}"
+							>
+							</td>
+						</tr>
+						<tr>
+							<td
+								th:text="${messages.get(#locale, 'statistic.label.HL7ExportCount', 'Number of HL7v2 exports:')}"
+							>
+							</td>
+
+							<td
+								th:each="statistic: ${statisticDTO.getStatistics()}"
+								th:text="${statistic.getHL7ExportCount()}"
+							>
+							</td>
+						</tr>
+					</table>
+				</th:block>
+			</th:block>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script type="text/javascript">
+		function tableToExcel(tableid, name, filename) {
+			var table = document.getElementById(tableid);
+			var html = table.outerHTML;
+			document.getElementById("downloadLink").href =
+				"data:application/vnd.ms-excel;base64," + btoa(html);
+			document.getElementById("downloadLink").download = filename;
+			document.getElementById("downloadLink").click();
+		}
+
+		$("form").submit(function () {
+			if (
+				isNaN($("#count").val()) ||
+				$("#count").val() === "" ||
+				$("#count").val() < 1
+			) {
+				$("#count").val(1);
+			}
+			return true;
+		});
+	</script>
+</th:block>

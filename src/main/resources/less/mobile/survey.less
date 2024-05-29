@@ -1,0 +1,1056 @@
+/**
+*
+* Styling for all elements that are used in MoPats survey views
+*
+**/
+
+@import "includes/sizes";
+@import "includes/variables";
+@import "includes/colors";
+
+
+.btn-mobile {
+    color: @color-black;
+    background-color: @color-gray-background;
+    border-radius: @border-radius-sm !important;
+    border-width: @border-width !important;
+    border-color: @color-gray-border !important;
+    box-shadow: @box-shadow-material-sm;
+
+    transition: @transition-value;
+    overflow: hidden;
+
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-weight: 500;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+
+    &:active, &:focus {
+        box-shadow: @box-shadow-highlight;
+    }
+
+    &.btn-additionalInformation {
+        height: 60px; 
+        width: 100px; 
+    }
+
+    &.btn-red {
+        background-color: @mdc-red-400 !important;
+        border-color: @mdc-red-500 !important;
+
+        &:hover {
+            background-color: @mdc-red-600 !important;
+            border-color: @mdc-red-600 !important;
+            color: @color-white !important; 
+        }
+    }
+
+    &.hyphenate {
+        hyphens: auto;
+    }
+
+    &:hover {
+        background-color: @color-blue-tinted;
+        color: @color-blue-light;
+        border-color: @color-blue-light;
+        box-shadow: @box-shadow-material-md;
+    }
+
+    &:disabled {
+        border-color: @color-gray-border !important;
+    }
+
+    &.btn-question {
+        font-size: 100% !important; 
+    }
+
+}
+
+//White button for gray backgrounds to highlight button
+.btn-white {
+    background-color: @color-white !important;
+
+    &:hover {
+        background-color: @color-blue-tinted !important;
+    }
+}
+
+.btn-lowEmphasis {
+    @media only screen and (max-width: @element-breakpoint) {
+        padding: 5px;
+        font-weight: 700;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+    
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent; 
+    color: @color-black;
+    border-radius: @border-radius-sm !important;
+    transition: @transition-value;
+
+    &:hover {
+        background-color: @color-blue-tinted;
+        color: @color-blue-light;
+    }   
+
+}
+
+#overlay {
+    position: fixed;
+    z-index: 1001;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.overlayBackground {
+    background-color: #000;
+    -ms-filter: "Alpha(Opacity=30)";
+    filter: alpha(opacity=30);
+    -moz-opacity: .3;
+    opacity: .3;
+}
+
+.bi-helpMode {
+    @media only screen and (max-width: @element-breakpoint) {
+        width: 30px; 
+        height: 30px;
+        font-size: 2rem; 
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        width: 50px; 
+        height: 50px;
+        font-size: 3rem; 
+    }
+     
+    z-index: 2000;
+    font-weight: 700; 
+    opacity: 0.75;
+    color: @color-white; 
+    transition: @transition-value;
+
+    &:hover, &.bi-active {
+        color: @color-blue-light;
+        opacity: 1;
+    }
+
+}
+
+
+#helpPopup {
+    &.modal.fade .modal-dialog {
+    transform: translate3d(0, 100vh, 0);
+    }
+
+    &.modal.show .modal-dialog {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .help-dialog {
+        position: absolute;
+        bottom: 0; 
+        right: 0; 
+        margin-bottom: 0; 
+    }
+}
+
+
+
+/* Select element is larger than button so it needs different paddings to be the same size */
+select.btn-lowEmphasis {
+
+    @media only screen and (max-width: @element-breakpoint) {
+        padding: 3px !important;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding: 8px !important;
+    }
+}
+
+.questionnaireNavigation {
+    height: auto; 
+}
+
+.btn-questionnaireNavigation {
+
+    @media only screen and (min-width: @element-breakpoint) {
+        min-width: 70px;
+    }
+
+    @media only screen and (max-width: @element-breakpoint) {
+        min-width: 50px;
+        font-size: 0.8rem !important; 
+    }
+
+    .text {
+        //Prevent buttons from overlapping by removing text for very small screens
+        @media only screen and (max-width: @phone-breakpoint) { 
+            display: none; 
+        }
+    }
+}
+
+#buttonNext i, #buttonPrevious i {
+    font-size: 160%; 
+}
+
+.form-control {
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-weight: 500;
+        font-size: 100%;
+    }
+
+    //from bootstrap form-control-lg
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+
+    &.gray {
+        background-color: @color-gray-background !important;
+        border: 0; 
+        border-left: 10px solid; 
+        border-color: @color-blue-light !important; 
+
+        &:disabled {
+            border-color: @color-gray-lighter-darker !important;
+        }
+    }
+
+    &:disabled {
+        background-color: @color-gray-lighter-darker !important;
+        color: @color-gray !important; 
+        box-shadow: none !important;
+    }
+
+    box-shadow: @box-shadow-material-sm;
+    border-width: @border-width;
+}
+
+.form-border {
+    border-color: @color-gray-light !important; 
+    border: .1px solid !important; 
+}
+
+.form-check-input{
+
+    &:checked{
+        background-color: @color-blue-light;
+        border-color: @color-blue-light;
+    }
+}
+
+.btn-highlight {
+    background-color: @color-blue-light;
+    color: @color-white;
+    border-color: @color-blue-light !important;
+
+    &:hover {
+        background-color: @color-blue-dark;
+        color: @color-white;
+    }
+}
+
+.select-mobile {
+    .btn-mobile;
+    //Select elements have a different styling applied and need extra padding to have the same dimensions as the buttons
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 7.4px;
+        padding-bottom: 7.4px;
+        font-weight: 500;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 12.4px;
+        padding-bottom: 12.4px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+
+    //Make room for the icon added by select-wrapper 
+    padding-right: 40px; 
+    text-overflow: ellipsis;
+
+    // Make select elements fill out the complete col in form elements
+    .form-select {
+        width: 100%;
+    }
+
+    /*
+    //Replace dropdown arrow with svg image
+    background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTIgMjFsLTEyLTE4aDI0eiIgZmlsbD0iIzNlM2UzYiIvPjwvc3ZnPg==) no-repeat 99% 50%;
+    background-color: @color-gray-background;
+    */
+
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    -webkit-border-radius: 0px;
+    appearance: none;
+}
+
+.select-wrapper {
+    display:inline-block; 
+    position: relative;
+
+    &::before {
+        content: "\f283"; 
+        display: inline-block;
+        font-family: bootstrap-icons !important;
+        font-style: normal;
+        font-weight: 700 !important;
+        font-variant: normal;
+        text-transform: none;
+        line-height: 1;
+        font-size: 150%; 
+        vertical-align: -.125em;
+        position: absolute;
+        top:50%;
+        transform: translateY(-50%);
+        right:10px; 
+
+        color: @color-black; 
+        transition: @transition-value;
+    }
+
+    &:hover::before {
+        color: @color-blue-light !important; 
+    }
+}
+
+.btn-outline-primary {
+    @media only screen and (max-width: @element-breakpoint) {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-weight: 500;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: 700;
+        font-size: 120%;
+    }
+
+    color: @color-black;
+    background-color: @color-gray-background;
+    border-color: @color-gray-border;
+    border-width: @border-width;
+    box-shadow: @box-shadow-material-sm;
+
+    &:hover {
+        color: @color-blue-light !important;
+        background-color: @color-blue-tinted !important;
+        border-color: @color-gray-border;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+//Add to make elements more vertical space so it is easier to press the individual elements
+.v-space {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+// From BS5: Checked button in btn-group 
+.btn-check:checked + .btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check) + .btn:active {
+    background-color: @color-blue-light !important;
+    border-color: @color-blue-light;
+
+    &:hover {
+        background-color: @color-blue-dark !important;
+        color: @color-white !important;
+    }
+  }
+
+.moveHeaderSpace {
+    margin-top: 40px;
+}
+
+/* Choose Bundle: Make the incomplete encounter list invisible by default*/
+.hiddenList {
+    display: none;
+}
+
+//Creates text with black color and white border to be visible on changing backgrounds
+.shadowText {
+    color: @color-black; 
+}
+
+.fontButtonSmall {
+    font-size: 100%; 
+}
+
+.fontButtonLarge {
+    font-size: 150%; 
+}
+
+.progressElement {
+    display:flex; 
+    flex: 1 1; 
+    min-width: 1px; 
+    height: 3px; 
+    background-color: @color-gray-border;
+    
+    &.fragmented {
+        margin-left: 1px;
+        margin-right: 1px;
+        background-color: @color-gray-light;
+    }
+
+    &.active {
+        background-color: @color-blue-light !important;
+
+        &.current {
+            animation: pulse 2s infinite;
+        }
+    }
+}
+  
+//Color is @color-blue-light
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(55, 124, 191, 0.75);
+	}
+
+	50% {
+		box-shadow: 0 0 0 5px rgba(55, 124, 191, 0);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgba(55, 124, 191, 0);
+	}
+}
+
+.questionsAnswered{
+    color: @color-blue-light;
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: @ui-font-size-sm;   
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: @ui-font-size;
+    }
+}
+
+.questionsTotal {
+    color: @color-gray-light; 
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: @ui-font-size-sm;   
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: @ui-font-size;
+    }
+}
+
+.questionTitle {
+    border-bottom: solid 1px; 
+    border-color: @color-gray-border;
+    margin-bottom: 10px; 
+}
+
+#questionContent{
+    @media only screen and (max-width: @element-breakpoint) {
+        margin-top: 1em; 
+        margin-bottom: 1em; 
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        margin-top: 3em; 
+        margin-bottom: 3em; 
+    }
+    
+}
+
+.textareaWrapper {
+    padding: 1.5em;
+    padding-top: 0.5em; 
+    padding-bottom: 0.5em;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border: 1px solid @color-blue-light;
+    border-radius: @border-radius;
+    background-color: @color-white;
+    resize: vertical;
+    -webkit-box-shadow: inset @box-shadow-material-md;
+    -moz-box-shadow: inset @box-shadow-material-md;
+    box-shadow: inset @box-shadow-material-md;
+
+    &:disabled {
+        background-color: @color-gray-lighter !important;
+        border: 1px solid @color-gray-border !important;
+        -webkit-box-shadow: none !important;
+        -moz-box-shadow: none !important;
+        box-shadow: none !important;
+    }
+}
+
+#multiple-choice{
+    .form-check {
+        padding: 1.5em;
+        padding-top: 0.5em; 
+        padding-bottom: 0.5em;
+    }
+
+    .btn-outline-primary {
+        padding-top:0.7em;
+        padding-bottom:0.7em; 
+        font-weight: bold;
+        width:100%;
+        text-align:left;
+    }
+
+    input[type=checkbox], input[type=radio] {
+        width: 20px;
+        height: 20px;
+        accent-color: @color-blue-light;
+    }
+
+    .center {
+        display: flex; 
+        align-items: center;
+    }
+
+    .left {
+        width:25px;
+    }
+
+    .right {
+        margin-left:25px;
+        hyphens: auto; 
+        overflow:hidden; 
+
+    }
+}
+// variable declarations to change the size of the slider elements
+@sliderThumbHeightSM: 24px; 
+@sliderThumbWidthSM: 24px; 
+@sliderThumbHeight: 40px; 
+@sliderThumbWidth: 40px; 
+@sliderTrackHeightSM: 7.5px; 
+@sliderTrackHeight: 15px; 
+@sliderValueWidthSM: 70px; 
+@sliderValueWidth: 100px; 
+@sliderTextWidth: 25; //percent
+@ptInPx: 1.333; 
+
+#slider {
+    .rangeWrap{
+        position: relative;
+        transition: @transition-value;
+    }
+    .tooltipMargin {
+        @media only screen and (max-width: @element-breakpoint) {
+            margin-bottom: 3rem; 
+        }
+        @media only screen and (min-width: @element-breakpoint) {
+            margin-bottom: 3.35rem;
+        }
+    }
+
+    .rangeValue{
+        position: absolute;
+        @media only screen and (max-width: @element-breakpoint) {
+            top: 100%;
+        }
+
+        @media only screen and (min-width: @element-breakpoint) {
+            top: 130%;
+        }
+
+        visibility: visible;
+        opacity: 1;
+
+        transition: visibility @transition-time, opacity @transition-time ease-in-out;
+        -webkit-transition: visibility @transition-time, opacity @transition-time ease-in-out;
+    }
+    .rangeValue span{
+        @media only screen and (max-width: @element-breakpoint) {
+            height: @sliderThumbHeightSM;
+            width: @sliderValueWidthSM;
+            font-size: 18px;
+        }
+
+        @media only screen and (min-width: @element-breakpoint) {
+            height: @sliderThumbHeight;
+            width: @sliderValueWidth;
+            font-size: 24px;
+        }
+        text-align: center;
+        background: @color-blue-dark;
+        color: #fff;
+        display: block;
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        border-radius: @border-radius-sm;
+        box-shadow: @box-shadow-material-md;
+    }
+    .rangeValue span:before{
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-bottom: 10px solid @color-blue-dark;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        top: -23%;
+        left: 50%;
+        margin-left: -5px;
+        margin-top: -1px;
+    }
+
+    .hideValue {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        transition: visibility @transition-time, opacity @transition-time ease-in-out;
+        -webkit-transition: visibility @transition-time, opacity @transition-time ease-in-out;
+    }
+
+
+    .track() {
+        width: 100%;
+        @media only screen and (max-width: @element-breakpoint) {
+            height: @sliderTrackHeightSM;
+        }
+
+        @media only screen and (min-width: @element-breakpoint) {
+            height: @sliderTrackHeight;
+        }
+        cursor: pointer;
+        box-shadow: @box-shadow-material-sm;
+        background: @color-gray-lighter;
+        border-radius: 3px;
+        border: @border-width; 
+        transition: @transition-value;
+    }
+
+    .sliderThumb() {
+        box-shadow: @box-shadow-material-sm;
+        border: @border-width;
+        @media only screen and (max-width: @element-breakpoint) {
+            height: @sliderThumbHeightSM;
+            width: @sliderThumbWidthSM;
+            margin-top: calc(-1 * @sliderTrackHeightSM);
+        }
+
+        @media only screen and (min-width: @element-breakpoint) {
+            height: @sliderThumbHeight;
+            width: @sliderThumbWidth;
+            margin-top: calc(-1 * @sliderTrackHeight);
+        }
+        
+        border-radius: @border-radius-pill;
+        background-color: @color-blue-light;
+        cursor: pointer;
+        -webkit-appearance: none;
+        transition: @transition-value;
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        margin: 10px 0;
+        width: 100%;
+
+        &::-webkit-slider-runnable-track {
+            .track(); 
+        }
+
+        &::-moz-range-track {
+            .track(); 
+        }
+
+        &::-webkit-slider-thumb {
+            .sliderThumb(); 
+        }
+
+        &::-moz-range-thumb {
+            .sliderThumb(); 
+        }
+
+        &.unselected {
+
+            .unselected() {
+                background-color: @color-gray-background !important; 
+            }
+            &::-moz-range-thumb {
+                .unselected();
+            } 
+
+            &::-webkit-slider-thumb {
+                .unselected();
+            }
+        }
+
+        &.hiddenThumb {
+            .hiddenThumb() {
+                background-color: transparent !important; 
+                border:none !important; 
+                box-shadow: none !important; 
+            }
+            &::-moz-range-thumb {
+                .hiddenThumb();
+            } 
+
+            &::-webkit-slider-thumb {
+                .hiddenThumb();
+            }
+        }
+    }
+
+    /* 
+    * Must be added to the dom for the JS method, that places the popup above the range slider thumb element
+    * Element is used to compute the current width of the slider thumb in order to place the popup at the correct position 
+    */
+    .sliderWidth {
+        .sliderThumb(); 
+    }
+
+    .bi {
+        @media only screen and (max-width: @element-breakpoint) {
+            font-size: unit((@sliderThumbWidthSM / @ptInPx), pt); 
+        }
+        @media only screen and (min-width: @element-breakpoint) {
+            font-size: unit((@sliderThumbWidth / @ptInPx), pt); 
+        }
+    }
+
+    .iconContainer {
+        @media only screen and (max-width: @element-breakpoint) {
+            height: @sliderThumbHeightSM;
+            width: @sliderThumbWidthSM;
+        }
+
+        @media only screen and (min-width: @element-breakpoint) {
+            height: @sliderThumbHeight;
+            width: @sliderThumbWidth;
+        }
+    }
+
+
+    .textLeft, .textRight {
+        width: @sliderTextWidth * 1%; 
+        -webkit-hyphens: auto;
+        -moz-hyphens: auto;
+        -ms-hyphens: auto;
+        hyphens: auto;
+        overflow: hidden; 
+    }
+}
+
+
+@checkboxSizeSM: 40px; 
+@checkboxSize: 75px; 
+#numberedCheckboxes {
+    .numberedCheckbox {
+        @media only screen and (max-width: @element-breakpoint) {
+            min-width: @checkboxSizeSM;
+            min-height: @checkboxSizeSM;
+            max-height: @checkboxSizeSM;
+        }
+    
+        @media only screen and (min-width: @element-breakpoint) {
+            min-width: @checkboxSize;
+            min-height: @checkboxSize;
+            max-height: @checkboxSize;
+        }
+
+        z-index: 0; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        white-space: nowrap;
+        font-family: Consolas, monaco, monospace;
+    }
+
+    .btn-outline-primary {
+        box-shadow: @box-shadow-material-sm !important;
+        border: solid 0.1px @color-gray-border !important; 
+    }
+
+    //For selected radio buttons
+    .btn-check:checked + .btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check) + .btn:active {
+        border: solid 0.1px @color-blue-light !important; 
+    }
+
+    .btn-group {
+        & > .btn {
+            border-radius: 0 !important;
+        }
+    }
+
+    #textLeft, #textRight {
+        min-width: 20%; 
+    }
+}
+
+//For the body region selection
+
+.shape {
+    fill: #009ee0ff; 
+    opacity: 0.2;
+
+    transition: @transition-value;
+
+    &:hover {
+        cursor:pointer; 
+        opacity: 0.4;
+    }
+}
+
+.shape-selected{
+    fill: #009ee0ff; 
+    opacity: 0.6;
+
+    transition: @transition-value;
+
+    &:hover {
+        cursor:pointer; 
+        opacity: 0.8;
+    }
+}
+
+.shape:active, .shape-selected:active {
+    opacity: 0.9;
+}
+
+.bodyFront {
+    width: 100%;
+    height: 100%; 
+
+    @media only screen and (max-width: @element-breakpoint) {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 10px;
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        margin-left: auto; 
+        margin-right: 0;
+    }
+}
+
+.bodyBack {
+    width: 100%;
+    height: 100%;
+
+    @media only screen and (max-width: @element-breakpoint) {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 10px; 
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        margin-right: auto;
+        margin-left: 0;
+    }
+}
+
+.bodyCenter {
+    width: 100%;
+    height: 100%; 
+    
+    margin-left: auto; 
+    margin-right: auto; 
+}
+
+#imageContent {
+    margin-left:auto;
+    margin-right:auto; 
+    margin-top:20px; 
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.spaceBuffer {
+    @media only screen and (max-width: @element-breakpoint) {
+        margin-top: 15px; 
+        margin-bottom: 15px; 
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        margin-top: 25px; 
+        margin-bottom: 25px;
+    }
+}
+
+.resizable(@scale-factor) {
+    //transition: @transition-value; /Kind of buggy
+
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: 1% * (@standard-survey-text-size * (1 + (@scale-factor * @fontsize-stepsize)));
+    }
+    
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: 1% * (@standard-survey-mobile-text-size * (1 + (@scale-factor * @fontsize-stepsize-mobile)));
+    }
+}
+
+//Resizable classes - will be set by the fontsize buttons
+.resizable-0 {
+    .resizable(0);
+}
+
+.resizable-1 {
+    .resizable(1);
+}
+
+.resizable-2 {
+    .resizable(2); 
+}
+
+.resizable-3 {
+    .resizable(3);
+}
+
+.resizable-4 {
+    .resizable(4); 
+}
+
+.resizable-5 {
+    .resizable(5); 
+}
+
+// These classes are used for the "change font size slider" so they do not get resized like all other "resizable-" classes
+.resizable-0-fixed {
+    .resizable-0;
+}
+
+.resizable-1-fixed {
+    .resizable-1;
+}
+
+.resizable-2-fixed {
+    .resizable-2;
+}
+
+.resizable-3-fixed {
+    .resizable-3;
+}
+
+.resizable-4-fixed {
+    .resizable-4;
+}
+
+.resizable-5-fixed {
+    .resizable-5;
+}
+
+// Will not be used by the fontsize buttons and is only for the questionTitle
+// Make sure to ALWAYS have one class above the "fontSizeMaxClass" value in survey.js 
+.resizable-6 {
+    .resizable(6); 
+}
+
+.btn-animate{
+    .animate();
+    -moz-animation: shakeme 2s infinite;
+    -o-animation: shakeme 2s infinite;    
+    -webkit-animation: shakeme 2s infinite;
+    animation: shakeme 2s infinite;
+}
+
+.btn-attention {
+    background-color: @color-blue-light !important; 
+
+    &:hover {
+        background-color: @color-blue-light !important;
+    }
+    
+    color: @color-white !important; 
+}
+    
+    /*@keyframes shakeme {
+    0% {
+        .scale(1);
+    }
+    5% {
+        .scale(0.7);
+    }
+    10% {
+        .scale(1.5);
+    }
+    15% {
+        .scale(1.1);
+    }
+    20% {
+        .scale(1.4);
+    }
+    30% {
+        .scale(1.1);
+    }
+    }*/
+
+@keyframes shakeme {
+    10% {
+        .scale(1.1); 
+    }
+    20% {
+        .scale(1); 
+    }
+    30% {
+        .scale(1.1);
+    }
+    40% {
+        .scale(1); 
+    }
+}
+    
+/* mixins */
+
+.animate() {
+    -webkit-transition: all 0.35s ease-in-out;
+    -moz-transition: all 0.35s ease-in-out;
+    transition: all 0.35s ease-in-out;
+}
+
+.scale (@factor) {
+    -webkit-transform: scale(@factor);
+    -moz-transform: 	 scale(@factor);
+    -ms-transform: 		 scale(@factor);
+    -o-transform: 		 scale(@factor);
+}
+
+.tooltipC {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipC #toolTipText {
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: 125%; 
+    transition: opacity 0.3s;
+    opacity: 0;
+}

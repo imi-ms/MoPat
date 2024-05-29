@@ -1,0 +1,89 @@
+<th:block
+	layout:fragment="processConfigurations(configurationList, selectionPath, idPath, parent)"
+>
+	<th:block
+		th:each="configurationDTO, configurationIndex: ${configurationList}"
+	>
+		<li
+			class="list-group-item"
+			th:classappend="${parent != null} ? |children| : ''"
+			th:attr="configurationId=${configurationDTO.id},parentId=${parent != null} ? ${parent.id} : ''"
+		>
+			<div class="configuration">
+				<!--/* Put the configuration id into a hidden field */-->
+				<input
+					type="hidden"
+					class="configurationId"
+					th:name="|${selectionPath}[${configurationIndex.index}].id|"
+					th:id="|${idPath}${configurationIndex.index}.id|"
+					th:value="${configurationDTO.id}"
+				/>
+
+				<th:block
+					th:switch="${configurationDTO?.configurationType?.toString()}"
+				>
+					<th:block th:case="STRING">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="LOCAL_PATH">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="PATTERN">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="LONG">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+						/>
+					</th:block>
+					<th:block th:case="INTEGER">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+						/>
+					</th:block>
+					<th:block th:case="*">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value=${configurationDTO?.configurationType?.toString()})}"
+						/>
+					</th:block>
+				</th:block>
+
+				<div
+					layout:replace="~{fragments/configurationTypes :: __${vars['formType']}__(
+                                    configuration=${configurationDTO},
+                                    selectionPath=|${selectionPath}[${configurationIndex.index}]|,
+                                    idPath=|${idPath}${configurationIndex.index}|
+                )}"
+				>
+				</div>
+
+				<div
+					th:if="${#fields.hasErrors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+					th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
+					th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+					style="color: red"
+				>
+				</div>
+			</div>
+		</li>
+
+		<th:block
+			th:if="${configurationDTO.children != null && not #lists.isEmpty(configurationDTO.children)}"
+		>
+			<th:block
+				layout:replace="~{fragments/processConfigurations :: processConfigurations(
+                                        configurationList=${configurationDTO.children},
+                                        selectionPath=|${selectionPath}[${configurationIndex.index}].children|,
+                                        idPath=|${idPath}${configurationIndex.index}.children|,
+                                        parent=${configurationDTO}
+            )}"
+			/>
+		</th:block>
+	</th:block>
+</th:block>

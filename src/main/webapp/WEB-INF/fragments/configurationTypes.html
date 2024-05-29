@@ -1,0 +1,213 @@
+<!-- TODO: Anpassungen um besser zwischen parent und child configuration zu unterscheiden -->
+<th:block layout:fragment="BOOLEAN (configuration, selectionPath, idPath)">
+	<div class="checkbox">
+		<label>
+			<input
+				type="hidden"
+				th:name="|${selectionPath}.value|"
+				th:id="|${idPath}.value|"
+				th:value="${configuration.value}"
+			/>
+
+			<th:block th:if="${configuration.value eq 'true'}">
+				<input
+					type="checkbox"
+					onclick="toggleChildrenVisibility(this);"
+					checked="checked"
+					th:attr="triggerid=${configuration.id}"
+				/>
+			</th:block>
+			<th:block th:unless="${configuration.value eq 'true'}">
+				<input
+					type="checkbox"
+					onclick="toggleChildrenVisibility(this);"
+					th:attr="triggerid=${configuration.id}"
+				/>
+			</th:block>
+
+			<th:block
+				th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+			/>
+		</label>
+
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing configuration description')}"
+			>
+			</span>
+		</th:block>
+	</div>
+</th:block>
+
+<th:block layout:fragment="IMAGE (configuration, selectionPath, idPath)">
+	<div class="form-group image">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+		<br />
+		<input
+			th:id="${configuration.id}"
+			type="file"
+			th:attr="data-path=|${configuration.value ne null ? configuration.value : ''}|"
+			th:attrappend="name=files[__${configuration.id}__]"
+		/>
+		<input
+			type="hidden"
+			th:id="|imageDeleteMap${configuration.id}|"
+			th:name="|imageDeleteMap[__${configuration.id}__]|"
+			th:value="false"
+		/>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				th:text="${messages.get(#locale, configuration.descriptionMessageCode, '')}"
+			></span>
+		</th:block>
+	</div>
+</th:block>
+
+<th:block layout:fragment="NUMBER (configuration, selectionPath, idPath)">
+	<div class="form-group numbers">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+		<input
+			class="form-control"
+			type="number"
+			th:name="|${selectionPath}.value|"
+			th:id="|${idPath}.value|"
+			th:value="${configuration.value}"
+		/>
+	</div>
+</th:block>
+
+<th:block layout:fragment="PASSWORD (configuration, selectionPath, idPath)">
+	<div class="form-group password">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+		<input
+			class="form-control"
+			type="password"
+			th:name="|${selectionPath}.value|"
+			th:id="|${idPath}.value|"
+			th:value="${configuration.value}"
+		/>
+	</div>
+</th:block>
+
+<th:block layout:fragment="SELECT (configuration, selectionPath, idPath)">
+	<div class="form-group select">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+
+		<select
+			class="form-control"
+			th:name="|${selectionPath}.value|"
+			th:id="|${idPath}.value|"
+		>
+			<option
+				th:each="i: ${configuration.options}"
+				th:value="${i}"
+				th:text="${i}"
+				th:selected="${configuration.value == i}"
+			></option>
+		</select>
+	</div>
+</th:block>
+
+<th:block layout:fragment="TEXT (configuration, selectionPath, idPath)">
+	<div class="form-group text" th:id="${configuration.attribute}">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+				class="bi bi-info-circle-fill"
+				th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+
+		<input
+			class="form-control"
+			th:name="|${selectionPath}.value|"
+			th:id="|${idPath}.value|"
+			th:value="${configuration.value}"
+		/>
+	</div>
+</th:block>
+
+<th:block layout:fragment="FILE (configuration, selectionPath, idPath)">
+	<!--/* FILE: Show a file selection input */-->
+	<div class="form-group">
+		<label
+			th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<div th:switch="${configuration.value}">
+			<!--/* configuration.value is null */-->
+			<div th:case="null">
+				<span
+					style="color: red"
+					class="bi bi-x-lg mx-1"
+				></span>
+				<th:block
+					th:text="${messages.get(#locale, 'configuration.file.notUploaded', 'No file uploaded')}"
+				/>
+			</div>
+			<!--/* Any other case */-->
+			<div th:case="*">
+				<th:block
+					th:text="${messages.get(#locale, 'user.label.status', 'Status')}"
+				/>
+				<span
+					style="color: green"
+					class="bi bi-large bi-check-lg mx-1"
+				></span>
+				<th:block
+					th:text="${messages.get(#locale, 'configuration.file.uploaded', 'File uploaded')}"
+				/>
+				<br />
+				<th:block
+					th:text="|${messages.get(#locale, 'configuration.file.path', 'File path')} : ${configuration.value}|"
+				/>
+			</div>
+			<input
+				th:id="${configuration.id}"
+				th:name="|files[${configuration.id}]|"
+				type="file"
+				class="file-input"
+			/>
+			<input
+				type="hidden"
+				th:id="|imageDeleteMap${configuration.id}|"
+				th:name="|imageDeleteMap[__${configuration.id}__]|"
+				value="false"
+			/>
+		</div>
+	</div>
+</th:block>

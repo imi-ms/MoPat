@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence              http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="MoPat" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>de.imi.mopat.model.Answer</class>
+    <class>de.imi.mopat.model.BodyPartAnswer</class>
+    <class>de.imi.mopat.model.FreetextAnswer</class>
+    <class>de.imi.mopat.model.SelectAnswer</class>
+    <class>de.imi.mopat.model.SliderAnswer</class>
+    <class>de.imi.mopat.model.SliderFreetextAnswer</class>
+    <class>de.imi.mopat.model.NumberInputAnswer</class>
+    <class>de.imi.mopat.model.DateAnswer</class>
+    <class>de.imi.mopat.model.Clinic</class>
+    <class>de.imi.mopat.model.Configuration</class>
+    <class>de.imi.mopat.model.ConfigurationGroup</class>
+    <class>de.imi.mopat.model.PatternConfiguration</class>
+    <class>de.imi.mopat.model.SelectConfiguration</class>
+    <class>de.imi.mopat.model.Bundle</class>
+    <class>de.imi.mopat.model.BundleClinic</class>
+    <class>de.imi.mopat.model.Encounter</class>
+    <class>de.imi.mopat.model.EncounterScheduled</class>
+    <class>de.imi.mopat.model.BundleQuestionnaire</class>
+    <class>de.imi.mopat.model.Questionnaire</class>
+    <class>de.imi.mopat.model.Question</class>
+    <class>de.imi.mopat.model.Response</class>
+    <class>de.imi.mopat.model.SliderIcon</class>
+    <class>de.imi.mopat.model.QuestionnaireExport</class>
+    <class>de.imi.mopat.model.ExportTemplate</class>
+    <class>de.imi.mopat.model.ExportRule</class>
+    <class>de.imi.mopat.model.ExportRuleEncounter</class>
+    <class>de.imi.mopat.model.ExportRuleAnswer</class>
+    <class>de.imi.mopat.model.ExportRuleScore</class>
+    <class>de.imi.mopat.model.ExportRuleFormat</class>
+    <class>de.imi.mopat.model.EncounterExportTemplate</class>
+    <class>de.imi.mopat.model.conditions.Condition</class>
+    <class>de.imi.mopat.model.conditions.SelectAnswerCondition</class>
+    <class>de.imi.mopat.model.conditions.SliderAnswerThresholdCondition</class>
+    <class>de.imi.mopat.model.conditions.AnswerCondition</class>
+    <class>de.imi.mopat.model.score.Operator</class>
+    <class>de.imi.mopat.model.score.UnaryOperator</class>
+    <class>de.imi.mopat.model.score.ValueOfQuestionOperator</class>
+    <class>de.imi.mopat.model.score.ValueOperator</class>
+    <class>de.imi.mopat.model.score.BinaryOperator</class>
+    <class>de.imi.mopat.model.score.Minus</class>
+    <class>de.imi.mopat.model.score.Divide</class>
+    <class>de.imi.mopat.model.score.Plus</class>
+    <class>de.imi.mopat.model.score.MultiOperator</class>
+    <class>de.imi.mopat.model.score.Sum</class>
+    <class>de.imi.mopat.model.score.Expression</class>,
+    <class>de.imi.mopat.model.score.UnaryExpression</class>
+    <class>de.imi.mopat.model.score.BinaryExpression</class>
+    <class>de.imi.mopat.model.score.MultiExpression</class>
+    <class>de.imi.mopat.model.score.Score</class>
+    <class>de.imi.mopat.model.Statistic</class>
+    <class>de.imi.mopat.model.score.Greater</class>
+    <class>de.imi.mopat.model.score.Different</class>
+    <class>de.imi.mopat.model.score.Equals</class>
+    <class>de.imi.mopat.model.score.GreaterEquals</class>
+    <class>de.imi.mopat.model.score.Less</class>
+    <class>de.imi.mopat.model.score.LessEquals</class>
+    <class>de.imi.mopat.model.score.Counter</class>
+    <class>de.imi.mopat.model.score.Average</class>
+    <class>de.imi.mopat.model.score.Maximum</class>
+    <class>de.imi.mopat.model.score.Minimum</class>
+    <class>de.imi.mopat.model.score.ValueOfScoreOperator</class>
+    <class>de.imi.mopat.model.score.Multiply</class>
+    <class>de.imi.mopat.model.PointOnImage</class>
+    <class>de.imi.mopat.model.ImageAnswer</class>
+    <class>de.imi.mopat.model.ExportRuleQuestion</class><exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <!-- [bt] for developement porpuses: set 'ddl-generation' to 'create-tables' to tell the JPA provider to create tables on its own
+    	Don't forget to align this setting in the entityManagerDefinition.xml as well!
+        <property name="eclipselink.ddl-generation" value="none"/>
+    	 -->
+      <property name="eclipselink.ddl-generation" value="create-tables"/>
+      <property name="eclipselink.weaving" value="static"/>
+    </properties>
+  </persistence-unit>
+</persistence>

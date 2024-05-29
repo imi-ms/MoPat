@@ -1,0 +1,21 @@
+<!--/*
+    * Error page that shows, when maintenance is scheduled and MoPat is unavailable    
+*/-->
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="d-flex flex-column px-5 accessDenied centeredContent">
+			<img
+				class="mb-1 img-fluid mopatImage"
+				th:src="@{/images/logo.svg}"
+			/>
+			<span class="errorText"
+				>MoPat ist vorübergehend aufgrund von Wartungsarbeiten nicht verfügbar,
+				wird aber in Kürze wieder verfügbar sein.</span
+			>
+			<span class="errorText"
+				>MoPat is temporarily unavailable due to maintenance, but will be
+				available again shortly.</span
+			>
+		</div>
+	</th:block>
+</th:block>

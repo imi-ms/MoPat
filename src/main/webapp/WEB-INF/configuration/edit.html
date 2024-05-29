@@ -1,0 +1,450 @@
+<!--/*
+    * View for the configuration panel.
+    * All of MoPats settings can be adjusted here 
+*/-->
+
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=#{admin.navigation.configuration}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				th:object="${configurationComponentDTO}"
+				enctype="multipart/form-data"
+				method="POST"
+				th:action="@{edit}"
+			>
+				<div
+					th:if="${success != null}"
+					id="notification"
+					class="alert alert-success"
+				>
+					<th:block th:text="${success}" />
+				</div>
+				<!--/* Field for errors */-->
+				<!--/* Loop through all configurationGroups to show all configurations which are related to that group */-->
+				<th:block
+					th:each="entry: ${configurationComponentDTO.configurationGroupDTOs}"
+				>
+					<th:block th:each="configurationGroup, group: ${entry.value}">
+						<!--/* <c:set var="nameKey" value="${entry.key}" /> */-->
+						<div
+							class="configurationGroup"
+							th:attr="data-deletable=${configurationGroup.deletable}"
+						>
+							<th:block th:if="${configurationGroup.referringId != null}">
+								<input
+									type="hidden"
+									class="groupId"
+									th:field="*{configurationGroupDTOs[__${entry.key}__][__${group.index}__].referringId}"
+									th:value="${configurationGroup.referringId}"
+								/>
+							</th:block>
+							<th:block th:unless="${configurationGroup.referringId != null}">
+								<input
+									type="hidden"
+									class="groupId"
+									th:field="*{configurationGroupDTOs[__${entry.key}__][__${group.index}__].id}"
+									th:value="${configurationGroup.id}"
+								/>
+							</th:block>
+							<fieldset>
+								<!--/* header of the configuration group containing its name and the add and remove buttons */-->
+								<div class="row">
+									<th:block th:if="${configurationGroup.repeating == false}">
+										<div class="col-12">
+											<legend
+												class="border-bottom mb-4"
+												onclick="toggleFieldsets(this);"
+											>
+												<label
+													class="groupType"
+													th:text="#{${configurationGroup.labelMessageCode}}"
+												>
+													Configuration group
+												</label>
+											</legend>
+										</div>
+									</th:block>
+									<th:block th:if="${configurationGroup.repeating == true}">
+										<div class="col-3">
+											<legend
+												class="border-bottom mb-4"
+												onclick="toggleFieldsets(this);"
+											>
+												<label
+													class="groupType"
+													th:text="#{${configurationGroup.labelMessageCode}}"
+												>
+													Configuration group
+												</label>
+											</legend>
+										</div>
+										<div
+											class="col-3"
+											style="padding-right: 3px"
+										>
+											<input
+												class="form-control name"
+												th:field="*{configurationGroupDTOs[__${entry.key}__][__${group.index}__].name}"
+												th:value="${configurationGroup.name}"
+											/>
+										</div>
+										<div
+											class="col-1"
+											style="padding-left: 0px"
+										>
+											<span
+												class="bi bi-info-circle-fill"
+												th:title="#{configurationGroup.label.info}"
+											></span>
+										</div>
+										<div class="col-4">
+											<div
+												th:if="${#fields.hasErrors('configurationGroupDTOs[__${entry.key}__][__${group.index}__].name')}"
+												th:errors="*{configurationGroupDTOs[__${entry.key}__][__${group.index}__].name}"
+												th:text="${#fields.errors('configurationGroupDTOs[__${entry.key}__][__${group.index}__].name')}"
+												style="color: red"
+											>
+											</div>
+										</div>
+
+										<div
+											class="configurationButtons col-1"
+											style="display: block"
+										>
+											<th:block th:if="${entry.value.size() == 1}">
+												<a
+													data-toggle="collapse"
+													onClick="addConfigurationGroup(this);"
+												>
+													<span class="bi bi-lg bi-plus-lg"></span>
+												</a>
+											</th:block>
+											<!--/* TODO: CHECK IF CONFIG NEEDS ADD OR REMOVE BUTTON OR BOTH */-->
+											<th:block
+												th:if="${entry.value.size() > 1 and group.index < entry.value.size()-1 and configurationGroup.deletable == true}"
+											>
+												<a
+													data-toggle="collapse"
+													onClick="removeConfigurationGroup(this);"
+												>
+													<span class="bi bi-lg bi-dash"></span>
+												</a>
+											</th:block>
+											<th:block
+												th:if="${entry.value.size > 1 and group.index == entry.value.size()-1 and configurationGroup.deletable == true}"
+											>
+												<a
+													data-toggle="collapse"
+													onClick="addConfigurationGroup(this);"
+												>
+													<span class="bi bi-lg bi-plus-lg"></span>
+												</a>
+												<a
+													data-toggle="collapse"
+													onClick="removeConfigurationGroup(this);"
+												>
+													<span class="bi bi-lg bi-dash"></span>
+												</a>
+											</th:block>
+											<th:block
+												th:if="${entry.value.size() > 1 and group.index == entry.value.size()-1 and configurationGroup.deletable == false}"
+											>
+												<a
+													data-toggle="collapse"
+													onClick="addConfigurationGroup(this);"
+												>
+													<span class="bi bi-lg bi-plus-lg"></span>
+												</a>
+											</th:block>
+										</div>
+									</th:block>
+								</div>
+
+								<ul class="list-group mb-4">
+									<!--/* Loop through all configuration to show them */-->
+									<th:block
+										layout:replace="~{fragments/processConfigurations :: processConfigurations(
+                                                                configurationList=${configurationGroup.configurationDTOs},
+                                                                selectionPath=|configurationGroupDTOs[${entry.key}][${group.index}].configurationDTOs|,
+                                                                idPath=|configurationGroupDTOs${entry.key}${group.index}.configurationDTOs|,
+                                                                parent=null
+                                    )}"
+									/>
+								</ul>
+							</fieldset>
+						</div>
+					</th:block>
+				</th:block>
+				<div id="deleteIds"> </div>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="save"
+					id="saveButton"
+					name="action"
+					th:text="#{button.save}"
+				>
+					Save
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<script
+	th:inline="javascript"
+	type="text/javascript"
+>
+	var deletionCounter = 0;
+	var groupCounter = $(".configurationGroup").length;
+	/*[- Initialize the logo upload field -]*/
+	$(document).ready(function () {
+		/*[- Get the current used language -]*/
+		var currentLanguage = /*[[${#locale.language.toString()}]]*/ "en";
+
+		/*[- Jump to the first error if any exists -]*/
+		if ($("[id$='.errors']").length > 0) {
+			window.scrollTo(0, $("[id$='.errors']:first").offset().top - 100);
+		}
+
+		/*[- Initial state check for all checkboxes -]*/
+
+		$("input[triggerid]").each(function () {
+			toggleChildrenVisibility(this);
+		});
+
+		addAlertToImageUploadPath();
+	});
+
+	function addAlertToImageUploadPath() {
+			var alertSpan = document.createElement("span");
+			alertSpan.textContent = /*[[${messages.get(#locale, 'configuration.alert.uploadImagePath', 'WARNING: If you change the path, the previously saved images can no longer be used by MoPat. They are still saved in the old location and can be copied manually to the new directory to make them accessible again.')}]]*/ "WARNING: If you change the path, the previously saved images can no longer be used by MoPat. They are still saved in the old location and can be copied manually to the new directory to make them accessible again."
+			document.getElementById("imageUploadPath").appendChild(alertSpan);
+        }
+
+	/*[- used in handleCheckbox -]*/
+	function toggleChildrenVisibility(element) {
+		if ($(element).is(":checked")) {
+			$(element).prev().val("true");
+		} else {
+			$(element).prev().val("false");
+		}
+
+		var configId = $(element).attr("triggerid");
+
+		if (configId != null && configId != undefined && configId != "") {
+			$("li[class*=children]")
+				.filter("li[parentid=" + configId + "]")
+				.each(function () {
+					if ($(element).is(":checked")) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+		}
+	}
+
+	function toggleFieldsets(element) {
+		$(element).parents(".configurationGroup").find("ul").slideToggle("slow");
+	}
+
+	/*[- Clone and edit the configuration group's html code to get a new group -]*/
+	function addConfigurationGroup(element) {
+		var newConfigurationGroup = $(element)
+			.parents(".configurationGroup")
+			.clone();
+
+		newConfigurationGroup.addClass("new");
+		newConfigurationGroup.attr("data-deletable", "true");
+		newConfigurationGroup.insertAfter(
+			$(element).parents(".configurationGroup")
+		);
+
+		/*[- Update names, Ids and values of the new configuration group -]*/
+		updateNamesAndIds(newConfigurationGroup);
+
+		/*[- Refit the add and remove buttons
+                Remove the add button and create no remove button if the configuration group is not deletable -]*/
+
+		if (
+			$(element).parents(".configurationGroup").attr("data-deletable") ===
+			"false"
+		) {
+			$(element).remove();
+		} else {
+			/*[- If the configuration group is deletable, switch the add button in a remove button and add the onclick function -]*/
+			$(element).attr("onclick", "removeConfigurationGroup(this);");
+			$(element).find("span").switchClass("bi-plus-lg", "bi-dash");
+		}
+
+		if ($(element).siblings().length >= 1) {
+			$(element).remove(); /*[- remove the add button -]*/
+		} else {
+			newConfigurationGroup
+				.find(".configurationButtons")
+				.append(
+					"<a data-toggle='collapse' onClick='removeConfigurationGroup(this);'><span class='bi bi-lg bi-dash'></span></a>"
+				);
+		}
+	}
+
+	/*[- Remove the configuration group and make it ready to get deleted -]*/
+	function removeConfigurationGroup(element) {
+		var configGroupToRemove = $(element).parents(".configurationGroup");
+
+		/*[- group to remove is last element of the same kind -]*/
+		if (
+			configGroupToRemove.next().find("legend").html() !==
+			configGroupToRemove.find("legend").html()
+		) {
+			/*[- Add an add button to the previuous element -]*/
+			configGroupToRemove
+				.prev()
+				.find(".configurationButtons")
+				.prepend(
+					"<a data-toggle='collapse' onClick='addConfigurationGroup(this);'><span class='bi bi-lg bi-plus-lg'></span></a>"
+				);
+
+			/*[- If previous group is first element -]*/
+			if (
+				configGroupToRemove.prev().prev().find("legend").html() !==
+				configGroupToRemove.prev().find("legend").html()
+			) {
+				/*[- Remove the remove button -]*/
+				configGroupToRemove.prev().find(".bi-dash").parent().remove();
+			}
+		} else {
+		/*[- group to remove is not last element of the same kind -]*/
+			/*[- group to remove is first -]*/
+			if (
+				configGroupToRemove.find("legend").html() !==
+				configGroupToRemove.prev().find("legend").html()
+			) {
+				/*[- next to group to remove is last -]*/
+				if (
+					configGroupToRemove.next().find("legend").html() !==
+					configGroupToRemove.next().next().find("legend").html()
+				) {
+					/*[- remove the remove button -]*/
+					configGroupToRemove.next().find(".bi-dash").parent().remove();
+				}
+			}
+			/*[- group to remove is not the last and not the first: do nothing -]*/
+		}
+
+		if (!configGroupToRemove.hasClass("new")) {
+			$("#deleteIds").append(
+				"<input type='hidden' id='configurationsToDelete" +
+					deletionCounter +
+					"' name='configurationsToDelete[" +
+					deletionCounter +
+					"]' value='" +
+					configGroupToRemove.find(".groupId").val() +
+					"'/>"
+			);
+			deletionCounter++;
+		}
+
+		$(element).parents(".configurationGroup").remove();
+	}
+
+	/*[- Changes the path of form-inputs to transfer properties of configuration and configuration groups the right way -]*/
+	function updateNamesAndIds(newConfigurationGroup) {
+		/*[- Get count of all groups with same name -]*/
+		var size = 0 + deletionCounter;
+		var groups = $(
+			"label:contains('" +
+				$(newConfigurationGroup).find(".groupType").html() +
+				"')"
+		);
+		groups.each(function () {
+			if ($(this).hasClass("groupType")) {
+				size++;
+			}
+		});
+		size--;
+
+		/*[- Update the groupId with refferingId -]*/
+		var element = newConfigurationGroup.find(".groupId");
+		$(newConfigurationGroup)
+			.find(".groupId")
+			.attr(
+				"id",
+				$(newConfigurationGroup)
+					.find(".groupId")
+					.attr("id")
+					.replace(/.id/, ".referringId")
+			);
+		$(newConfigurationGroup)
+			.find(".groupId")
+			.attr(
+				"name",
+				$(newConfigurationGroup)
+					.find(".groupId")
+					.attr("name")
+					.replace(/.id/, ".referringId")
+			);
+
+		/*[- Replaces the name with the new counter -]*/
+		var replace = $(element).attr("id");
+		replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+		$(element).attr("id", replace);
+		replace = $(element).attr("name");
+		replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+		$(element).attr("name", replace);
+
+		/*[- Update the group name -]*/
+		element = newConfigurationGroup.find(".name");
+		$(element).val("new name");
+
+		/*[- Replaces the name with the new counter -]*/
+		replace = $(element).attr("id");
+		replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+		$(element).attr("id", replace);
+		replace = $(element).attr("name");
+		replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+		$(element).attr("name", replace);
+
+		/*[- Update the inputs -]*/
+		newConfigurationGroup
+			.find("ul")
+			.children()
+			.each(function () {
+				$(this).attr(
+					"configurationid",
+					$(this).attr("configurationid") + "_new"
+				);
+				$(this).attr("parentid", $(this).attr("parentid") + "_new");
+
+				if ($(this).hasClass("children")) {
+					$(this).hide();
+				}
+
+				$(this)
+					.find("input")
+					.each(function () {
+						/*[- Prevents the modification of checkbox inputs -]*/
+						if ($(this).attr("type") === "checkbox") {
+							$(this).prop("checked", false);
+							$(this).prev().val("false");
+							$(this).attr("triggerid", $(this).attr("triggerid") + "_new");
+							return true;
+						} else if ($(this).next().attr("type") !== "checkbox") {
+							$(this).val("");
+						}
+						/*[- Replaces the name with the new counter -]*/
+						replace = $(this).attr("id");
+						replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+						$(this).attr("id", replace);
+						replace = $(this).attr("name");
+						replace = replace ? replace.replace(/\d+/, size.toString()) : "";
+						$(this).attr("name", replace);
+					});
+			});
+	}
+</script>
+<th:block layout:fragment="scriptContainer"> </th:block>

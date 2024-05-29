@@ -1,0 +1,237 @@
+<!--/*
+    * All bigger structures that can be used with Thymeleafs layout
+    * dialect should be placed here     
+*/-->
+
+<!--/* 
+    * This is a recurring block for MoPat edit pages 
+    * It is used to create localable form fields depending on
+    * whether the edited object is new or already existing
+    * The fragment "collapseLabel" " has to be overwritten 
+*/-->
+<th:block
+	layout:fragment="newOrPersistedLocalableBlock(collection, collapsableId, inputType, inputClazz, path, firstRequiredLocalableElement)"
+>
+	<!--/* Always use the localized display name collection as origin for all other localable element. A added language 
+        must be shown for every localable element, even if there is no content for all of them */-->
+
+	<!--/* If the localized display name collection is empty, there is only the default language to add */-->
+	<th:block th:if="${#maps.isEmpty(collection)}">
+		<!--/* Create the form-group div with an unique language class (i.e. localable-form-group-en_GB). This class makes the whole
+        localized div selectable which is important, if this language should be deleted. Also mark this div as the last one 
+        for the attribute localized display name */-->
+		<div
+			th:class="|form-group localable-form-group-${vars['currentLanguage']} localableLast|"
+		>
+			<a
+				data-bs-toggle="collapse"
+				th:href="|#${collapsableId}_${vars['currentLanguage']}|"
+				ondragstart="return false;"
+			>
+				<th:block
+					layout:insert="~{fragments/forms :: languageLabel(localeCode=${vars['currentLanguage']})}"
+				/>
+				<th:block layout:fragment="collapseLabel"></th:block>
+				<span class="bi bi-chevron-up"></span>
+			</a>
+			<div
+				class="collapse show"
+				th:id="|${collapsableId}_${vars['currentLanguage']}|"
+			>
+				<th:block th:switch="${inputType}">
+					<th:block
+						th:case="'input'"
+						layout:insert="~{fragments/forms :: input(
+                        clazz=${inputClazz},
+                        path=${#strings.replace(path, '#INDEXFIELD', vars['currentLanguage'])},
+                        showErrors=true)}"
+					>
+					</th:block>
+
+					<th:block
+						th:case="'textarea'"
+						layout:insert="~{fragments/forms :: textarea(
+                        clazz=${inputClazz},
+                        path=${#strings.replace(path, '#INDEXFIELD', vars['currentLanguage'])},
+                        showErrors=true)}"
+					>
+					</th:block>
+				</th:block>
+			</div>
+		</div>
+	</th:block>
+
+	<th:block th:unless="${#maps.isEmpty(collection)}">
+		<!--/* Otherwise there are already added languages */-->
+		<th:block th:each="entry, loop: ${collection}">
+			<div
+				th:class="|form-group persisted localable-form-group-${entry.key}|"
+				th:classappend="|${#maps.size(collection) eq loop.index+1 ? 'localableLast' : '' } 
+                                ${#bools.isTrue(firstRequiredLocalableElement) ? 'firstRequiredLocalableElement' : ''}|"
+			>
+				<a
+					data-bs-toggle="collapse"
+					th:href="|#${collapsableId}_${entry.key}|"
+					ondragstart="return false;"
+				>
+					<th:block
+						layout:insert="~{fragments/forms :: languageLabel(localeCode=${entry.key})}"
+					/>
+
+					<th:block layout:fragment="collapseLabel"></th:block>
+					<span class="bi bi-chevron-up"></span>
+				</a>
+				<div
+					class="collapse show"
+					th:id="|${collapsableId}_${entry.key}|"
+				>
+					<th:block th:switch="${inputType}">
+						<th:block
+							th:case="'input'"
+							layout:insert="~{fragments/forms :: input(
+                            clazz=${inputClazz},
+                            path=${#strings.replace(path, '#INDEXFIELD', entry.key)},
+                            showErrors=true)}"
+						>
+						</th:block>
+
+						<th:block
+							th:case="'textarea'"
+							layout:insert="~{fragments/forms :: textarea(
+                            clazz=${inputClazz},
+                            path=${#strings.replace(path, '#INDEXFIELD', entry.key)},
+                            showErrors=true)}"
+						>
+						</th:block>
+					</th:block>
+				</div>
+			</div>
+		</th:block>
+	</th:block>
+</th:block>
+
+<!--/* Fragment to add quick settings menu for mobile views 
+     * Menu opens from the bottom
+     * Add links to it with class "link" to make it work
+    */-->
+<th:block layout:fragment="mobileOptionsMenu(itemName, id)">
+	<div
+		class="offcanvas optionsMenu offcanvas-bottom"
+		tabindex="-1"
+		th:id="${id}"
+		aria-labelledby="offcanvasBottomLabel"
+	>
+		<div class="offcanvas-header">
+			<h5
+				class="offcanvas-title"
+				id="offcanvasBottomLabel"
+				th:text="${itemName}"
+			></h5>
+			<button
+				type="button"
+				class="btn-close"
+				data-bs-dismiss="offcanvas"
+				aria-label="Close"
+			></button>
+		</div>
+		<div class="offcanvas-body">
+			<div class="d-grid gap-0">
+				<th:block layout:fragment="optionsContent"></th:block>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!--/* Fragment to add mobile menu 
+     * Menu opens from the right
+     * Add links to the "menuContent" fragment to make it work
+     * Use "backTo" if it is a nested menu to go back to the top 
+    */-->
+<th:block layout:fragment="mobileNavMenu(title, id, backTo)">
+	<div
+		class="offcanvas mobileNav offcanvas-end"
+		tabindex="-1"
+		th:id="${id}"
+		th:attr="aria-labelledby=|${id}_label|"
+	>
+		<div class="offcanvas-header">
+			<h5
+				class="offcanvas-title"
+				id="|${id}_label|"
+				th:text="${title}"
+			></h5>
+			<button
+				type="button"
+				class="btn-close"
+				data-bs-dismiss="offcanvas"
+				aria-label="Close"
+			></button>
+		</div>
+		<div class="offcanvas-body">
+			<div class="d-grid gap-0">
+				<!--/* Adds button to go back for submenus*/-->
+				<th:block th:if="${!#strings.isEmpty(backTo)}">
+					<a
+						class="link accountLink"
+						data-bs-toggle="offcanvas"
+						th:href="'#' + ${backTo}"
+					>
+						<i class="bi bi-caret-left-fill"></i>
+						&nbsp;
+						<span
+							th:text="${messages.get(#locale, 'layout.button.back', 'Go back')}"
+						></span>
+					</a>
+				</th:block>
+
+				<th:block layout:fragment="menuContent"></th:block>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!--/* Fragment for the imprint modal
+     * Use it by referring to #imprintDialog with the 
+     * data-bs-target attribute
+    */-->
+<th:block layout:fragment="imprintModal">
+	<div
+		class="modal fade"
+		id="imprintDialog"
+		tabindex="-1"
+		role="dialog"
+		aria-labelledby="basicModal"
+		aria-hidden="true"
+	>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2
+						class="modal-title"
+						th:text="#{layout.label.imprint}"
+						>Imprint</h2
+					>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-hidden="true"
+					></button>
+				</div>
+				<div class="modal-body">
+					Universität Münster<br /> Schlossplatz 2, 48149 Münster<br />
+					Telephone: +49 (251) 83-0<br /> Fax: +49 (251) 83-3 20 90<br />
+					E-mail: verwaltung@uni-muenster.de<br /><br /> The University of
+					Münster is a statutory body and an institution of the Land of North
+					Rhine- Westphalia. It is represented by the Rector, Professor Dr.
+					Johannes Wessels.<br /><br /> Turnover tax identification number: DE
+					126118759<br /><br /> Edited in accordance with §5 TMG by:<br />
+					Univ.-Prof. Dr. med. Julian Varghese<br /> Institute of Medical
+					Informatics<br /> Albert-Schweizer-Campus 1, Building A11<br /> 48149
+					Münster, Germany<br /> Telephone: +49 (251) 83-55262<br /> E-mail:
+					<a href="mailto:imi@uni-muenster.de">imi@uni-muenster.de</a><br />
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>

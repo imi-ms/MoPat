@@ -1,0 +1,129 @@
+/**
+*
+* Basic styling for the mobile view of MoPat
+*
+**/
+
+@import "includes/sizes";
+@import "includes/colors";
+@import "includes/variables";
+
+//Make all links Mopat blue
+a {
+    color: @color-blue-light
+}
+
+.modal-header {
+    border-bottom-color: @color-gray-border;
+    background-color: @color-gray-background;
+}
+
+.box-shadow {
+    box-shadow: @box-shadow;
+}
+
+.mobile-link {
+    @media only screen and (max-width: @element-breakpoint) {
+        font-size: 100%;
+    }
+    
+    @media only screen and (min-width: @element-breakpoint) {
+        font-size: 130%;
+    }
+}
+
+.login {
+    width: 60%;
+    text-align: center;
+    margin: auto;
+}
+
+/* z-index for the additional information panel */
+#additionalInformationPanel {
+    z-index: 1003;
+}
+
+/* Image on login page - set min and max width and scale size in between accordingly */
+.mopatImage {
+    min-width: 250px;
+    max-width: 550px;
+    width: 35%; 
+}
+
+//for large bootstrap icons
+.bi-large {
+    font-size: 150%; 
+}
+
+.bi-mirror-horizontal {
+    &::before {
+        -moz-transform:    scale(-1, 1); 
+        -o-transform:      scale(-1, 1);
+        -webkit-transform: scale(-1, 1); 
+        transform:         scale(-1, 1);
+    }
+}
+
+.bi-mirror-vertical {
+    &::before {
+        -moz-transform:    scale(-1);
+        -o-transform:      scale(-1);
+        -webkit-transform: scale(-1);
+        transform:         scale(-1);
+    }
+}
+
+/* Styles for the additional information button on the right site of the page */
+.additionalInformation {
+    position: fixed  !important;
+    top: 50%;
+    right: 0;
+    width:             197px;
+    height:            61px;
+
+    -moz-transform:      rotate(90deg)
+        translateY(-77px);
+    -o-transform:        rotate(90deg)
+        translateY(-77px);
+    -webkit-transform:   rotate(90deg)
+        translateY(-77px);
+    transform:           rotate(90deg)
+        translateY(-77px);
+
+    z-index: 1003;
+
+    /* rotates the info image on the addtional information button */
+
+    .bi-rotate{
+        transform: rotate(-90deg);
+        -moz-transform: rotate(-90deg);
+        -webkit-transform: rotate(-90deg);
+        -ms-transform: rotate(-90deg);
+        margin-top: -6px;
+    }
+
+    /* Make the right borders edged */
+    a {
+        border-radius: 0 0 @border-radius @border-radius !important;
+    }
+}
+
+.boxShadowMaterialSm {
+    box-shadow: @box-shadow-material-sm !important;
+}
+
+.boxShadowMaterialMd {
+    box-shadow: @box-shadow-material-md !important;
+}
+
+.boxShadowMaterialLg {
+    box-shadow: @box-shadow-material-lg !important;
+}
+
+.boxShadowMaterialXl {
+    box-shadow: @box-shadow-material-xl !important;
+}
+
+.boxShadowMaterialXxl {
+    box-shadow: @box-shadow-material-xxl !important;
+}

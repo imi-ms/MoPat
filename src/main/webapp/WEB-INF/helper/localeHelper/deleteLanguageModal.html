@@ -1,0 +1,80 @@
+<!--/*
+    * Thymeleaf Fragment that adds a modal to the view
+    * that asks for confirmation if a language should be deleted
+*/-->
+<div
+	id="deleteLastLanguageModal"
+	class="modal fade"
+>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4
+					class="modal-title"
+					th:text="${messages.get(#locale, 'question.label.modal.deleteLanguageTitle', 'Remove language')}"
+				></h4>
+				<a
+					href="#"
+					data-bs-dismiss="modal"
+					aria-hidden="true"
+					class="btn-close"
+				></a>
+			</div>
+			<div class="modal-body">
+				<p
+					th:text="${messages.get(#locale, 'question.error.deleteLastLanguageHint', 'It is not allowed to delete this language. There must be at least one language for this question.')}"
+				></p>
+			</div>
+			<div class="modal-footer">
+				<button
+					type="button"
+					class="btn btn-secondary"
+					data-bs-dismiss="modal"
+					th:text="${messages.get(#locale, 'button.ok', 'Ok')}"
+				></button>
+			</div> </div
+		><!-- /.modal-content --> </div
+	><!-- /.modal-dialog -->
+</div>
+
+<div
+	id="deleteLanguageModal"
+	class="modal fade"
+>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4
+					class="modal-title"
+					th:text="${messages.get(#locale, 'question.label.modal.deleteLanguageTitle', 'Remove language')}"
+				></h4>
+				<a
+					href="#"
+					data-bs-dismiss="modal"
+					aria-hidden="true"
+					class="btn-close"
+				></a>
+			</div>
+			<div class="modal-body">
+				<p
+					th:text="${messages.get(#locale, 'question.label.modal.deleteLanguageContent', 'You are about to delete a language from this question. All content added for this language will be deleted as well.')}"
+				></p>
+			</div>
+			<div class="modal-footer">
+				<button
+					type="button"
+					class="btn btn-secondary"
+					data-bs-dismiss="modal"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				></button>
+				<button
+					type="button"
+					onclick="Localization.deleteLanguage($('#deleteLanguageModal').data('id'));
+                        $('#deleteLanguageModal').modal('hide');"
+					class="btn btn-danger"
+					th:text="${messages.get(#locale, 'question.label.modal.remove', 'Remove')}"
+				></button>
+			</div> </div
+		><!-- /.modal-content --> </div
+	><!-- /.modal-dialog -->
+</div>

@@ -1,0 +1,112 @@
+<!--/*
+    * View to upload an existing questionnaire    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'questionnaire.import.heading', 'Import questionnaire from file')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				id="uploadForm"
+				th:object="${questionnaire}"
+				enctype="multipart/form-data"
+				method="POST"
+				action="upload"
+			>
+				<div class="row">
+					<div
+						class="col-xs-3"
+						th:utext="${messages.get(#locale, 'questionnaire.import.odm.infoText', 'File')}"
+					>
+					</div>
+					<div
+						class="col-xs-3"
+						th:utext="${messages.get(#locale, 'questionnaire.import.fhir.infoText', 'File')}"
+					>
+					</div>
+					<div
+						class="col-xs-3"
+						th:utext="${messages.get(#locale, 'questionnaire.import.mopat.infoText', 'File')}"
+					>
+					</div>
+				</div>
+				<div class="form-group">
+					<label
+						for="file"
+						th:text="${messages.get(#locale, 'questionnaire.import.label.file', 'File')}"
+					></label>
+					<br />
+					<input
+						type="file"
+						name="file"
+						accept=".json,.xml"
+						id="file"
+					/>
+				</div>
+				<div
+					th:if="${fileUpload == true}"
+					class="form-group"
+				>
+					<div class="alert alert-danger">
+						<div class="alert alert-danger">
+							<div
+								th:if="${#fields.hasErrors('*')}"
+								th:text="${#fields.errors('*')}"
+								style="color: red"
+							>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div
+					class="form-group"
+					th:utext="${messages.get(#locale, 'questionnaire.import.fhir.urlText', 'File')}"
+				>
+				</div>
+				<div class="form-group">
+					<label
+						for="url"
+						th:text="${messages.get(#locale, 'questionnaire.import.label.url', 'Url')}"
+					></label>
+					<br />
+					<input
+						type="text"
+						class="form-control"
+						name="url"
+						id="url"
+					/>
+				</div>
+				<div
+					th:if="${failure ne null}"
+					id="notification"
+					class="alert alert-danger"
+					th:text="${failure}"
+				>
+				</div>
+				<div
+					th:if="${fileUpload == false}"
+					class="form-group"
+				>
+					<div class="alert alert-danger">
+						<div
+							th:if="${#fields.hasErrors('*')}"
+							th:text="${#fields.errors('*')}"
+							style="color: red"
+						>
+						</div>
+					</div>
+				</div>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="import"
+					id="importButton"
+					name="action"
+					th:utext="${messages.get(#locale, 'questionnaire.import.button.import', 'Upload & Import')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

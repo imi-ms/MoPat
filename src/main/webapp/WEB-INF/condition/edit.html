@@ -1,0 +1,1675 @@
+<!--/*
+    * View to create a new condition for a specific question
+    * The condition editor is updated within the script tag    
+*/-->
+
+<th:block layout:decorate="~{layout/main}">
+	<th:block layout:fragment="titleContainer">
+		<th:block
+			th:if="${conditionListDTO.conditionDTOs[0].id eq null}"
+			th:text="${messages.get(#locale, 'condition.heading.title.new', 'Create new condition')}"
+		>
+		</th:block>
+		<th:block
+			th:unless="${conditionListDTO.conditionDTOs[0].id eq null}"
+			th:text="${messages.get(#locale, 'condition.heading.title.edit', 'Edit condition')}"
+		>
+		</th:block>
+	</th:block>
+
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<div class="form-group">
+				<h4
+					th:text="|${messages.get(#locale, '__${question.questionType.name}__', '__${question.questionType.name}__')}:|"
+				></h4>
+			</div>
+			<form
+				action="edit"
+				th:object="${conditionListDTO}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				name="conditionListDTO"
+			>
+				<th:block
+					th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+				>
+					<input
+						type="hidden"
+						th:name="|conditionDTOs[${loop.index}].id|"
+						th:value="${conditionDTO.id}"
+					/>
+				</th:block>
+				<input
+					type="hidden"
+					name="questionId"
+					th:value="${question.id}"
+				/>
+				<!--/* Set isThreshold to check if save button has to be enabeld or disabled */-->
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='isThreshold', 
+                    value=false)}"
+				>
+				</addVar>
+				<div class="form-group">
+					<th:block
+						th:if="${question.questionType.name == 'MULTIPLE_CHOICE' || 
+                                question.questionType.name == 'DROP_DOWN' || 
+                                question.questionType.name == 'BODY_PART'}"
+					>
+						<th:block
+							th:text="${messages.get(#locale, 'condition.label.selectAnswerBeginning', 'If the answer')}"
+						/>
+						<div class="row">
+							<div class="col-12">
+								<th:block
+									th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+								>
+									<th:block th:if="${loop.index eq 0}">
+										<select
+											id="triggerId"
+											th:name="|conditionDTOs[${loop.index}].triggerId|"
+											class="form-select triggerIdActive"
+											onchange="updateTriggerId(true);"
+										>
+											<th:block th:each="answer: ${question.answers}">
+												<th:block
+													th:if="${answer['class'].simpleName eq 'SelectAnswer'}"
+												>
+													<!--/* Set the variable with the localized texts for the include. */-->
+													<addVar
+														layout:replace="~{helper/var :: add(
+                                                        key='localizedMap', 
+                                                        value=${answer.localizedLabel})}"
+													>
+													</addVar>
+													<localizedText
+														layout:replace="~{helper/localeHelper/showDefaultLocalizedText}"
+													/>
+													<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+													<option
+														th:value="${answer.id}"
+														th:selected="${conditionDTO.triggerId == answer.id}"
+														th:text="${vars['defaultLocalizedText']}"
+													>
+													</option>
+												</th:block>
+											</th:block>
+										</select>
+									</th:block>
+									<th:block th:unless="${loop.index eq 0}">
+										<input
+											type="hidden"
+											th:field="*{conditionDTOs[__${loop.index}__].triggerId}"
+											class="triggerId"
+										/>
+									</th:block>
+								</th:block>
+							</div>
+						</div>
+						<th:block
+							th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+						/>
+					</th:block>
+
+					<th:block
+						th:if="${#strings.endsWith(question.questionType.name, 'SLIDER') || 
+                                question.questionType.name == 'NUMBER_CHECKBOX' || 
+                                question.questionType.name == 'NUMBER_INPUT'}"
+					>
+						<th:block
+							th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+						>
+							<input
+								type="hidden"
+								th:field="*{conditionDTOs[__${loop.index}__].triggerId}"
+								th:value="${question.answers[0].id}"
+							/>
+						</th:block>
+						<th:block
+							th:text="${messages.get(#locale, 'condition.label.selectAnswerBeginning', 'If the answer')}"
+						/>
+						<div class="row">
+							<div class="col-12 col-sm-6 mb-3 mb-sm-0">
+								<th:block
+									th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+								>
+									<th:block th:if="${loop.index eq 0}">
+										<select
+											th:field="*{conditionDTOs[__${loop.index}__].thresholdType}"
+											class="form-select thresholdTypeActive"
+											onchange="updateThresholdType(true);"
+										>
+											<th:block th:each="item: ${thresholdComparisonType}">
+												<option
+													th:value="${item.name}"
+													th:label="${item.textValue}"
+												></option>
+											</th:block>
+										</select>
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='conditionDTOs[__${loop.index}__].thresholdType')}"
+										/>
+									</th:block>
+									<th:block th:unless="${loop.index eq 0}">
+										<input
+											type="hidden"
+											th:field="*{conditionDTOs[__${loop.index}__].thresholdType}"
+											class="thresholdType"
+										/>
+									</th:block>
+								</th:block>
+							</div>
+							<div class="col-12 col-sm-6">
+								<th:block
+									th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+								>
+									<th:block th:if="${loop.index eq 0}">
+										<input
+											type="number"
+											class="form-control thresholdValueActive"
+											th:field="*{conditionDTOs[__${loop.index}__].thresholdValue}"
+											th:min="${question.answers[0].minValue}"
+											th:max="${question.answers[0].maxValue}"
+											th:step="${question.answers[0].stepsize}"
+											onchange="updateThresholdValue(true);"
+										/>
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='conditionDTOs[__${loop.index}__].thresholdValue')}"
+										/>
+									</th:block>
+									<th:block th:unless="${loop.index eq 0}">
+										<input
+											type="hidden"
+											th:field="*{conditionDTOs[__${loop.index}__].thresholdValue}"
+											class="thresholdValue"
+										/>
+									</th:block>
+								</th:block>
+							</div>
+						</div>
+						<th:block
+							th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+						/><br />
+						<addVar
+							layout:replace="~{helper/var :: add(
+                            key='isThreshold', 
+                            value=true)}"
+						>
+						</addVar>
+					</th:block>
+				</div>
+				<th:block
+					th:each="conditionDTO, loop: ${conditionListDTO.conditionDTOs}"
+				>
+					<fieldset th:id="|conditionFieldset${loop.index}|">
+						<legend
+							onclick="toggleFieldsets(this);"
+							th:text="|${loop.index + 1}. ${messages.get(#locale, 'condition.label.target', 'target of condition')}|"
+						></legend>
+						<div class="form-group">
+							<th:block
+								th:text="${messages.get(#locale, 'condition.label.targetSelect', 'Choose the condition target''s type')}"
+							/>
+							<div class="row">
+								<div class="col-12">
+									<select
+										th:id="|targetClass${loop.index}|"
+										th:name="|conditionDTOs[${loop.index}].targetClass|"
+										class="form-select targetClassSelect"
+										onchange="toggleTargetSelection($(this), true)"
+									>
+										<th:block
+											th:if="${question.position < question.getQuestionnaire().getQuestions().size()}"
+										>
+											<option
+												value="de.imi.mopat.model.Question"
+												th:selected="${conditionDTO.targetClass == 'de.imi.mopat.model.Question'}"
+												th:text="${messages.get(#locale, 'condition.option.question', 'Question')}"
+											>
+											</option>
+											<option
+												value="de.imi.mopat.model.SelectAnswer"
+												th:selected="${conditionDTO.targetClass == 'de.imi.mopat.model.SelectAnswer'}"
+												th:text="${messages.get(#locale, 'condition.option.answer', 'Answer')}"
+											>
+											</option>
+										</th:block>
+										<th:block
+											th:if="${not #lists.isEmpty(conditionListDTO.availableBundleDTOs)}"
+										>
+											<option
+												value="de.imi.mopat.model.Questionnaire"
+												th:selected="${conditionDTO.targetClass == 'de.imi.mopat.model.Questionnaire'}"
+												th:text="${messages.get(#locale, 'condition.option.questionnaire', 'Questionnaire')}"
+											>
+											</option>
+										</th:block>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="row">
+								<!--/* if question isn't the last one in the questionnaire it is able to target at other questions */-->
+								<th:block
+									th:if="${question.position < question.getQuestionnaire().getQuestions().size()}"
+								>
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='questionVisibility', 
+                                        value='display: block;')}"
+									>
+									</addVar>
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='answerVisibility', 
+                                        value='display: none;')}"
+									>
+									</addVar>
+
+									<!--/* hide the question selection if the condition existed before and targets at questionnaire*/-->
+									<th:block
+										th:if="${conditionDTO.id ne null && 
+                                                conditionDTO.targetClass ne 'de.imi.mopat.model.Question' &&
+                                                conditionDTO.targetClass ne 'de.imi.mopat.model.SelectAnswer'}"
+									>
+										<addVar
+											layout:replace="~{helper/var :: add(
+                                            key='questionVisibility', 
+                                            value='display: none;')}"
+										>
+										</addVar>
+									</th:block>
+									<th:block
+										th:if="${conditionDTO.id ne null && 
+                                                conditionDTO.targetClass eq 'de.imi.mopat.model.SelectAnswer'}"
+									>
+										<addVar
+											layout:replace="~{helper/var :: add(
+                                            key='questionVisibility', 
+                                            value='display: none;')}"
+										>
+										</addVar>
+										<addVar
+											layout:replace="~{helper/var :: add(
+                                            key='answerVisibility', 
+                                            value='display: block;')}"
+										>
+										</addVar>
+									</th:block>
+									<div
+										th:id="|targetQuestion${loop.index}|"
+										class="col-12 col-sm-4"
+										th:style="${vars['questionVisibility']}"
+									>
+										<th:block
+											th:text="${messages.get(#locale, 'condition.label.targetQuestion', 'the question')}"
+										/>
+										<!--/* custom select because we only need questions with a position greater than origin question */-->
+										<select
+											th:id="|questionDropDown${loop.index}|"
+											th:name="|conditionDTOs[${loop.index}].targetId|"
+											class="form-select selectable questionDropDownSelect"
+											onchange="updateSelections();"
+											th:disabled="${conditionDTO.targetClass == 'de.imi.mopat.model.Questionnaire'}"
+										>
+											<th:block
+												th:each="iterQuestion: ${question.getQuestionnaire().getQuestions()}"
+											>
+												<th:block
+													th:if="${iterQuestion.position gt question.position}"
+												>
+													<!--/* Set the variable with the localized texts for the include. */-->
+													<addVar
+														layout:replace="~{helper/var :: add(
+                                                        key='localizedMap', 
+                                                        value=${iterQuestion.localizedQuestionText})}"
+													>
+													</addVar>
+													<localizedText
+														layout:replace="~{helper/localeHelper/showDefaultLocalizedText}"
+													/>
+													<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+													<addVar
+														layout:replace="~{helper/var :: add(
+                                                        key='optionName', 
+                                                        value='')}"
+													>
+													</addVar>
+													<th:block
+														th:if="${iterQuestion.questionType.name eq 'MULTIPLE_CHOICE'}"
+													>
+														<addVar
+															layout:replace="~{helper/var :: add(
+                                                            key='optionName', 
+                                                            value='MULTIPLE_CHOICE')}"
+														>
+														</addVar>
+													</th:block>
+													<th:block
+														th:if="${iterQuestion.questionType.name eq 'DROP_DOWN'}"
+													>
+														<addVar
+															layout:replace="~{helper/var :: add(
+                                                            key='optionName', 
+                                                            value='DROP_DOWN')}"
+														>
+														</addVar>
+													</th:block>
+													<th:block
+														th:if="${iterQuestion.questionType.name eq 'BODY_PART'}"
+													>
+														<addVar
+															layout:replace="~{helper/var :: add(
+                                                            key='optionName', 
+                                                            value='BODY_PART')}"
+														>
+														</addVar>
+													</th:block>
+													<option
+														th:value="${iterQuestion.id}"
+														data-used="false"
+														th:selected="${conditionDTO.targetId == iterQuestion.id}"
+														th:attrappend="name=${not #strings.isEmpty(vars['optionName'])} ? ${vars['optionName']}"
+														th:utext="|${iterQuestion.position}: ${vars['defaultLocalizedText']}|"
+													>
+													</option>
+												</th:block>
+											</th:block>
+										</select>
+									</div>
+									<div
+										th:id="|targetAnswerQuestion${loop.index}|"
+										class="col-12 col-sm-4"
+										th:style="${vars['answerVisibility']}"
+									>
+										<th:block
+											th:text="${messages.get(#locale, 'condition.label.targetAnswerQuestion', 'From question')}"
+										/>
+										<!--/* custom select because we only need questions with a position greater than origin question */-->
+										<select
+											th:id="|targetAnswerQuestionDropDown${loop.index}|"
+											th:name="|conditionDTOs[${loop.index}].targetAnswerQuestionId|"
+											class="form-select targetAnswerQuestionDropDownSelect"
+											th:disabled="${conditionDTO.targetClass == 'de.imi.mopat.model.SelectAnswer'}"
+											onchange="resetSelection($(this));"
+										>
+											<th:block
+												th:each="iterQuestion: ${question.getQuestionnaire().getQuestions()}"
+											>
+												<th:block
+													th:if="${iterQuestion.position gt question.position and 
+                                                            (iterQuestion.questionType.name eq 'MULTIPLE_CHOICE' or 
+                                                            iterQuestion.questionType.name eq 'DROP_DOWN' or 
+                                                            iterQuestion.questionType.name eq 'BODY_PART')}"
+												>
+													<!--/* Set the variable with the localized texts for the include */-->
+													<addVar
+														layout:replace="~{helper/var :: add(
+                                                        key='localizedMap', 
+                                                        value=${iterQuestion.localizedQuestionText})}"
+													>
+													</addVar>
+													<localizedText
+														layout:replace="~{helper/localeHelper/showDefaultLocalizedText}"
+													/>
+													<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+													<option
+														th:value="${iterQuestion.id}"
+														th:selected="${conditionDTO.targetAnswerQuestionId == iterQuestion.id}"
+														th:utext="|${iterQuestion.position}: ${vars['defaultLocalizedText']}|"
+													>
+													</option>
+												</th:block>
+											</th:block>
+										</select>
+									</div>
+									<div
+										th:id="|targetAnswer${loop.index}|"
+										class="col-12 col-sm-4"
+										th:style="${vars['answerVisibility']}"
+									>
+										<th:block
+											th:text="${messages.get(#locale, 'condition.label.targetAnswer', 'The answer')}"
+										/>
+										<!--/* custom select because we only need questions with a position greater than origin question */-->
+										<select
+											th:id="|answerDropDown${loop.index}|"
+											th:name="|conditionDTOs[${loop.index}].targetId|"
+											class="form-select selectable answerDropDownSelect"
+											onchange="updateSelections();"
+											th:disabled="${conditionDTO.targetClass != 'de.imi.mopat.model.SelectAnswer'}"
+										>
+											<th:block
+												th:each="iterQuestion: ${question.getQuestionnaire().getQuestions()}"
+											>
+												<th:block
+													th:if="${iterQuestion.questionType.name eq 'MULTIPLE_CHOICE' or 
+                                                            iterQuestion.questionType.name eq 'DROP_DOWN' or 
+                                                            iterQuestion.questionType.name eq 'BODY_PART'}"
+												>
+													<th:block
+														th:each="iterAnswer: ${iterQuestion.getAnswers()}"
+													>
+														<th:block
+															th:if="${iterQuestion.position gt question.position && 
+                                                                    iterAnswer['class'].simpleName eq 'SelectAnswer'}"
+														>
+															<!--/* Set the variable with the localized texts for the include */-->
+															<addVar
+																layout:replace="~{helper/var :: add(
+                                                                key='localizedMap', 
+                                                                value=${iterAnswer.localizedLabel})}"
+															>
+															</addVar>
+															<localizedText
+																layout:replace="~{helper/localeHelper/showDefaultLocalizedText}"
+															/>
+															<!--/* The defaultLocalizedText variable is defined in the included fragment and 
+                                                                represent the localized text which should be shown */-->
+															<option
+																th:value="${iterAnswer.id}"
+																data-used="false"
+																th:name="${iterQuestion.id}"
+																th:selected="${conditionDTO.targetId == iterAnswer.id}"
+																th:text="${vars['defaultLocalizedText']}"
+															>
+															</option>
+														</th:block>
+													</th:block>
+												</th:block>
+											</th:block>
+										</select>
+									</div>
+								</th:block>
+								<!--/* don't show bundle and questionnaire select elements if there are no bundleQuestionnaires assigned to the question's questionnaire 
+                                    display the questionnaire selection if condition existed and its target class is questionnaire, or if the 
+                                    question the condition belongs to is the last one of the questionnaire */-->
+								<addVar
+									layout:replace="~{helper/var :: add(
+                                    key='bundleVisibility', 
+                                    value='display: none;')}"
+								>
+								</addVar>
+								<th:block
+									th:if="${(conditionDTO.id ne null && 
+                                            conditionDTO.targetClass eq 'de.imi.mopat.model.Questionnaire') ||
+                                            question.position == question.getQuestionnaire().getQuestions().size()}"
+								>
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='bundleVisibility', 
+                                        value='display: block')}"
+									>
+									</addVar>
+								</th:block>
+								<div
+									th:id="|targetBundle${loop.index}|"
+									class="col-12 col-sm-4"
+									th:style="${vars['bundleVisibility']}"
+									th:disabled="${conditionDTO.targetClass == 'de.imi.mopat.model.Questionnaire'}"
+								>
+									<div
+										th:text="${messages.get(#locale, 'condition.label.targetBundle', 'From bundle')}"
+									></div>
+									<selectOptions
+										layout:replace="~{fragments/selectOptions :: selectOptions(
+                                        clazz='form-select questionnaireChosen bundleDropDownSelect',
+                                        path='conditionDTOs[__${loop.index}__].bundleId', items=${conditionListDTO.availableBundleDTOs},
+                                        itemLabel='name', itemValue='id',
+                                        localize='true', onChangeFunction='resetSelection($(this));',
+                                        id='bundleDropDown__${loop.index}__')}"
+									>
+									</selectOptions>
+								</div>
+								<div
+									th:id="|targetQuestionnaire${loop.index}|"
+									class="col-12 col-sm-4"
+									th:style="${vars['bundleVisibility']}"
+									th:disabled="${conditionDTO.targetClass == 'de.imi.mopat.model.Questionnaire'}"
+								>
+									<div
+										th:text="${messages.get(#locale, 'condition.label.questionnaire', 'the questionnaire')}"
+									></div>
+									<select
+										th:id="|questionnaireDropDown${loop.index}|"
+										th:name="|conditionDTOs[${loop.index}].targetId|"
+										class="form-select questionnaireChosen selectable questionnaireDropDownSelect"
+										onchange="updateSelections();"
+									>
+										<th:block
+											th:each="bundleQuestionnaireDTO, bundleQuestionnaireDTOIndex: ${conditionListDTO.availableBundleQuestionnaireDTOs}"
+										>
+											<option
+												th:value="${bundleQuestionnaireDTO.questionnaireDTO.id}"
+												data-used="false"
+												th:name="${bundleQuestionnaireDTO.bundleId}"
+												th:selected="${conditionDTO.targetId == bundleQuestionnaireDTO.questionnaireDTO.id && conditionDTO.bundleId == bundleQuestionnaireDTO.bundleId}"
+												th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}"
+											>
+											</option>
+										</th:block>
+									</select>
+								</div>
+								<div class="col-12 col-sm-4">
+									<div
+										th:text="${messages.get(#locale, 'condition.label.action', 'Perform the following action')}"
+									></div>
+									<select
+										th:id="|action${loop.index}|"
+										th:field="*{conditionDTOs[__${loop.index}__].action}"
+										class="form-select"
+									>
+										<th:block th:each="actionType: ${conditionActionTypeList}">
+											<option
+												th:value="${actionType}"
+												th:selected="${conditionDTO.action == actionType}"
+												th:text="|${messages.get(#locale, 'condition.label.__${actionType}__', '')}.|"
+											>
+											</option>
+										</th:block>
+									</select>
+								</div>
+							</div>
+						</div>
+					</fieldset>
+				</th:block>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					id="saveCondition"
+					value="save"
+					name="postAction"
+					th:text="${messages.get(#locale, 'button.save', 'Save condition')}"
+				>
+				</button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="cancel"
+					id="cancelButton"
+					name="postAction"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+    var questionnaireId = /*[[${question.questionnaire.id}]]*/ "";
+    var bundleId = /*[[${conditionListDTO.conditionDTOs[0].bundleId}]]*/ "";
+    var questionId = /*[[${question.id}]]*/ "";
+    var selectedElements = new Array();
+    var selectedBundleQuestionnaires = new Array();
+    var bundleQuestionnaireIds = new Set();
+    /*[- Labels for the different select elements -]*/
+    var labels = new Array();
+    labels["condition.label.answerQuestion"] =
+    /*[[${messages.get(#locale, 'condition.label.answerQuestion', 'From question')}]]*/ "From
+    question";
+    labels["condition.label.targetQuestion"] =
+    /*[[${messages.get(#locale, 'condition.label.targetQuestion', 'The question')}]]*/ "The
+    question";
+    labels["condition.button.addTarget"] =
+    /*[[${messages.get(#locale, 'condition.button.addTarget', 'Add target')}]]*/ "Add target";
+    labels["condition.button.removeTarget"] =
+    /*[[${messages.get(#locale, 'condition.button.removeTarget', '')}]]*/ "Remove target";
+    labels["condition.label.target"] =
+    /*[[${messages.get(#locale, 'condition.label.target', 'target of condition')}]]*/ "target of
+    condition";
+    labels["condition.warning.changeTrigger"] =
+    /*[[${messages.get(#locale, 'condition.warning.changeTrigger', 'target of condition')}]]*/
+    "target of condition";
+
+    $(document).ready(function () {
+    /*[- Get all questionnaire Ids used in bundles -]*/
+    $(".questionnaireDropDownSelect")
+    .find("option")
+    .each(function () {
+    bundleQuestionnaireIds.add(this.value);
+    });
+
+    /*[- Set the selected bundles and questionnaires depending on bundleId -]*/
+    for (var i = 0; i < $("fieldset").length; i++) {
+    if (bundleId === "") {
+    $("#targetBundle" + i).attr("disabled", "disabled");
+    $("#targetQuestionnaire" + i).attr("disabled", "disabled");
+    }
+    }
+
+    /*[- If there are no multiple choice questions at this question's questionnaire hide the answer
+    option at targetClass selection -]*/
+    if (
+    $("[name='MULTIPLE_CHOICE']").length <= 0 &&
+    $("[name='DROP_DOWN']").length <= 0 &&
+    $("[name='BODY_PART']").length <= 0
+    ) {
+    for (var i = 0; i < $("fieldset").length; i++) {
+    $("#targetClass" + i)
+    .find("option[value='de.imi.mopat.model.SelectAnswer']")
+    .hide();
+    $("#targetAnswer" + i).hide();
+    }
+    }
+    for (var i = 0; i < $("fieldset").length; i++) {
+    toggleTargetSelection($("#targetClass" + i, false));
+    }
+
+    /*[- Update hidden fields -]*/
+    updateTriggerId(false);
+    updateThresholdType(false);
+    updateThresholdValue(false);
+    updateSelections();
+    /*[- Add 'add-target'-button if any options are available -]*/
+    reloadButtonWrapper();
+    if ($(".selectable").find("option[data-used='false']").length !== 0) {
+    addAddTargetButton();
+    }
+
+    /*[- Add 'remove-target'-button if more than one target is shown -]*/
+    if ($("fieldset").length > 1) {
+    addRemoveTargetButton();
+    }
+    });
+
+    /*[-
+    * Show and hide the appropriate select elements to choose which type the conditions target has
+    to be.
+    *
+    * @param conditionTarget - The select of the target class
+    * @param manual - True, if the select was changed manually, else false
+    -]*/
+    function toggleTargetSelection(conditionTarget, manual) {
+    var loopIndex = parseInt(
+    conditionTarget.attr("id").replace(/[^\d]/g, ""),
+    10
+    );
+    /*[- toggle the visibilty of all available questions -]*/
+    switch (conditionTarget.val()) {
+    case "de.imi.mopat.model.SelectAnswer":
+    /*[- Show the question- and answer-selection and set their names to send a answerCondition to
+    the server. -]*/
+    toggleSelectElements($("#targetQuestion" + loopIndex), false);
+    toggleSelectElements($("#targetAnswer" + loopIndex), true);
+    toggleSelectElements($("#targetAnswerQuestion" + loopIndex), true);
+    toggleSelectElements($("#targetBundle" + loopIndex), false);
+    toggleSelectElements($("#targetQuestionnaire" + loopIndex), false);
+    break;
+    case "de.imi.mopat.model.Question":
+    /*[- Show selectable answers and targetable questions and hide elements to select a bundle and a
+    questionnaire -]*/
+    toggleSelectElements($("#targetQuestion" + loopIndex), true);
+    toggleSelectElements($("#targetAnswer" + loopIndex), false);
+    toggleSelectElements($("#targetAnswerQuestion" + loopIndex), false);
+    toggleSelectElements($("#targetBundle" + loopIndex), false);
+    toggleSelectElements($("#targetQuestionnaire" + loopIndex), false);
+    break;
+    case "de.imi.mopat.model.Questionnaire":
+    /*[- Show selectable bundles and targetable questionnaires and hide elements to select an answer
+    and a question -]*/
+    toggleSelectElements($("#targetQuestion" + loopIndex), false);
+    toggleSelectElements($("#targetAnswer" + loopIndex), false);
+    toggleSelectElements($("#targetAnswerQuestion" + loopIndex), false);
+    toggleSelectElements($("#targetBundle" + loopIndex), true);
+    toggleSelectElements($("#targetQuestionnaire" + loopIndex), true);
+    break;
+    }
+
+    if (manual) {
+    hideAndDisableSelectedElements();
+    selectFirstAvailableTarget(loopIndex);
+    }
+    }
+
+    /*[-
+    * Toggle visibility and disabled attribute of select options depending on param enable value.
+    *
+    * @param selectOption - The option of a select element that should be changed
+    * @param enable - True, if the option should be shown, else false
+    -]*/
+    function toggleSelectElements(selectOption, enable) {
+    if (enable) {
+    selectOption.show();
+    selectOption.find("select").removeAttr("disabled");
+    } else {
+    selectOption.hide();
+    selectOption.find("select").attr("disabled", "disabled");
+    }
+    }
+
+    /*[-
+    * Toggles the fieldset.
+    *
+    * @param element - Fieldset to toggle
+    -]*/
+    function toggleFieldsets(element) {
+    $(element).siblings().slideToggle("fast");
+    }
+
+    /*[-
+    * Updates the threshold type of all conditions.
+    -]*/
+    function updateThresholdType(manually) {
+    if (manually === true) {
+    if (confirm(labels["condition.warning.changeTrigger"])) {
+    var answerId = /*[[${question.answers[0].id}]]*/ "";
+    var baseUrl = /*[[@{/}]]*/ "/";
+    window.location.replace(
+    baseUrl +
+    "condition/edit?action=addCondition&questionId=" +
+    questionId +
+    "&answerId=" +
+    answerId +
+    "&thresholdComparisonType=" +
+    $(".thresholdTypeActive").val() +
+    "&thresholdValue=" +
+    $(".thresholdValueActive").val()
+    );
+    } else {
+    $(".thresholdTypeActive").val(
+    $(".thresholdTypeActive").attr("data-prevValue")
+    );
+    }
+    } else {
+    $(".thresholdType").val($(".thresholdTypeActive").val());
+    $(".thresholdTypeActive").attr(
+    "data-prevValue",
+    $(".thresholdTypeActive").val()
+    );
+    }
+    }
+
+    /*[-
+    * Updates the threshold value of all conditions.
+    -]*/
+    function updateThresholdValue(manually) {
+    if (manually === true) {
+    if ($(".thresholdValueActive").val() === "") {
+    $(".thresholdValueActive").val(
+    $(".thresholdValueActive").attr("data-prevValue")
+    );
+    } else if (confirm(labels["condition.warning.changeTrigger"])) {
+    var answerId = /*[[${question.answers[0].id}]]*/ "";
+    var baseUrl = /*[[@{/}]]*/ "/";
+    window.location.replace(
+    baseUrl +
+    "condition/edit?action=addCondition&questionId=" +
+    questionId +
+    "&answerId=" +
+    answerId +
+    "&thresholdComparisonType=" +
+    $(".thresholdTypeActive").val() +
+    "&thresholdValue=" +
+    $(".thresholdValueActive").val()
+    );
+    } else {
+    $(".thresholdValueActive").val(
+    $(".thresholdValueActive").attr("data-prevValue")
+    );
+    }
+    } else {
+    $(".thresholdValue").val($(".thresholdValueActive").val());
+    $(".thresholdValueActive").attr(
+    "data-prevValue",
+    $(".thresholdValueActive").val()
+    );
+    }
+    }
+
+    /*[-
+    * Updates the trigger id of all conditions.
+    -]*/
+    function updateTriggerId(manually) {
+    if (manually === true) {
+    if (confirm(labels["condition.warning.changeTrigger"])) {
+    var baseUrl = /*[[@{/}]]*/ "/";
+    window.location.replace(
+    baseUrl +
+    "condition/edit?action=addCondition&questionId=" +
+    questionId +
+    "&answerId=" +
+    $(".triggerIdActive").val()
+    );
+    } else {
+    $(".triggerIdActive").val(
+    $(".triggerIdActive").attr("data-prevValue")
+    );
+    }
+    } else {
+    $(".triggerId").val($(".triggerIdActive").val());
+    $(".triggerIdActive").attr(
+    "data-prevValue",
+    $(".triggerIdActive").val()
+    );
+    }
+    }
+
+    /*[-
+    * Updates all selections and enables not used or disables used options.
+    -]*/
+    function updateSelections() {
+    enableAllTargetOptions();
+    updateSelectedElements();
+    hideAndDisableSelectedElements();
+    }
+
+    /*[-
+    * Enables all target options of the selects. Mainly used to update the
+    * selects and disable the used options afterwards.
+    -]*/
+    function enableAllTargetOptions() {
+    /*[- Enable all selectable elements -]*/
+    $(".selectable").each(function () {
+    var currentIndex = parseInt(
+    $(this).attr("id").replace(/[^\d]/g, ""),
+    10
+    );
+    /*[- Type answer -]*/
+    if ($(this).attr("id").toString().startsWith("answerDropDown")) {
+    var selectedQuestionId = $(
+    "#targetAnswerQuestionDropDown" + currentIndex
+    )
+    .find(":selected")
+    .val();
+    /*[- Enable only the answers, that belong to the selected question -]*/
+    $(this)
+    .find("option")
+    .each(function () {
+    if ($(this).attr("name") === selectedQuestionId) {
+    $(this).attr("data-used", false);
+    $(this).removeAttr("disabled");
+    $(this).show();
+    } else {
+    $(this).attr("data-used", false);
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    /*[- Type Questionnaire -]*/
+    } else if (
+    $(this).attr("id").toString().startsWith("questionnaireDropDown")
+    ) {
+    var selectedBundleId = $("#bundleDropDown" + currentIndex)
+    .find(":selected")
+    .val();
+    /*[- Enable only the questionnaires, that belong to the selected bundle -]*/
+    $(this)
+    .find("option")
+    .each(function () {
+    if ($(this).attr("name") === selectedBundleId) {
+    $(this).attr("data-used", false);
+    $(this).removeAttr("disabled");
+    $(this).show();
+    } else {
+    $(this).attr("data-used", false);
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    /*[- Type Question -]*/
+    } else {
+    /*[- Enable all available questions -]*/
+    $(this)
+    .find("option")
+    .each(function () {
+    $(this).attr("data-used", false);
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    });
+    }
+
+    /*[-
+    * Updates the array with all selected elements.
+    -]*/
+    function updateSelectedElements() {
+    /*[- Clear the current arrays -]*/
+    selectedElements = new Array();
+    selectedBundleQuestionnaires = new Array();
+
+    /*[- Add every selected answer id, question id and questionnaire id -]*/
+    $(".selectable").each(function () {
+    if (this.disabled === false) {
+    /*[- Check whether the selected Id is a questionnaire Id or not -]*/
+    if (bundleQuestionnaireIds.has($(this).find(":selected").val())) {
+    /*[- If it is a questionnaire Id, save also the associated bundle Id -]*/
+    selectedBundleQuestionnaires.push([
+    $(this).find(":selected").val(),
+    $(this).find(":selected").attr("name"),
+    ]);
+    } else {
+    /*[- Else save only the unique answer/question Id -]*/
+    selectedElements.push($(this).find(":selected").val());
+    }
+    }
+    });
+    }
+
+    /*[-
+    * Hides and disables all selected elements of the selectedElements array.
+    * Also hides and disbles the target type option if all available options of
+    * this type are selected.
+    * Does not hide the option if it is selected in its select.
+    -]*/
+    function hideAndDisableSelectedElements() {
+    /*[- Remove selected elements (answers/questions) from other selections -]*/
+    $(".selectable").each(function () {
+    for (var actualId of selectedElements) {
+    $(this)
+    .find("[value='" + actualId + "']")
+    .attr("data-used", true);
+    if (actualId !== $(this).find(":selected").val()) {
+    $(this)
+    .find("[value='" + actualId + "']")
+    .attr("disabled", "disabled");
+    $(this)
+    .find("[value='" + actualId + "']")
+    .hide();
+    }
+    }
+    });
+    /*[- Remove selected bundle/questionaire pairs from other selections -]*/
+    $(".questionnaireDropDownSelect").each(function () {
+    for (var bundleQuestionnairePair of selectedBundleQuestionnaires) {
+    $(this)
+    .find(
+    "[value='" +
+    bundleQuestionnairePair[0] +
+    "'][name='" +
+    bundleQuestionnairePair[1] +
+    "']"
+    )
+    .attr("data-used", true);
+    if (bundleQuestionnairePair[0] !== $(this).find(":selected").val()) {
+    $(this)
+    .find(
+    "[value='" +
+    bundleQuestionnairePair[0] +
+    "'][name='" +
+    bundleQuestionnairePair[1] +
+    "']"
+    )
+    .attr("disabled", "disabled");
+    $(this)
+    .find(
+    "[value='" +
+    bundleQuestionnairePair[0] +
+    "'][name='" +
+    bundleQuestionnairePair[1] +
+    "']"
+    )
+    .hide();
+    }
+    }
+    });
+    /*[- Check if all question targets are selected and possibly hide the question option -]*/
+    if (
+    $(".questionDropDownSelect").first().find("option[data-used='false']")
+    .length === 0
+    ) {
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Question']")
+    .each(function () {
+    if (this.selected === false) {
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    } else {
+    /*[- Otherwise show the question option -]*/
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Question']")
+    .removeAttr("disabled");
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Question']")
+    .show();
+    }
+
+    /*[- Check if all answer targets of one question are selected and possibly hide the question
+    option -]*/
+    $(".targetAnswerQuestionDropDownSelect:visible")
+    .first()
+    .find("option")
+    .each(function () {
+    var currentValue = $(this).val();
+    /*[- Check if any select with this value is visible -]*/
+    if (
+    $(
+    ".targetAnswerQuestionDropDownSelect:visible [value='" +
+    currentValue +
+    "']:selected"
+    ).length !== 0
+    ) {
+    var firstVisibleSelectWithValueId = parseInt(
+    $(
+    ".targetAnswerQuestionDropDownSelect:visible [value='" +
+    currentValue +
+    "']:selected"
+    )
+    .first()
+    .parent()
+    .attr("id")
+    .replace(/[^\d]/g, ""),
+    10
+    );
+    /*[- Check if the first visible select with this value has any other options to select, if not
+    hide this question option -]*/
+    if (
+    $("#answerDropDown" + firstVisibleSelectWithValueId).find(
+    "[name='" + currentValue + "'][data-used='false']"
+    ).length === 0
+    ) {
+    $(".targetAnswerQuestionDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    if ($(this).parent().val() !== currentValue) {
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    /*[- Otherwise show this question option -]*/
+    } else {
+    $(".targetAnswerQuestionDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    /*[- Otherwise show this question option -]*/
+    } else {
+    $(".targetAnswerQuestionDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    });
+    /*[- Check if all answer targets are selected and possibly hide the answer option -]*/
+    if (
+    $(".answerDropDownSelect").first().find("option[data-used='false']")
+    .length === 0
+    ) {
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.SelectAnswer']")
+    .each(function () {
+    if (this.selected === false) {
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    } else {
+    /*[- Otherwise show the answer option -]*/
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.SelectAnswer']")
+    .removeAttr("disabled");
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.SelectAnswer']")
+    .show();
+    }
+
+    /*[- Check if all questionnaire targets of one bundle are selected and possibly hide the bundle
+    option -]*/
+    $(".bundleDropDownSelect:visible")
+    .first()
+    .find("option")
+    .each(function () {
+    var currentValue = $(this).val();
+    /*[- Check if any select with this value is visible -]*/
+    if (
+    $(
+    ".bundleDropDownSelect:visible [value='" +
+    currentValue +
+    "']:selected"
+    ).length !== 0
+    ) {
+    var firstVisibleSelectWithValueId = parseInt(
+    $(
+    ".bundleDropDownSelect:visible [value='" +
+    currentValue +
+    "']:selected"
+    )
+    .first()
+    .parent()
+    .attr("id")
+    .replace(/[^\d]/g, ""),
+    10
+    );
+    /*[- Check if the first visible select with this value has any other options to select, if not
+    hide this bundle option -]*/
+    if (
+    $("#questionnaireDropDown" + firstVisibleSelectWithValueId).find(
+    "[name='" + currentValue + "'][data-used='false']"
+    ).length === 0
+    ) {
+    $(".bundleDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    if ($(this).parent().val() !== currentValue) {
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    /*[- Otherwise show this bundle option -]*/
+    } else {
+    $(".bundleDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    /*[- Otherwise show this bundle option -]*/
+    } else {
+    $(".bundleDropDownSelect")
+    .find("[value='" + currentValue + "']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    });
+    /*[- Check if all questionnaire targets are selected and possibly hide the questionnaire option
+    -]*/
+    if (
+    $(".questionnaireDropDownSelect")
+    .first()
+    .find("option[data-used='false']").length === 0
+    ) {
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Questionnaire']")
+    .each(function () {
+    if (this.selected === false) {
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    }
+    });
+    } else {
+    /*[- Otherwise show the questionnaire option -]*/
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Questionnaire']")
+    .removeAttr("disabled");
+    $(".targetClassSelect")
+    .find("[value='de.imi.mopat.model.Questionnaire']")
+    .show();
+    }
+    }
+
+    /*[-
+    * Adds a new target fieldset.
+    -]*/
+    function addTarget() {
+    var actualLoopIndex = $("fieldset").length;
+    var predecessorLoopIndex = actualLoopIndex - 1;
+    var lastConditionFieldset = $("fieldset").last();
+    var clone = $(lastConditionFieldset).clone();
+    /*[- Remove the actual addTargetButton and removeTargetButton -]*/
+    $("#buttonWrapper").remove();
+    /*[- Modified the clones ids/names -]*/
+    clone[0].setAttribute("id", "conditionFieldset" + actualLoopIndex);
+    clone[0].firstElementChild.innerHTML =
+    actualLoopIndex + 1 + ". " + labels["condition.label.target"];
+    clone
+    .find("#targetClass" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].targetClass");
+    clone
+    .find("#targetClass" + predecessorLoopIndex)
+    .attr("id", "targetClass" + actualLoopIndex);
+    clone
+    .find("#questionDropDown" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].targetId");
+    clone
+    .find("#questionDropDown" + predecessorLoopIndex)
+    .attr("id", "questionDropDown" + actualLoopIndex);
+    clone
+    .find("#targetAnswerQuestionDropDown" + predecessorLoopIndex)
+    .attr(
+    "name",
+    "conditionDTOs[" + actualLoopIndex + "].targetAnswerQuestionId"
+    );
+    clone
+    .find("#targetAnswerQuestionDropDown" + predecessorLoopIndex)
+    .attr("id", "targetAnswerQuestionDropDown" + actualLoopIndex);
+    clone
+    .find("#answerDropDown" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].targetId");
+    clone
+    .find("#answerDropDown" + predecessorLoopIndex)
+    .attr("id", "answerDropDown" + actualLoopIndex);
+    clone
+    .find("#bundleDropDown" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].bundleId");
+    clone
+    .find("#bundleDropDown" + predecessorLoopIndex)
+    .attr("id", "bundleDropDown" + actualLoopIndex);
+    clone
+    .find("#questionnaireDropDown" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].targetId");
+    clone
+    .find("#questionnaireDropDown" + predecessorLoopIndex)
+    .attr("id", "questionnaireDropDown" + actualLoopIndex);
+    clone
+    .find("#action" + predecessorLoopIndex)
+    .attr("name", "conditionDTOs[" + actualLoopIndex + "].action");
+    clone
+    .find("#action" + predecessorLoopIndex)
+    .attr("id", "action" + actualLoopIndex);
+    clone
+    .find("#targetQuestion" + predecessorLoopIndex)
+    .attr("id", "targetQuestion" + actualLoopIndex);
+    clone
+    .find("#targetAnswer" + predecessorLoopIndex)
+    .attr("id", "targetAnswer" + actualLoopIndex);
+    clone
+    .find("#targetAnswerQuestion" + predecessorLoopIndex)
+    .attr("id", "targetAnswerQuestion" + actualLoopIndex);
+    clone
+    .find("#targetBundle" + predecessorLoopIndex)
+    .attr("id", "targetBundle" + actualLoopIndex);
+    clone
+    .find("#targetQuestionnaire" + predecessorLoopIndex)
+    .attr("id", "targetQuestionnaire" + actualLoopIndex);
+    /*[- Insert the clone after the last condition fieldset and toggle to the first target class
+    that is available in the order question, answer, questionnaire -]*/
+    clone.insertAfter(lastConditionFieldset);
+    if (
+    $(".questionDropDownSelect").first().find("option[data-used='false']")
+    .length > 0
+    ) {
+    toggleSelectElements($("#targetQuestion" + actualLoopIndex), true);
+    toggleSelectElements($("#targetAnswer" + actualLoopIndex), false);
+    toggleSelectElements(
+    $("#targetAnswerQuestion" + actualLoopIndex),
+    false
+    );
+    toggleSelectElements($("#targetBundle" + actualLoopIndex), false);
+    toggleSelectElements(
+    $("#targetQuestionnaire" + actualLoopIndex),
+    false
+    );
+    $("#targetClass" + actualLoopIndex).val("de.imi.mopat.model.Question");
+    } else if (
+    $(".answerDropDownSelect").first().find("option[data-used='false']")
+    .length > 0
+    ) {
+    toggleSelectElements($("#targetQuestion" + actualLoopIndex), false);
+    toggleSelectElements($("#targetAnswer" + actualLoopIndex), true);
+    toggleSelectElements(
+    $("#targetAnswerQuestion" + actualLoopIndex),
+    true
+    );
+    toggleSelectElements($("#targetBundle" + actualLoopIndex), false);
+    toggleSelectElements(
+    $("#targetQuestionnaire" + actualLoopIndex),
+    false
+    );
+    $("#targetClass" + actualLoopIndex).val(
+    "de.imi.mopat.model.SelectAnswer"
+    );
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.Question']")
+    .attr("disabled", "disabled");
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.Question']")
+    .hide();
+    } else {
+    toggleSelectElements($("#targetQuestion" + actualLoopIndex), false);
+    toggleSelectElements($("#targetAnswer" + actualLoopIndex), false);
+    toggleSelectElements(
+    $("#targetAnswerQuestion" + actualLoopIndex),
+    false
+    );
+    toggleSelectElements($("#targetBundle" + actualLoopIndex), true);
+    toggleSelectElements($("#targetQuestionnaire" + actualLoopIndex), true);
+    $("#targetClass" + actualLoopIndex).val(
+    "de.imi.mopat.model.Questionnaire"
+    );
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.Question']")
+    .attr("disabled", "disabled");
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.Question']")
+    .hide();
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.SelectAnswer']")
+    .attr("disabled", "disabled");
+    $("#targetClass" + actualLoopIndex)
+    .find("[value='de.imi.mopat.model.SelectAnswer']")
+    .hide();
+    }
+
+    if (
+    /*[[${question.questionType.name == 'MULTIPLE_CHOICE' || question.questionType.name ==
+    'DROP_DOWN' || question.questionType.name == 'BODY_PART'}]]*/ ""
+    ) {
+    var hiddenTriggerId = document.createElement("input");
+    hiddenTriggerId.setAttribute("type", "hidden");
+    hiddenTriggerId.setAttribute(
+    "name",
+    "conditionDTOs[" + actualLoopIndex + "].triggerId"
+    );
+    hiddenTriggerId.setAttribute("class", "triggerId");
+    $(hiddenTriggerId).insertAfter($("#triggerId"));
+    updateTriggerId(false);
+    } else {
+    var hiddenTriggerId = document.createElement("input");
+    hiddenTriggerId.setAttribute("type", "hidden");
+    hiddenTriggerId.setAttribute(
+    "name",
+    "conditionDTOs[" + actualLoopIndex + "].triggerId"
+    );
+    hiddenTriggerId.setAttribute(
+    "value",
+    /*[[${question.answers[0].id}]]*/ ""
+    );
+    $(hiddenTriggerId).insertAfter($('[name$=".triggerId"]').last());
+    var hiddenTresholdType = document.createElement("input");
+    hiddenTresholdType.setAttribute("type", "hidden");
+    hiddenTresholdType.setAttribute(
+    "name",
+    "conditionDTOs[" + actualLoopIndex + "].thresholdType"
+    );
+    hiddenTresholdType.setAttribute("class", "thresholdType");
+    $(hiddenTresholdType).insertAfter($('[id$=".thresholdType"]'));
+    updateThresholdType(false);
+    var hiddenTresholdValue = document.createElement("input");
+    hiddenTresholdValue.setAttribute("type", "hidden");
+    hiddenTresholdValue.setAttribute(
+    "name",
+    "conditionDTOs[" + actualLoopIndex + "].thresholdValue"
+    );
+    hiddenTresholdValue.setAttribute("class", "thresholdValue");
+    $(hiddenTresholdValue).insertAfter($('[id$=".thresholdValue"]'));
+    updateThresholdValue(false);
+    }
+
+    selectFirstAvailableTarget(actualLoopIndex);
+
+    reloadButtonWrapper();
+
+    /*[- Add the 'add target'-button if the maximum size of targets is not reached -]*/
+    if (!($(".selectable").find("option[data-used='false']").length === 0)) {
+    addAddTargetButton();
+    }
+
+    /*[- Add 'remove-target'-button if more than one target is shown -]*/
+    if ($("#removeTargetButton").length === 0) {
+    addRemoveTargetButton();
+    }
+    }
+
+    /*[-
+    * Removes the last target and the associated fields. Shows/hides the buttons.
+    -]*/
+    function removeTarget() {
+    $("fieldset").last().remove();
+    currentIndex = $("fieldset").length;
+    $("[name='conditionDTOs[" + currentIndex + "].id'").remove();
+    $("[name='conditionDTOs[" + currentIndex + "].triggerId'").remove();
+    $("[name='conditionDTOs[" + currentIndex + "].thresholdType'").remove();
+    $("[name='conditionDTOs[" + currentIndex + "].thresholdValue'").remove();
+    reloadButtonWrapper();
+    /*[- Add 'add-target'-button if any options are available -]*/
+    if ($("#addTargetButton").length === 0) {
+    addAddTargetButton();
+    }
+
+    /*[- Add 'remove-target'-button if more than one target is shown -]*/
+    if ($("fieldset").length > 1) {
+    addRemoveTargetButton();
+    }
+
+    updateSelections();
+    }
+
+    /*[-
+    * Preselects the first available target. First disables and hides all
+    * selected elements and selects the first available target afterwards.
+    * Then updates the selected elements.
+    *
+    * @param actualLoopIndex - The index of the tagets fieldset
+    -]*/
+    function selectFirstAvailableTarget(actualLoopIndex) {
+    /*[- Deselect all used targets and hide them -]*/
+    for (var actualId of selectedElements) {
+    /*[- Deselect all used question targets and hide them -]*/
+    $("#questionDropDown" + actualLoopIndex)
+    .find("[value='" + actualId + "']")
+    .each(function () {
+    $(this).attr("data-used", true);
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    });
+    /*[- Deselect all used answer targets and hide them -]*/
+    $("#answerDropDown" + actualLoopIndex)
+    .find("[value='" + actualId + "']")
+    .each(function () {
+    $(this).attr("data-used", true);
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    });
+    }
+    for (var bundleQuestionnairePair of selectedBundleQuestionnaires) {
+    /*[- Deselect all used questionnaire targets and hide them -]*/
+    $("#questionnaireDropDown" + actualLoopIndex)
+    .find(
+    "[value='" +
+    bundleQuestionnairePair[0] +
+    "'][name='" +
+    bundleQuestionnairePair[1] +
+    "']"
+    )
+    .each(function () {
+    $(this).attr("data-used", true);
+    $(this).attr("disabled", "disabled");
+    $(this).hide();
+    });
+    }
+
+    /*[- If every answer of one question is already taken disabled this question option -]*/
+    var selectedQuestionId = $(
+    "#targetAnswerQuestionDropDown" + actualLoopIndex
+    ).val();
+    if (
+    $("#answerDropDown" + actualLoopIndex).find(
+    "[name='" + selectedQuestionId + "'][data-used='false']"
+    ).length === 0
+    ) {
+    var optionToDeactivate = $(
+    "#targetAnswerQuestionDropDown" + actualLoopIndex
+    ).find("option:selected");
+    $(optionToDeactivate).attr("disabled", "disabled");
+    $(optionToDeactivate).hide();
+    $("#targetAnswerQuestionDropDown" + actualLoopIndex).val(
+    $("#targetAnswerQuestionDropDown" + actualLoopIndex)
+    .find("option:enabled")
+    .first()
+    .val()
+    );
+    /*[- Enable all available answers for the new question -]*/
+    selectedQuestionId = $(
+    "#targetAnswerQuestionDropDown" + actualLoopIndex
+    ).val();
+    $("#answerDropDown" + actualLoopIndex)
+    .find("[name='" + selectedQuestionId + "'][data-used='false']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+
+    /*[- If every questionnaire of one bundle is already taken disabled this bundle option -]*/
+    var selectedBundleId = $("#bundleDropDown" + actualLoopIndex).val();
+    if (
+    $("#questionnaireDropDown" + actualLoopIndex).find(
+    "[name='" + selectedBundleId + "'][data-used='false']"
+    ).length === 0
+    ) {
+    var optionToDeactivate = $("#bundleDropDown" + actualLoopIndex).find(
+    "option:selected"
+    );
+    $(optionToDeactivate).attr("disabled", "disabled");
+    $(optionToDeactivate).hide();
+    $("#bundleDropDown" + actualLoopIndex).val(
+    $("#bundleDropDown" + actualLoopIndex)
+    .find("option:enabled")
+    .first()
+    .val()
+    );
+    /*[- Enable all available questionnaires for the new bundle -]*/
+    selectedBundleId = $("#bundleDropDown" + actualLoopIndex).val();
+    $("#questionnaireDropDown" + actualLoopIndex)
+    .find("[name='" + selectedBundleId + "'][data-used='false']")
+    .each(function () {
+    $(this).removeAttr("disabled");
+    $(this).show();
+    });
+    }
+    /*[- Select the first visible and enabled option -]*/
+    $("#questionDropDown" + actualLoopIndex)
+    .find("option")
+    .each(function () {
+    if ($(this).attr("data-used") === "false") {
+    $("#questionDropDown" + actualLoopIndex).val($(this).val());
+    return false;
+    }
+    });
+    $("#answerDropDown" + actualLoopIndex)
+    .find("option")
+    .each(function () {
+    if ($(this).attr("data-used") === "false" && $(this).is(":enabled")) {
+    $("#answerDropDown" + actualLoopIndex).val($(this).val());
+    return false;
+    }
+    });
+    $("#questionnaireDropDown" + actualLoopIndex)
+    .find("option")
+    .each(function () {
+    if ($(this).attr("data-used") === "false" && $(this).is(":enabled")) {
+    document.getElementById(
+    "questionnaireDropDown" + actualLoopIndex
+    ).selectedIndex = $(this).index();
+    return false;
+    }
+    });
+    /*[- Update selected elements -]*/
+    updateSelections();
+    }
+
+    /*[-
+    * Assigns the appropriate questionnaires to the bundle that is chosen in
+    * selection.
+    *
+    * @param selectElement - The select to reset
+    -]*/
+    function resetSelection(selectElement) {
+    var loopIndex = parseInt(
+    selectElement.attr("id").replace(/[^\d]/g, ""),
+    10
+    );
+    updateSelections();
+    selectFirstAvailableTarget(loopIndex);
+    updateSelections();
+    }
+
+    /*[-
+    * Disables save button if there's no value for threshold condition.
+    *
+    * @param saveButton - Button to enable/disable
+    -]*/
+    function toggleSaveButton(saveButton) {
+    if (saveButton.val() != "") {
+    $("#saveCondition").attr("disabled", false);
+    } else {
+    $("#saveCondition").attr("disabled", true);
+    }
+    }
+
+    /*[-
+    *
+    * Checks if the buttonWrapper is Already in the document
+    *
+    -]*/
+    function isButtonWrapperInDocument() {
+    return (
+    $("fieldset").last().find($(".row")).last().find($("#buttonWrapper"))
+    .length === 1
+    );
+    }
+
+    /*[-
+    *
+    * Reloads Button Wrapper by removing an existing one, if it exists
+    * and adding a new one to the last fieldset
+    *
+    -]*/
+    function reloadButtonWrapper() {
+    var buttonWrapper = document.createElement("div");
+    buttonWrapper.setAttribute("id", "buttonWrapper");
+    buttonWrapper.setAttribute("class", "col-12 mt-3");
+
+    if (!isButtonWrapperInDocument()) {
+    $("fieldset").last().find($(".row")).last().append(buttonWrapper);
+    } else {
+    $("#buttonWrapper").remove();
+    $("fieldset").last().find($(".row")).last().append(buttonWrapper);
+    }
+    }
+
+    /*[-
+    *
+    * Adds the target add button to the button wrapper
+    * Reloads the wrapper if it is not in the document
+    *
+    -]*/
+    function addAddTargetButton() {
+    var addTargetButton = document.createElement("button");
+    addTargetButton.setAttribute("id", "addTargetButton");
+    addTargetButton.setAttribute(
+    "class",
+    "col-12 col-sm-4 me-3 mb-2 mb-sm-0 btn btn-primary"
+    );
+    addTargetButton.setAttribute("type", "button");
+    addTargetButton.innerHTML = labels["condition.button.addTarget"];
+    addTargetButton.setAttribute("onclick", "addTarget()");
+
+    if (!isButtonWrapperInDocument()) {
+    reloadButtonWrapper();
+    }
+    $("#buttonWrapper").append(addTargetButton);
+    }
+
+    /*[-
+    *
+    * Adds the target remove button to the button wrapper
+    * Reloads the wrapper if it is not in the document
+    *
+    -]*/
+    function addRemoveTargetButton() {
+    var removeTargetButton = document.createElement("button");
+    removeTargetButton.setAttribute("id", "removeTargetButton");
+    removeTargetButton.setAttribute(
+    "class",
+    "col-12 col-sm-4 btn btn-primary"
+    );
+    removeTargetButton.setAttribute("type", "button");
+    removeTargetButton.innerHTML = labels["condition.button.removeTarget"];
+    removeTargetButton.setAttribute("onclick", "removeTarget()");
+
+    if (!isButtonWrapperInDocument()) {
+    reloadButtonWrapper();
+    }
+    $("#buttonWrapper").append(removeTargetButton);
+    }
+  </script>
+</th:block>

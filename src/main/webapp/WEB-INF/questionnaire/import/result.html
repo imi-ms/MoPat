@@ -1,0 +1,109 @@
+<!--/*
+    * View that shows important information after a questionnaire has been uploaded    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'questionnaire.import.result.heading', 'Results of import questionnaire from file')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				id="resultForm"
+				th:object="${importQuestionnaireResult}"
+				enctype="multipart/form-data"
+				method="POST"
+				action="result"
+			>
+				<div
+					id="errors"
+					style="width: 100%"
+				>
+					<div
+						th:if="${#fields.hasErrors('*')}"
+						th:text="${#fields.errors('*')}"
+						style="color: red"
+					>
+					</div>
+				</div>
+
+				<h3>
+					<th:block
+						th:text="|${messages.get(#locale, 'questionnaire.label.questionnaire', 'Questionnaire')}:|"
+					/>
+					<a
+						th:href="@{/questionnaire/fill?id=__${importQuestionnaireResult.getQuestionnaire().getId()}__}"
+						th:text="${importQuestionnaireResult.getQuestionnaire().getName()}"
+					>
+					</a>
+				</h3>
+
+				<th:block
+					th:each="validationMessage: ${importQuestionnaireResult.getValidationMessages()}"
+				>
+					<div
+						class="form-group"
+						th:text="${#messages.msgWithParams('__${validationMessage.getMessageCode()}__', validationMessage.getParameters())}"
+					>
+					</div>
+				</th:block>
+
+				<th:block
+					th:each="questionListResult: ${importQuestionnaireResult.getQuestionListResults()}"
+				>
+					<th:block
+						th:each="validationMessage: ${questionListResult.getValidationMessages()}"
+					>
+						<div
+							class="form-group"
+							th:text="${#messages.msgWithParams('__${validationMessage.getMessageCode()}__', validationMessage.getParameters())}"
+						>
+						</div>
+					</th:block>
+					<th:block
+						th:each="questionResult: ${questionListResult.getImportQuestionResults()}"
+					>
+						<div class="form-group">
+							<h4>
+								<th:block
+									th:text="${messages.get(#locale, 'question.table.question', 'Question')}"
+								/>
+								<th:block
+									layout:insert="~{helper/var :: add(
+                                    key='groupedLocalizedTextByCountries', 
+                                    value=${questionResult?.getQuestion()?.getLocalizedQuestionTextGroupedByCountry()})}"
+								>
+								</th:block>
+								<th:block
+									layout:insert="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+								></th:block>
+							</h4>
+						</div>
+						<th:block
+							th:if="${#strings.isEmpty(questionResult.getValidationMessages())}"
+						>
+							<div
+								class="form-group"
+								th:text="${messages.get(#locale, 'questionnaire.import.result.question.noMessages', 
+                                    'No messages for this question.')}"
+							>
+							</div>
+						</th:block>
+						<th:block
+							th:unless="${#strings.isEmpty(questionResult.getValidationMessages())}"
+						>
+							<th:block
+								th:each="validationMessage: ${questionResult.getValidationMessages()}"
+							>
+								<div
+									class="form-group"
+									th:text="${#messages.msgWithParams('__${validationMessage.getMessageCode()}__', validationMessage.getParameters())}"
+								>
+								</div>
+							</th:block>
+						</th:block>
+					</th:block>
+				</th:block>
+			</form>
+		</div>
+	</th:block>
+</th:block>

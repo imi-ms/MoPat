@@ -1,0 +1,53 @@
+<!--/*
+    * Adds "localeSplit", "localeTitle" and "flagName" into thymeleaf var holder
+*/-->
+
+<!--/* If this language belongs to a specific country */-->
+<th:block th:if="${#strings.contains(vars['localeCode'], '_')}">
+	<!--/* Split the language code and the country code */-->
+	<th:block
+		layout:insert="~{helper/var :: add(key='localeSplit', value=${#strings.listSplit(vars['localeCode'], '_')})}"
+	/>
+
+	<th:block
+		th:with="strLanguageCode=${messages.get(#locale, 'localization.languageCode.__${vars['localeSplit'][0]}__', 'Missing language code')},
+                        strCountryCode=${messages.get(#locale, 'localization.countryCode.__${vars['localeSplit'][1]}__', 'Missing country code')}"
+	>
+		<th:block
+			layout:insert="~{helper/var :: add(key='localeTitle', value=|${strLanguageCode}&nbsp;(${strCountryCode})|)}"
+		/>
+	</th:block>
+
+	<!--/* Store the country code for displaying the flag */-->
+	<th:block
+		layout:insert="~{helper/var :: add(key='flagName', value=${vars['localeSplit'][1]})}"
+	/>
+</th:block>
+
+<th:block th:unless="${#strings.contains(vars['localeCode'], '_')}">
+	<th:block
+		layout:insert="~{helper/var :: add(key='localeTitle',
+        value=${messages.get(#locale, 'localization.languageCode.__${vars['localeCode']}__', 'Missing language code')})}"
+	/>
+
+	<!--/* Store the language code for displaying the flag */-->
+	<th:block
+		layout:insert="~{helper/var :: add(key='flagName', value=${vars['localeCode']})}"
+	/>
+</th:block>
+
+<addVar
+	layout:replace="~{helper/var :: add(
+    key='realPath', 
+    value=${realPath})}">
+</addVar>
+
+<th:block
+	th:with="url=${vars['realPath']} + '/images/flagicons/' + ${vars['flagName']} + '.png'"
+>
+	<th:block th:if="${not localeHelper.checkFileExistence(__@{url}__)}">
+		<th:block
+			layout:insert="~{helper/var :: add(key='flagName', value='default')}"
+		/>
+	</th:block>
+</th:block>

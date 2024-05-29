@@ -1,0 +1,15 @@
+<!--/*
+    * Error page that shows, when the remind email has been canceled.    
+*/-->
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="cancel">
+			<span
+				class="errorText"
+				th:text="${messages.get(#locale, 'encounterScheduled.heading.mailCanceled', 'Cancel remind mail succeded.')}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

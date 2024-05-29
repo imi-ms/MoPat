@@ -1,0 +1,290 @@
+<!--/*
+    * View for MoPats survey view. Shows all available bundles 
+*/-->
+<th:block
+	layout:decorate="~{layout/mobile}"
+	th:with="contenttype='content'"
+>
+	<th:block layout:fragment="content">
+		<form
+			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="select"
+			data-ajax="false"
+		>
+			<div class="mb-3">
+				<h4>
+				<b>
+					<th:block
+						th:text="|${messages.get(#locale, 'survey.label.caseNumber', 'Case number')} ${encounterDTO.caseNumber}|"
+					/>
+
+					<th:block th:if="${not #strings.isEmpty(encounterDTO.patientID)}">
+						(
+						<th:block
+							th:text="|${encounterDTO.firstname} ${encounterDTO.lastname}|"
+						/>
+						<th:block
+							th:if="${not #strings.isEmpty(encounterDTO.gender) && encounterDTO.gender == 'MALE'}"
+						>
+							(<th:block
+								th:text="${messages.get(#locale, 'survey.label.maleShort', 'm')}"
+							/>)
+						</th:block>
+						<th:block
+							th:if="${not #strings.isEmpty(encounterDTO.gender) && encounterDTO.gender == 'FEMALE'}"
+						>
+							(<th:block
+								th:text="${messages.get(#locale, 'survey.label.femaleShort', 'f')}"
+							/>)
+						</th:block>
+						<th:block
+							th:text="|,${messages.get(#locale, 'survey.label.bornInline', 'born')} ${#dates.format(encounterDTO.birthdate)}|"
+						/>
+						)
+					</th:block>
+				</b>
+			</div>
+
+			<!--/* Vertical Stack with Selection menus for mobile screens */-->
+			<div class="d-block">
+				<!--/* Stores the GUI language, which corresponds to the chosen bundleLanguage */-->
+				<div
+					id="guiLanguageWarning"
+					style="display: none; white-space: normal !important"
+					th:text="${messages.get(#locale, 'survey.bundles.warning.guiLanguageNotAvailable', 'Available Bundles')}"
+				>
+				</div>
+				<input
+					type="hidden"
+					id="guiLanguage"
+					name="guiLanguage"
+					value=""
+				/>
+
+				<div
+					class="mb-3"
+					data-role="fieldcontain"
+				>
+					<div
+						class="row align-items-center"
+						data-role="list-divider"
+					>
+						<label class="col-form-label">
+							<b
+								th:text="${messages.get(#locale, 'survey.bundles.label.availableBundles', 'Available Bundles')}"
+							></b>
+						</label>
+					</div>
+					<div class="select-wrapper w-100">
+						<select
+							name="bundleId"
+							class="btn select-mobile w-100"
+						>
+							<option
+								selected
+								disabled
+								th:text="${messages.get(#locale, 'bundle.selection.bundles', 'Available questionnaire bundles')}"
+							></option>
+							<th:block
+								th:each="item, index: ${bundleLanguageEncounterMap.keySet()}"
+							>
+								<option
+									th:id="${item.id}"
+									th:text="${item.name}"
+									th:name="bundleId"
+									th:value="${item.id}"
+								>
+								</option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+
+				<th:block th:each="item, index: ${bundleLanguageEncounterMap.keySet()}">
+					<div
+						th:id="|bundleLanguageList_${item.id}|"
+						class="hiddenList bundleLanguagesList"
+					>
+						<div
+							class="mb-3"
+							data-role="fieldcontain"
+						>
+							<div
+								class="rowalign-items-center"
+								data-role="list-divider"
+							>
+								<label class="col-form-label">
+									<b
+										th:text="${messages.get(#locale, 'bundle.label.availableLanguages', 'Available languages')}"
+									></b>
+								</label>
+							</div>
+
+							<div class="select-wrapper w-100">
+								<select
+									name="bundleLanguage"
+									class="btn select-mobile w-100"
+								>
+									<th:block
+										th:if="${#lists.isEmpty(item.getAvailableLanguages())}"
+									>
+										<option
+											th:id="|noLanguage_${item.id}|"
+											th:value="${item.id}"
+										>
+											<i class="col-1 bi bi-exclamation-diamond-fill"></i>
+											[[${messages.get(#locale,
+											'bundle.label.noLanguagesAvailable', 'No languages
+											available')}]]
+										</option>
+									</th:block>
+									<th:block
+										th:unless="${#lists.isEmpty(item.getAvailableLanguages())}"
+									>
+										<th:block
+											th:each="localeCodeTemp, index: ${item.getAvailableLanguages()}"
+										>
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='localeCode',
+                                                value=${localeCodeTemp})}"
+											>
+											</addVar>
+											<!--/* Get the localized localeTitle and the flagName for the variable localeCode */-->
+											<th:block
+												layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+											/>
+											<!--/* This div contains the available languages for the bundle. It is initially hidden */-->
+
+											<option
+												th:id="|bundleLanguage_${item.id}_${vars['localeCode']}|"
+												th:value="${vars['localeCode']}"
+												name="bundleLanguage"
+											>
+												<img
+													th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+													th:title="${vars['localeTitle']}"
+													height="15"
+													th:text="|&nbsp;${vars['localeTitle']}|"
+												/>
+											</option>
+										</th:block>
+									</th:block>
+								</select>
+							</div>
+						</div>
+					</div>
+				</th:block>
+
+				<th:block th:each="item, index: ${bundleLanguageEncounterMap.keySet()}">
+					<th:block
+						th:each="localeCode, index: ${item.getAvailableLanguages()}"
+					>
+						<!--/* Create a new div for all incomplete encounters of this bundle and this locale code if there is at least one */-->
+						<addVar
+							layout:replace="~{helper/var :: add(
+                            key='languageEncounterMap', 
+                            value=${bundleLanguageEncounterMap.get(item)})}"
+						>
+						</addVar>
+
+						<th:block
+							th:if="${not #lists.isEmpty(vars['languageEncounterMap'][__${localeCode}__])}"
+						>
+							<div
+								th:id="|encounterList_${item.id}_${localeCode}|"
+								class="hiddenList encounterList"
+							>
+								<div
+									class="mb-3"
+									data-role="fieldcontain"
+								>
+									<div
+										class="row align-items-center"
+										data-role="list-divider"
+									>
+										<label class="col-form-label">
+											<b
+												th:text="${messages.get(#locale, 'survey.bundles.label.incompleteEncounter', 'Incomplete bundles')}"
+											></b>
+										</label>
+									</div>
+									<div class="select-wrapper w-100">
+										<select
+											name="incompleteEncounterId"
+											class="btn select-mobile w-100"
+										>
+											<!--/* First add the option for a new encounter to this radiobutton group */-->
+											<option
+												th:id="|newEncounter_${item.id}_${localeCode}|"
+												th:text="${messages.get(#locale, 'survey.bundles.label.newEncounter', 'Start new questionniare')}"
+												name="incompleteEncounterId"
+												value=""
+											>
+											</option>
+											<!--/* Loop through all incomplete encounters of this bundle */-->
+											<th:block
+												th:each="incompleteEncounter, index: ${vars['languageEncounterMap'][__${localeCode}__]}"
+											>
+												<option
+													th:id="${incompleteEncounter.uuid}"
+													th:value="${incompleteEncounter.uuid}"
+													th:text="${#dates.format(incompleteEncounter.startTime)}"
+													name="incompleteEncounterId"
+												>
+												</option>
+											</th:block>
+										</select>
+									</div>
+								</div>
+							</div>
+						</th:block>
+					</th:block>
+				</th:block>
+
+				<div class="row mt-4 mb-3">
+					<div class="col-6 pe-3">
+						<button
+							class="btn btn-mobile w-100"
+							type="submit"
+							id="gotoCheckButton"
+							value="gotoCheck"
+							name="action"
+							data-inline="true"
+							th:text="${messages.get(#locale, 'survey.bundles.button.gotoCheck', 'Recheck case number')}"
+						>
+						</button>
+					</div>
+					<div class="col-6 ps-3">
+						<button
+							class="btn btn-mobile btn-highlight w-100"
+							type="submit"
+							id="startSurveyButton"
+							value="startSurvey"
+							name="action"
+							data-inline="true"
+							disabled="disabled"
+							th:text="${messages.get(#locale, 'survey.bundles.button.startSurvey', 'Start questionnaires')}"
+						>
+						</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		$("#title").html(
+			/*[[${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}]]*/ "Select bundle"
+		);
+		/*[- Remove the help button on the bundle selection page -]*/
+		$("#helpButton").remove();
+	</script>
+</th:block>

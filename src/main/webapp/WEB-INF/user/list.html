@@ -1,0 +1,191 @@
+<!--/*
+    * View that lists all available users    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'user.heading.userList', 'All users')}"
+>
+	<th:block layout:fragment="content">
+		<div class="table-responsive">
+			<table
+				class="table table-hover pagedTable responsive"
+				style="width: 100%"
+			>
+				<thead>
+					<tr>
+						<th
+							data-priority="1"
+							th:text="${messages.get(#locale, 'user.label.userName', 'Username')}"
+						></th>
+						<th
+							data-priority="7"
+							th:text="${messages.get(#locale, 'user.label.firstname', 'Firstname')}"
+						></th>
+						<th
+							data-priority="6"
+							th:text="${messages.get(#locale, 'user.label.lastname', 'Lastname')}"
+						></th>
+						<th
+							data-priority="3"
+							th:text="${messages.get(#locale, 'user.label.email', 'E-mail')}"
+						></th>
+						<th
+							data-priority="4"
+							th:text="${messages.get(#locale, 'user.label.role', 'Role')}"
+						></th>
+						<th
+							data-priority="8"
+							th:text="${messages.get(#locale, 'user.label.usertype', 'Usertype')}"
+						></th>
+						<th
+							data-priority="5"
+							th:text="${messages.get(#locale, 'user.label.status', 'Status')}"
+						></th>
+						<th
+							data-priority="2"
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:if="${not #lists.isEmpty(allUsers)}">
+						<th:block th:each="item: ${allUsers}">
+							<tr>
+								<td>
+									<th:block
+										th:if="${not #strings.isEmpty(item.username)}"
+										th:text="${item.username}"
+									/>
+								</td>
+								<td>
+									<th:block
+										th:if="${not #strings.isEmpty(item.firstname)}"
+										th:text="${item.firstname}"
+									/>
+								</td>
+								<td>
+									<th:block
+										th:if="${not #strings.isEmpty(item.lastname)}"
+										th:text="${item.lastname}"
+									/>
+								</td>
+								<td>
+									<th:block
+										th:if="${not #strings.isEmpty(item.email)}"
+										th:text="${item.email}"
+									/>
+								</td>
+								<td th:text="${item.authority.toArray()[0].authority}"></td>
+								<td>
+									<th:block
+										th:if="${#strings.isEmpty(item.password)}"
+										th:text="${messages.get(#locale, 'user.type.ldap', 'LDAP/AD')}"
+									/>
+									<th:block
+										th:unless="${#strings.isEmpty(item.password)}"
+										th:text="${messages.get(#locale, 'user.type.local', 'Local')}"
+									/>
+								</td>
+								<td>
+									<th:block
+										th:if="${#bools.isTrue(item.isEnabled)}"
+										th:text="${messages.get(#locale, 'user.status.enabled', 'enabled')}"
+									/>
+									<th:block
+										th:unless="${#bools.isTrue(item.isEnabled)}"
+										th:text="${messages.get(#locale, 'user.status.disabled', 'disabled')}"
+									/>
+								</td>
+								<td class="actionColumn">
+									<div class="d-none d-xl-block">
+										<th:block th:if="${#bools.isTrue(item.isEnabled)}">
+											<a
+												class="link"
+												th:href="|toggleenabled?id=${item.id}|"
+											>
+												<i
+													class="bi-x-circle-fill"
+													th:title="${messages.get(#locale, 'user.button.disable', 'Disable')}"
+												>
+												</i>
+											</a>
+										</th:block>
+										<th:block th:unless="${#bools.isTrue(item.isEnabled)}">
+											<a
+												class="link"
+												th:href="|toggleenabled?id=${item.id}|"
+											>
+												<i
+													class="bi-check-circle-fill"
+													th:title="${messages.get(#locale, 'user.button.enable', 'Enable')}"
+												>
+												</i>
+											</a>
+										</th:block>
+										<a
+											class="link"
+											th:href="|clinicrights?id=${item.id}|"
+										>
+											<i
+												class="bi-list-task"
+												th:title="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+											>
+											</i>
+										</a>
+									</div>
+									<!--/*Action dropdown for smaller resolutions*/-->
+									<div class="d-block d-xl-none">
+										<a
+											class="link"
+											data-bs-toggle="offcanvas"
+											th:href="|#${item.id}_offcanvas|"
+											><i
+												class="bi bi-three-dots"
+												style="font-size: 1.5rem"
+											></i
+										></a>
+										<th:block
+											layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=|${item.username} - ${item.lastname}, ${item.firstname} - ${item.email}|, id=|${item.id}_offcanvas|)}"
+										>
+											<th:block layout:fragment="optionsContent">
+												<a
+													th:if="${#bools.isTrue(item.isEnabled)}"
+													class="dropdown-item link"
+													th:href="|toggleenabled?id=${item.id}|"
+													th:text="${messages.get(#locale, 'user.button.disable', 'Disable')}"
+												>
+												</a>
+												<a
+													th:unless="${#bools.isTrue(item.isEnabled)}"
+													class="dropdown-item link"
+													th:href="|toggleenabled?id=${item.id}|"
+													th:text="${messages.get(#locale, 'user.button.enable', 'Enable')}"
+												>
+												</a>
+												<a
+													class="dropdown-item link"
+													th:href="|clinicrights?id=${item.id}|"
+													th:text="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+												></a>
+											</th:block>
+										</th:block>
+									</div>
+								</td>
+							</tr>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="panel-body">
+			<a
+				th:href="@{/invitation/edit}"
+				class="btn btn-primary"
+				id="newInvitationButton"
+				th:text="${messages.get(#locale, 'invitation.button.newInvitation', 'Create New Invitation')}"
+			>
+			</a>
+		</div>
+	</th:block>
+</th:block>

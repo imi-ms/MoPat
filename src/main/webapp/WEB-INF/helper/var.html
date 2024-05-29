@@ -1,0 +1,10 @@
+<!--/*
+    * Thymeleaf fragment to call the methods of the ThymeleafVariableHolder
+*/-->
+<th:block layout:fragment="add">
+	<th:block th:with="add=${vars.put('__${key}__', value)}" />
+</th:block>
+
+<th:block layout:fragment="remove">
+	<th:block th:with="remove=${vars.remove('__${key}__')}" />
+</th:block>

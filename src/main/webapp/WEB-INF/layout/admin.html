@@ -1,0 +1,9 @@
+<!--/*
+    * Layout that extends the main layout and replaces the navigation 
+    * fragment with the admin navigation panel
+*/-->
+<th:block layout:decorate="~{layout/main}">
+	<th:block layout:fragment="navigation">
+		<th:block layout:insert="~{navigation/admin :: admin}"></th:block>
+	</th:block>
+</th:block>

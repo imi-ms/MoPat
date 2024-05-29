@@ -1,0 +1,10 @@
+<!--/*
+    * Layout for the mobile page
+    * Extends the login layout and adds an onLoad function 
+    * as well as two scripts
+*/-->
+<th:block layout:decorate="~{layout/login}">
+	<th:block layout:fragment="addScripts">
+		<script th:src="@{/js/zxing/zxing.min.js?version=3.0}"></script>
+	</th:block>
+</th:block>

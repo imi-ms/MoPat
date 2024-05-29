@@ -1,0 +1,18 @@
+<!--/*
+    * Error page that shows, if the session timed out     
+*/-->
+
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="d-flex flex-column accessDenied centeredContent">
+			<i class="bi bi-alarm-fill icon"></i>
+			<span
+				class="errorText"
+				th:with="message=${messages.get(#locale, 'error.heading.sessionTimeout', messages.buildArguments('__${contextPath}__'), 'Session timeout')}"
+				th:utext="${message}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

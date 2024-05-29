@@ -1,0 +1,119 @@
+/**
+*
+* Styling for admin footer
+*
+**/
+
+@import "includes/colors";
+@import "includes/sizes";
+@import "includes/variables";
+
+
+@footer-size: 167px;
+@footer-bottom-size: 60px;
+@footer-margin: @footer-size + @footer-bottom-size + 30px;
+
+/* Sticky footer styles */
+/*html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: @footer-bottom-size; 
+} */
+
+.d-bp-none {
+    @media only screen and (min-width: @element-breakpoint) {
+        display: none !important;
+    }
+}
+
+.d-bp-flex {
+    @media only screen and (min-width: @element-breakpoint) {
+        display: flex !important;
+    }
+}
+
+.footer-wrapper {
+    width: 100%;
+    max-width: 1920px; //like main-wrapper
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.footer {
+    width: 100%;
+    background-color: @color-gray-lighter;
+}
+
+
+.bottom-footer {
+    background-color: @color-white;
+    border-top: solid 1pt;
+    border-color: @color-gray-border;
+
+    //Add Card like layout when padding on the sides is applied
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        margin-bottom: 10px;
+        border-radius: 0 0 @border-radius @border-radius;
+    }
+
+    .mopat-logo,
+    .klinik-logo {
+        width: 25vw;
+    }
+
+    .footer-bar {
+        @media only screen and (min-width: @element-breakpoint) {
+            width: 100%;
+            padding: 5px;
+        }
+        
+        // Images next to the footer text
+        #mopatImageFooter,
+        #logoImageFooter {
+            height: 60px;
+        }
+    }
+
+    // Images above the footer text
+    #mopatImageFooter,
+    #logoImageFooter {
+        height: 40px; 
+    }
+
+    .flex {
+        gap: 10px;
+        margin: 5px 0px;
+
+        @media only screen and (min-width: @element-breakpoint) {
+            width: 290px;
+        }
+
+        @media only screen and (max-width: @element-breakpoint) {
+            width: 220px;
+        }
+
+    }
+
+    .footer-text {
+        color: @color-black;
+        font-weight: 700;
+        text-align: center;
+
+        @media only screen and (min-width: @element-breakpoint) {
+            font-size: 1.0rem;
+        }
+
+        @media only screen and (max-width: @element-breakpoint) {
+            font-size: 0.75rem;
+            text-align: center !important;
+        }
+    }
+
+    .footer-bar {
+        gap: 20px;
+    }
+}

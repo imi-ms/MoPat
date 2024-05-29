@@ -1,0 +1,58 @@
+/**
+*
+* Some variable values that will be repeated
+* for MoPats views
+* This file can be used as a central hub to change 
+* many settings at once without touching the less files
+*
+**/
+
+@import "sizes";
+
+
+// Make the transition for smooth animations the same on the whole page
+@transition-time: 0.25s; //Just the time to use in other expressions
+@transition-value: @transition-time ease-in-out; //As complete transition expression 
+
+@box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+@box-shadow-function: 0px 3px 8px rgba(0, 0, 0, 0.24); 
+@box-shadow-highlight:rgba(137, 196, 244, .8) 0px 0px 10px;
+
+@box-shadow-material-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+@box-shadow-material-md: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+@box-shadow-material-lg: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+@box-shadow-material-xl: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+@box-shadow-material-xxl: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+
+@bs-border-radius: 0.375rem;
+@border-radius: 10px; // Large border radius for background elements like the content card
+@border-radius-sm: 5px; // Smaller border radius for interactive elements
+@border-radius-pill: 500000px; //extremely large radius to force rounded sides on all elements
+@border-width: 0; // Standard value for borders
+
+//Change to auto adjust the breakpoint at which all elements get smaller
+@element-breakpoint: @b5-screen-md-min;
+@phone-breakpoint: 500px; // Additional breakpoint for small phone displays to prevent elements from overlapping
+
+.gradient() {
+    background-image: -webkit-linear-gradient(top, @color-blue-light 0, @color-blue-dark 100%) !important;
+    background-image: linear-gradient(to bottom, @color-blue-light 0, @color-blue-dark 100%) !important;
+    background-repeat: repeat-x !important;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff428bca', endColorstr='#ff357ebd', GradientType=0) !important;
+}
+
+@progress-width: 40vw; //Limits the progress bar width to 35% of the viewport so it never overlaps with the buttons 
+@progress-width-sm: 25vw; // Limits the priogress bar width to 25% of the viewport for smaller resolutions (bootstrap lg) 
+@mobile-progress-width: 95vw; //Use the complete width for mobile view
+
+// This is the starting size of the survey elements
+@standard-survey-text-size: 150%; 
+@standard-survey-mobile-text-size: 110%; 
+
+//This is the font size for elements of the ui
+@ui-font-size: 150%; 
+@ui-font-size-sm: 110%; 
+
+// This is the standard stepsize when increasing / decreasing the fontsize in mopats survey view in percents (decimal) 
+@fontsize-stepsize: 0.1; 
+@fontsize-stepsize-mobile: 0.1; 

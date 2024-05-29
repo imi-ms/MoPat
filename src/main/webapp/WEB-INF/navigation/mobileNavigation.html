@@ -1,0 +1,417 @@
+<th:block layout:fragment="mobileNavigation">
+	<div class="me-auto">
+		<th:block
+			th:if="${#bools.isTrue(isLogin) && configurationDao?.getLogo() != null}"
+		>
+			<img
+				id="navbar-logo"
+				class="navbar-logo"
+				th:attr="src= ${configurationDao?.getLogo()}"
+			/>
+		</th:block>
+		<th:block th:unless="${#bools.isTrue(isLogin)}">
+			<img
+				id="navbar-logo"
+				class="navbar-logo"
+				th:attr="src=@{/images/logo.svg}"
+			/>
+		</th:block>
+	</div>
+	<div class="ms-auto">
+		<a
+			data-bs-toggle="offcanvas"
+			href="#mobileNavigation"
+			><i class="bi-list"></i
+		></a>
+	</div>
+
+	<th:block
+		layout:insert="~{fragments/structures :: mobileNavMenu(
+        title='MoPat',
+        id='mobileNavigation'
+    )}"
+	>
+		<th:block layout:fragment="menuContent">
+			<a
+				sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_USER') or hasRole('ROLE_EDITOR')"
+				class="link accountLink"
+				href="#"
+			>
+				[[${messages.get(#locale, 'header.userOptions.signedInAs', 'Signed in
+				as')}]]
+
+				<b style="font-size: 1.2rem"
+					><th:block sec:authentication="principal.username"
+				/></b>
+			</a>
+
+			<a
+				href="#supportDialog"
+				id="supportButton"
+				class="link border-top"
+				data-bs-toggle="modal"
+				data-bs-target="#supportDialog"
+				th:text="Support"
+			>
+			</a>
+			<a
+				sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+				class="link"
+				th:href="@{/admin/index}"
+				th:text="${messages.get(#locale, 'survey.check.button.administration', 'Administration')}"
+			>
+			</a>
+
+			<a
+				id="closeDialogNavLink"
+				class="link"
+				onclick="handleExit()"
+				data-bs-toggle="modal"
+				data-bs-target="#closeDialog"
+				th:text="${messages.get(#locale, 'layout.label.closeApplication', 'Exit MoPat')}"
+			>
+			</a>
+
+			<a
+				class="link d-flex border-top"
+				data-bs-toggle="offcanvas"
+				href="#languageOffcanvas"
+			>
+				<span class="me-auto smallLink">
+					[[${messages.get(#locale, 'LANGUAGE', 'Language')}]] &nbsp;
+					<img
+						th:attr="src=@{/images/flagicons/__${#locale.getLanguage()}__.png}"
+						height="20"
+					/>
+				</span>
+				<i class="ms-auto bi-caret-right-fill"></i>
+			</a>
+
+			<a
+				class="link smallLink"
+				href="#"
+				id="imprintLink"
+				data-bs-toggle="modal"
+				data-bs-target="#imprintDialog"
+				th:text="#{layout.label.imprint}"
+				>Imprint</a
+			>
+
+			<a
+				sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_USER') or hasRole('ROLE_EDITOR')"
+				th:href="@{/mobile/user/login?lang=__${configurationDao.defaultLanguage?.toString()}__}"
+				class="link smallLink"
+				th:text="${messages.get(#locale, 'header.userOptions.logout', 'Logout')}"
+			>
+			</a>
+		</th:block>
+	</th:block>
+
+	<th:block
+		layout:insert="~{fragments/structures :: mobileNavMenu(
+        title=${messages.get(#locale, 'LANGUAGE', 'Language')},
+        id=languageOffcanvas,
+        backTo='mobileNavigation'
+)}"
+	>
+		<th:block layout:fragment="menuContent">
+			<a
+				class="link"
+				id="de_DE"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'de_DE')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/DE.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.de}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.DE})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="es_ES"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'es_ES')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/ES.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.es}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.ES})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="en_GB"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'en_GB')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/GB.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.en}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.GB})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="fr_FR"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'fr_FR')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/FR.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.fr}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.FR})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="hi_IN"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'hi_IN')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/IN.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.hi}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.IN})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="it_IT"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'it_IT')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/IT.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.it}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.IT})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="nl_NL"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'nl_NL')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/NL.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.nl}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.NL})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="no_NO"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'no_NO')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/NO.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.no}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.NO})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="pl_PL"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'pl_PL')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/PL.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.pl}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.PL})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="pt_PT"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'pt_PT')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/PT.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.pt}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.PT})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="ru_RU"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'ru_RU')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/RU.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.ru}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.RU})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="sq_AL"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'sq_AL')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/AL.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.sq}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.AL})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="sv_SE"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'sv_SE')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/SE.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.sv}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.SE})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="tr_TR"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'tr_TR')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/TR.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.tr}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.TR})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="ar"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'ar')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/AE.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.ar}"
+					>Missing language code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="fa_IR"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'fa_IR')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/IR.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.fa}"
+					>Missing language code</th:block
+				>
+				<th:block th:text="|(#{localization.countryCode.IR})|"
+					>Missing country code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="dari"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'dari')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/AF.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.dari}"
+					>Missing language code</th:block
+				>
+			</a>
+			<a
+				class="link"
+				id="ku"
+				th:href="${requestURI} +
+                ${parameterHelper.thReplaceParam(queryString, 'lang', 'ku')}"
+			>
+				<img
+					th:attr="src=@{/images/flagicons/default.png}"
+					height="20"
+				/>
+				<th:block th:text="#{localization.languageCode.ku}"
+					>Missing language code</th:block
+				>
+			</a>
+		</th:block>
+	</th:block>
+</th:block>

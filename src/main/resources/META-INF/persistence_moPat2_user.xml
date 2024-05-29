@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+  <persistence-unit name="MoPat_User" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <non-jta-data-source/>
+    <class>de.imi.mopat.model.user.User</class>
+    <class>de.imi.mopat.model.user.UserRole</class>
+    <class>de.imi.mopat.model.user.AclClass</class>
+    <class>de.imi.mopat.model.user.AclEntry</class>
+    <class>de.imi.mopat.model.user.AclObjectIdentity</class>
+    <class>de.imi.mopat.model.user.Authority</class>
+    <class>de.imi.mopat.model.user.Invitation</class>
+    <class>de.imi.mopat.model.user.ForgotPasswordToken</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <property name="eclipselink.weaving" value="static"/>
+    </properties>
+  </persistence-unit>
+</persistence>

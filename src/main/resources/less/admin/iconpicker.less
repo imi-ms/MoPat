@@ -1,0 +1,76 @@
+@import "includes/colors";
+@import "includes/sizes";
+@import "includes/variables";
+
+/*
+Imported and forked from dogukanakkaya's iconpicker: https://github.com/dogukanakkaya/iconpicker
+*/
+
+@dropdown-width: 75%;
+@dropdown-height: 200px;
+@dropdown-padding: 1rem;
+
+@item-width: 60px;
+@item-height: 60px;
+@item-border: 1px solid #b2b2b273;
+@item-margin: 0.1rem;
+
+@selected-background-color: @color-blue-light;
+@selected-color: @color-white;
+
+
+
+.iconpicker-dropdown {
+    visibility: hidden;
+    opacity: 0;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    ul {
+        position: absolute;
+        height: @dropdown-height;
+        background: #fff;
+        border: solid 0.1px;
+        border-color: @color-gray-border;
+        overflow: scroll;
+        box-shadow: @box-shadow-material-md;
+        border-radius: @border-radius-sm;
+        padding: @dropdown-padding;
+        z-index: 999;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        list-style: none;
+        width: 40vw;
+
+        li {
+            width: @item-width;
+            height: @item-height;
+            line-height: @item-height;
+            text-align: center;
+            border: @item-border;
+            cursor: pointer;
+            margin: @item-margin;
+
+            i {
+                font-size: 120%;
+            }
+
+            &:hover {
+                background-color: @color-blue-tinted;
+            }
+
+            &.selected {
+                background-color: @selected-background-color;
+                color: @selected-color;
+            }
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}

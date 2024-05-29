@@ -1,0 +1,204 @@
+<!--/*
+    * View for MoPats survey view. Shows a bundle that should be testd  
+*/-->
+<th:block
+	layout:decorate="~{layout/mobile}"
+	th:with="contenttype='content'"
+>
+	<th:block layout:fragment="content">
+		<form
+			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="test"
+			data-ajax="false"
+		>
+			<div class="d-block">
+				<input
+					type="hidden"
+					name="bundleId"
+					th:value="${encounter?.getBundle()?.getId()}"
+				/>
+				<addVar
+					layout:replace="~{helper/var :: add(
+                        key='hasActiveQuestionnaire', 
+                        value=true)}"
+				>
+				</addVar>
+				<div
+					class="bundleSelect"
+					th:attr="style=${#bools.isTrue(vars['hasActiveQuestionnaire'])} ? '' : 'display:none;'"
+				>
+					<div
+						id="guiLanguageWarning"
+						style="display: none; white-space: normal !important"
+						th:text="${messages.get(#locale, 'survey.bundles.warning.guiLanguageNotAvailable', 'Available Bundles')}"
+					>
+					</div>
+
+					<!--/* Stores the GUI language, which corresponds to the chosen bundleLanguage */-->
+					<input
+						type="hidden"
+						id="guiLanguage"
+						name="guiLanguage"
+						value=""
+					/>
+					<div
+						class="mb-3"
+						data-role="fieldcontain"
+					>
+						<div
+							class="row align-items-center"
+							data-role="list-divider"
+						>
+							<label class="col-form-label">
+								<b
+									th:text="${messages.get(#locale, 'survey.bundles.label.availableBundles', 'Available Bundles')}"
+								></b>
+							</label>
+						</div>
+						<div class="select-wrapper w-100">
+							<select
+								name="bundleId"
+								class="btn select-mobile w-100"
+								disabled
+							>
+								<option
+									selected
+									th:id="${bundle.id}"
+									th:text="${bundle.name}"
+									th:name="bundleId"
+									th:value="${bundle.id}"
+								>
+								</option>
+							</select>
+						</div>
+					</div>
+					<div class="bundleSelect">
+						<div
+							th:id="|bundleLanguageList_${bundle.id}|"
+							class="bundleLanguagesList"
+						>
+							<div data-role="fieldcontain">
+								<th:block
+									th:if="${#lists.isEmpty(bundle.getAvailableLanguages())}"
+								>
+									<div
+										th:id="|noLanguage_${bundle.id}|"
+										th:text="${messages.get(#locale, 'bundle.label.noLanguagesAvailable', 'No languages available')}"
+									>
+									</div>
+								</th:block>
+								<th:block
+									th:unless="${#lists.isEmpty(bundle.getAvailableLanguages())}"
+								>
+									<div
+										class="mb-3"
+										data-role="fieldcontain"
+									>
+										<div
+											class="row align-items-center"
+											data-role="list-divider"
+										>
+											<label class="col-form-label">
+												<b
+													th:text="${messages.get(#locale, 'bundle.label.availableLanguages', 'Available languages')}"
+												></b>
+											</label>
+										</div>
+										<div class="select-wrapper w-100">
+											<select
+												name="bundleLanguage"
+												class="btn select-mobile w-100"
+											>
+												<th:block
+													th:if="${#lists.isEmpty(bundle.getAvailableLanguages())}"
+												>
+													<option
+														th:id="|noLanguage_${item.id}|"
+														th:value="${item.id}"
+													>
+														<i class="col-1 bi bi-exclamation-diamond-fill"></i>
+														[[${messages.get(#locale,
+														'bundle.label.noLanguagesAvailable', 'No languages
+														available')}]]
+													</option>
+												</th:block>
+												<th:block
+													th:unless="${#lists.isEmpty(bundle.getAvailableLanguages())}"
+												>
+													<th:block
+														th:each="localeCodeTemp, index: ${bundle.getAvailableLanguages()}"
+													>
+														<addVar
+															layout:replace="~{helper/var :: add(
+                                                            key='localeCode',
+                                                            value=${localeCodeTemp})}"
+														>
+														</addVar>
+														<!--/* Get the localized localeTitle and the flagName for the variable localeCode */-->
+														<th:block
+															layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+														/>
+														<!--/* This div contains the available languages for the bundle. It is initially hidden */-->
+
+														<option
+															th:id="|bundleLanguage_${bundle.id}_${vars['localeCode']}|"
+															th:value="${vars['localeCode']}"
+															name="bundleLanguage"
+														>
+															<img
+																th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+																th:title="${vars['localeTitle']}"
+																height="15"
+																th:text="|&nbsp;${vars['localeTitle']}|"
+															/>
+														</option>
+													</th:block>
+												</th:block>
+											</select>
+										</div>
+									</div>
+								</th:block>
+							</div>
+						</div>
+					</div>
+					<div class="row mt-4">
+						<div class="col">
+							<button
+								class="btn btn-mobile btn-highlight w-100"
+								type="submit"
+								id="startSurveyButton"
+								value="startSurvey"
+								name="action"
+								data-inline="true"
+								disabled="disabled"
+								th:text="${messages.get(#locale, 'survey.bundles.button.startSurvey', 'Start questionnaires')}"
+							>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		$("#title").html(
+			/*[[${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}]]*/ "Select bundle"
+		);
+		var bundleId = /*[[${bundle.id}]]*/ "";
+
+		/*[- Remove the help button on the bundle selection page -]*/
+		$("#helpButton").remove();
+
+		$(function () {
+			document.getElementById(bundleId).click();
+		});
+	</script>
+</th:block>

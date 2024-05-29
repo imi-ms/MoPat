@@ -1,0 +1,501 @@
+<!--/*
+    * View that lists all available conditions for a question.
+    * The conditions are devided by conditions for questions,
+    * answers and questionnaires
+*/-->
+
+<th:block layout:decorate="~{layout/main}">
+	<th:block layout:fragment="titleContainer">
+		<th:block
+			th:text="${messages.get(#locale, 'condition.heading.title', 'Conditions of Question')}"
+		/>
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='groupedLocalizedTextByCountries', 
+            value=${question.getLocalizedQuestionTextGroupedByCountry()})}"
+		>
+		</addVar>
+		<localizedText
+			layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+		/>
+	</th:block>
+
+	<th:block layout:fragment="content">
+		<div class="table-responsive">
+			<table class="table unpagedTable">
+				<colgroup>
+					<col width="80%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							th:text="${messages.get(#locale, 'condition.label.conditionQuestion', 'Condition aiming at a question')}"
+						></th>
+						<th
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:each="answer: ${question.answers}">
+						<th:block th:each="answerCondition: ${answer.conditions}">
+							<th:block
+								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.Question'}"
+							>
+								<tr>
+									<td>
+										<a
+											class="link"
+											th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+										>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SelectAnswerCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.selectAnswerBeginning', 'the answer')}"
+												/>
+												<addVar
+													layout:replace="~{helper/var :: add(
+                                                    key='groupedLocalizedTextByCountries', 
+                                                    value=${answer.getLocalizedAnswerLabelGroupedByCountry()})}"
+												>
+												</addVar>
+												<localizedText
+													layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+												/>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SliderAnswerThresholdCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.sliderAnswerBeginning', 'the value')}"
+												/>
+												<b
+													th:text="|${answerCondition.thresholdComparisonType.textValue} ${answerCondition.threshold}|"
+												></b>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<!--/* defining the type of target and printing a matching statement */-->
+											<th:block
+												th:text="${messages.get(#locale, 'condition.label.targetQuestion', 'The quesiton')}"
+											/>
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='groupedLocalizedTextByCountries', 
+                                                value=${answerCondition.target.getLocalizedQuestionTextGroupedByCountry()})}"
+											>
+											</addVar>
+											<localizedText
+												layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+											/>
+											<th:block
+												th:text="|${messages.get(#locale, 'condition.label.__${answerCondition.action}__', '')}.|"
+											/>
+										</a>
+									</td>
+									<td class="actionColumn">
+										<div class="d-none d-xl-block">
+											<a
+												class="link"
+												th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+											>
+												<i
+													class="bi bi-pen-fill"
+													th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+												></i>
+											</a>
+											<a
+												class="link"
+												th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+											>
+												<i
+													class="bi bi-trash-fill"
+													th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+												>
+												</i>
+											</a>
+										</div>
+
+										<div class="d-block d-xl-none">
+											<a
+												class="link"
+												data-bs-toggle="offcanvas"
+												th:href="|#${answerCondition.id}_offcanvas|"
+											>
+												<i
+													class="bi bi-three-dots"
+													style="font-size: 1.5rem"
+												></i>
+											</a>
+
+											<th:block
+												layout:insert="~{fragments/structures :: mobileOptionsMenu(
+                                                                        itemName=|${answerCondition.getClass().simpleName}|, 
+                                                                        id=|${answerCondition.id}_offcanvas|
+                                                )}"
+											>
+												<th:block layout:fragment="optionsContent">
+													<a
+														class="link"
+														th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+													>
+													</a>
+													<a
+														class="link"
+														th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+													>
+													</a>
+												</th:block>
+											</th:block>
+										</div>
+									</td>
+								</tr>
+							</th:block>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="table-responsive">
+			<table class="table unpagedTable">
+				<colgroup>
+					<col width="80%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							th:text="${messages.get(#locale, 'condition.label.conditionAnswer', 'Condition aiming at an answer')}"
+						></th>
+						<th
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:each="answer: ${question.answers}">
+						<th:block th:each="answerCondition: ${answer.conditions}">
+							<th:block
+								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.SelectAnswer'}"
+							>
+								<tr>
+									<td>
+										<a
+											class="link"
+											th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+										>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SelectAnswerCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.selectAnswerBeginning', 'the answer')}"
+												/>
+												<addVar
+													layout:replace="~{helper/var :: add(
+                                                    key='groupedLocalizedTextByCountries', 
+                                                    value=${answer.getLocalizedAnswerLabelGroupedByCountry()})}"
+												>
+												</addVar>
+												<localizedText
+													layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+												/>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SliderAnswerThresholdCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.sliderAnswerBeginning', 'the value')}"
+												/>
+												<b
+													th:text="|${answerCondition.thresholdComparisonType.textValue} ${answerCondition.threshold}|"
+												></b>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<!--/* defining the type of target and printing a matching statement */-->
+											<th:block
+												th:text="${messages.get(#locale, 'condition.label.targetAnswer', 'The answer')}"
+											/>
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='groupedLocalizedTextByCountries', 
+                                                value=${answerCondition.target.getLocalizedAnswerLabelGroupedByCountry()})}"
+											>
+											</addVar>
+											<localizedText
+												layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+											/>
+											<th:block
+												th:text="${messages.get(#locale, 'condition.label.fromQuestion', 'from Question')}"
+											/>
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='groupedLocalizedTextByCountries', 
+                                                value=${answerCondition.targetAnswerQuestion.getLocalizedQuestionTextGroupedByCountry()})}"
+											>
+											</addVar>
+											<localizedText
+												layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+											/>
+											<th:block
+												th:text="|${messages.get(#locale, 'condition.label.__${answerCondition.action}__', '')}.|"
+											/>
+										</a>
+									</td>
+									<td class="actionColumn">
+										<div class="d-none d-xl-block">
+											<a
+												class="link"
+												th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+											>
+												<span
+													class="bi bi-pen-fill"
+													th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+												></span>
+											</a>
+											<a
+												class="link"
+												th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+											>
+												<span
+													class="bi bi-trash-fill"
+													th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+												></span>
+											</a>
+										</div>
+
+										<div class="d-block d-xl-none">
+											<a
+												class="link"
+												data-bs-toggle="offcanvas"
+												th:href="|#${answerCondition.id}_offcanvas|"
+											>
+												<i
+													class="bi bi-three-dots"
+													style="font-size: 1.5rem"
+												></i>
+											</a>
+
+											<th:block
+												layout:insert="~{fragments/structures :: mobileOptionsMenu(
+                                                                        itemName=|${answerCondition.getClass().simpleName}|, 
+                                                                        id=|${answerCondition.id}_offcanvas|
+                                                )}"
+											>
+												<th:block layout:fragment="optionsContent">
+													<a
+														class="link"
+														th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+													>
+													</a>
+													<a
+														class="link"
+														th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+													>
+													</a>
+												</th:block>
+											</th:block>
+										</div>
+									</td>
+								</tr>
+							</th:block>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="table-responsive">
+			<table class="table unpagedTable">
+				<colgroup>
+					<col width="80%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							th:text="${messages.get(#locale, 'condition.label.conditionQuestionnaire', 'Condition aiming at a questionnaire')}"
+						></th>
+						<th
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:each="answer: ${question.answers}">
+						<th:block th:each="answerCondition: ${answer.conditions}">
+							<th:block
+								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.Questionnaire'}"
+							>
+								<tr>
+									<td>
+										<a
+											class="link"
+											th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+										>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SelectAnswerCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.selectAnswerBeginning', 'the answer')}"
+												/>
+												<addVar
+													layout:replace="~{helper/var :: add(
+                                                    key='groupedLocalizedTextByCountries', 
+                                                    value=${answer.getLocalizedAnswerLabelGroupedByCountry()})}"
+												>
+												</addVar>
+												<localizedText
+													layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+												/>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<th:block
+												th:if="${answerCondition.getClass().simpleName == 'SliderAnswerThresholdCondition'}"
+											>
+												<th:block
+													th:text="${messages.get(#locale, 'condition.label.sliderAnswerBeginning', 'the value')}"
+												/>
+												<b
+													th:text="|${answerCondition.thresholdComparisonType.textValue} ${answerCondition.threshold}|"
+												></b>
+												<th:block
+													th:text="|${messages.get(#locale, 'condition.label.selectAnswerChosen', 'was selected, perform the following action')}:|"
+												/>
+											</th:block>
+											<!--/* defining the type of target and printing a matching statement */-->
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='groupedLocalizedTextByCountries', 
+                                                value=${answerCondition.target.getLocalizedDisplayNamesGroupedByCountry()})}"
+											>
+											</addVar>
+											<th:block
+												th:text="${messages.get(#locale, 'condition.label.questionnaire', 'The questionnaire')}"
+											/>
+											<localizedText
+												layout:replace="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+											/>
+											<th:block
+												th:text="|${messages.get(#locale, 'condition.label.fromBundle', 'from bundle')} &quot;${answerCondition.bundle.name}&quot;|"
+											/>
+											<th:block
+												th:text="|${messages.get(#locale, 'condition.label.__${answerCondition.action}__', '')}.|"
+											/>
+										</a>
+									</td>
+									<td class="actionColumn">
+										<div class="d-none d-xl-block">
+											<a
+												class="link"
+												th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+											>
+												<span
+													class="bi bi-pen-fill"
+													th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+												></span>
+											</a>
+											<a
+												class="link"
+												th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+											>
+												<span
+													class="bi bi-trash-fill"
+													th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+												></span>
+											</a>
+										</div>
+
+										<div class="d-block d-xl-none">
+											<a
+												class="link"
+												data-bs-toggle="offcanvas"
+												th:href="|#${answerCondition.id}_offcanvas|"
+											>
+												<i
+													class="bi bi-three-dots"
+													style="font-size: 1.5rem"
+												></i>
+											</a>
+
+											<th:block
+												layout:insert="~{fragments/structures :: mobileOptionsMenu(
+                                                                        itemName=|${answerCondition.getClass().simpleName}|, 
+                                                                        id=|${answerCondition.id}_offcanvas|
+                                                )}"
+											>
+												<th:block layout:fragment="optionsContent">
+													<a
+														class="link"
+														th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
+													>
+													</a>
+													<a
+														class="link"
+														th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
+														th:text="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
+													>
+													</a>
+												</th:block>
+											</th:block>
+										</div>
+									</td>
+								</tr>
+							</th:block>
+						</th:block>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="panel-body">
+			<form
+				th:object="${condition}"
+				method="GET"
+				action="edit"
+			>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					id="addCondition"
+					name="action"
+					value="addCondition"
+					th:text="${messages.get(#locale, 'condition.button.add', 'Add condition')}"
+				>
+				</button>
+				<input
+					name="questionId"
+					th:value="${question.id}"
+					type="hidden"
+				/>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					id="backToQuestionnaire"
+					name="action"
+					value="backToQuestionnaire"
+					th:text="${messages.get(#locale, 'condition.button.backToQuestionnaire', 'Back to questionnaire')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

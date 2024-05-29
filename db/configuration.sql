@@ -1,0 +1,181 @@
+﻿--
+-- Tabellenstruktur für Tabelle `configuration`
+--
+
+CREATE TABLE IF NOT EXISTS `configuration` (
+  `id` bigint(20) AUTO_INCREMENT NOT NULL,
+  `configuration_group_id` bigint(20) NOT NULL,
+  `parent` bigint(20) DEFAULT NULL,
+  `position` int(11) NOT NULL,
+  `type` varchar(31) DEFAULT NULL,
+  `attribute` varchar(255) NOT NULL,
+  `configuration_type` varchar(255) NOT NULL,
+  `description_message_code` varchar(255) DEFAULT NULL,
+  `class` varchar(255) NOT NULL,
+  `label_message_code` varchar(255) NOT NULL,
+  `test_method` varchar(255) DEFAULT NULL,
+  `update_method` varchar(255) DEFAULT NULL,
+  `uuid` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  `pattern` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_configuration_group_id` (`configuration_group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8,
+  AUTO_INCREMENT = 47;
+
+--
+-- Daten für Tabelle `configuration`
+--
+
+INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `position`, `attribute`, `configuration_type`, `description_message_code`, `class`, `label_message_code`, `test_method`, `update_method`, `uuid`, `value`, `pattern`) VALUES
+(1, 'SELECT', 1, NULL, 1, 'defaultLanguage', 'SELECT', NULL, 'GLOBAL', 'configuration.label.defaultLanguage', NULL, '', '44bfc178-b763-4cb7-a4ea-c34d5eaafcc3', 'de_DE', ''),
+(2, 'GENERAL', 1, NULL, 2, 'logo', 'IMAGE', 'configuration.description.logo', 'GLOBAL', 'configuration.label.logo', NULL, '', 'd22708cf-8804-4463-a39f-66c10509b242', NULL, ''),
+(3, 'SELECT', 1, NULL, 3, 'caseNumberType', 'SELECT', NULL, 'de.imi.mopat.controller.SurveyController', 'configuration.label.caseNumberType', NULL, '', '83dc6771-e305-4793-91bc-44a9b36ca501', 'text', ''),
+(4, 'GENERAL', 4, NULL, 1, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateOrbis', 'configuration.label.exportOrbisPath', NULL, '', '76d2fb9b-735a-4017-8b05-3e36476068df', '/var/lib/tomcat10/export/', ''),
+(5, 'GENERAL', 6, NULL, 1, 'exportInDirectory', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMInDirectory', NULL, '', 'b7ac8e70-1fe1-11e5-867f-0800200c9a66', 'false', ''),
+(6, 'GENERAL', 6, 5, 2, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMPath', NULL, NULL, 'd044a646-88d4-4a87-bd74-6a23f8c90bf1', '/var/lib/tomcat10/export/ODM/', ''),
+(7, 'GENERAL', 6, NULL, 3, 'exportViaRest', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMViaRest', NULL, '', '0d5f5690-1fe2-11e5-867f-0800200c9a66', 'false', ''),
+(8, 'GENERAL', 6, 7, 4, 'exportUrl', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMUrl', NULL, NULL, 'd044a646-88d4-4a87-bd74-6a23f8c90bf1', '', ''),
+(9, 'GENERAL', 5, NULL, 1, 'exportInDirectory', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7InDirectory', NULL, '', '2e147a90-24b6-11e5-867f-0800200c9a66', 'false', ''),
+(10, 'GENERAL', 5, 9, 2, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7Path', NULL, NULL, '33dcbbe5-24b6-11e5-867f-0800200c9a66', '/var/lib/tomcat10/export/HL7/', ''),
+(11, 'GENERAL', 5, NULL, 3, 'exportViaCommunicationServer', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ViaCommunicationServer', NULL, '', '33dcbbe4-24b6-11e5-867f-0800200c9a66', 'false', ''),
+(12, 'GENERAL', 5, 11, 4, 'exportHost', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7Host', NULL, NULL, '33dcbbe3-24b6-11e5-867f-0800200c9a66', '', NULL),
+(13, 'GENERAL', 5, 11, 5, 'exportPort', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7Port', NULL, NULL, '47d2e702-24b6-11e5-867f-0800200c9a66', '', NULL),
+(14, 'GENERAL', 5, 11, 6, 'sendingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7SendingFacility', NULL, NULL, 'aed9be70-2582-11e5-867f-0800200c9a66', 'TEST', NULL),
+(15, 'GENERAL', 5, 11, 7, 'receivingApplication', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ReceivingApplication', NULL, NULL, 'aed9be71-2582-11e5-867f-0800200c9a66', 'ORBIS', NULL),
+(16, 'GENERAL', 5, 11, 8, 'receivingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ReceivingFacility', NULL, NULL, 'aed9be72-2582-11e5-867f-0800200c9a66', 'CHRONO', NULL),
+(17, 'GENERAL', 5, 11, 9, 'OBRFillerOrderNumber', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7_OBRFillerOrderNumber', NULL, NULL, 'aed9be73-2582-11e5-867f-0800200c9a66', 'MOPAT-1', NULL),
+(18, 'GENERAL', 1, NULL, 4, 'objectStoragePath', 'STRING', 'configuration.description.storagePath', 'GLOBAL', 'configuration.label.object.storagePath', NULL, '', '9f8b7c96-6f15-4ddf-99f5-8cc883094035', '/var/lib/tomcat10/upload/', ''),
+(19, 'GENERAL', 7, NULL, 1, 'finishedEncounterTimeWindowInMillis', 'LONG', 'configuration.description.finishedEncounterTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.finishedEncounterTimeWindowInMillis', NULL, '', '2a4e7641-c364-4d52-8feb-2e681a48f701', '2592000000', ''),
+(20, 'GENERAL', 7, NULL, 2, 'incompleteEncounterTimeWindowInMillis', 'LONG', 'configuration.description.incompleteEncounterTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.incompleteEncounterTimeWindowInMillis', NULL, '', '99c9b323-fd07-4fc6-b433-0dcffaf3d623', '15552000000', ''),
+(21, 'GENERAL', 8, NULL, 1, 'applicationMailerActivated', 'BOOLEAN', NULL, 'de.imi.mopat.helper.controller.ApplicationMailer', 'configuration.label.applicationMailer.activated', NULL, '', '2e1a4815-9e46-449f-8763-c229970304ff', 'false', ''),
+(22, 'GENERAL', 8, 21, 2, 'mailSenderHost', 'STRING', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.host', NULL, '', '0721fec1-99ba-476d-b24e-744c08225f2f', 'mailsystem.mopat.de', ''),
+(23, 'GENERAL', 8, 21, 3, 'mailSenderPort', 'INTEGER', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.port', NULL, '', 'a7ff206c-93ba-4bdc-8583-16c0ca395136', '12345', ''),
+(24, 'GENERAL', 8, 21, 6, 'mailSenderUsername', 'STRING', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.username', NULL, '', '7ddceb4a-dc8a-46e7-957a-7768b644c225', 'mopat', ''),
+(25, 'GENERAL', 8, 21, 7,  'mailSenderPassword', 'PASSWORD', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.password', NULL, '', '352e233a-8fa8-4261-bd51-f300efb8c055', '', ''),
+(26, 'PATTERN', 8, 21, 8, 'mailFrom', 'PATTERN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.from', NULL, '', 'feea560b-eb9d-47a4-9910-f4b0fb162efa', '', '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'),
+(27, 'GENERAL', 8, 21, 5, 'mailSenderAuth', 'BOOLEAN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.auth', NULL, '', 'f412942d-61ea-4986-bd89-6a7bac25095e', 'false', ''),
+(28, 'GENERAL', 8, 21, 4, 'mailSenderStartTLS', 'BOOLEAN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.startTLS', NULL, '', '9836b4e0-c62c-4ce4-97f5-b3d89e00046b', 'false', ''),
+(29, 'PATTERN', 8, 21, 9, 'mailFooterMail', 'PATTERN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.applicationMailer.eMailFooter', NULL, '', '2b1bead5-28a6-407f-94c0-42c02eb28b98', '', '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'),
+(30, 'GENERAL', 8, 21, 10, 'mailFooterPhone', 'STRING', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.applicationMailer.phoneFooter', NULL, '', '39348db8-c551-4ee0-b3c1-cd84278839d5', '', ''),
+(31, 'GENERAL', 3, NULL, 1, 'usePatientDataLookup', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.usePatientDataLookup', NULL, '', 'ea896f07-7666-4d20-ad2d-9e2e65cbca89', 'false', ''),
+(32, 'GENERAL', 3, 31, 2, 'activateHisToggle', 'BOOLEAN', NULL, 'de.imi.mopat.controller.SurveyController', 'configuration.label.survey.activateHisToggle', NULL, '', '8c75cd85-fe2d-43d0-bf20-d1f4509f868b', 'false', ''),
+(33, 'SELECT', 3, 31, 3, 'patientDataRetrieverClass', 'SELECT', NULL, 'de.imi.mopat.helper.controller.PatientDataRetrieverFactoryBean', 'configuration.label.patientRetrieverClass', NULL, '', '7ff58798-b41f-42a2-b170-b2350fdeb70e', 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImp', ''),
+(34, 'GENERAL', 3, 31, 4, 'HL7v22PatientInformationRetrieverHostname', 'STRING', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverHostname', NULL, '', '82957ee9-2409-4978-84af-c3cf0edb9293', '', ''),
+(35, 'GENERAL', 3, 31, 5, 'HL7v22PatientInformationRetrieverPort', 'INTEGER', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverPort', NULL, '', 'b6410c08-fc15-4f67-9601-9ccee136898d', '', ''),
+(36, 'GENERAL', 2, NULL, 1, 'activeDirectoryLdapAuthenticationProviderActivated', 'BOOLEAN', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderActivated', NULL, '', '6024666a-df73-46db-b0a3-50e1c973adfb', 'false', ''),
+(37, 'GENERAL', 2, 36, 3, 'activeDirectoryLdapAuthenticationProviderDomain', 'STRING', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderDomain', NULL, '', '010754f6-fe1f-42a5-9024-4bffcde7f6f7', '', ''),
+(38, 'SELECT', 2, 36, 4, 'activeDirectoryLdapAuthenticationProviderDefaultLanguage', 'SELECT', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderDefaultLanguage', NULL, '', '3a346f60-48ca-4591-b36d-22efea480126', 'de_DE', ''),
+(39, 'GENERAL', 2, 36, 2, 'activeDirectoryLdapAuthenticationProviderUrl', 'STRING', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderUrl', NULL, '', 'f9e9c145-49c5-48a9-94cf-2212f529615d', '', NULL),
+(40, 'GENERAL', 2, 36, 5, 'activeDirectoryLdapAuthenticationProviderSupportPhone', 'STRING', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderSupportPhone', NULL, '', 'b17b097e-7519-4d61-9480-18758696bd1f', '', ''),
+(41, 'PATTERN', 9, NULL, 1, 'supportMail', 'PATTERN', NULL, 'GLOBAL', 'configuration.label.support.mail', NULL, '', '44d444ea-7d0b-4de7-be16-6b9b9d54e44f', '', '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'),
+(42, 'GENERAL', 9, NULL, 2, 'supportPhone', 'STRING', NULL, 'GLOBAL', 'configuration.label.support.phone', NULL, '', '86c25785-be69-4e69-abda-7cec26328273', '', ''),
+(43, 'GENERAL', 3, NULL, 1, 'registerPatientData', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.registerPatientData', NULL, '', '92ddfc6f-5e16-426a-8203-4edf22fec17c', 'true', ''),
+(44, 'GENERAL', 3, NULL, 6, 'usePseudonymizationService', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.pseudonymizationService', NULL, '', '0f64ebe5-40e6-4d0d-8a3a-3af7274aa9c8', 'false', ''),
+(45, 'GENERAL', 3, 44, 7, 'pseudonymizationServiceUrl', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationService.path', NULL, '', '59ef4f9c-b298-44e0-b9b4-d372e9f8a066', '', ''),
+(46, 'GENERAL', 3, 44, 8, 'pseudonymizationServiceApiKey', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationServiceApiKey', NULL, '', '75694313-f767-4107-b26f-6f5406484bb8', '', ''),
+(47, 'GENERAL', 1, NULL, 5, 'baseUrl', 'STRING', 'configuration.description.baseUrl', 'GLOBAL', 'configuration.label.baseUrl', NULL, '', '3e227a5c-53fc-483b-8c6d-ae0b863cdd2f', 'http://localhost:8080', ''),
+(48, 'GENERAL', 7, NULL, 3, 'finishedEncounterMailaddressTimeWindowInMillis', 'LONG', 'configuration.description.finishedEncounterMailaddressTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.finishedEncounterMailaddressTimeWindowInMillis', NULL, '', '504f512e-321d-49cd-a5b6-397ae1cc8438', '2592000000', ''),
+(49, 'GENERAL', 10, NULL, 1, 'metadataExporterODMOID', 'STRING', 'configuration.description.metadataExporterODMOID', 'GLOBAL', 'configuration.label.metadataExporterODMOID', NULL, NULL, '325a0e07-76e8-427a-be4b-c7abcbc46bc0', '', ''),
+(50, 'GENERAL', 10, NULL, 2, 'metadataExporterPDF', 'STRING', 'configuration.description.metadataExporterPDF', 'GLOBAL', 'configuration.label.metadataExporterPDF', NULL, NULL, '09b7de62-419e-4dfa-86d7-89cb19e5fd47', '', ''),
+(51, 'GENERAL', 11, NULL, 1, 'exportInDirectory', 'BOOLEAN', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.exportFHIRInDirectory', NULL, '', '58b19b67-48d2-49c4-82d1-5b7b74bb1aa7', 'false', ''),
+(52, 'GENERAL', 11, 51, 2, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.exportFHIRPath', NULL, NULL, 'dd9e7969-545e-4480-8856-c38411c94985', '/var/lib/tomcat10/export/FHIR/', ''),
+(53, 'GENERAL', 11, NULL, 4, 'exportViaCommunicationServer', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.exportFHIRViaCommunicationServer', NULL, '', '31e10f0d-1829-4258-ba4b-6a15da47189b', 'false', ''),
+(54, 'GENERAL', 11, 53, 5, 'exportUrl', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.exportFHIRUrl', NULL, '', '33dcd659-ba20-4d0c-884d-98c0d830f5b3', '', ''),
+(55, 'GENERAL', 6, NULL, 5, 'exportODMviaHL7', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMviaHL7', NULL, NULL, '0c42087d-e1c8-487d-a9b4-6685dbe2a236', 'false', ''),
+(56, 'GENERAL', 6, 55, 6, 'ODMviaHL7Hostname', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7Hostname', NULL, NULL, '0fcd895d-8511-42b3-9228-9ee0903f7df5', '', ''),
+(57, 'GENERAL', 6, 55, 7, 'ODMviaHL7Port', 'INTEGER', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7Port', NULL, NULL, '911d6f1e-f811-4c9b-9222-34d4c8351f1a', '', ''),
+(58, 'GENERAL', 7, NULL, 3, 'finishedEncounterScheduledTimeWindowInMillis', 'LONG', 'configuration.description.finishedEncounterScheduledTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.finishedEncounterScheduledTimeWindowInMillis', NULL, '', '45999eae-c086-4811-af60-e162c254425f', '7776000000', ''),
+(59, 'GENERAL', 7, NULL, 4, 'incompleteEncounterScheduledTimeWindowInMillis', 'LONG', 'configuration.description.incompleteEncounterScheduledTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.incompleteEncounterScheduledTimeWindowInMillis', NULL, '', '03629855-d5c8-41c5-885f-6ac603cd6268', '15552000000', ''),
+(60, 'GENERAL', 6, 55, 8, 'ODMviaHL7SendingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7SendingFacility', NULL, NULL, 'aed9be70-2582-11e5-867f-0800200c9a66', 'TEST', NULL),
+(61, 'GENERAL', 6, 55, 9, 'ODMviaHL7ReceivingApplication', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7ReceivingApplication', NULL, NULL, 'aed9be71-2582-11e5-867f-0800200c9a66', 'ORBIS', NULL),
+(62, 'GENERAL', 6, 55, 10, 'ODMviaHL7ReceivingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7ReceivingFacility', NULL, NULL, 'aed9be72-2582-11e5-867f-0800200c9a66', 'CHRONO', NULL),
+(63, 'GENERAL', 6, 55, 11, 'ODMviaHL7OBRFillerOrderNumber', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.ODMviaHL7OBRFillerOrderNumber', NULL, NULL, 'aed9be73-2582-11e5-867f-0800200c9a66', 'MOPAT-1', NULL),
+(64, 'GENERAL', 12, NULL, 1, 'exportInDirectory', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateREDCap', 'configuration.label.exportREDCapInDirectory', NULL, '', '504c1a22-cb35-411b-ab7b-520a8b2261d1', 'false', ''),
+(65, 'GENERAL', 12, 64, 2, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateREDCap', 'configuration.label.exportREDCapPath', NULL, NULL, 'a96b3b02-bc51-4198-b22a-4d344bb2708d', '/var/lib/tomcat10/export/REDCap/', ''),
+(67, 'GENERAL', 12, NULL, 3, 'exportViaRest', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateREDCap', 'configuration.label.exportREDCapViaRest', NULL, '', '231be6ba-b788-45a9-8097-83e1e6971a05', 'false', ''),
+(68, 'GENERAL', 12, 67, 4, 'exportUrl', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateREDCap', 'configuration.label.exportREDCapUrl', NULL, NULL, 'ff7e6cd6-89e1-43c1-969d-07e7236f38ec', '', ''),
+(69, 'GENERAL', 12, 67, 5, 'apiToken', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateREDCap', 'configuration.label.exportREDCapApiToken', NULL, NULL, '0511fee5-7553-4cb2-8db8-19390719151e', '', ''),
+(70, 'GENERAL', 5, NULL, 10, 'useTLS', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7UseTLS', NULL, NULL, '7d77b532-044e-4a09-b197-7cacef92a95e', 'false', NULL),
+(71, 'GENERAL', 5, 70, 11, 'serverCert', 'FILE', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ServerCertificatePath', NULL, NULL, 'ec9ce377-b215-4329-8ddd-cc05670de1b0', NULL, NULL),
+(72, 'GENERAL', 5, NULL, 12, 'useClientAuth', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7UseClientAuth', NULL, NULL, '78b90206-d010-457d-857a-465f5e7abcee', 'false', NULL),
+(73, 'GENERAL', 5, 72, 13, 'clientPKCSPath', 'FILE', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ClientPKCSPath', NULL, NULL, '3ffa04e7-c604-4ceb-8604-3f2d55d56c80', NULL, NULL),
+(74, 'GENERAL', 5, 72, 14, 'clientPKCSPassword', 'PASSWORD', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ClientPKCSPassword', NULL, NULL, '7273b090-d149-45f2-a787-6af5838345b6', '', NULL),
+(75, 'GENERAL', 1, NULL, 12, 'imageUploadPath', 'LOCAL_PATH', NULL, 'GLOBAL', 'configuration.label.imageUploadPath', NULL, NULL, 'fb1db996-4538-47e3-bd7b-7c5ce4f03264', '/var/lib/tomcat10/images', NULL),
+(76, 'GENERAL', 10, NULL, 3, 'FHIRsystemURI', 'STRING', NULL, 'GLOBAL', 'configuration.label.FHIRsystemURI', NULL, NULL, 'cbd13c7f-a41b-42fa-9f87-7f78bc7e8a5d', 'https://mopat.uni-muenster.de/FHIR/', NULL),
+(77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL);
+
+--
+-- Tabellenstruktur für Tabelle `Configuration_Group`
+--
+CREATE TABLE IF NOT EXISTS `configuration_group` (
+`id` bigint(20) AUTO_INCREMENT NOT NULL,
+`uuid` varchar(255) DEFAULT NULL,
+`position` bigint(20) NOT NULL,
+`name` varchar(255) DEFAULT NULL,
+`label_message_code` varchar(255) NOT NULL,
+`repeating` tinyint(1) NOT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8,
+  AUTO_INCREMENT=10;
+
+--
+-- Daten für die Tabelle `Configuration_Group`
+--
+
+INSERT INTO `configuration_group` (`id`, `uuid`, `position`, `name`, `label_message_code`, `repeating`) VALUES
+(1, '2ec9135e-f690-44ed-8984-d9165aa35a42', 1, 'name', 'configurationGroup.label.general', 0),
+(2, 'b17f4076-acfc-4000-a9cd-ffaa245674d2', 2, 'name', 'configurationGroup.label.activeDirectoryAuthentication', 0),
+(3, '46a1c0ad-09d2-4634-98b7-3fdaf8c84c3d', 3, 'name', 'configurationGroup.label.patientDataRetriever', 0),
+(4, '8febaeec-8319-4a42-8560-4fa102004df0', 5, 'name', 'configurationGroup.label.ORBIS', 1),
+(5, '8721ce9d-4e48-4b8e-98a3-7dd55c9314f2', 6, 'name', 'configurationGroup.label.HLSeven', 1),
+(6, '0f1ce478-0302-42b8-9cb0-902821ebcdf4', 7, 'name', 'configurationGroup.label.ODM', 1),
+(7, '3f3e368b-b2f8-44a5-ab30-92c49fb7d1a9', 10, 'name', 'configurationGroup.label.encounter', 0),
+(8, '19b19f2f-8373-4ff0-beba-0a0c64b7ee86', 11, 'name', 'configurationGroup.label.mail', 0),
+(9, 'f2bca53d-b533-41d5-8acb-52e011e6332e', 12, 'name', 'configurationGroup.label.support', 0),
+(10, '95ec39c7-98ae-4f7d-b3e5-57416d01a2b0', 4, 'name', 'configurationGroup.label.metadataExporter', 0),
+(11, '9a66d5da-023b-4248-a0d5-96c408c3fa34', 8, 'name', 'configurationGroup.label.FHIR', 1),
+(12, 'c8f38a0d-f6e9-4a70-a34f-d6db8ce58479', 9, 'name', 'configurationGroup.label.REDCap', 1);
+
+
+--
+-- Constraints für die Tabelle `configuration`
+--
+ALTER TABLE `configuration`
+	ADD CONSTRAINT `fk_configuration_group_id` FOREIGN KEY (`configuration_group_id`) REFERENCES `configuration_group` (`id`) ON DELETE CASCADE,
+	ADD CONSTRAINT `fk_configuration_parent` FOREIGN KEY (`parent`) REFERENCES `configuration` (`id`) ON DELETE CASCADE;
+
+--
+-- Tabellenstruktur für Tabelle `SelectConfiguration_OPTIONS`
+--
+
+CREATE TABLE IF NOT EXISTS `SelectConfiguration_OPTIONS` (
+  `SelectConfiguration_id` bigint(20) DEFAULT NULL,
+  `options` varchar(255) NOT NULL,
+  KEY `SelectConfiguration_OPTIONS_SelectConfiguration_id` (`SelectConfiguration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `SelectConfiguration_OPTIONS`
+--
+
+INSERT INTO `SelectConfiguration_OPTIONS` (`SelectConfiguration_id`, `options`) VALUES
+(1, 'de_DE'),
+(1, 'en_GB'),
+(3, 'number'),
+(3, 'text'),
+(33, 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImpl'),
+(33, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever'),
+(33, 'de.imi.mopat.helper.controller.DummyPatientDataRetrieverImpl'),
+(38, 'de_DE'),
+(38, 'en_GB');
+
+--
+-- Constraints der exportierten Tabellen
+--
+
+--
+-- Constraints der Tabelle `SelectConfiguration_OPTIONS`
+--
+ALTER TABLE `SelectConfiguration_OPTIONS`
+  ADD CONSTRAINT `SelectConfiguration_OPTIONS_SelectConfiguration_id` FOREIGN KEY (`SelectConfiguration_id`) REFERENCES `configuration` (`id`);

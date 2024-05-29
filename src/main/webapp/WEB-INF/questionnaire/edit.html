@@ -1,0 +1,226 @@
+<!--/*
+    * View to create a new questionnaire or update an existing one    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'questionnaire.heading.editQuestionnaire', 'Edit questionnaire')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				name="questionnaireDTO"
+				class="wysiwygForm"
+				enctype="multipart/form-data"
+				th:object="${questionnaireDTO}"
+				method="POST"
+				th:action="@{edit}"
+			>
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='currentLanguage', value=${#locale.toString()})}"
+				>
+				</addVar>
+
+				<th:block th:if="${#strings.isEmpty(vars['currentLanguage'])}">
+					<addVar
+						layout:replace="~{helper/var :: add(
+                        key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
+					>
+					</addVar>
+				</th:block>
+
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='persistedOrErrors', value=${not #strings.isEmpty(questionnaireDTO.id)})}"
+				>
+				</addVar>
+
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='errors', value=${#fields.errors('*')})}"
+				>
+				</addVar>
+
+				<th:block th:if="not ${#lists.isEmpty(vars['errors'])}">
+					<addVar
+						layout:replace="~{helper/var :: add(
+                        key='persistedOrErrors', value=true)}"
+					>
+					</addVar>
+				</th:block>
+
+				<languageDropdown
+					layout:replace="~{fragments/forms :: languageDropdown}"
+				/>
+
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: inputWithLabel(
+                        for='name', required=true, clazz='form-control', path='name', showErrors=true,
+                        text=${messages.get(#locale, 'questionnaire.label.name', 'Name')})}"
+
+					/>
+				</div>
+
+				<div class="form-group logo">
+					<label
+						layout:replace="~{fragments/forms :: label(
+                        for='logoFile', required='false',
+                        text=${messages.get(#locale, 'questionnaire.label.logo', 'Logo')}
+                    )}"
+					></label>
+
+					<input
+						type="file"
+						th:name="logoFile"
+						id="file"
+						data-preview-file-type="text"
+						th:attr="data-path=${questionnaireDTO.logoBase64}"
+					/>
+					<input
+						type="hidden"
+						th:field="*{deleteLogo}"
+						value="false"
+					/>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='logo')}"
+					/>
+				</div>
+
+				<div class="form-group">
+					<textarea
+						layout:replace="~{fragments/forms :: textareaWithLabel(
+                        for='description', required=true, path='description', clazz='wysiwyg', showErrors=true,
+                        text=${messages.get(#locale, 'questionnaire.label.description', 'Description')})}"
+					>
+					</textarea>
+				</div>
+
+				<div class="form-group">
+					<localableInput
+						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                        collection=${questionnaireDTO.localizedDisplayName},
+                        collapsableId='localizedDisplayNameCollapsableText',
+                        inputType='input',
+                        inputClazz='form-control localablePostElement',
+                        path='localizedDisplayName[#INDEXFIELD]',
+                        firstRequiredLocalableElement=true)}"
+					>
+						<th:block layout:fragment="collapseLabel">
+							<label
+								for="displayName"
+								class="required"
+								th:text="${messages.get(#locale, 'questionnaire.label.displayName', 'Display name')}"
+							>
+							</label>
+						</th:block>
+					</localableInput>
+				</div>
+
+				<div class="form-group">
+					<localableTextarea
+						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                        collection=${questionnaireDTO.localizedDisplayName},
+                        collapsableId='localizedWelcomeTextCollapsableText',
+                        inputType='textarea',
+                        inputClazz='form-control wysiwyg localablePostElement',
+                        path='localizedWelcomeText[#INDEXFIELD]')}"
+					>
+						<th:block layout:fragment="collapseLabel">
+							<label
+								for="welcomeText"
+								th:text="${messages.get(#locale, 'questionnaire.label.welcomeText', 'Welcome text')}"
+							>
+							</label>
+						</th:block>
+					</localableTextarea>
+				</div>
+
+				<div class="form-group">
+					<localableTextarea
+						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                        collection=${questionnaireDTO.localizedDisplayName},
+                        collapsableId='localizedFinalTextCollapsableText',
+                        inputType='textarea',
+                        inputClazz='form-control wysiwyg localablePostElement',
+                        path='localizedFinalText[#INDEXFIELD]')}"
+					>
+						<th:block layout:fragment="collapseLabel">
+							<label for="finalText">
+								<th:block
+									th:text="${messages.get(#locale, 'questionnaire.label.finalText', 'Final text')}"
+								/>
+							</label>
+						</th:block>
+					</localableTextarea>
+				</div>
+
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="save"
+					id="saveButton"
+					name="action"
+					onclick=""
+					th:text="${messages.get(#locale, 'button.save', 'Save')}"
+				></button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="saveEditButton"
+					id="saveEditButton"
+					name="action"
+					th:text="${messages.get(#locale, 'questionnaire.button.saveAndEdit', 'Save and edit questions')}"
+				></button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="cancel"
+					id="cancelButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				></button>
+
+				<deleteLanguageModal
+					layout:replace="~{helper/localeHelper/deleteLanguageModal}"
+				/>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		/*[- Get the current used language -]*/
+		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+		var logo = /*[[${questionnaireDTO.logo}]]*/ "";
+		var logoImg =
+			/*[[${logo ne null} ? 
+                        |<img src='@{/images/questionnaire/__${questionnaireDTO.id}__/__${questionnaireDTO.logo}__}' class='file-preview-image'>| : 
+                        '']]*/ "";
+
+		/*[- Initialize the logo upload field -]*/
+		$(document).ready(function () {
+			/*[- Init the multilingual language visualisation of the question -]*/
+			Localization.initShowLocalizedPage(
+				currentLanguage, /*[[${vars['persistedOrErrors']}]]*/
+			);
+			/*If language is a 5 letter locale, cut the string because fileinput expects only language code*/
+			if (currentLanguage.length == 5) {
+				currentLanguage = currentLanguage.substring(0, 2);
+			}
+
+			$("#file").on("filecleared", function (event, key) {
+				$("#deleteLogo").val(true);
+			});
+		});
+	</script>
+</th:block>

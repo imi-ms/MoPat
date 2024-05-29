@@ -1,0 +1,57 @@
+<!--/*
+    * Thymeleaf fragment used for MoPats mobile footer    
+*/-->
+<th:block layout:fragment="footer">
+	<!--/* TODO: Place logos in a better looking way
+    <th:block th:if="${configurationDao?.logo != null}">
+        <div class="d-flex ps-3 justify-content-between align-items-end imageFooter">
+            
+            <div class="mb-2">
+                <img id="logoImageFooter" th:src="${configurationDao?.logo}" height="98" />
+            </div>
+            <div>
+                <img id="mopatImageFooter" th:attr="src=@{/images/lettering.svg}" width="126"
+                    height="100" alt="MoPat" />
+            </div>
+        </div>
+    </th:block>
+
+    <th:block th:unless="${configurationDao?.logo != null}">
+        <div class="d-flex ps-3 justify-content-end align-items-end imageFooter">
+            <div class="mb-2">
+                <img id="mopatImageFooter" th:attr="src=@{/images/lettering.svg}" width="126"
+                    height="100" alt="MoPat" />
+            </div>
+        </div>
+    </th:block>
+*/-->
+	<div
+		class="d-flex align-items-center flex-column bottom-footer"
+		th:classappend="${#bools.isTrue(isLogin) ? 'loginFooter' : ''}"
+	>
+		<div
+			class="footer-bar d-flex align-items-center p-2 justify-content-center"
+		>
+			<span class="footer-text text-center justify-content-center"
+				>&copy;
+				<th:block th:utext="#{layout.footer.copyright}">
+					2023 Institute of Medical Informatics, University of Münster
+				</th:block>
+			</span>
+		</div>
+	</div>
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		/*[-
+		 * if svg vector images are not supported replace all svg images with png
+		 * fallback images
+		 * -]*/
+		if (!Modernizr.svg) {
+			$('img[src$="svg"]').attr("src", function () {
+				return $(this).attr("src").replace(".svg", ".png");
+			});
+		}
+	</script>
+</th:block>

@@ -1,0 +1,17 @@
+<!--/*
+    * Error page that shows, if spring security 
+    * catches access to an restricted page    
+*/-->
+<th:block layout:decorate="~{layout/error}">
+	<th:block layout:fragment="content">
+		<div class="d-flex flex-column accessDenied centeredContent">
+			<i class="bi bi-x-circle-fill icon-red"></i>
+			<span
+				class="errorText"
+				th:text="${messages.get(#locale, 'error.heading.denied', 'Access denied')}"
+			>
+			</span>
+			<br />
+		</div>
+	</th:block>
+</th:block>

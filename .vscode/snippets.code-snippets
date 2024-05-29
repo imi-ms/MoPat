@@ -1,0 +1,520 @@
+{
+  "thBlock": {
+    "scope": "html",
+    "prefix": "thBlock",
+    "body": [
+      "<th:block></th:block>",
+      ""
+    ]
+  },
+  "thChoose": {
+    "scope": "html",
+    "prefix": "thChoose",
+    "body": [
+      "<th:block ",
+      "    th:if=\"\"",
+      "></th:block>",
+      "<th:block",
+      "    th:unless=\"\"",
+      "></th:block>"
+    ]
+  },
+  "thMessage": {
+    "scope": "html",
+    "prefix": "thMessage",
+    "body": [
+      "<th:block",
+      "    th:text=\"${messages.get(#locale, '', '')}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thEach": {
+    "scope": "html",
+    "prefix": "thEach",
+    "body": [
+      "<th:block",
+      "    th:each=\"\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thFragment": {
+    "scope": "html",
+    "prefix": "thFragment",
+    "body": [
+      "<th:block",
+      "    layout:fragment=\"\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thIf": {
+    "scope": "html",
+    "prefix": "thIf",
+    "body": [
+      "<th:block",
+      "    th:if=\"\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thComment": {
+    "scope": "html",
+    "prefix": "thComment",
+    "body": [
+      "<!--/**/-->"
+    ]
+  },
+  "thCommentView": {
+    "scope": "html",
+    "prefix": "thCommentView",
+    "body": [
+      "<!--/*",
+      "*    ",
+      "*/-->",
+      ""
+    ]
+  },
+  "thCounterInit": {
+    "scope": "html",
+    "prefix": "thCounterInit",
+    "body": [
+      "<th:block ",
+      "    th:text=\"${counter.clear()}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thCounter++": {
+    "scope": "html",
+    "prefix": "thCounter++",
+    "body": [
+      "<th:block",
+      "    th:text=\"${counter.increment()}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thCounterSet": {
+    "scope": "html",
+    "prefix": "thCounterSet",
+    "body": [
+      "<th:block",
+      "    th:text=\"${counter.set()}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thDebugPrompt": {
+    "scope": "html",
+    "prefix": "thDebugPrompt",
+    "body": [
+      "<!--/*TODO: REMOVE DEBUG PROMPT AFTER USAGE*/-->",
+      "<th:block",
+      "    th:text=\"${dumper.debug(#vars)}\"",
+      "></th:block>",
+      "<!--/*TODO: REMOVE DEBUG PROMPT AFTER USAGE*/-->"
+    ]
+  },
+  "thDebugLogVar": {
+    "scope": "html",
+    "prefix": "thDebugLogVar",
+    "body": [
+      "<th:block",
+      "    th:text=\"${dumper.logVar()}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thFormError": {
+    "scope": "html",
+    "prefix": "thFormError",
+    "body": [
+      "<div ",
+      "    th:if=\"${#fields.hasErrors('')}\"",
+      "    th:errors=\"*{}\"",
+      "    th:text=\"${#fields.errors('')}\"",
+      "    style=\"color:red;\"",
+      "></div>",
+      ""
+    ]
+  },
+  "thFormHidden": {
+    "scope": "html",
+    "prefix": "thFormHidden",
+    "body": [
+      "<input ",
+      "    type=\"hidden\"",
+      "    th:field=\"*{}\"",
+      "/>",
+      ""
+    ]
+  },
+  "thFormInput": {
+    "scope": "html",
+    "prefix": "thFormInput",
+    "body": [
+      "<input",
+      "    th:field=\"*{}\"",
+      "    class=\"\"",
+      "    th:value=\"${}\"",
+      "/>",
+      ""
+    ]
+  },
+  "thFormTextarea": {
+    "scope": "html",
+    "prefix": "thFormTextarea",
+    "body": [
+      "<textarea",
+      "    th:field=\"*{}\"",
+      "    th:value=\"${}\"",
+      "    class=\"\"",
+      "></textarea>",
+      ""
+    ]
+  },
+  "thFrg:addVar": {
+    "scope": "html",
+    "prefix": "thFrg:addVar",
+    "body": [
+      "<addVar",
+      "    layout:replace=\"~{helper/var :: add(",
+      "        key='',",
+      "        value=",
+      "    )}\"",
+      "></addVar>",
+      ""
+    ]
+  },
+  "thFrg:checkbox": {
+    "scope": "html",
+    "prefix": "thFrg:checkbox",
+    "body": [
+      "<checkbox ",
+      "    layout:replace=\"~{fragments/forms :: checkbox(",
+      "        path='',",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></checkbox>",
+      ""
+    ]
+  },
+  "thFrg:dateWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:dateWithLabel",
+    "body": [
+      "<date ",
+      "    layout:replace=\"~{fragments/forms :: dateWithLabel(",
+      "        for='',",
+      "        required=false,",
+      "        path='',",
+      "        clazz='',",
+      "        showErrors=true,",
+      "        min='',",
+      "        max='',",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></date>",
+      ""
+    ]
+  },
+  "thCmd:message": {
+    "scope": "html",
+    "prefix": "thCmd:message",
+    "body": [
+      "${messages.get(#locale, '', '')}"
+    ]
+  },
+  "thFrg:errorField": {
+    "scope": "html",
+    "prefix": "thFrg:errorField",
+    "body": [
+      "<error ",
+      "    layout:replace=\"~{fragments/forms :: errorField(",
+      "        path=''",
+      "    )}\"",
+      "></error>",
+      ""
+    ]
+  },
+  "thFrg:fileWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:fileWithLabel",
+    "body": [
+      "<file ",
+      "    layout:replace=\"~{fragments/forms :: fileWithLabel(",
+      "        for='',",
+      "        required=true,",
+      "        showErrors=true,",
+      "        path='',",
+      "        clazz='',",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></file>",
+      ""
+    ]
+  },
+  "thFrg:inputWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:inputWithLabel",
+    "body": [
+      "<input ",
+      "    layout:replace=\"~{fragments/forms :: inputWithLabel(",
+      "        for='',",
+      "        required=true,",
+      "        path='',",
+      "        clazz='',",
+      "        showErrors=true,",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "/>",
+      ""
+    ]
+  },
+  "thFrg:localableInput": {
+    "scope": "html",
+    "prefix": "thFrg:localableInput",
+    "body": [
+      "<localableInput",
+      "    layout:replace=\"~{fragments/structures :: newOrPersistedLocalableBlock(",
+      "        collection=${},",
+      "        collapsableId='',",
+      "        inputType='input',",
+      "        inputClazz='',",
+      "        path='',",
+      "        firstRequiredLocalableElement=",
+      "    )}\"",
+      ">",
+      "    <th:block ",
+      "        layout:fragment=\"collapsableLabel\"",
+      "    >",
+      "",
+      "    </th:block>",
+      "</localableInput>",
+      ""
+    ]
+  },
+  "thFrg:localableTextarea": {
+    "scope": "html",
+    "prefix": "thFrg:localableTextarea",
+    "body": [
+      "<localableTextarea ",
+      "    layout:replace=\"~{fragments/structures :: newOrPersistedLocalableBlock(",
+      "        collection=${},",
+      "        collapsableId='',",
+      "        inputType='textarea',",
+      "        inputClazz='',",
+      "        path='',",
+      "        firstRequiredLocalableElement=",
+      "    )}\"",
+      ">",
+      "    <th:block ",
+      "        layout:fragment=\"collapseLabel\"",
+      "    >",
+      "",
+      "    </th:block>",
+      "</localableTextarea>",
+      ""
+    ]
+  },
+  "thFrg:numberWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:numberWithLabel",
+    "body": [
+      "<number ",
+      "    layout:replace=\"~{fragments/forms :: numberWithLabel(",
+      "        for='', ",
+      "        required=true, ",
+      "        path='',",
+      "        clazz='', ",
+      "        min='0', ",
+      "        step='0', ",
+      "        showErrors=true,",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></number>",
+      ""
+    ]
+  },
+  "thFrg:passwordWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:passwordWithLabel",
+    "body": [
+      "<password ",
+      "    layout:replace=\"~{fragments/forms :: passwordWithLabel(",
+      "        for='', ",
+      "        required=true, ",
+      "        path='',",
+      "        clazz='', ",
+      "        showErrors=true,",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></password>",
+      ""
+    ]
+  },
+  "thFrg:plainInputWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:plainInputWithLabel",
+    "body": [
+      "<input ",
+      "    layout:replace=\"~{fragments/forms :: plainInputWithLabel(",
+      "        for='', ",
+      "        required=false, ",
+      "        clazz='',",
+      "        type='', ",
+      "        id='', ",
+      "        name='', ",
+      "        value='',",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></input>",
+      ""
+    ]
+  },
+  "thFrg:removeVar": {
+    "scope": "html",
+    "prefix": "thFrg:removeVar",
+    "body": [
+      "<removeVar ",
+      "    layout:replace=\"~{helper/var :: remove(",
+      "        key=''",
+      "    )}\" ",
+      "></removeVar>",
+      ""
+    ]
+  },
+  "thFrg:selectOptions": {
+    "scope": "html",
+    "prefix": "thFrg:selectOptions",
+    "body": [
+      "<selectOptions ",
+      "    layout:replace=\"~{fragments/selectOptions :: selectOptions(",
+      "        clazz='',",
+      "        path='',",
+      "        items=,",
+      "        itemLabel='',",
+      "        itemValue='',",
+      "        localize='',",
+      "        onChangeFunction='',",
+      "        id=''",
+      "    )}\"",
+      "></selectOptions>",
+      ""
+    ]
+  },
+  "thFrg:selectWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:selectWithLabel",
+    "body": [
+      "<select ",
+      "    layout:replace=\"~{fragments/forms :: selectWithLabel(",
+      "        for='', ",
+      "        path='', ",
+      "        required=false,",
+      "        items='', ",
+      "        showErrors=true,",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></select>",
+      ""
+    ]
+  },
+  "thFrg:textareaWithLabel": {
+    "scope": "html",
+    "prefix": "thFrg:textareaWithLabel",
+    "body": [
+      "<textarea ",
+      "    layout:replace=\"~{fragments/forms :: textareaWithLabel(",
+      "        for='', ",
+      "        required=true, ",
+      "        path='',",
+      "        clazz='', ",
+      "        showErrors=true, ",
+      "        text=${messages.get(#locale, '', '')}",
+      "    )}\"",
+      "></textarea>",
+      ""
+    ]
+  },
+  "thJs:varWithMessageAndDefault": {
+    "scope": "html",
+    "prefix": "thJs:varWithMessageAndDefault",
+    "body": [
+      "/*[[${messages.get(#locale, '', '')}]]*/ '';",
+      ""
+    ]
+  },
+  "thJs:Cdata": {
+    "scope": "html",
+    "prefix": "thJs:Cdata",
+    "body": [
+      "/*<![CDATA[*/",
+      "",
+      "/*]]>*/",
+      ""
+    ]
+  },
+  "thJs:comment": {
+    "scope": "html",
+    "prefix": "thJs:comment",
+    "body": [
+      "/*[-  -]*/",
+      ""
+    ]
+  },
+  "thJs:commentMultiline": {
+    "scope": "html",
+    "prefix": "thJs:commentMultiline",
+    "body": [
+      "/*[-",
+      "* ",
+      "* ",
+      "-]*/",
+      ""
+    ]
+  },
+  "thLayout:insert": {
+    "scope": "html",
+    "prefix": "thLayout:insert",
+    "body": [
+      "<th:block",
+      "    layout:insert=\"~{}\"",
+      "></th:block>",
+      ""
+    ]
+  },
+  "thLayout:main": {
+    "scope": "html",
+    "prefix": "thLayout:main",
+    "body": [
+      "<th:block",
+      "    layout:decorate=\"~{layout/main}\"",
+      "    th:with=\"title=${messages.get(#locale, '', '')}\"",
+      ">",
+      "    <th:block ",
+      "        layout:fragment=\"content\"",
+      "    >",
+      "",
+      "    </th:block>",
+      "</th:block>",
+      ""
+    ]
+  },
+  "mediaScreen": {
+    "scope": "less",
+    "prefix": "mediaScreen",
+    "body": [
+      "@media only screen and (max-width: @element-breakpoint) {",
+      "",
+      "}",
+      "@media only screen and (min-width: @element-breakpoint) {",
+      "    ",
+      "}",
+      "",
+      ""
+    ]
+  }
+}

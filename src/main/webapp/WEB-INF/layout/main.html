@@ -1,0 +1,244 @@
+<!--/*
+    Page layout for Admin / Manager view
+
+    Basic HTML grid filled up with metadata and basic HTML5 component layout.
+
+    Can be extended with parameters for further scripts and links
+*/-->
+<!DOCTYPE html>
+<html
+	th:lang="${#locale.getLanguage()}"
+	th:fragment="main"
+	th:with="queryString=${queryString}"
+>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, target-densityDpi=device-dpi">
+		<title>MoPat</title>
+
+		<!--/* WYSIWYG Editor */-->
+		<link
+			rel="stylesheet"
+			th:href="@{/css/wysiwyg/summernote-bs5.min.css?version=3.0}"
+		/>
+		<!--/* dataTables */-->
+		<link
+			rel="stylesheet"
+			th:href="@{/css/jQuery/dataTables/datatables.min.css?version=3.0}"
+		/>
+		<!--/* Bootstrap */-->
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.0}"
+		/>
+
+
+		<th:block
+			layout:replace="~{fragments/resourceFragment :: adminCSS}"
+		></th:block>
+
+		<!--/* Placeholder for further links */-->
+		<th:block layout:fragment="links"></th:block>
+
+		<!--/* JQuery Basics */-->
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.0}"></script>
+		<script
+			defer
+			th:src="@{/js/modernizr/modernizr-custom.js?version=3.0}"
+		></script>
+		<!--/* Sortable + jquery bindings */-->
+		<script th:src="@{/js/sortable/Sortable.min.js?version=3.0}"></script>
+		<script th:src="@{/js/sortable/jquery-sortable.js?version=3.0}"></script>
+
+		<!--/* WYSIWYG Editor */-->
+		<script
+			defer
+			th:src="@{/js/wysiwyg/summernote-bs5.min.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/wysiwyg/summernote-de-DE.min.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/wysiwyg/summernote-es-ES.min.js?version=3.0}"
+		></script>
+
+
+		<!--/* dataTables */-->
+		<script
+			defer
+			th:src="@{/js/jQuery/dataTables/jquery.dataTables.min.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/jQuery/dataTables/datatables.min.js?version=3.0}"
+		></script>
+		<!--/* Bootstrap */-->
+		<script
+			defer
+			th:src="@{/js/bootstrap/bootstrap.min.js?version=3.0}"
+		></script>
+		<!--/* file upload */-->
+		<script
+			defer
+			th:src="@{/js/bootstrap/fileinput.min.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/bootstrap/locales/de.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/bootstrap/locales/es.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/helper/dialog.js?version=3.0}"
+		></script>
+		<!--/* Iconpicker for slider questions */-->
+		<script
+			type="module"
+			defer
+			th:src="@{/js/iconpicker.js?version=3.0}"
+		></script>
+
+		<th:block
+			layout:replace="~{fragments/resourceFragment :: adminJS}"
+		></th:block>
+
+
+		<!--/* Placeholder for further scripts */-->
+		<th:block layout:fragment="scripts"></th:block>
+
+		<script type="text/javascript">
+			$(".navigation a").removeClass("active");
+			$(".navigation a").click(function () {
+				if (!$(this).hasClass("active")) {
+					$(this).addClass("active");
+				}
+			});
+		</script>
+
+		<!--/* Script to handle all fileinputs on document load and apply the bs-fileinput plugin */-->
+		<script
+			type="text/javascript"
+			th:inline="javascript"
+		>
+			$(document).ready(function () {
+				/*[- Get the current used language -]*/
+				var currentLanguage = /*[[${#locale.language.toString()}]]*/ "en";
+
+				$.each($("input:file"), function (index, value) {
+					var imagePath = $(value).attr("data-path");
+					/*[- Check if the selected input is an image, or just a file -]*/
+					if (imagePath !== null && imagePath !== undefined) {
+						/*[- If the first character of the image path is "?", there is no image to display -]*/
+						if (imagePath.indexOf("?") !== 0) {
+							$(value).fileinput({
+								showUpload: false,
+								showPreview: true,
+								language: currentLanguage,
+								initialPreview:
+									"<img src='" + imagePath + "' class='file-preview-image'>",
+							});
+						} else {
+							$(value).fileinput({
+								showUpload: false,
+								showPreview: true,
+								language: currentLanguage,
+							});
+						}
+						$(value).on("filecleared", function (event, key) {
+							$("#imageDeleteMap" + $(event.target).attr("id")).val(true);
+						});
+					} else {
+						$(value).fileinput({
+							showUpload: false,
+							showPreview: false /*[- deactivate preview for files -]*/,
+							language: currentLanguage,
+						});
+					}
+				});
+			});
+		</script>
+
+	</head>
+
+	<body
+		th:onload="Application.init('[(${#locale})]'); [(${onLoad != null ? onLoad : ''})]"
+	>
+		<div class="wrapper">
+			<nav
+				id="header"
+				class="header"
+				role="navigation"
+			>
+				<th:block layout:fragment="header">
+					<th:block layout:insert="~{fragments/header :: header}"></th:block>
+				</th:block>
+			</nav>
+
+			<nav
+				id="navigation"
+				class="navigation"
+				role="navigation"
+			>
+				<th:block layout:fragment="navigation">
+					<th:block layout:insert="~{navigation/admin :: admin}"></th:block>
+				</th:block>
+			</nav>
+
+			<nav
+				id="mobileAdmin"
+				class="sticky-top"
+				role="navigation"
+			>
+				<th:block layout:fragment="mobileNav">
+					<th:block
+						layout:insert="~{navigation/mobileAdmin :: mobileAdmin}"
+					></th:block>
+				</th:block>
+			</nav>
+			<div class="main-wrapper">
+				<div class="main-container">
+					<div class="card main-card">
+						<div
+							id="site-title"
+							class="card-header rounded-top"
+						>
+							<h3>
+								<th:block layout:fragment="titleContainer">
+									<th:block th:text="${title}" />
+								</th:block>
+							</h3>
+						</div>
+						<div class="card-body">
+							<th:block layout:fragment="content"></th:block>
+						</div>
+					</div>
+				</div>
+				<th:block layout:fragment="footer">
+					<div class="footer-wrapper">
+						<th:block layout:insert="~{fragments/footer :: footer}"></th:block>
+					</div>
+				</th:block>
+			</div>
+
+			<th:block layout:fragment="headerScriptContainer">
+				<th:block
+					layout:insert="~{fragments/header :: headerScriptContainer}"
+				/>
+			</th:block>
+			<th:block layout:fragment="scriptContainer"></th:block>
+		</div>
+	</body>
+</html>

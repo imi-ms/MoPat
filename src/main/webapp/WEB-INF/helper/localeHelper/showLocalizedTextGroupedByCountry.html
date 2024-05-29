@@ -1,0 +1,41 @@
+<!--/*
+    * Fetches LocalTitle and FlagName for every localizedText 
+    * as well as a possible tooltip text and displays a flag image    
+*/-->
+<th:block
+	th:each="groupedLocalizedTextByCountry: ${vars['groupedLocalizedTextByCountries']}"
+>
+	<th:block
+		th:each="localeQuestionTextMap: ${vars['groupedLocalizedTextByCountries'][groupedLocalizedTextByCountry.key]}"
+	>
+		<th:block
+			layout:insert="~{helper/var :: add(key='localeCode', value=${localeQuestionTextMap.key})}"
+		/>
+
+		<!--/* Get the localized locale title and the flag name for the variable localeCode */-->
+		<th:block
+			layout:insert="~{helper/localeHelper/getLocaleTitleAndFlagName}"
+		></th:block>
+
+		<!--/* If this language is the first for this country */-->
+		<th:block th:if="${#strings.isEmpty(tooltipText)}">
+			<!--/* Set the tooltip text */-->
+			<th:block
+				layout:insert="~{helper/var :: add(key='tooltipText', value=|${vars['localeTitle']}: ${localeQuestionTextMap.value}|)}"
+			/>
+		</th:block>
+		<th:block th:unless="${#strings.isEmpty(tooltipText)}">
+			<th:block
+				layout:insert="~{helper/var :: add(key='tooltipText', value=|${tooltipText}&#10;${vars['localeTitle']}: ${localeQuestionTextMap.value}|)}"
+			/>
+		</th:block>
+	</th:block>
+	<!--/* Display the flag with the composed text for the tooltip. Escape the tooltip text before rendering. */-->
+	<img
+		th:src="@{/images/flagicons/__${vars['flagName']}__.png}"
+		th:with='cleaned=${#strings.replace(vars["tooltipText"], "&apos;", "\&apos;")}'
+		th:title="${htmlUtilities.getStringWithoutHtml(cleaned)}"
+		height="20"
+	/>
+	<th:block layout:insert="~{helper/var :: add(key='tooltipText', value='')}" />
+</th:block>

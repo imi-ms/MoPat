@@ -1,0 +1,224 @@
+<!--/*
+    * View to show details for an existing encounter    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'encounter.heading.title', 'Encounter')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<div class="form-group">
+				<label
+					for="type"
+					th:text="${messages.get(#locale, 'encounter.label.caseNumber', 'Case number')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${encounter.caseNumber}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="type"
+					th:text="${messages.get(#locale, 'encounter.label.startDate', 'Start date')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${#dates.format(encounter.startTime)}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="name"
+					th:text="${messages.get(#locale, 'encounter.label.endDate', 'End date')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${#dates.format(encounter.endTime)}"
+				></span>
+			</div>
+
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div
+						class="panel-title"
+						th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 'Assigned questionnaires')}"
+					>
+					</div>
+				</div>
+				<div class="panel-body">
+					<th:block th:each="item: ${encounter.bundle.bundleQuestionnaires}">
+						<b th:text="${item.questionnaire.name}"></b>
+						<!--/* If no export templates availible */-->
+						<div
+							th:if="${#lists.isEmpty(item.exportTemplates)}"
+							class="form-group"
+							th:text="${messages.get(#locale, 'mapping.error.notemplates', 'No export templates available')}"
+						>
+						</div>
+
+						<ul>
+							<li th:each="exportTemplate: ${item.exportTemplates}">
+								<th:block
+									th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|"
+								/><br />
+
+								<a
+									class="link"
+									th:href="|exporttemplate?id=${encounter.id}&templateid=${exportTemplate.id}|"
+									th:text="${messages.get(#locale, 'encounter.button.export', 'Export')}"
+								>
+								</a>
+								<table>
+									<colgroup>
+										<col
+											width="40"
+											span="1"
+										/>
+										<col
+											width="200"
+											span="5"
+										/>
+										<col
+											width="80"
+											span="1"
+										/>
+									</colgroup>
+									<th:block
+										th:if="${#lists.isEmpty(encounter.getEncounterExportTemplatesByExportTemplate(exportTemplate))}"
+									>
+										<tr>
+											<td
+												colspan="6"
+												style="text-align: left"
+												th:text="${messages.get(#locale, 'encounter.export.noexportfound', 'No export entry found')}"
+											>
+											</td>
+										</tr>
+									</th:block>
+									<tr
+										th:each="encounterExportTemplate, indexer: ${encounter.getEncounterExportTemplatesByExportTemplate(exportTemplate)}"
+										style="line-height: 2em"
+									>
+										<td th:text="${indexer.index+1}"></td>
+										<td>
+											<th:block
+												th:if="${encounterExportTemplate.isManuallyExported}"
+												th:text="${messages.get(#locale, 'encounter.export.manual', 'Manually exported')}"
+											/>
+											<th:block
+												th:unless="${encounterExportTemplate.isManuallyExported}"
+												th:text="${messages.get(#locale, 'encounter.export.auto', 'Automatically exported')}"
+											/>
+										</td>
+										<td
+											th:text="${#dates.format(encounterExportTemplate.exportTime)}"
+										></td>
+										<td>
+											<span
+												th:if="${encounterExportTemplate.exportStatus.name() eq 'SUCCESS'}"
+												class="exportSuccess"
+												th:text="${messages.get(#locale, 'encounter.export.success', 'Success')}"
+											>
+											</span>
+											<span
+												th:if="${encounterExportTemplate.exportStatus.name() eq 'CONFLICT'}"
+												class="exportConflict"
+												th:text="${messages.get(#locale, 'encounter.export.conflict', 'Conflict')}"
+											>
+											</span>
+											<span
+												th:if="${encounterExportTemplate.exportStatus.name() eq 'FAILURE'}"
+												class="exportFailed"
+												th:text="${messages.get(#locale, 'encounter.export.failed', 'failed')}"
+											>
+											</span>
+										</td>
+									</tr>
+								</table>
+							</li>
+						</ul>
+					</th:block>
+				</div>
+			</div>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='noLongerAssigned', 
+                value=${encounter.getNoLongerAssignedEncounterExportTemplates()})}"
+			>
+			</addVar>
+			<th:block th:if="${not #lists.isEmpty(vars['noLongerAssigned'])}">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<div
+							class="panel-title"
+							th:text="${messages.get(#locale, 'encounter.heading.noLongerAssignedEncounterExportTemplates', 'Exports from no longer assigned export templates')}"
+						>
+						</div>
+					</div>
+					<div class="panel-body">
+						<table>
+							<colgroup>
+								<col
+									width="200"
+									span="6"
+								/>
+								<col
+									width="80"
+									span="1"
+								/>
+							</colgroup>
+							<tr
+								th:each="encounterExportTemplate: ${vars['noLongerAssigned']}"
+								style="line-height: 2em"
+							>
+								<td
+									th:text="${encounterExportTemplate.exportTemplate.questionnaire.name}"
+								></td>
+								<td
+									th:text="|(${encounterExportTemplate.exportTemplate.exportTemplateType})${encounterExportTemplate.exportTemplate.name}|"
+								></td>
+								<td>
+									<th:block
+										th:if="${encounterExportTemplate.isManuallyExported}"
+										th:text="${messages.get(#locale, 'encounter.export.manual', 'Manually exported')}"
+									>
+									</th:block>
+									<th:block
+										th:unless="${encounterExportTemplate.isManuallyExported}"
+										th:text="${messages.get(#locale, 'encounter.export.auto', 'Automatically exported')}"
+									>
+									</th:block>
+								</td>
+								<td
+									th:text="${#dates.format(encounterExportTemplate.exportTime)}"
+								></td>
+								<td>
+									<span
+										th:if="${encounterExportTemplate.exportStatus.name() eq 'SUCCESS'}"
+										class="exportSuccess"
+										th:text="${messages.get(#locale, 'encounter.export.success', 'Success')}"
+									>
+									</span>
+									<span
+										th:if="${encounterExportTemplate.exportStatus.name() eq 'CONFLICT'}"
+										class="exportConflict"
+										th:text="${messages.get(#locale, 'encounter.export.conflict', 'Conflict')}"
+									>
+									</span>
+									<span
+										th:if="${encounterExportTemplate.exportStatus.name() eq 'FAILURE'}"
+										class="exportFailed"
+										th:text="${messages.get(#locale, 'encounter.export.failed', 'Failed')}"
+									>
+									</span>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</th:block>
+		</div>
+	</th:block>
+</th:block>

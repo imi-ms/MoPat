@@ -1,0 +1,350 @@
+<th:block layout:fragment="mobileAdmin">
+	<div sec:authorize="isFullyAuthenticated()">
+		<div
+			class="navbar navbar-expand py-3 border-bottom d-flex d-lg-none px-4 py-0"
+		>
+			<div class="navbar-nav me-auto">
+				<th:block th:if="${configurationDao?.logo != null}">
+					<a
+						class="navbar-brand"
+						th:href="@{/admin/index}"
+					>
+						<img
+							id="navbar-logo"
+							class="navbar-logo"
+							th:attr="src=@{/images/logo.svg}"
+							th:href="@{/admin/index}"
+						/>
+					</a>
+				</th:block>
+
+				<th:block th:unless="${configurationDao?.logo != null}">
+					<a
+						class="navbar-brand"
+						th:href="@{/admin/index}"
+					>
+						<img
+							id="navbar-logo"
+							class="navbar-logo"
+							th:attr="src=@{/images/logo.svg}"
+							th:href="@{/admin/index}"
+						/>
+					</a>
+				</th:block>
+			</div>
+
+			<div class="navbar-nav ms-auto">
+				<a
+					data-bs-toggle="offcanvas"
+					href="#mobileAdminOffcanvas"
+					><i class="bi-list"></i
+				></a>
+			</div>
+		</div>
+
+		<th:block
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+            title='MoPat',
+            id='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link accountLink"
+					th:href="@{/user/edit}"
+				>
+					[[${messages.get(#locale, 'header.userOptions.signedInAs', 'Signed in
+					as')}]]
+
+					<b style="font-size: 1.2rem"
+						><th:block sec:authentication="principal.username"
+					/></b>
+				</a>
+
+				<th:block
+					sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+				>
+					<a
+						class="link d-flex"
+						data-bs-toggle="offcanvas"
+						href="#questionnaireOffcanvas"
+						aria-expanded="false"
+					>
+						<span
+							class="me-auto"
+							th:text="${messages.get(#locale, 'admin.navigation.header.questionnaire', 'Questionnaires')}"
+						></span>
+						<i class="ms-auto bi-caret-right-fill"></i>
+					</a>
+
+					<a
+						class="link"
+						th:href="@{/bundle/list}"
+						th:text="${messages.get(#locale, 'admin.navigation.header.bundle', 'Bundles')}"
+					>
+					</a>
+
+					<a
+						class="link"
+						th:href="@{/clinic/list}"
+						th:text="${messages.get(#locale, 'admin.navigation.header.clinic', 'Clinics')}"
+					>
+					</a>
+
+					<a
+						class="link d-flex"
+						data-bs-toggle="offcanvas"
+						href="#userOffcanvas"
+						aria-expanded="false"
+					>
+						<span
+							class="me-auto"
+							th:text="${messages.get(#locale, 'admin.navigation.header.user', 'User')}"
+						></span>
+						<i class="ms-auto bi-caret-right-fill"></i>
+					</a>
+
+					<a
+						class="link d-flex"
+						data-bs-toggle="offcanvas"
+						href="#surveyOffcanvas"
+						aria-expanded="false"
+					>
+						<span
+							class="me-auto"
+							th:text="${messages.get(#locale, 'admin.navigation.header.survey', 'Surveys')}"
+						></span>
+						<i class="ms-auto bi-caret-right-fill"></i>
+					</a>
+
+					<a
+						sec:authorize="hasRole('ROLE_ADMIN')"
+						class="link d-flex"
+						data-bs-toggle="offcanvas"
+						href="#statisticOffcanvas"
+						aria-expanded="false"
+					>
+						<span
+							class="me-auto"
+							th:text="${messages.get(#locale, 'admin.navigation.header.statistic', 'Statistic')}"
+						></span>
+						<i class="ms-auto bi-caret-right-fill"></i>
+					</a>
+
+					<a
+						sec:authorize="hasRole('ROLE_ADMIN')"
+						class="link borderBottom"
+						th:href="@{/configuration/edit}"
+						th:text="${messages.get(#locale, 'admin.navigation.configuration', 'Configuration')}"
+					>
+					</a>
+				</th:block>
+
+				<a
+					class="link d-flex"
+					data-bs-toggle="offcanvas"
+					href="#languageOffcanvas"
+				>
+					<span class="me-auto smallLink">
+						[[#{LANGUAGE}]] &nbsp; <img
+						th:attr="src=@{/images/flagicons/__${#locale.getLanguage()}__.png}"
+						height="20"//>
+					</span>
+					<i class="ms-auto bi-caret-right-fill"></i>
+				</a>
+
+				<a
+					class="link smallLink"
+					href="#"
+					id="imprintLink"
+					data-bs-toggle="modal"
+					data-bs-target="#imprintDialog"
+					th:text="#{layout.label.imprint}"
+					>Imprint</a
+				>
+
+				<a
+					th:href="@{/mobile/user/login?lang=__${configurationDao.defaultLanguage?.toString()}__}"
+					class="link smallLink"
+					th:text="${messages.get(#locale, 'header.userOptions.logout', 'Logout')}"
+				>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+                title=${messages.get(#locale, 'LANGUAGE', 'Language')},
+                id=languageOffcanvas,
+                backTo='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link"
+					id="de_DE"
+					th:href="${requestURI} +
+                        ${parameterHelper.thReplaceParam(queryString, 'lang', 'de_DE')}"
+					th:classappend="${#locale.toString() == 'de_DE' ? 'active' : ''}"
+				>
+					<img
+						th:attr="src=@{/images/flagicons/DE.png}"
+						height="20"
+					/>
+					<th:block th:text="#{localization.languageCode.de}"
+						>Missing language code</th:block
+					>
+					<th:block th:text="|(#{localization.countryCode.DE})|"
+						>Missing country code</th:block
+					>
+				</a>
+				<a
+					class="link"
+					id="en_GB"
+					th:href="${requestURI} +
+                        ${parameterHelper.thReplaceParam(queryString, 'lang', 'en_GB')}"
+					th:classappend="${#locale.toString() == 'en_GB' ? 'active' : ''}"
+				>
+					<img
+						th:attr="src=@{/images/flagicons/GB.png}"
+						height="20"
+					/>
+					<th:block th:text="#{localization.languageCode.en}"
+						>Missing language code</th:block
+					>
+					<th:block th:text="|(#{localization.countryCode.GB})|"
+						>Missing country code</th:block
+					>
+				</a>
+				<a
+					class="link"
+					id="es_ES"
+					th:href="${requestURI} +
+                        ${parameterHelper.thReplaceParam(queryString, 'lang', 'es_ES')}"
+					th:classappend="${#locale.toString() == 'es_ES' ? 'active' : ''}"
+				>
+					<img
+						th:attr="src=@{/images/flagicons/ES.png}"
+						height="20"
+					/>
+					<th:block th:text="#{localization.languageCode.es}"
+						>Missing language code</th:block
+					>
+					<th:block th:text="|(#{localization.countryCode.ES})|"
+						>Missing country code</th:block
+					>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+            title=${messages.get(#locale, 'admin.navigation.header.questionnaire', 'Questionnaires')},
+            id=questionnaireOffcanvas,
+            backTo='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link borderTop"
+					th:href="@{/questionnaire/list}"
+					th:text="${messages.get(#locale, 'admin.navigation.questionnaire', 'Manage questionnaires')}"
+				>
+				</a>
+				<a
+					class="link borderBottom"
+					th:href="@{/questionnaire/import/upload}"
+					th:text="${messages.get(#locale, 'questionnaire.button.import', 'Import questionnaire')}"
+				>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+            title=${messages.get(#locale, 'LANGUAGE', 'Language')},
+            id=userOffcanvas,
+            backTo='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link borderTop"
+					th:href="@{/user/list}"
+					th:text="${messages.get(#locale, 'admin.navigation.user', 'Manage Users')}"
+				>
+				</a>
+				<a
+					class="link"
+					th:href="@{/user/mailtoall}"
+					th:text="${messages.get(#locale, 'admin.navigation.user.mailToAll', 'Send email to all users')}"
+				>
+				</a>
+				<a
+					class="link borderBottom"
+					th:href="@{/invitation/list}"
+					th:text="${messages.get(#locale, 'admin.navigation.user.editInvitation', 'Edit invitations')}"
+				>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+            title=${messages.get(#locale, 'admin.navigation.header.survey', 'Surveys')},
+            id=surveyOffcanvas,
+            backTo='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link borderTop"
+					th:href="@{/encounter/list}"
+					th:text="${messages.get(#locale, 'admin.navigation.manageSurveys', 'Manage surveys')}"
+				>
+				</a>
+				<a
+					class="link"
+					th:href="@{/encounter/schedule}"
+					th:text="${messages.get(#locale, 'admin.navigation.scheduleSurvey', 'Schedule survey')}"
+				>
+				</a>
+				<a
+					class="link borderBottom"
+					th:href="@{/mobile/survey/index}"
+					th:text="${messages.get(#locale, 'admin.navigation.executeSurvey', 'Execute survey')}"
+				>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			sec:authorize="hasRole('ROLE_ADMIN')"
+			layout:insert="~{fragments/structures :: mobileNavMenu(
+            title=${messages.get(#locale, 'admin.navigation.header.statistic', 'Statistic')},
+            id=statisticOffcanvas,
+            backTo='mobileAdminOffcanvas'
+        )}"
+		>
+			<th:block layout:fragment="menuContent">
+				<a
+					class="link borderTop"
+					th:href="@{/statistic/index}"
+					th:text="${messages.get(#locale, 'admin.navigation.statistics', 'Statistics')}"
+				>
+				</a>
+				<a
+					class="link borderBottom"
+					th:href="@{/statistic/onetimestatistic}"
+					th:text="${messages.get(#locale, 'admin.navigation.statistics.oneTimeStatistics', 'Execute survey')}"
+				>
+				</a>
+			</th:block>
+		</th:block>
+
+		<th:block
+			layout:insert="~{fragments/structures :: imprintModal}"
+		></th:block>
+	</div>
+</th:block>

@@ -1,0 +1,844 @@
+<!--/*
+    * View to create a new clinic entry or edit an existing one    
+*/-->
+
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'clinic.heading.editClinic', 'Edit clinic')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				th:object="${clinicDTO}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				th:action="@{edit}"
+			>
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+				<input
+					hidden="true"
+					th:id="|clinicId|"
+					th:value="${clinicDTO.id}"
+				/>
+				<!--/* The attributes of the clinic */-->
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: inputWithLabel(
+                        for='name', required='true', clazz='form-control', path='name', showErrors=true,
+                        text=${messages.get(#locale, 'clinic.label.name', 'Name:')})}"
+
+					/>
+				</div>
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: textareaWithLabel(
+                        for='description', required='true', path='description', clazz='wysiwyg', showErrors=true,
+                        text=${messages.get(#locale, 'clinic.label.description', 'Description:')})}"
+
+					/>
+				</div>
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: inputWithLabel(
+                        for='email', required=false, path='email', clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'clinic.label.email', 'Email:')})}"
+
+					/>
+				</div>
+
+				<th:block th:with="clinicBundleIndex=${counter.clear()}">
+					<div
+						class="container-fluid doubleList"
+						id="bundleTable"
+					>
+						<div class="row removableFlex toggleCollapseTable">
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<!--/* Title of the table */-->
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<!--/* The 2 tables, bundles assigned to the clinic and bundles available to be assigned to the clinic */-->
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.heading.assignedBundles', 'Bundles assigned')}"
+											/>
+										</div>
+										<div class="col-4">
+											<input
+												class="form-control input-sm"
+												id="assignedBundlesFilter"
+												onkeyup="DragNDropList.filter($(this), '#assignedBundlesTable')"
+												type="text"
+												th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-plus-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-dash-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+												style="display: none"
+											></a>
+										</div>
+									</div>
+									<!--/* Header of the table */-->
+									<div class="row removableFlex list-group-item active">
+										<div class="col-4">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+											/>
+										</div>
+										<div class="col-8">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+											/>
+										</div>
+									</div>
+									<!--/* Body of the table */-->
+									<div
+										id="assignedBundlesTable"
+										class="sortable collapsable assignedTable"
+									>
+										<div
+											class="row removableFlex list-group-item placeholderRow notDraggable"
+											style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="filterEmptyRow"
+											style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+													th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+										<th:block
+											th:if="${#lists.isEmpty(clinicDTO.bundleClinicDTOs)}"
+										>
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundlesEmpty', 'No bundles assigned')}"
+													/>
+												</div>
+											</div>
+											<div
+												class="row removableFlex list-group-item"
+												style="display: none"
+											>
+												<div
+													class="col-4"
+													name="position"
+												>
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+													/>
+												</div>
+												<div class="col-7">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+													/>
+												</div>
+
+												<div class="col-1"></div>
+											</div>
+										</th:block>
+
+										<th:block
+											th:if="not ${#lists.isEmpty(clinicDTO.bundleClinicDTOs)}"
+										>
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+												style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundlesEmpty', 'No bundles assigned')}"
+													/>
+												</div>
+											</div>
+											<!--/* iterating through the assigned bundles, giving each bundle a table row */-->
+											<th:block
+												th:each="bundleClinicDTO, loop: ${clinicDTO.bundleClinicDTOs}"
+											>
+												<div
+													class="row removableFlex list-group-item draggable bundle"
+												>
+													<input
+														type="hidden"
+														th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.id|"
+														th:value="${bundleClinicDTO.bundleDTO.id}"
+													/>
+
+													<div
+														class="col-4 position"
+														name="position"
+													>
+														<span>
+															<th:block th:text="|${loop.index+1}.|" />
+														</span>
+														<input
+															type="hidden"
+															th:name="|bundleClinicDTOs[${counter.get()}].position|"
+															th:value="${bundleClinicDTO.position}"
+														/>
+													</div>
+
+													<div class="col-7">
+														<span>
+															<th:block
+																th:text="${bundleClinicDTO.bundleDTO.name}"
+															/>
+														</span>
+														<input
+															type="hidden"
+															th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.name|"
+															th:value="${bundleClinicDTO.bundleDTO.name}"
+															class="filterName"
+														/>
+													</div>
+													<div class="col-1">
+														<a
+															data-bs-toggle="collapse"
+															onClick="move($(this), $('#assignedBundlesTable'), $('#availableBundlesTable'))"
+														>
+															<span class="bi bi-chevron-right"></span>
+														</a>
+													</div>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+													th:with="clinicBundleIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span
+									style="float: right"
+									class="bi bi-chevron-left"
+								></span>
+							</div>
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span class="bi bi-chevron-right"></span>
+							</div>
+
+							<!--/* showing the table of available bundles */-->
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.heading.availableBundle', 'Bundles available:')}"
+											/>
+											<span
+												class="bi bi-info-circle-fill"
+												style="display: inline-block"
+												th:title="${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Bundles available:')}"
+											>
+											</span>
+										</div>
+										<div class="col-4">
+											<input
+												class="form-control input-sm"
+												id="availableBundlesFilter"
+												onkeyup="DragNDropList.filter($(this), '#availableBundlesTable')"
+												type="text"
+												th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-plus-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-dash-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+												style="display: none"
+											></a>
+										</div>
+									</div>
+
+									<div class="row removableFlex list-group-item active">
+										<div class="col-1"></div>
+										<div class="col-4">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position:')}"
+											/>
+										</div>
+										<div class="col-7">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name:')}"
+											/>
+										</div>
+									</div>
+
+									<div
+										id="availableBundlesTable"
+										class="sortable collapsable availableTable"
+									>
+										<div
+											class="row removableFlex list-group-item placeholderRow notDraggable"
+											style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="filterEmptyRow"
+											style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+													th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+
+										<!--/* 
+                                            * if there is no bundle available (anymore), 
+                                            * the heading of this table does not have to be 
+                                            * presented; instead, a message like 'no bundles available' is shown 
+                                        */-->
+										<th:block th:if="${#lists.isEmpty(availableBundleDTOs)}">
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.noMoreBundles', 'No bundles available')}"
+													/>
+												</div>
+											</div>
+											<div
+												class="row removableFlex list-group-item"
+												style="display: none"
+											>
+												<div
+													class="col-4"
+													id="position"
+												>
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position:')}"
+													/>
+												</div>
+												<div class="col-8">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name:')}"
+													/>
+												</div>
+											</div>
+										</th:block>
+										<!--/*
+                                                * at least one bundle is available, thus the heading of this table 
+                                                * is presented; the message 'no bundles available' is hidden instead 
+                                        */-->
+										<th:block
+											th:unless="${#lists.isEmpty(availableBundleDTOs)}"
+										>
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+												style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.noMoreBundles', 'No bundles available')}"
+													></th:block>
+												</div>
+											</div>
+
+											<!--/* iterating over the bundles available to be assigned to the clinic */-->
+											<th:block
+												th:each="bundleDTO, loop: ${availableBundleDTOs}"
+											>
+												<div
+													class="row removableFlex list-group-item draggable bundle"
+												>
+													<input
+														disabled="true"
+														type="hidden"
+														th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.id|"
+														th:value="${bundleDTO.id}"
+													/>
+													<div class="col-1">
+														<a
+															data-bs-toggle="collapse"
+															onClick="move($(this), $('#availableBundlesTable'), $('#assignedBundlesTable'))"
+														>
+															<span class="bi bi-chevron-left"></span>
+														</a>
+													</div>
+													<div
+														class="col-4 position"
+														name="position"
+													>
+														<span>
+															<th:block th:text="|${loop.index+1}.|" />
+														</span>
+														<input
+															disabled="true"
+															type="hidden"
+															th:name="|bundleClinicDTOs[${counter.get()}].position|"
+															th:value="${loop.index+1}"
+														/>
+													</div>
+
+													<div class="col-7">
+														<span>
+															<th:block th:text="${bundleDTO.name}" />
+														</span>
+														<input
+															disabled="true"
+															type="hidden"
+															th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.name|"
+															th:value="${bundleDTO.name}"
+															class="filterName"
+														/>
+													</div>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+													th:with="clinicBundleIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</th:block>
+
+				<!--/* assigned user table */-->
+				<th:block th:with="clinicUserIndex=${counter.clear()}">
+					<div
+						class="container-fluid doubleList"
+						id="userTable"
+					>
+						<div class="row removableFlex toggleCollapseTable">
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<!--/* Title of the table */-->
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<!--/* The 2 tables, bundles assigned to the clinic and bundles available to be assigned to the clinic */-->
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.heading.assignedUsers', 'Users assigned:')}"
+											/>
+										</div>
+										<div class="col-4">
+											<input
+												class="form-control input-sm"
+												id="assignedUsersFilter"
+												onkeyup="DragNDropList.filter($(this), '#assignedUsersTable')"
+												type="text"
+												th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-plus-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-dash-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+												style="display: none"
+											></a>
+										</div>
+									</div>
+									<!--/* Header of the table */-->
+									<div class="row removableFlex list-group-item active">
+										<div class="col-12">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.userName', 'Name')}"
+											/>
+										</div>
+									</div>
+									<!--/* Body of the table */-->
+									<div
+										id="assignedUsersTable"
+										class="sortable collapsable assignedTable"
+									>
+										<div
+											class="row removableFlex list-group-item placeholderRow notDraggable"
+											style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="filterEmptyRow"
+											style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+													th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+										<th:block
+											th:if="${#lists.isEmpty(clinicDTO.assignedUserDTOs)}"
+										>
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.usersEmpty', 'No users assigned')}"
+													/>
+												</div>
+											</div>
+											<div
+												class="row removableFlex list-group-item"
+												style="display: none"
+											>
+												<div class="col-11">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.userName', 'Name:')}"
+													/>
+												</div>
+												<div class="col-1"></div>
+											</div>
+										</th:block>
+										<th:block
+											th:if="not ${#lists.isEmpty(clinicDTO.assignedUserDTOs)}"
+										>
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+												style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.usersEmpty', 'No users assigned')}"
+													/>
+												</div>
+											</div>
+											<!--/* iterating through the assigned bundles, giving each bundle a table row */-->
+											<th:block
+												th:each="user, loop: ${clinicDTO.assignedUserDTOs}"
+											>
+												<div
+													class="row removableFlex list-group-item draggable user"
+												>
+													<div class="col-11">
+														<span>
+															<th:block th:text="${user.username}" />
+														</span>
+													</div>
+													<div class="col-1">
+														<a
+															data-bs-toggle="collapse"
+															onClick="move($(this), $('#assignedUsersTable'), $('#availableUsersTable'))"
+														>
+															<span class="bi bi-chevron-right"></span>
+														</a>
+													</div>
+													<input
+														type="hidden"
+														th:name="|assignedUserDTOs[${counter.get()}].id|"
+														th:value="${user.id}"
+													/>
+													<input
+														type="hidden"
+														th:value="${user.username}"
+														class="filterName"
+													/>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+													th:with="clinicUserIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span
+									style="float: right"
+									class="bi bi-chevron-left"
+								></span>
+							</div>
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span class="bi bi-chevron-right"></span>
+							</div>
+
+							<!--/* showing the table of available users */-->
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.heading.availableUsers', 'Users available')}"
+											/>
+										</div>
+										<div class="col-4">
+											<input
+												class="form-control input-sm"
+												id="availableUsersFilter"
+												onkeyup="DragNDropList.filter($(this), '#availableUsersTable')"
+												type="text"
+												th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-plus-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+												data-bs-toggle="collapse"
+												class="bi bi-dash-lg"
+												onclick="DragNDropList.toggleCollapseTable(this)"
+												style="display: none"
+											></a>
+										</div>
+									</div>
+									<div class="row removableFlex list-group-item active">
+										<div class="col-md-1"> </div>
+										<div class="col-11">
+											<th:block
+												th:text="${messages.get(#locale, 'clinic.table.userName', 'Name')}"
+											/>
+										</div>
+									</div>
+									<div
+										id="availableUsersTable"
+										class="sortable collapsable availableTable"
+									>
+										<div
+											class="row removableFlex list-group-item placeholderRow notDraggable"
+											style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+											class="row removableFlex list-group-item notDraggable"
+											id="filterEmptyRow"
+											style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+													th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+										<!--/* if there is no user available (anymore), the heading of this table does not have to be presented; instead, a message like 'no users available' is shown */-->
+										<th:block th:if="${#lists.isEmpty(availableUserDTOs)}">
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.noMoreUsers', 'No users available')}"
+													/>
+												</div>
+											</div>
+											<div
+												class="row removableFlex list-group-item"
+												style="display: none"
+											>
+												<div class="col-md-2">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.moveUser', 'Move')}"
+													/>
+												</div>
+												<div class="col-10">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.userName', 'Name')}"
+													/>
+												</div>
+											</div>
+										</th:block>
+										<!--/* at least one user is available, thus the heading of this table is presented; the message 'no users available' is hidden instead */-->
+										<th:block th:unless="${#lists.isEmpty(availableUserDTOs)}">
+											<div
+												class="row removableFlex list-group-item notDraggable"
+												id="emptyRow"
+												style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+														th:text="${messages.get(#locale, 'clinic.table.noMoreUsers', 'No users available')}"
+													/>
+												</div>
+											</div>
+											<!--/* iterating over the users available to be assigned to the clinic */-->
+											<th:block th:each="item, loop: ${availableUserDTOs}">
+												<div
+													class="row removableFlex list-group-item draggable user"
+												>
+													<div class="col-1">
+														<a
+															data-bs-toggle="collapse"
+															onClick="move($(this), $('#availableUsersTable'), $('#assignedUsersTable'))"
+															><span class="bi bi-chevron-left"
+														/></a>
+													</div>
+													<div class="col-11">
+														<span>
+															<th:block th:text="${item.username}" />
+														</span>
+													</div>
+													<input
+														disabled="true"
+														type="hidden"
+														th:name="|assignedUserDTOs[${counter.get()}].id|"
+														th:value="${item.id}"
+													/>
+													<input
+														type="hidden"
+														th:value="${item.username}"
+														class="filterName"
+													/>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+													th:with="clinicUserIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</th:block>
+
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="save"
+					id="saveButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.save', 'Save')}"
+				>
+				</button>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="cancel"
+					id="cancelButton"
+					name="action"
+					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var startTable;
+		var targetTable;
+
+		/*[- hide if editing existing clinic -]*/
+		if ($("#clinicId").val() > 0) {
+			$(".collapsable").hide();
+		} else {
+			$(".bi-plus-lg").hide();
+			$(".bi-dash-lg").show();
+		}
+
+		/*[- moves a row to the target table if arrow is clicked -]*/
+		function move(element) {
+			/*[- ensure that the chosen element is moved to the correct table -]*/
+			if ($.contains($("#availableBundlesTable")[0], $(element)[0])) {
+				startTable = $("#availableBundlesTable");
+				targetTable = $("#assignedBundlesTable");
+			}
+
+			if ($.contains($("#assignedBundlesTable")[0], $(element)[0])) {
+				startTable = $("#assignedBundlesTable");
+				targetTable = $("#availableBundlesTable");
+			}
+
+			if ($.contains($("#availableUsersTable")[0], $(element)[0])) {
+				startTable = $("#availableUsersTable");
+				targetTable = $("#assignedUsersTable");
+			}
+
+			if ($.contains($("#assignedUsersTable")[0], $(element)[0])) {
+				startTable = $("#assignedUsersTable");
+				targetTable = $("#availableUsersTable");
+			}
+
+			DragNDropList.moveElementToTargetList(element, targetTable);
+		}
+
+
+		$("#assignedBundlesTable, #availableBundlesTable").each(function(i) {
+			$(this).sortable({
+				group: "bundles",
+				sort: true, 
+				animation:150,
+				easing: "cubic-bezier(1, 0, 0, 1)",
+				draggable: ".list-group-item",
+				filter: ".notDraggable",
+				onStart: function(e) {
+					startTable = $(e.from);
+					targetTable = $(e.from); 
+				},
+				
+				onChange: function(e) {
+					DragNDropList.onChange(e); 
+				} 
+
+			});
+		});
+
+		$("#assignedUsersTable, #availableUsersTable").each(function(i) {
+			$(this).sortable({
+				group: "users",
+				sort: true, 
+				animation:150,
+				easing: "cubic-bezier(1, 0, 0, 1)",
+				draggable: ".list-group-item",
+				filter: ".notDraggable",
+				onStart: function(e) {
+					startTable = $(e.from);
+					targetTable = $(e.from); 
+				},
+				onChange: function(e) {
+					DragNDropList.onChange(e); 
+				} 
+
+			});
+		});
+	</script>
+</th:block>

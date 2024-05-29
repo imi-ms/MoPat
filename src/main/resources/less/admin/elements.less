@@ -1,0 +1,300 @@
+/**
+*
+* Styling for all elements on the page 
+* like Buttons, Dropdowns etc.
+*
+**/
+
+@import "includes/colors";
+@import "includes/sizes";
+@import "includes/variables";
+
+.dropdown-menu {
+    box-shadow: @box-shadow-material-md;
+}
+
+/*
+* Bootstraps "d-flex" uses the !important flag so it cannot be removed by display:none; 
+* Use this class, if elements should be dynamically shown via JS
+*/
+.removableFlex {
+    display: flex;
+}
+
+.bi-large {
+    font-size: 150%; 
+    font-weight: 700;
+}
+
+.bi-action {
+    &:hover {
+        cursor: grab;
+    }
+}
+
+//Set drop shadow for all form elements
+.note-editor, .file-preview, .form-control, .form-select, form .card, .alert, .page-link {
+    box-shadow: @box-shadow-material-sm;
+}
+
+.dropdown-item {
+    border: .3em solid @color-white; 
+    font-size: 1.1em;
+
+    &:hover {
+        border-left: .3em solid @color-blue-light;
+        background-color: @color-gray-lighter;
+        border-radius: 0;
+        transition: 0.25s ease-in-out;
+    }
+    &.active {
+        color:@color-black;
+        border-left: .3em solid @color-blue-dark !important; 
+        background-color: white !important;
+    }
+}
+
+#languageDropdown .dropdown-toggle {
+    color: @color-blue-links;
+    text-decoration: none;
+}
+
+.form-group {
+    margin-bottom: 15px; /* restore old form layout for bootstrap 5 */
+    .required{
+        &:after {
+            content: "*";
+            color: @color-red;
+        }
+    }
+
+    /* Style the chevron signs in every form group. Used for collapsable elements */
+    .bi-chevron-up {
+        float:right; 
+        color: @color-black;
+        margin-right: 11px; // Make chevrons appear on the same vertical space
+    }
+
+    .bi-chevron-down {
+        .bi-chevron-up(); 
+        margin-right: 0;
+    }
+}
+
+.btn {
+    box-shadow: @box-shadow-material-sm;
+
+    &:disabled {
+        background-color: @mdc-grey-300;
+        color: @mdc-grey-600;
+        border-color: @mdc-grey-600;
+    }
+}
+
+.btn-primary {
+    background-color: @color-blue-dark;
+    border-color: @color-blue-dark;
+    color: @color-white;
+    border-radius: @border-radius-sm;
+    transition: @transition-value;
+
+    &:hover {
+        background-color: @color-blue-light;
+        border-color: @color-blue-light; 
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+input[type=checkbox], input[type=radio] {
+    accent-color: @color-blue-light;
+}
+
+label {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+    color: @color-black; 
+    text-decoration: none;
+}
+
+
+/* Style the links which collapse a area. I.e. question/edit */
+a[data-bs-toggle='collapse'] {
+    text-decoration: none !important;
+    color: @color-black !important;
+
+    &:hover, label:hover {
+        cursor: pointer;
+    }
+}
+
+
+/* The container for the two drag&drop lists */
+.doubleList {
+    margin-top: 10px;
+    margin-bottom: 10px; 
+}
+
+
+/* The icons between the two drag&drop lists */
+.doubleListIcon {
+    padding-top: 55px;
+}
+
+
+/* Give this elements a fixed hight and make them scrollable */
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
+.questionnaireName {
+    width: 200px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.questionnaireDescription {
+    text-align: left;
+}
+
+.position {
+    text-align: left;
+    vertical-align: top;
+}
+
+.templateTypes {
+    text-align: left;
+    vertical-align: top;
+}
+
+.custom-tooltip {
+    max-width: 400px;
+}
+
+
+.span-status-mixin() {
+    padding: 2px;
+    text-align: center;
+}
+
+span {
+    &.success {
+        .span-status-mixin();
+        background-color: @color-success-background;
+        border: 2px solid @color-success-border;
+        color: @color-success-text;
+    }
+    &.failure {
+        .span-status-mixin();
+        background-color: @color-failure-background;
+        border: 2px solid @color-failure-border;
+        color: @color-failure-text;
+    }
+    &.conflict {
+        .span-status-mixin();
+        background-color: @color-conflict-background;
+        border: 2px solid @color-conflict-border;
+        color: @color-conflict-text;
+    }
+
+
+}
+
+.score-panel {
+    span, .bi {
+        font-size: 2rem; 
+    }
+
+    .form-control {
+        margin-bottom: 10px;
+        margin-top: 10px;  
+    }
+}
+
+.score-element {
+    max-width: 100% !important;
+    text-overflow: ellipsis;
+}
+
+.exportSuccess {
+    background-color: @mdc-green-100;
+    color: @mdc-green-900; 
+}
+
+.exportConflict {
+    background-color: @mdc-yellow-100;
+    color: @mdc-yellow-900; 
+}
+
+.exportFailed {
+    background-color: @mdc-red-100;
+    color: @mdc-red-900; 
+}
+
+.shape {
+    fill: #009ee0ff; 
+    opacity: 0.3;
+
+    &:hover {
+        fill: #009ee0ff; 
+        cursor:pointer; 
+        opacity: 0.6;
+    }
+
+    &-selected {
+        fill: #009ee0ff; 
+        opacity: 0.6;
+
+        &:hover {
+            fill: #009ee0ff;
+            cursor:pointer; 
+            opacity: 0.3;
+        }
+    }
+}
+
+.drag-n-drop-header-item {
+    padding-top: 5px;
+}
+
+.list-group-item.active {
+    background-color: @color-blue-dark !important;
+}
+
+// Group type is the heading for configuration groups
+.groupType{
+    font-size: 1.4rem; 
+}
+
+//make bootstrap icons larger for ui elements
+.bi-lg {
+    font-size: 1.5rem; 
+}
+
+legend {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.boxShadowMaterialSm {
+    box-shadow: @box-shadow-material-sm !important;
+}
+
+.boxShadowMaterialMd {
+    box-shadow: @box-shadow-material-md !important;
+}
+
+.boxShadowMaterialLg {
+    box-shadow: @box-shadow-material-lg !important;
+}
+
+.boxShadowMaterialXl {
+    box-shadow: @box-shadow-material-xl !important;
+}
+
+.boxShadowMaterialXxl {
+    box-shadow: @box-shadow-material-xxl !important;
+}

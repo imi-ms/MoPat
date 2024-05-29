@@ -1,0 +1,12 @@
+<!--/*
+    * Layout for the mobile user page in MoPats mobile view 
+    * Adds onLoad functions and scripts    
+*/-->
+<th:block
+	layout:decorate="~{layout/login}"
+	th:with="onLoad='initUser();'"
+>
+	<th:block layout:fragment="addScripts">
+		<script th:src="@{/js/mobile/helper/user.js?version=3.0}"></script>
+	</th:block>
+</th:block>

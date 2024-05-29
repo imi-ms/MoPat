@@ -1,0 +1,28 @@
+<!--/*
+    * Thymeleaf fragment that shows all values of a map with
+    * optional support for localization     
+*/-->
+<th:block
+	layout:fragment="selectOptions(path, items, itemValue, itemLabel, localize, onChangeFunction, id, clazz)"
+>
+	<select
+		th:field="*{__${path}__}"
+		th:onchange="[(${onChangeFunction})]"
+		th:id="${id}"
+		th:class="${clazz}"
+	>
+		<th:block th:each="i: ${items}">
+			<th:block th:text="${i[itemLabel]}" />
+			<option th:value="${i[itemValue]}">
+				<th:block th:if="${localize}">
+					<th:block
+						th:text="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"
+					/>
+				</th:block>
+				<th:block th:unless="${localize}">
+					<th:block th:text="${i[itemLabel]}" />
+				</th:block>
+			</option>
+		</th:block>
+	</select>
+</th:block>

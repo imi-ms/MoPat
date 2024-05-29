@@ -1,0 +1,116 @@
+<!--/*
+    * View for to list all available export templates for a 
+    * questionnaire    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'mapping.heading.title', 'Export Templates')}
+					+ '&nbsp;' + '&ldquo;'
+                    + ${questionnaire.name} + '&rdquo;'"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<th:block th:if="${error ne null}">
+				<div
+					id="notification"
+					class="alert alert-danger"
+				>
+					<th:block th:text="${error}" />
+				</div>
+			</th:block>
+		</div>
+		<div class="table-responsive">
+			<table class="sortable table table-hover pagedTable">
+				<colgroup>
+					<col width="15%" />
+					<col width="15%" />
+					<col width="26%" />
+					<col width="26%" />
+					<col width="18%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th
+							th:text="${messages.get(#locale, 'mapping.label.type', 'Type')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'mapping.label.name', 'Name')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'mapping.label.filename', 'Filename')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'mapping.label.originalFilename', 'Original filename')}"
+						></th>
+						<th
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block
+						th:if="${not #lists.isEmpty(allMappings)}"
+						th:each="item: ${allMappings}"
+					>
+						<tr>
+							<td
+								th:text="|${item.exportTemplateType} (${item.configurationGroup.name})|"
+							></td>
+							<td>
+								<th:block
+									th:if="${not #strings.isEmpty(item.name)}"
+									th:text="${item.name}"
+								>
+								</th:block>
+							</td>
+							<td th:text="${item.filename}"></td>
+							<td th:text="${item.originalFilename}"></td>
+							<td class="actionColumn">
+								<a
+									class="link"
+									th:href="@{/mapping/map?id=__${item.id}__}"
+								>
+									<span
+										class="bi bi-arrows-angle-contract"
+										th:title="${messages.get(#locale, 'mapping.button.map', 'Edit mapping')}"
+									>
+									</span>
+								</a>
+								<a
+									class="link"
+									th:href="@{remove?id=__${item.id}__}"
+								>
+									<span
+										class="bi-trash-fill"
+										th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
+									></span>
+								</a>
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="panel-body">
+			<form
+				th:object="${export}"
+				method="GET"
+				action="uploadtemplate"
+			>
+				<input
+					name="id"
+					th:value="${questionnaire.id}"
+					type="hidden"
+				/>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					id="uploadtemplate"
+					th:text="${messages.get(#locale, 'mapping.button.upload', 'Upload Template')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

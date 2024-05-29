@@ -1,0 +1,1447 @@
+<!--/*
+	* View to edit the mapping of an export template
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'mapping.heading.metadata', 'Meta Data')} + 
+					' - ' + 
+					${messages.get(#locale, 'mapping.button.map', 'Edit export templates')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<div class="form-group">
+				<label
+					for="type"
+					th:text="${messages.get(#locale, 'questionnaire.label.questionnaire', 'Questionnaire')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${export.questionnaire.name}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="type"
+					th:text="${messages.get(#locale, 'mapping.label.type', 'Type')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${export.exportTemplateType}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="name"
+					th:text="${messages.get(#locale, 'mapping.label.name', 'Name')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${export.name}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="file"
+					th:text="${messages.get(#locale, 'mapping.label.filename', 'Filename')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${export.filename}"
+				></span>
+			</div>
+			<div class="form-group">
+				<label
+					for="originalFilename"
+					th:text="${messages.get(#locale, 'mapping.label.originalFilename', 'Original filename')}"
+				></label>
+				<span
+					class="form-control"
+					th:text="${export.originalFilename}"
+				></span>
+			</div>
+
+			<form
+				action="map"
+				th:object="${exportRules}"
+				method="POST"
+				name="exportRules"
+			>
+				<div class="panel-default panel">
+					<div class="panel-heading">
+						<div
+							class="panel-title"
+							th:text="${messages.get(#locale, 'mapping.label.surveyData', 'Survey data')}"
+						></div>
+					</div>
+					<th:block th:if="${export.exportTemplateType == 'ODM'}">
+						<div
+							class="alert alert-warning"
+							style="margin-bottom: 5px"
+							th:text="${messages.get(#locale, 'mapping.label.information', 'Red template fields can not be mapped due to spaces at the end of their names.')}"
+						>
+						</div>
+					</th:block>
+					<div
+						class="panel-body"
+						id="exportRuleBody"
+						style="position: relative"
+					>
+						<input
+							type="hidden"
+							name="exportTemplateId"
+							th:value="${export.getId()}"
+						/>
+						<div id="exportMappingContainer">
+							<div id="questionnaireNodes">
+								<th:block th:text="${counter.clear()}" />
+								<th:block th:each="item: ${exportEncounterFieldType}">
+									<addVar
+										layout:replace="~{helper/var :: add(
+										key='exportRuleFormat', 
+										value=${#lists.isEmpty(export.getExportRules())} ? ${null} : ${export.getExportRuleFormatFromEncounterField(item)})}"
+									>
+									</addVar>
+
+									<div
+										th:id="|encounter-${counter.get()}|"
+										class="map-answer d-flex"
+										th:data-index="${counter.get()}"
+									>
+										<input
+											type="hidden"
+											th:id="|exportRules${counter.get()}.encounterField|"
+											th:name="|exportRules[${counter.get}].encounterField|"
+											th:value="${item}"
+										/>
+
+										<th:block
+											th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(__${counter.get}__))}"
+										>
+											<th:block
+												th:each="exportField: ${exportRules?.exportRules?.get(__${counter.get}__).exportField}"
+											>
+												<input
+													type="hidden"
+													th:name="|exportRules[${counter.get()}].exportField|"
+													th:id="|exportRules${counter.get()}.exportField|"
+													th:value="${exportField}"
+												/>
+											</th:block>
+										</th:block>
+
+										<th:block
+											th:unless="${not #lists.isEmpty(exportRules?.exportRules?.get(__${counter.get}__))}"
+										>
+											<th:block
+												th:each="exportField: ${export.getExportFieldsByEncounterField(item)}"
+											>
+												<input
+													type="hidden"
+													th:name="|exportRules[${counter.get()}].exportField|"
+													th:id="|exportRules${counter.get()}.exportField|"
+													th:value="${exportField}"
+												/>
+											</th:block>
+										</th:block>
+
+										<input
+											th:each="exportField: ${exportRules?.exportRules?.get(__${counter.get()}__)?.exportField}"
+											th:if="${not #lists.contains(export.getExportFieldsByEncounterField(item), exportField)}"
+											type="hidden"
+											th:name="|exportRules[${counter.get()}].exportField|"
+											th:id="|exportRules${counter.get()}.exportField|"
+											th:value="${exportField}"
+										/>
+										<div class="me-auto">
+											<th:block
+												th:text="${messages.get(#locale, '__${item}__', '__${item}__')}"
+											/>
+											<div
+												th:if="${item.type == 'java.sql.Timestamp' || item.type == 'java.sql.Date'}"
+												class="map-settings"
+											>
+												<th:block
+													th:text="|${messages.get(#locale, 'mapping.label.formatting', 'Formatting')}:|"
+												/>
+
+												<select
+													th:name="|exportRules[${counter.get()}].encounterDateFormat|"
+												>
+													<th:block
+														th:each="dateFormat: ${exportDateFormatType}"
+														th:with="
+																case1=${not #lists.isEmpty(exportRules?.exportRules?.get(__${counter.get()}__))},
+																case2=${vars['exportRuleFormat'] ne null}"
+													>
+														<option
+															th:if="${case1}"
+															th:value="${dateFormat}"
+															th:selected="${exportRules?.exportRules?.get(__${counter.get()}__)?.encounterDateFormat == dateFormat}"
+															th:text="${dateFormat.getFormatPreview()}"
+														>
+														</option>
+
+														<option
+															th:if="${case2}"
+															th:value="${dateFormat}"
+															th:selected="${vars['exportRuleFormat']?.dateFormat == dateFormat}"
+															th:text="${dateFormat.getFormatPreview()}"
+														>
+														</option>
+
+														<option
+															th:if="${not case1 && not case2}"
+															th:value="${dateFormat}"
+															th:text="${dateFormat.getFormatPreview()}"
+														>
+														</option>
+													</th:block>
+												</select>
+											</div>
+										</div>
+									</div>
+									<th:block th:text="${counter.increment()}" />
+								</th:block>
+
+								<div class="clear"></div>
+								<div
+									style="font-weight: bold"
+									th:text="${messages.get(#locale, 'mapping.label.questionnaireData', 'Questionnaire data')}"
+								>
+								</div>
+								<th:block th:each="score: ${scores}">
+									<div class="map-question-box">
+										<div class="question-header">
+											<span class="collapse">[-]</span>
+											<span
+												class="collapse"
+												style="display: none"
+												>[+]</span
+											>
+											<span
+												class="question-type"
+												th:text="|${messages.get(#locale, 'score', 'Score')}: ${score.name}|"
+											>
+											</span>
+										</div>
+										<div class="collapsable">
+											<input
+												type="hidden"
+												th:id="|exportRuleScoreFormats${score.getId()}.id|"
+												th:name="|exportRuleScoreFormats[${score.getId()}].id|"
+												th:value="${vars['exportRuleFormat']?.id}"
+											/>
+											<th:block th:if="${! score.isBooleanScore()}">
+												<!--/* Only the VALUE field of a score can has a exportRuleFormat */-->
+												<addVar
+													layout:replace="~{helper/var :: add(
+													key='exportRuleFormat', 
+													value=${#lists.isEmpty(export.getExportRules())} ? ${null} : ${export.getExportRuleFormatFromScoreField('VALUE', score.getId())})}"
+												>
+												</addVar>
+
+												<div class="map-settings">
+													<div class="map-settings-type">
+														<th:block
+															th:text="|${messages.get(#locale, 'mapping.label.numberType', 'Number type')}:|"
+														/>
+
+														<th:block
+															th:each="numberType: ${exportNumberType}"
+															th:with="
+																case1=${not #strings.isEmpty(exportRules?.exportRuleScoreFormats?.get(score.getId())?.numberType)},
+																case2=${not #strings.isEmpty(vars['exportRuleFormat']?.numberType)}"
+														>
+															<input
+																th:if="${case1}"
+																type="radio"
+																th:name="|exportRuleScoreFormats[${score.getId()}].numberType|"
+																th:value="${numberType}"
+																th:checked="${exportRules?.exportRuleScoreFormats?.get(score.getId())?.numberType == numberType}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+
+															<input
+																th:if="${case2}"
+																type="radio"
+																th:name="|exportRuleScoreFormats[${score.getId()}].numberType|"
+																th:value="${numberType}"
+																th:checked="${vars['exportRuleFormat']?.numberType == numberType}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+
+															<input
+																th:if="${not case1 && not case2}"
+																type="radio"
+																th:name="|exportRuleScoreFormats[${score.getId()}].numberType|"
+																th:value="${numberType}"
+																th:checked="${numberType == 'FLOAT'}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+														</th:block>
+
+														<div class="map-settings-int">
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.roundingStrategy', 'Rounding')}:|"
+															>
+															</div>
+
+															<select
+																th:name="|exportRuleScoreFormats[${score.getId()}].roundingStrategy|"
+															>
+																<th:block
+																	th:each="roundingStrategy: ${exportRoundingStrategyType}"
+																	th:with="
+																		case1=${not #strings.isEmpty(exportRules?.exportRuleScoreFormats?.get(score.getId())?.roundingStrategy)},
+																		case2=${not #strings.isEmpty(exportRuleFormat?.roundingStrategy)}"
+																>
+																	<option
+																		th:if="${case1}"
+																		th:value="${roundingStrategy}"
+																		th:selected="${exportRules?.exportRuleScoreFormats?.get(score.getId())?.roundingStrategy == roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:value="${roundingStrategy}"
+																		th:selected="${vars['exportRuleFormat']?.roundingStrategy == roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${not case1 && not case2}"
+																		th:value="${roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+																</th:block>
+															</select>
+														</div>
+														<div class="map-settings-float">
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.decimalDelimiter', 'Decimal mark')}:|"
+															>
+															</div>
+															<select
+																th:name="|exportRuleScoreFormats[${score.getId()}].decimalDelimiter|"
+															>
+																<th:block
+																	th:each="decimalDelimiter: ${exportDecimalDelimiterType}"
+																	th:with="
+																		case1=${not #strings.isEmpty(exportRules?.exportRuleScoreFormats?.get(score.getId())?.decimalDelimiter)},
+																		case2=${not #strings.isEmpty(exportRuleFormat?.decimalDelimiter)}"
+																>
+																	<option
+																		th:if="${case1}"
+																		th:value="${decimalDelimiter}"
+																		th:selected="${exportRules?.exportRuleScoreFormats?.get(score.getId())?.decimalDelimiter == decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${case2}"
+																		th:value="${decimalDelimiter}"
+																		th:selected="${vars['exportRuleFormat']?.decimalDelimiter == decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${not case1 && not case2}"
+																		th:value="${decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+																</th:block>
+															</select>
+															<br />
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.decimalPlaces', 'Decimal places')}:|"
+															>
+															</div>
+															<th:block
+																th:with="
+																case1=${not #strings.isEmpty(exportRules?.exportRuleScoreFormats?.get(score.getId())?.decimalPlaces)},
+																case2=${#strings.isEmpty(vars['exportRuleFormat']?.decimalPlaces)}"
+															>
+																<input
+																	th:if="${case1}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleScoreFormats{score.getId()}.decimalPlaces|"
+																	th:name="|exportRuleScoreFormats[${score.getId()}].decimalPlaces|"
+																	th:value="${exportRules?.exportRuleScoreFormats?.get(score.getId())?.decimalPlaces}"
+																/>
+
+																<input
+																	th:if="${case2}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleScoreFormats{score.getId()}.decimalPlaces|"
+																	th:name="|exportRuleScoreFormats[${score.getId()}].decimalPlaces|"
+																	value="0"
+																/>
+
+																<input
+																	th:if="${not case1 && not case2}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleScoreFormats{score.getId()}.decimalPlaces|"
+																	th:name="|exportRuleScoreFormats[${score.getId()}].decimalPlaces|"
+																	th:value="${vars['exportRuleFormat']?.decimalPlaces}"
+																/>
+															</th:block>
+															<th:block 
+																th:if="${question != null}"
+															>
+																<error
+																	layout:replace="~{fragments/forms :: errorField(
+																	path='exportRuleScoreFormats[__${question?.getPosition() - 1}__].decimalPlaces')}"
+																/>
+															</th:block>
+														</div>
+													</div>
+												</div>
+											</th:block>
+
+											<th:block th:each="item: ${exportQuestionnaireFieldType}">
+												<div class="answer-list">
+													<div
+														th:id="|score-${counter.get()}|"
+														class="map-answer d-flex"
+														th:data-index="${counter.get()}"
+													>
+														<div class="me-auto">
+															<th:block
+																th:text="${messages.get(#locale, '__${item}__', '__${item}__')}"
+															/>
+														</div>
+														<input
+															type="hidden"
+															th:name="|exportRules[${counter.get()}].tempExportFormatId|"
+															th:value="${score.getId()}"
+														/>
+														<input
+															type="hidden"
+															th:id="|exportRules${counter.get()}.scoreField|"
+															th:name="|exportRules[${counter.get()}].scoreField|"
+															th:value="${item}"
+														/>
+														<input
+															type="hidden"
+															th:id="|exportRules${counter.get()}.scoreId|"
+															th:name="|exportRules[${counter.get()}].scoreId|"
+															th:value="${score.getId()}"
+														/>
+
+														<input
+															th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+															th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.scoreField}"
+															type="hidden"
+															th:name="|exportRules[${counter.get()}].exportField|"
+															th:id="|exportRules${counter.get()}.exportField|"
+															th:value="${exportField}"
+														/>
+														<input
+															th:unless="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+															th:each="exportField: ${export.getExportFieldsByScoreField(item, score.getId())}"
+															type="hidden"
+															th:name="|exportRules[${counter.get()}].exportField|"
+															th:id="|exportRules${counter.get()}.exportField|"
+															th:value="${exportField}"
+														/>
+
+														<input
+															th:if="${not #lists.contains(export.getExportFieldsByScoreField(item, score.getId()), exportField)}"
+															th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.exportField}"
+															type="hidden"
+															th:name="|exportRules[${counter.get()}].exportField|"
+															th:id="|exportRules${counter.get()}.exportField|"
+															th:value="${exportField}"
+														/>
+													</div>
+												</div>
+												<th:block th:text="${counter.increment()}" />
+											</th:block>
+											<div class="clear"></div>
+										</div>
+									</div>
+								</th:block>
+								<th:block th:each="question: ${questions}">
+									<addVar
+										layout:replace="~{helper/var :: add(
+										key='exportRuleFormat', 
+										value=${#lists.isEmpty(question.getAnswers())} ? '' : ${question.getExportRuleFormatFromAnswers(export)})}"
+									>
+									</addVar>
+
+									<addVar
+										layout:replace="~{helper/var :: add(
+										key='questionType', 
+										value=${question.getQuestionType().getTextValue()})}"
+									>
+									</addVar>
+
+									<div class="map-question-box">
+										<div class="question-header">
+											<span class="collapse">[-]</span>
+											<span
+												class="collapse"
+												style="display: none"
+												>[+]</span
+											>
+											<span
+												class="question-type"
+												th:text="${question.getPosition()} + 
+												'. ' + 
+												${messages.get(#locale, '__${vars['questionType']}__', '__${vars['questionType']}__')} + 
+												':'"
+											>
+											</span>
+											<!--/* Set the variable with the localized texts for the include fragment. */-->
+											<addVar
+												layout:replace="~{helper/var :: add(
+												key='localizedMap', 
+												value=${question.localizedQuestionText})}"
+											>
+											</addVar>
+
+											<th:block
+												layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+											/>
+
+											<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+											<span th:utext="${vars['defaultLocalizedText']}"></span>
+										</div>
+										<div class="collapsable">
+											<input
+												th:if="${not #lists.isEmpty(question.getAnswers())}"
+												type="hidden"
+												th:id="|exportRuleFormats${question.getPosition()-1}.id|"
+												th:name="|exportRuleFormats[${question.getPosition()-1}].id|"
+												th:value="${vars['exportRuleFormat']?.id}"
+											/>
+
+											<th:block
+												th:if="${#strings.endsWith(vars['questionType'], 'SLIDER') || 
+														#strings.startsWith(vars['questionType'],'NUMBER_CHECKBOX') || 
+														#strings.startsWith(vars['questionType'],'NUMBER_INPUT')}"
+											>
+												<div class="map-settings">
+													<div class="map-settings-type">
+														<th:block
+															th:text="|${messages.get(#locale, 'mapping.label.numberType', 'Number type')}:|"
+														/>
+														<th:block
+															th:each="numberType: ${exportNumberType}"
+															th:with="
+																case1=${not #strings.isEmpty(exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.numberType)},
+																case2=${not #strings.isEmpty(vars['exportRuleFormat']?.numberType)}"
+														>
+															<input
+																th:if="${case1}"
+																type="radio"
+																th:name="|exportRuleFormats[${question.getPosition()-1}].numberType|"
+																th:value="${numberType}"
+																th:checked="${exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.numberType == numberType}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+
+															<input
+																th:if="${case2}"
+																type="radio"
+																th:name="|exportRuleFormats[${question.getPosition()-1}].numberType|"
+																th:value="${numberType}"
+																th:checked="${vars['exportRuleFormat']?.numberType == numberType}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+
+															<input
+																th:if="${not case1 && not case2}"
+																type="radio"
+																th:name="|exportRuleFormats[${question.getPosition()-1}].numberType|"
+																th:value="${numberType}"
+																th:checked="${numberType == 'FLOAT'}"
+																th:text="${messages.get(#locale, '__${numberType}__', '__${numberType}__')}"
+															/>
+														</th:block>
+														<div class="map-settings-int">
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.roundingStrategy', 'Rounding')}:|"
+															>
+															</div>
+															<select
+																th:name="|exportRuleFormats[${question.getPosition()-1}].roundingStrategy|"
+															>
+																<th:block
+																	th:each="roundingStrategy: ${exportRoundingStrategyType}"
+																	th:with="
+																		case1=${not #strings.isEmpty(exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.roundingStrategy)},
+																		case2=${not #strings.isEmpty(vars['exportRuleFormat']?.roundingStrategy)}"
+																>
+																	<option
+																		th:if="${case1}"
+																		th:value="${roundingStrategy}"
+																		th:selected="${exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.roundingStrategy == roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${case2}"
+																		th:value="${roundingStrategy}"
+																		th:selected="${vars['exportRuleFormat']?.roundingStrategy == roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${not case1 && not case2}"
+																		th:value="${roundingStrategy}"
+																		th:text="${messages.get(#locale, '__${roundingStrategy}__', '__${roundingStrategy}__')}"
+																	>
+																	</option>
+																</th:block>
+															</select>
+														</div>
+														<div class="map-settings-float">
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.decimalDelimiter', 'Decimal mark')}:|"
+															>
+															</div>
+															<select
+																th:name="|exportRuleFormats[${question.getPosition()-1}].decimalDelimiter|"
+															>
+																<th:block
+																	th:each="decimalDelimiter: ${exportDecimalDelimiterType}"
+																	th:with="
+																		case1=${not #strings.isEmpty(exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.decimalDelimiter)},
+																		case2=${not #strings.isEmpty(vars['exportRuleFormat']?.decimalDelimiter)}"
+																>
+																	<option
+																		th:if="${case1}"
+																		th:value="${decimalDelimiter}"
+																		th:selected="${exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.decimalDelimiter == decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${case2}"
+																		th:value="${decimalDelimiter}"
+																		th:selected="${vars['exportRuleFormat']?.decimalDelimiter == decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+
+																	<option
+																		th:if="${not case1 && not case2}"
+																		th:value="${decimalDelimiter}"
+																		th:text="${messages.get(#locale, '__${decimalDelimiter}__', '__${decimalDelimiter}__')}"
+																	>
+																	</option>
+																</th:block>
+															</select>
+															<br />
+															<div
+																class="formatting-text"
+																th:text="|${messages.get(#locale, 'mapping.label.decimalPlaces', 'Decimal places')}:|"
+															>
+															</div>
+															<th:block
+																th:with="
+																case1=${not #strings.isEmpty(exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.decimalPlaces)},
+																case2=${#strings.isEmpty(vars['exportRuleFormat']?.decimalPlaces)}"
+															>
+																<input
+																	th:if="${case1}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleFormats${question.getPosition()-1}.decimalPlaces|"
+																	th:name="|exportRuleFormats[${question.getPosition()-1}].decimalPlaces|"
+																	th:value="${exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.decimalPlaces}"
+																/>
+
+																<input
+																	th:if="${case2}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleFormats${question.getPosition()-1}.decimalPlaces|"
+																	th:name="|exportRuleFormats[${question.getPosition()-1}].decimalPlaces|"
+																	value="0"
+																/>
+
+																<input
+																	th:if="${not case1 && not case2}"
+																	size="5"
+																	type="text"
+																	min="0"
+																	step="1"
+																	th:id="|exportRuleFormats${question.getPosition()-1}.decimalPlaces|"
+																	th:name="|exportRuleFormats[${question.getPosition()-1}].decimalPlaces|"
+																	th:value="${vars['exportRuleFormat']?.decimalPlaces}"
+																/>
+															</th:block>
+															<error
+																layout:replace="~{fragments/forms :: errorField(
+																path='exportRuleFormats[__${question.getPosition()-1}__].decimalPlaces')}"
+															/>
+														</div>
+													</div>
+												</div>
+											</th:block>
+
+											<th:block th:if="${vars['questionType'] == 'DATE'}">
+												<div class="map-settings">
+													<th:block
+														th:text="|${messages.get(#locale, 'mapping.label.formatting', 'Formatting')}:|"
+													/>
+
+													<select
+														th:name="|exportRuleFormats[${question.getPosition()-1}].dateFormat|"
+													>
+														<th:block
+															th:each="dateFormat: ${exportDateFormatType}"
+															th:with="
+																case1=${not #strings.isEmpty(exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.dateFormat)},
+																case2=${not #strings.isEmpty(vars['exportRuleFormat']?.dateFormat)}"
+														>
+															<option
+																th:if="${case1}"
+																th:value="${dateFormat}"
+																th:selected="${exportRules?.exportRuleFormats?.get(question.getPosition()-1)?.dateFormat == dateFormat}"
+																th:text="${dateFormat.getFormatPreview()}"
+															>
+															</option>
+
+															<option
+																th:if="${case2}"
+																th:value="${dateFormat}"
+																th:selected="${vars['exportRuleFormat']?.dateFormat == dateFormat}"
+																th:text="${dateFormat.getFormatPreview()}"
+															>
+															</option>
+
+															<option
+																th:if="${not case1 && not case2}"
+																th:value="${dateFormat}"
+																th:text="${dateFormat.getFormatPreview()}"
+															>
+															</option>
+														</th:block>
+													</select>
+												</div>
+											</th:block>
+
+											<th:block
+												th:if="${not #lists.isEmpty(question.getAnswers())}"
+											>
+												<div class="answer-list">
+													<!--/* If the export template type is REDCap and min/max answers equals 1 only show one exportRule for the question */-->
+													<th:block
+														th:if="${export.getExportTemplateType().name() eq 'REDCap' && 
+																question.getMinNumberAnswers() eq 1 && 
+																question.getMaxNumberAnswers() eq 1}"
+													>
+														<div
+															th:id="|question-${question.getId()}|"
+															class="map-answer d-flex"
+															th:data-index="${counter.get()}"
+															th:data-question-id="${question.getId()}"
+															th:data-type="${question.getQuestionType().getTextValue()}"
+														>
+															<input
+																type="hidden"
+																th:name="|exportRules[${counter.get()}].questionId|"
+																th:id="|exportRules${counter.get()}.questionId|"
+																value="${question.getId()}"
+															/>
+															<input
+																type="hidden"
+																th:name="|exportRules[${counter.get()}].tempExportFormatId|"
+																th:value="${question.position-1}"
+															/>
+
+															<input
+																th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.exportField}"
+																type="hidden"
+																th:name="|exportRules[${counter.get()}].exportField|"
+																th:id="|exportRules${counter.get()}.exportField|"
+																th:value="${exportField}"
+															/>
+
+															<input
+																th:unless="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																th:each="exportField: ${export.getExportFieldsByQuestion(question)}"
+																type="hidden"
+																th:name="|exportRules[${counter.get()}].exportField|"
+																th:id="|exportRules${counter.get()}.exportField|"
+																th:value="${exportField}"
+															/>
+															<div class="me-auto">
+																<th:block
+																	th:text="${messages.get(#locale, 'mapping.label.questionAnswer', 'Answer of the question')}"
+																/>
+															</div>
+														</div>
+														<!--/* If there is a extra freetext answer */-->
+														<th:block
+															th:if="${vars['questionType'] == 'MULTIPLE_CHOICE' || vars['questionType'] == 'DROP_DOWN'}"
+															th:each="answer: ${question.getAnswers()}"
+														>
+															<th:block
+																th:if="${answer['class'].simpleName eq 'FreetextAnswer'}"
+															>
+																<th:block th:text="${counter.increment()}" />
+																<div
+																	th:id="|answer-${answer.getId()}|"
+																	class="map-answer d-flex"
+																	th:data-index="${counter.get()}"
+																	th:data-answer-id="${answer.getId()}"
+																	th:data-type="${question.getQuestionType().getTextValue()}"
+																>
+																	<input
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].answerId|"
+																		th:id="|exportRules${counter.get()}.answerId|"
+																		th:value="${answer.getId()}"
+																	/>
+
+																	<input
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].tempExportFormatId|"
+																		th:value="${question.position-1}"
+																	/>
+
+																	<input
+																		th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																		th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.exportField}"
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].exportField|"
+																		th:id="|exportRules${counter.get()}.exportField|"
+																		th:value="${exportField}"
+																	/>
+
+																	<input
+																		th:unless="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																		th:each="exportField: ${export.getExportFieldsByAnswer(answer)}"
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].exportField|"
+																		th:id="|exportRules${counter.get()}.exportField|"
+																		th:value="${exportField}"
+																	/>
+
+																	<th:block
+																		th:text="${messages.get(#locale, 'FREE_TEXT', 'Free text')}"
+																	/>
+																</div>
+															</th:block>
+														</th:block>
+														<th:block th:text="${counter.increment()}" />
+													</th:block>
+
+													<th:block
+														th:unless="${export.getExportTemplateType().name() eq 'REDCap' && 
+													question.getMinNumberAnswers() eq 1 && 
+													question.getMaxNumberAnswers() eq 1}"
+													>
+														<th:block
+															th:each="answer: ${question.getAnswers()}"
+														>
+															<div
+																th:id="|answer-${answer.getId()}|"
+																class="map-answer d-flex"
+																th:data-index="${counter.get()}"
+																th:data-answer-id="${answer.getId()}"
+																th:data-type="${question.getQuestionType().getTextValue()}"
+															>
+																<input
+																	type="hidden"
+																	th:name="|exportRules[${counter.get()}].answerId|"
+																	th:id="|exportRules${counter.get()}.answerId|"
+																	th:value="${answer.getId()}"
+																/>
+
+																<input
+																	type="hidden"
+																	th:name="|exportRules[${counter.get()}].tempExportFormatId|"
+																	th:value="${question.position-1}"
+																/>
+
+																<input
+																	th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																	th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.exportField}"
+																	type="hidden"
+																	th:name="|exportRules[${counter.get()}].exportField|"
+																	th:id="|exportRules${counter.get()}.exportField|"
+																	th:value="${exportField}"
+																/>
+
+																<input
+																	th:unleass="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																	th:each="exportField: ${export.getExportFieldsByAnswer(answer)}"
+																	type="hidden"
+																	th:name="|exportRules[${counter.get()}].exportField|"
+																	th:id="|exportRules${counter.get()}.exportField|"
+																	th:value="${exportField}"
+																/>
+
+																<th:block
+																	th:if="${#strings.endsWith(vars['questionType'], 'SLIDER') || 
+																			#strings.startsWith(vars['questionType'],'NUMBER_CHECKBOX')}"
+																>
+																	<div class="me-auto">
+																		<addVar
+																			layout:replace="~{helper/var :: add(
+																			key='localizedMap', 
+																			value=${answer.localizedMaximumText})}"
+																		>
+																		</addVar>
+
+																		<th:block
+																			layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+																		/>
+
+																		<addVar
+																			layout:replace="~{helper/var :: add(
+																			key='localizedMinMaxText', 
+																			value=${vars['defaultLocalizedText']})}"
+																		>
+																		</addVar>
+
+																		<addVar
+																			layout:replace="~{helper/var :: add(
+																			key='localizedMap', 
+																			value=${answer.localizedMinimumText})}"
+																		>
+																		</addVar>
+
+																		<th:block
+																			layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+																		/>
+
+																		<addVar
+																			layout:replace="~{helper/var :: add(
+																			key='localizedMinMaxText', 
+																			value=|${vars['localizedMinMaxText']} - ${vars['defaultLocalizedText']}|)}"
+																		>
+																		</addVar>
+
+																		<th:block
+																			th:text="${messages.get(#locale, 'mapping.label.MinMaxValues', 'Min/Max Values')} + 
+																			': ' + 
+																			|${answer.getMinValue()} - ${answer.getMaxValue()}|"
+																		>
+																		</th:block>
+																		<br />
+
+																		<th:block
+																			th:text="${messages.get(#locale, 'mapping.label.MinMaxTexts', 'Min/Max Texts')} + 
+																			': ' + 
+																			${vars['localizedMinMaxText']}"
+																		>
+																		</th:block>
+																		<br />
+
+																		<th:block
+																			th:text="${messages.get(#locale, 'mapping.label.MinMaxStepSize', 'Step size')} + 
+																			': ' + 
+																			${answer.getStepsize()}"
+																		>
+																		</th:block>
+																	</div>
+																</th:block>
+
+																<th:block
+																	th:unless="${#strings.endsWith(vars['questionType'], 'SLIDER') || 
+																			#strings.startsWith(vars['questionType'],'NUMBER_CHECKBOX')}"
+																>
+																	<div class="me-auto">
+																		<th:block th:switch="${vars['questionType']}">
+																			<th:block th:case="'MULTIPLE_CHOICE'">
+																				<th:block
+																					th:if="${answer['class'].simpleName eq 'SelectAnswer'}"
+																				>
+																					<!--/* Set the variable with the localized texts for the include */-->
+																					<addVar
+																						layout:replace="~{helper/var :: add(
+																						key='localizedMap', 
+																						value=${answer.localizedLabel})}"
+																					>
+																					</addVar>
+
+																					<th:block
+																						layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+																					/>
+
+																					<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+																					<th:block
+																						th:text="${vars['defaultLocalizedText']}"
+																					/>
+																				</th:block>
+																				<th:block
+																					th:unless="${answer['class'].simpleName eq 'SelectAnswer'}"
+																				>
+																					<th:block
+																						th:text="${messages.get(#locale, 'FREE_TEXT', 'Free text')}"
+																					/>
+																				</th:block>
+																			</th:block>
+																			<th:block th:case="'BODY_PART'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${answer.bodyPart.messageCode}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="'DROP_DOWN'">
+																				<th:block
+																					th:if="${answer['class'].simpleName eq 'SelectAnswer'}"
+																				>
+																					<!--/* Set the variable with the localized texts for the include */-->
+																					<addVar
+																						layout:replace="~{helper/var :: add(
+																						key='localizedMap', 
+																						value=${answer.localizedLabel})}"
+																					>
+																					</addVar>
+
+																					<th:block
+																						layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+																					/>
+
+																					<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+																					<th:block
+																						th:text="${vars['defaultLocalizedText']}"
+																					/>
+																				</th:block>
+																				<th:block
+																					th:unless="${answer['class'].simpleName eq 'SelectAnswer'}"
+																				>
+																					<th:block
+																						th:text="${messages.get(#locale, 'FREE_TEXT', 'Free text')}"
+																					/>
+																				</th:block>
+																			</th:block>
+																			<th:block th:case="'FREE_TEXT'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${vars['questionType']}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="'NUMBER_INPUT'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${vars['questionType']}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="'DATE'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${vars['questionType']}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="'IMAGE'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${vars['questionType']}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="'BARCODE'">
+																				<th:block
+																					th:text="${messages.get(#locale, '__${vars['questionType']}__', 
+																									'__${vars['questionType']}__')}"
+																				/>
+																			</th:block>
+																			<th:block th:case="*">
+																				QuestionType not found
+																			</th:block>
+																		</th:block>
+																	</div>
+																</th:block>
+															</div>
+															<th:block th:text="${counter.increment()}" />
+															<!--/* temporary addition to support freetext fields which are appended to a number checkbox.
+																Should be removed when there is an implementation of the freetext fields as a real answer. */-->
+															<th:block
+																th:if="${#strings.startsWith(vars['questionType'],'NUMBER_CHECKBOX') && 
+																		#strings.endsWith(vars['questionType'],'TEXT')}"
+															>
+																<div
+																	th:id="|answer-${answer.getId()}-freetext|"
+																	class="map-answer d-flex"
+																	th:data-index="${counter.get()}"
+																	th:data-answer-id="${answer.getId()}"
+																	th:data-type="${question.getQuestionType().getTextValue()}"
+																>
+																	<input
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].answerId|"
+																		th:id="|exportRules${counter.get()}.answerId|"
+																		th:value="${answer.getId()}"
+																	/>
+
+																	<input
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].tempExportFormatId|"
+																		th:value="${question.position-1}"
+																	/>
+
+																	<input
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].useFreetextValue|"
+																		value="true"
+																	/>
+
+																	<input
+																		th:if="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																		th:each="exportField: ${exportRules?.exportRules?.get(counter.get())?.exportField}"
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].exportField|"
+																		th:id="|exportRules${couter.get()}.exportField|"
+																		th:value="${exportField}"
+																	/>
+
+																	<input
+																		th:unless="${not #lists.isEmpty(exportRules?.exportRules?.get(counter.get()))}"
+																		th:each="exportField: ${export.getExportFieldsByAnswer(answer,true)}"
+																		type="hidden"
+																		th:name="|exportRules[${counter.get()}].exportField|"
+																		th:id="|exportRules${counter.get()}.exportField|"
+																		th:value="${exportField}"
+																	/>
+																	<div class="me-auto">
+																		<addVar
+																			layout:replace="~{helper/var :: add(
+																			key='localizedMap',
+																			value=${answer.localizedFreetextLabel})}"
+																		>
+																		</addVar>
+
+																		<th:block
+																			layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+																		/>
+
+																		<th:block
+																			th:text="${messages.get(#locale, 'FREE_TEXT', 'Freetext')} + 
+																			': ' + 
+																			${vars['defaultLocalizedText']}"
+																		>
+																		</th:block>
+																	</div>
+																</div>
+																<th:block th:text="${counter.increment()}" />
+															</th:block>
+														</th:block>
+													</th:block>
+													<div class="clear"></div>
+												</div>
+											</th:block>
+										</div>
+									</div>
+								</th:block>
+							</div>
+
+							<div id="templateNodes">
+								<div
+									style="font-weight: bold"
+									th:text="${messages.get(#locale, 'mapping.label.templateFields', 'Template fields')}"
+								>
+								</div>
+								<th:block th:each="t, indexer: ${doc}">
+									<div
+										th:if="${#strings.endsWith(t, ' ')}"
+										style="color: red"
+										th:data-node-index="${indexer.index}"
+										th:data-export-field="${t}"
+										class="map-node"
+										th:text="${t}"
+									>
+									</div>
+									<div
+										th:unless="${#strings.endsWith(t, ' ')}"
+										th:data-node-index="${indexer.index}"
+										th:data-export-field="${t}"
+										class="map-node draggable"
+										th:text="${t}"
+									>
+									</div>
+								</th:block>
+							</div>
+						</div>
+					</div>
+				</div>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					value="save"
+					id="saveButton"
+					name="action"
+					style="margin: 5px"
+					th:text="${messages.get(#locale, 'button.save', 'Save')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script type="text/javascript">
+		/*[- helper method to sort elements
+			TODO outsource in own file if needed elsewhere -]*/
+
+		jQuery.fn.sortElements = (function () {
+			var sort = [].sort;
+
+			return function (comparator, getSortable) {
+				getSortable =
+					getSortable ||
+					function () {
+						return this;
+					};
+
+				var placements = this.map(function () {
+					var sortElement = getSortable.call(this),
+						parentNode = sortElement.parentNode,
+						/*[- Since the element itself will change position, we have
+								to have some way of storing its original position in
+								the DOM. The easiest way is to have a 'flag' node: -]*/
+						nextSibling = parentNode.insertBefore(
+							document.createTextNode(""),
+							sortElement.nextSibling
+						);
+
+					return function () {
+						if (parentNode === this) {
+							throw new Error(
+								"You can't sort elements if any one is a descendant of another."
+							);
+						}
+
+						/*[- Insert before flag: -]*/
+						parentNode.insertBefore(this, nextSibling);
+						/*[- Remove flag: -]*/
+						parentNode.removeChild(nextSibling);
+					};
+				});
+
+				return sort.call(this, comparator).each(function (i) {
+					placements[i].call(getSortable.call(this));
+				});
+			};
+		})();
+
+		$(document).ready(function () {
+			numberTypeChanger = function (source) {
+				if ($(source).val() === "INTEGER") {
+					$(source).parent().children(".map-settings-float").first().hide();
+					$(source)
+						.parent()
+						.children(".map-settings-float")
+						.children(":input")
+						.prop("disabled", true);
+				} else {
+					$(source).parent().children(".map-settings-float").first().show();
+					$(source)
+						.parent()
+						.children(".map-settings-float")
+						.children(":input")
+						.prop("disabled", false);
+				}
+			};
+
+			/*[- change when clicked by user -]*/
+			$("input[name$=\\.numberType]:radio").change(function () {
+				numberTypeChanger(this);
+			});
+			/*[- change on initaliziation of form -]*/
+			$("input[name$=\\.numberType]:radio:checked").each(function () {
+				numberTypeChanger(this);
+			});
+
+			/*[- collapse questions to not take up space on the screen -]*/
+			$(".question-header").click(function () {
+				$(this).parent().find(".collapsable").toggle("fast");
+				$(this).toggleClass("map-questiontext-nohover");
+				$(this).children(".collapse").toggle();
+			});
+
+			/*[- give every node the ability to be draggable by the user -]*/
+			var currentParent;
+			var lastHover; 
+
+			$("#templateNodes, .map-answer").each(function() {
+				$(this).sortable({
+					group: "templateNodes",
+					sort: false,
+					chosenClass: "map-node-selected",
+					draggable: ".draggable",
+					animation:150,
+					easing: "cubic-bezier(1, 0, 0, 1)",
+					onStart: function(evt) {
+						/*[- on start of the moving save the origin of the node -]*/
+						currentParent = $(evt.item).parent().attr("id");
+					},
+					onMove: function(evt) {
+						if ($(lastHover) != undefined) {
+							$(lastHover).removeClass("node-hover"); 
+						} 
+
+						lastHover = $(evt.to); 
+
+						if ($(evt.to).hasClass("map-answer")) {
+							$(evt.to).addClass("node-hover");
+						}
+					},
+					//onEnd: function(evt) {
+					//	$(evt.to).removeClass("node-hover"); 
+					//}
+					onAdd: function(evt) {
+						droppedExportField($(evt.item), $(evt.to));
+					},
+					onEnd: function(evt) {
+						$(".node-hover").each(function() {
+							$(this).removeClass("node-hover"); 
+						})
+					}
+				})
+			});
+
+			function droppedExportField(field, target) {
+				var isTargetExportField = $(target).hasClass("map-answer");
+				/*[- if source and target not equal the drop is valid -]*/
+				if (currentParent !== target.attr("id")) {
+					var index = $("#" + currentParent).data("index");
+					var exportField = field.data("exportField");
+					/*[- if the node was assigned to another answer remove node from there -]*/
+					var inputfield = $(
+						"#exportRules" +
+							index +
+							'\\.exportField[value="' +
+							exportField +
+							'"]'
+					);
+					if (inputfield) {
+						inputfield.remove();
+					}
+					/*[- if the origin has no more nodes remove the has-node class -]*/
+					var numLeftAssigned = $(
+						"#exportRules" + index + "\\.exportField"
+					).length;
+					if (numLeftAssigned > 0) {
+						$("#" + currentParent).addClass("has-node");
+					} else {
+						$("#" + currentParent).removeClass("has-node");
+					}
+					/*[- add the new exportField object -]*/
+					if (isTargetExportField) {
+						field
+							.removeAttr("style")
+							.addClass("node-assigned");
+
+						target
+							.addClass("has-node");
+
+						var index = target.data("index");
+						var exportField = field.data("exportField");
+						/*[- add a new input hidden field if not yet exists
+							needed for form proceeding -]*/
+						if ($("input[value='" + exportField + "']").length === 0) {
+							var input = $(
+								'<input type="hidden" id="exportRules' +
+									index +
+									'\.exportField" name="exportRules[' +
+									index +
+									']\.exportField" value="' +
+									exportField +
+									'" />'
+							);
+						}
+						$(target).append(input);
+					} else {
+						field
+							.removeClass("node-assigned"); 
+
+						sortNodeList(); 
+					}
+				}
+			}
+
+			function moveExistingMappingToTarget(field, target) {
+				$(field).remove();
+				$(target).append(field); 
+			}
+
+			function sortNodeList() {
+				/*[- sort the assignable nodes list by index -]*/
+				$("#templateNodes > .map-node").sortElements(function (a, b) {
+					return $(a).data("node-index") > $(b).data("node-index") ? 1 : -1;
+				});
+			}
+
+			/*[- executes when document ready
+				if editing export rules initialize the correct display of the nodes -]*/
+			$("input[name$='exportField']").each(function () {
+				var parent = $(this).parent();
+				var value = $(this).val();
+				if (value) {
+					droppedExportField(
+						$("div.map-node[data-export-field='" + value + "']"),
+						parent
+					);
+					moveExistingMappingToTarget(
+						$("div.map-node[data-export-field='" + value + "']"),
+						parent
+					);
+				}
+			});
+
+			sortNodeList(); 
+
+			var templateNodesHeight = $("#templateNodes").height();
+			var questionnaireNodesHeight = $("#questionnaireNodes").height();
+
+			/*[- MAKE THE TEMPLATE NODE LIST ALWAYS VISIBLE
+				Get the templateNode div's upper position on the site -]*/
+			var templateNodesTop =
+				$("#templateNodes").offset().top -
+				parseFloat($("#templateNodes").css("marginTop").replace(/auto/, 0));
+			var questionnaireNodesTop =
+				$("#questionnaireNodes").offset().top -
+				parseFloat(
+					$("#questionnaireNodes").css("marginTop").replace(/auto/, 0)
+				);
+
+			$(window).scroll(function (event) {
+				/*[- get the y position of the scroll -]*/
+				var yScrollPosition = $(this).scrollTop();
+				var fixedElement = $("#templateNodes");
+
+				if (yScrollPosition >= templateNodesTop - 100) {
+					fixedElement.addClass("scrolledOutNodes");
+				} else {
+					fixedElement.removeClass("scrolledOutNodes"); 
+				}
+			});
+		});
+	</script>
+</th:block>

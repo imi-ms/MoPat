@@ -1,0 +1,512 @@
+<!--/*
+    * View that show all available questions    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'question.heading.title', 'Questions')} +
+            '&nbsp;' + '&ldquo;' +
+            ${questionnaire.name} + '&rdquo;'" 
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<div
+				id="notification"
+				class="alert"
+			></div>
+			<th:block th:if="not ${#strings.isEmpty(errorMessages)}">
+				<div
+					id="errors"
+					class="alert alert-danger"
+				>
+					<th:block th:each="errorMessage: ${errorMessages}">
+						<th:block th:text="${errorMessage}" /><br />
+					</th:block>
+				</div>
+			</th:block>
+			<th:block th:if="not ${#strings.isEmpty(errorQuestions)}">
+				<div
+					id="errorQuestions"
+					class="alert alert-danger"
+				>
+					<th:block th:text="#{question.error.isConditionTarget}" /><br />
+					<th:block th:each="errorQuestion: ${errorQuestions}">
+						<th:block th:text="|${errorQuestion.position}.|" />
+						<th:block
+							layout:insert="~{helper/var :: add(key='groupedLocalizedTextByCountries', 
+                                                    value=${localizedQuestionTextsForQuestion[errorQuestion.id]})}"
+						/>
+						<a
+							class="link"
+							th:href="@{condition/listQuestionConditions?questionId=__${errorQuestion.id}__}"
+						>
+							<th:block
+								layout:insert="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+							></th:block>
+						</a>
+						<br />
+					</th:block>
+				</div>
+			</th:block>
+		</div>
+
+		<div class="table-responsive">
+			<table
+				class="sortable table table-hover responsive"
+				style="width: 100%"
+			>
+				<thead>
+					<tr>
+						<th 
+							data-priority="1"
+							th:text="|&nbsp;|"
+						></th>
+						<th
+							data-priority="7"
+							th:text="${messages.get(#locale, 'question.table.position', 'Position')}"
+						></th>
+						<th
+							data-priority="3"
+							th:text="${messages.get(#locale, 'question.table.question', 'Question')}"
+						></th>
+						<th
+							data-priority="2"
+							th:text="${messages.get(#locale, 'question.label.questiontype', 'Question Type')}"
+						></th>
+						<th
+							data-priority="5"
+							style="text-align: center"
+							th:text="${messages.get(#locale, 'question.label.enabled', 'Question Enabled')}"
+						></th>
+						<th
+							data-priority="6"
+							style="text-align: center"
+							th:text="${messages.get(#locale, 'question.label.required', 'Required')}"
+						></th>
+						<th
+							data-priority="4"
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr
+						id="emptyRow"
+						style="display: none"
+					>
+						<td colspan="100%" class="text-center">
+							<th:block
+								th:text="${messages.get(#locale, 'questionnaire.questions.none', 'There are no questions within this questionnaire')}"
+							/>
+						</td>
+					</tr>
+					<th:block th:each="item, questionCounter: ${questionnaire.questions}">
+						<tr th:id="${item.id}">
+							<td>
+								<i class="bi bi-large bi-grip-vertical bi-action"></i>
+							</td>
+							<td>
+								<th:block th:text="|${item.position}.|" />
+							</td>
+							<td style="text-align: left">
+								<th:block
+									layout:insert="~{helper/var :: add(key='groupedLocalizedTextByCountries', 
+                                                    value=${localizedQuestionTextsForQuestion[item.id]})}"
+								/>
+								<a
+									class="link"
+									th:href="@{fill?id=__${item.id}__}"
+								>
+									<th:block
+										layout:insert="~{helper/localeHelper/showLocalizedTextGroupedByCountry}"
+									></th:block>
+								</a>
+							</td>
+							<td style="text-align: left">
+								<th:block
+									th:text="${messages.get(#locale, '__${item.questionType}__', 'Missing question type')}"
+								/>
+							</td>
+							<td style="text-align: center">
+								<th:block th:if="${item.isEnabled == true}">
+									<a class="link">
+										<i
+											class="bi-check-circle-fill"
+											th:title="${messages.get(#locale, 'question.label.enabled', 'Edit')}"
+										></i>
+									</a>
+								</th:block>
+								<th:block th:unless="${item.isEnabled == true}">
+									<a class="link">
+										<i
+											class="bi-x-circle-fill"
+											th:title="${messages.get(#locale, 'question.label.notEnabled', 'Edit')}"
+										></i>
+									</a>
+								</th:block>
+							</td>
+							<td style="text-align: center">
+								<th:block th:if="${item.isRequired == true}">
+									<a class="link">
+										<i
+											class="bi-check-circle-fill"
+											th:title="${messages.get(#locale, 'question.label.required', 'Edit')}"
+										></i>
+									</a>
+								</th:block>
+								<th:block th:unless="${item.isRequired == true}">
+									<a class="link">
+										<i
+											class="bi-x-circle-fill"
+											th:title="${messages.get(#locale, 'question.label.notRequired', 'Edit')}"
+										></i>
+									</a>
+								</th:block>
+							</td>
+							<td class="actionColumn">
+								<!--/* Action column for desktop view */-->
+								<div class="d-none d-xl-block">
+									<a
+										class="link"
+										th:href="@{fill?id=__${item.id}__}"
+									>
+										<i
+											class="bi-pencil-fill"
+											th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
+										></i>
+									</a>
+									<a
+										class="link"
+										th:href="@{duplicate?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
+									>
+										<i
+											class="bi-clipboard-plus-fill"
+											th:title="${messages.get(#locale, 'question.button.dublicateAppend', 'Duplicate and Append')}"
+										></i>
+									</a>
+
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='questionConditionable', 
+                                        value=false)}"
+									>
+									</addVar>
+									<th:block
+										th:if="${item.position eq questionnaire.questions.size()}"
+									>
+										<th:block
+											th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
+										>
+											<th:block
+												th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
+											>
+												<th:block
+													th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
+												>
+													<addVar
+														layout:replace="~{helper/var :: add(
+                                                        key='questionConditionable', 
+                                                        value=true)}"
+													>
+													</addVar>
+												</th:block>
+											</th:block>
+										</th:block>
+									</th:block>
+									<th:block
+										th:if="${item.position lt questionnaire.questions.size() || #bools.isTrue(vars['questionConditionable'])}"
+									>
+										<th:block
+											th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or 
+                                                    item.questionType.name == 'SLIDER' or 
+                                                    item.questionType.name  == 'NUMBER_CHECKBOX' or 
+                                                    item.questionType.name == 'NUMBER_INPUT' or 
+                                                    item.questionType.name == 'DROP_DOWN'}"
+										>
+											<a
+												class="link"
+												th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
+											>
+												<i
+													class="bi-signpost-split-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
+												></i>
+											</a>
+										</th:block>
+									</th:block>
+									<a
+										class="link"
+										th:href="@{remove?id=__${item.id}__}"
+										th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+									>
+										<i
+											class="bi-trash-fill"
+											th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
+										></i>
+									</a>
+								</div>
+								<!--/* Mobile action menu for smaller resolutions */-->
+								<div class="d-block d-xl-none">
+									<a
+										class="link"
+										data-bs-toggle="offcanvas"
+										th:href="|#${item.id}_offcanvas|"
+										><i
+											class="bi bi-three-dots"
+											style="font-size: 1.5rem"
+										></i
+									></a>
+									<!--/* Add the question title for the current locale to the variable scope. Shows Question position + type if not available */-->
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='currentQuestionForLocale', 
+                                        value=${vars['groupedLocalizedTextByCountries']?.get(#locale.country)?.get('__${vars['groupedLocalizedTextByCountries']?.get(#locale.country)?.keySet()?.iterator()?.next()}__')} 
+                                                ?: |${messages.get(#locale, 'condition.option.question', 'Question')}: ${item.position} (${messages.get(#locale, '__${item.questionType}__', '__${item.questionType}__')})|
+                                    )}"
+									>
+									</addVar>
+									<th:block
+										layout:insert="~{fragments/structures :: mobileOptionsMenu(
+                                                                itemName=|${vars['currentQuestionForLocale']}|, 
+                                                                id=|${item.id}_offcanvas|)}"
+									>
+										<th:block layout:fragment="optionsContent">
+											<a
+												class="link"
+												th:href="@{fill?id=__${item.id}__}"
+												th:text="${messages.get(#locale, 'question.button.edit', 'Edit')}"
+											>
+											</a>
+											<a
+												class="link"
+												th:href="@{duplicate?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
+												th:text="${messages.get(#locale, 'question.button.dublicateAppend', 'Duplicate and Append')}"
+											>
+											</a>
+
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='questionConditionable', 
+                                                value=false)}"
+											>
+											</addVar>
+											<th:block
+												th:if="${item.position eq questionnaire.questions.size()}"
+											>
+												<th:block
+													th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
+												>
+													<th:block
+														th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
+													>
+														<th:block
+															th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
+														>
+															<addVar
+																layout:replace="~{helper/var :: add(
+                                                                key='questionConditionable', 
+                                                                value=true)}"
+															>
+															</addVar>
+														</th:block>
+													</th:block>
+												</th:block>
+											</th:block>
+
+											<th:block
+												th:if="${item.position lt questionnaire.questions.size() || #bools.isTrue(vars['questionConditionable'])}"
+											>
+												<a
+													th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or 
+                                                    item.questionType.name == 'SLIDER' or 
+                                                    item.questionType.name  == 'NUMBER_CHECKBOX' or 
+                                                    item.questionType.name == 'NUMBER_INPUT' or 
+                                                    item.questionType.name == 'DROP_DOWN'}"
+													class="link"
+													th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
+													th:text="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
+												>
+												</a>
+											</th:block>
+
+											<a
+												class="link"
+												th:href="@{remove?id=__${item.id}__}"
+												th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+												th:text="${messages.get(#locale, 'question.button.remove', 'Remove')}"
+											>
+											</a>
+										</th:block>
+									</th:block>
+								</div>
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+			<div class="panel-body">
+				<form
+					th:object="${question}"
+					method="POST"
+					action="fill"
+				>
+					<input
+						name="questionnaireId"
+						id="questionnaireId"
+						th:value="${questionnaire.id}"
+						type="hidden"
+					/>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						id="addQuestion"
+						th:text="${messages.get(#locale, 'question.button.addQuestion', 'Add question')}"
+					></button>
+				</form>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<!--/* [bt] TODO move JavaScript to another file, maybe even central */-->
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var textQuestionRepositionSuccess =
+			/*[[#{questionnaire.questions.reposition.success}]]*/ "Questions successfully repositioned.";
+		var textQuestionRepositionError =
+			/*[[#{questionnaire.questions.reposition.error}]]*/ "Error! Questions could not be repositioned.";
+		var labelDeleteQuestionNotPossible =
+			/*[[#{question.label.deleteQuestionNotPossible}]]*/ "Question can not be deleted because the question is already answered in a survey.";
+		var labelDeleteQuestionWarningStart =
+			/*[[#{question.label.deleteQuestionWarningStart}]]*/ "The removal of the question will also delete the following:";
+		var labelDeleteQuestionWarningConditions =
+			/*[[#{question.label.changeQuestionTypeWarningConditions}]]*/ "Conditions";
+		var labelDeleteQuestionWarningExportRules =
+			/*[[#{question.label.changeQuestionTypeWarningExportRules}]]*/ "Export rules";
+		var labelDeleteQuestionWarningScores =
+			/*[[#{question.label.changeQuestionTypeWarningScores}]]*/ "Scores";
+		var labelDeleteQuestionWarningEnd =
+			/*[[#{question.label.changeQuestionTypeWarningEnd}]]*/ "Do you really want to continue?";
+
+		if ($(".sortable tbody").children().length === 1) {
+			$(".sortable tbody")
+				.children("tr#emptyRow")[0]
+				.setAttribute("style", "display: table-row");
+		}
+		if ($(".sortable tbody").children().length > 1) {
+			$(".sortable tbody")
+				.children("tr#emptyRow")[0]
+				.setAttribute("style", "display: none");
+		}
+
+		$("#notification").hide();
+
+		var questionnaireId = /*[[${questionnaire.id}]]*/ "";
+		/*[- making every element with class 'sortable' moveable, with certain reaction after dropping it -]*/
+		$(".sortable tbody")
+			.sortable({
+				items: "tr:not(:first)",
+				animation:150,
+				easing: "cubic-bezier(1, 0, 0, 1)",
+				handle: ".bi-grip-vertical",
+				filter: ".notDraggable",
+				onUpdate: function (e) {
+					/*[- receive all question ids in their latest order after element is dropped -]*/
+					var orderedQuestionIds = new Array();
+					$.each(
+						$(e.item).parent().children("tr:not(:first)"),
+						function (index, value) {
+							orderedQuestionIds[index] = $(value).attr("id");
+						}
+					);
+
+					/*[- since there is no 'save' button or anything similar, we tell the server to update the order of questions with ajax directly after each drop -]*/
+					$.ajax({
+						url: "reposition",
+						data:
+							"questionnaireId=" +
+							questionnaireId +
+							"&questionIds=" +
+							orderedQuestionIds,
+						dataType: "text",
+						error: function (jqXHR, textStatus, errorThrown) {
+							showMessage(textQuestionRepositionError, true);
+
+							/*[- Revert to original order -]*/
+							return false; 
+						},
+						success: function (data, textStatus, jqXHR) {
+							/*[- moving a question worked, thus the numbers in the list can be updated -]*/
+							if (data === "") {
+								$.each(
+									$(e.item).parent().children("tr:not(:first)"),
+									function (index, value) {
+										this.children[1].innerHTML = index + 1 + ".";
+									}
+								);
+								showMessage(textQuestionRepositionSuccess, false);
+								/*[- If a condition target was before its trigger cancel repositioning and show error message -]*/
+							} else {
+								showMessage(data, true);
+								/*[- Revert to original order -]*/
+								return false;
+							}
+						},
+					});
+				},
+			});
+
+		function showMessage(message, isError) {
+			$("#notification").text(message);
+
+			$("#notification").removeClass("alert-success alert-danger");
+			if (isError) {
+				$("#notification").addClass("alert-danger");
+			} else {
+				$("#notification").addClass("alert-success");
+			}
+			/*[- If the animation is already running, stop it, and restart the fadeOut timer -]*/
+			$("#notification").stop().fadeOut(0).fadeIn(0).fadeOut(5000);
+		}
+		/*[- 
+        --- called if question should be deleted
+        --- warns about appended conditions and export rules      
+        --- with a custom made message
+        -]*/
+		function confirm_delete(
+			isDeletable,
+			hasExportRule,
+			hasConditionsAsTrigger,
+			hasConditionsAsTarget,
+			hasScores
+		) {
+			if (!isDeletable) {
+				alert(labelDeleteQuestionNotPossible);
+				return false;
+			}
+			if (
+				hasExportRule ||
+				hasConditionsAsTrigger ||
+				hasConditionsAsTarget ||
+				hasScores
+			) {
+				var message = labelDeleteQuestionWarningStart + "\n\n";
+				if (hasConditionsAsTrigger || hasConditionsAsTarget) {
+					message += "\u2022 " + labelDeleteQuestionWarningConditions + "\n";
+				}
+				if (hasExportRule) {
+					message += "\u2022 " + labelDeleteQuestionWarningExportRules + "\n";
+				}
+				if (hasScores) {
+					message += "\u2022 " + labelDeleteQuestionWarningScores + "\n";
+				}
+				message += "\n" + labelDeleteQuestionWarningEnd;
+				return confirm(message);
+			}
+			return true;
+		}
+	</script>
+</th:block>

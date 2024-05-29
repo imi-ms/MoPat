@@ -1,0 +1,767 @@
+<!--/*
+    * Thymeleaf fragment that recursively shows all elements of 
+    * a conditional expression.
+*/-->
+<th:block
+	layout:fragment="showExpression(expression, pathPrefix, errors, operators)"
+>
+	<th:block th:each="operator: ${operators}">
+		<th:block th:if="${operator.id eq expression.operatorId}">
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='currentOperator', 
+                value=${operator.displaySign})}"
+			>
+			</addVar>
+		</th:block>
+	</th:block>
+	<!--/* MULTI EXPRESSION */-->
+	<th:block th:if="${vars['currentOperator'] == 'counter'}">
+		<!--/* Show the operator of this multi expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element counterOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='numberOfAddedExpressions', 
+            value=0)}"
+		>
+		</addVar>
+
+		<!--/* Make a recursive call for every expression in this multi expression */-->
+		<th:block
+			th:each="expressionInMultiExpression, loop: ${expression.expressions}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                expression=${expressionInMultiExpression}, pathPrefix='__${pathPrefix}__.expressions[__${loop.index}__]',
+                errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+			<!--/* If there is another expression, add a remove button and a comma after this expression */-->
+			<th:block th:if="${expression.expressions.size() > loop.index + 1}">
+				<th:block
+					th:if="${not #strings.isEmpty(expression.expressions[loop.index+1].operatorId)}"
+				>
+					<a
+						class="bi bi-dash-lg"
+						th:name="|${pathPrefix}.expressions[${loop.index}].minusSign|"
+						th:data-depth="|${pathPrefix}.expressions[${loop.index}]|"
+						th:data-param-index="${loop.index}"
+						onclick="removeMultipleOperatorElement($(this))"
+					>
+					</a>
+					<span
+						th:name="|${pathPrefix}.expressions[${loop.index+1}].comma|"
+						>,</span
+					>
+				</th:block>
+			</th:block>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='numberOfAddedExpressions', 
+                value=${loop.index})}"
+			>
+			</addVar>
+		</th:block>
+
+		<!--/* if there are more than one expression add remove button to the last one */-->
+		<th:block th:if="${vars['numberOfAddedExpressions'] > 0}">
+			<a
+				class="bi bi-dash-lg"
+				th:name="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}].minusSign|"
+				th:data-depth="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}]|"
+				th:data-param-index="${vars['numberOfAddedExpressions']}"
+				onclick="removeMultipleOperatorElement($(this))"
+			>
+			</a>
+		</th:block>
+		<a
+			class="bi bi-plus-lg"
+			th:name="|${pathPrefix}.plusSign|"
+			th:data-depth="${pathPrefix}"
+			th:data-param-index="${vars['numberOfAddedExpressions']}"
+			onclick="addCounterOperatorElement($(this))"
+		>
+		</a>
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+
+	<th:block th:if="${vars['currentOperator'] == 'sum'}">
+		<!--/* Show the operator of this multi expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element sumOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='numberOfAddedExpressions', 
+            value=0)}"
+		>
+		</addVar>
+
+		<!--/* Make a recursive call for every expression in this multi expression */-->
+		<th:block
+			th:each="expressionInMultiExpression, loop: ${expression.expressions}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                expression=${expressionInMultiExpression}, pathPrefix='__${pathPrefix}__.expressions[__${loop.index}__]',
+                errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+
+			<!--/* If there is another expression, add a remove button and a comma after this expression */-->
+			<th:block th:if="${expression.expressions.size() > loop.index + 1}">
+				<th:block
+					th:if="${not #strings.isEmpty(expression?.expressions?.get(loop.index+1)?.operatorId)}"
+				>
+					<a
+						class="bi bi-dash-lg"
+						th:name="|${pathPrefix}.expressions[${loop.index}].minusSign|"
+						th:data-depth="|${pathPrefix}.expressions[${loop.index}]|"
+						th:data-param-index="${loop.index}"
+						onclick="removeMultipleOperatorElement($(this))"
+					>
+					</a>
+					<span
+						th:name="|${pathPrefix}.expressions[${loop.index+1}].comma|"
+						>,</span
+					>
+				</th:block>
+			</th:block>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='numberOfAddedExpressions', 
+                value=${loop.index})}"
+			>
+			</addVar>
+		</th:block>
+
+		<!--/* if there are more than one expression add remove button to the last one */-->
+		<th:block th:if="${vars['numberOfAddedExpressions'] > 0}">
+			<a
+				class="bi bi-dash-lg"
+				th:name="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}].minusSign|"
+				th:data-depth="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}]|"
+				th:data-param-index="${vars['numberOfAddedExpressions']}"
+				onclick="removeMultipleOperatorElement($(this))"
+			>
+			</a>
+		</th:block>
+		<a
+			class="bi bi-plus-lg"
+			th:name="|${pathPrefix}.plusSign|"
+			th:data-depth="${pathPrefix}"
+			th:data-param-index="${vars['numberOfAddedExpressions']}"
+			onclick="addSumOperatorElement($(this))"
+		>
+		</a>
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+
+	<th:block th:if="${vars['currentOperator'] == 'average'}">
+		<!--/* Show the operator of this multi expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element averageOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='numberOfAddedExpressions', 
+            value=0)}"
+		>
+		</addVar>
+
+		<!--/* Make a recursive call for every expression in this multi expression except the last one (number of missing-values) */-->
+		<th:block
+			th:each="expressionInMultiExpression, loop: ${expression.expressions}"
+		>
+			<th:block th:if="${loop.index < expression.expressions.size()-1}">
+				<showExpression
+					layout:replace="~{fragments/showExpression :: showExpression(
+                    expression=${expressionInMultiExpression}, pathPrefix='__${pathPrefix}__.expressions[__${loop.index}__]',
+                    errors=${errors}, operators=${operators})}"
+				>
+				</showExpression>
+				<!--/* If there is another expression, add a remove button and a comma after this expression */-->
+				<th:block
+					th:if="${expression.expressions.size() > loop.index + 2}"
+				>
+					<th:block
+						th:if="${not #strings.isEmpty(expression.expressions[loop.index+2].operatorId)}"
+					>
+						<a
+							class="bi bi-dash-lg"
+							th:name="|${pathPrefix}.expressions[${loop.index}].minusSign|"
+							th:data-depth="|${pathPrefix}.expressions[${loop.index}]|"
+							th:data-param-index="${loop.index}"
+							onclick="removeMultipleOperatorElement($(this))"
+						>
+						</a>
+						<span
+							th:name="|${pathPrefix}.expressions[${loop.index+1}].comma|"
+							>,</span
+						>
+					</th:block>
+				</th:block>
+				
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='numberOfAddedExpressions', 
+                    value=${loop.index})}"
+				>
+				</addVar>
+			</th:block>
+		</th:block>
+		<!--/* if there are more than one expression add remove button to the last one */-->
+		<th:block th:if="${vars['numberOfAddedExpressions'] > 0}">
+			<a
+				class="bi bi-dash-lg"
+				th:name="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}].minusSign|"
+				th:data-depth="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}]|"
+				th:data-param-index="${vars['numberOfAddedExpressions']}"
+				onclick="removeMultipleOperatorElement($(this))"
+			>
+			</a>
+		</th:block>
+		<a
+			class="bi bi-plus-lg"
+			th:name="|${pathPrefix}.plusSign|"
+			th:data-depth="${pathPrefix}"
+			th:data-param-index="${vars['numberOfAddedExpressions']}"
+			onclick="addAverageOperatorElement($(this))"
+		>
+		</a>
+		<!--/* Add the labels and the number of missing values and the hidden operator */-->
+		<span
+			th:name="|${pathPrefix}.semicolon|"
+			><b>;</b> &nbsp;</span
+		>
+		<span
+			th:name="|${pathPrefix}.missingValues|"
+			th:utext="${messages.get(#locale, 'score.label.numberOfMissingValues', 'Number of<br>missing values &nbsp;')}"
+		>
+		</span>
+		<select
+			th:field="*{__${pathPrefix}__.expressions[__${vars['numberOfAddedExpressions']+1}__].operatorId}"
+			onchange="handleExpression($(this))"
+			cssclass="unaryOperator form-control"
+			class="form-control unaryOperator"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<input
+			type="number"
+			step="1"
+			min="0"
+			required="required"
+			th:field="*{__${pathPrefix}__.expressions[__${vars['numberOfAddedExpressions']+1}__].value}"
+			class="valueElement form-control score-element"
+		/>
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+
+	<th:block th:if="${vars['currentOperator'] == 'maximum'}">
+		<!--/* Show the operator of this multi expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element maximumOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='numberOfAddedExpressions', 
+            value=0)}"
+		>
+		</addVar>
+
+		<!--/* Make a recursive call for every expression in this multi expression */-->
+		<th:block
+			th:each="expressionInMultiExpression, loop: ${expression.expressions}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                expression=${expressionInMultiExpression}, pathPrefix='__${pathPrefix}__.expressions[__${loop.index}__]',
+                errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+			<!--/* If there is another expression, add a remove button and a comma after this expression */-->
+			<th:block th:if="${expression.expressions.size() > loop.index + 1}">
+				<th:block
+					th:if="${not #strings.isEmpty(expression.expressions[loop.index+1].operatorId)}"
+				>
+					<a
+						class="bi bi-dash-lg"
+						th:name="|${pathPrefix}.expressions[${loop.index}].minusSign|"
+						th:data-depth="|${pathPrefix}.expressions[${loop.index}]|"
+						th:data-param-index="${loop.index}"
+						onclick="removeMultipleOperatorElement($(this))"
+					>
+					</a>
+					<span
+						th:name="|${pathPrefix}.expressions[${loop.index+1}].comma|"
+						>,</span
+					>
+				</th:block>
+			</th:block>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='numberOfAddedExpressions', 
+                value=${loop.index})}"
+			>
+			</addVar>
+		</th:block>
+
+		<!--/* if there are more than one expression add remove button to the last one */-->
+		<th:block th:if="${vars['numberOfAddedExpressions'] > 0}">
+			<a
+				class="bi bi-dash-lg"
+				th:name="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}].minusSign|"
+				th:data-depth="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}]|"
+				th:data-param-index="${vars['numberOfAddedExpressions']}"
+				onclick="removeMultipleOperatorElement($(this))"
+			>
+			</a>
+		</th:block>
+		<a
+			class="bi bi-plus-lg"
+			th:name="|${pathPrefix}.plusSign|"
+			th:data-depth="${pathPrefix}"
+			th:data-param-index="${vars['numberOfAddedExpressions']}"
+			onclick="addMaximumOperatorElement($(this))"
+		>
+		</a>
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+
+	<th:block th:if="${vars['currentOperator'] == 'minimum'}">
+		<!--/* Show the operator of this multi expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element minimumOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<addVar
+			layout:replace="~{helper/var :: add(
+            key='numberOfAddedExpressions', 
+            value=0)}"
+		>
+		</addVar>
+		<!--/* Make a recursive call for every expression in this multi expression */-->
+		<th:block
+			th:each="expressionInMultiExpression, loop: ${expression.expressions}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                expression=${expressionInMultiExpression}, pathPrefix='__${pathPrefix}__.expressions[__${loop.index}__]',
+                errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+			<!--/* If there is another expression, add a remove button and a comma after this expression */-->
+			<th:block th:if="${expression.expressions.size() > loop.index + 1}">
+				<th:block
+					th:if="${not #strings.isEmpty(expression.expressions[loop.index+1].operatorId)}"
+				>
+					<a
+						class="bi bi-dash-lg"
+						th:name="|${pathPrefix}.expressions[${loop.index}].minusSign|"
+						th:data-depth="|${pathPrefix}.expressions[${loop.index}]|"
+						th:data-param-index="${loop.index}"
+						onclick="removeMultipleOperatorElement($(this))"
+					>
+					</a>
+					<span
+						th:name="|${pathPrefix}.expressions[${loop.index+1}].comma|"
+						>,</span
+					>
+				</th:block>
+			</th:block>
+
+			<addVar
+				layout:replace="~{helper/var :: add(
+                key='numberOfAddedExpressions', 
+                value=${loop.index})}"
+			>
+			</addVar>
+		</th:block>
+
+		<!--/* if there are more than one expression add remove button to the last one */-->
+		<th:block th:if="${vars['numberOfAddedExpressions'] > 0}">
+			<a
+				class="bi bi-dash-lg"
+				th:name="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}].minusSign|"
+				th:data-depth="|${pathPrefix}.expressions[${vars['numberOfAddedExpressions']}]|"
+				th:data-param-index="${vars['numberOfAddedExpressions']}"
+				onclick="removeMultipleOperatorElement($(this))"
+			>
+			</a>
+		</th:block>
+		<a
+			class="bi bi-plus-lg"
+			th:name="|${pathPrefix}.plusSign|"
+			th:data-depth="${pathPrefix}"
+			th:data-param-index="${vars['numberOfAddedExpressions']}"
+			onclick="addMinimumOperatorElement($(this))"
+		>
+		</a>
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+	<!--/* BINARY EXPRESSION */-->
+	<th:block
+		th:if="${vars['currentOperator'] == '+' || vars['currentOperator'] == '-' || 
+                        vars['currentOperator'] == '*' || vars['currentOperator'] == '/' || vars['currentOperator'] == '>' || 
+                        vars['currentOperator'] == '>=' || vars['currentOperator'] == '<' || vars['currentOperator'] == '<=' || 
+                        vars['currentOperator'] == '==' || vars['currentOperator'] == '!='}"
+	>
+		<span
+			th:name="|${pathPrefix}.openBrace|"
+			>(</span
+		>
+
+		<!--/* Make a recursive call with the first expression in the list if the expression is set*/-->
+		<th:block
+			th:if="${not #strings.isEmpty(expression.expressions[0].operatorId)}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                    expression=${expression.expressions[0]}, pathPrefix='__${pathPrefix}__.expressions[0]', 
+                    errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+		</th:block>
+		<th:block
+			th:unless="${not #strings.isEmpty(expression.expressions[0].operatorId)}"
+		>
+			<!--/* Show the defalut operator */-->
+			<select
+				th:name="|${pathPrefix}.expressions[0]|"
+				class="form-control score-element"
+				onChange="handleExpression($(this))"
+			>
+				<option
+					class="defaultOption"
+					value="-1"
+					th:text="${messages.get(#locale, 'score.label.selectOperator', 'Select operator')}"
+				>
+				</option>
+				<th:block th:each="operator: ${operators}">
+					<option
+						th:value="${operator.id}"
+						th:data-operator="${operator.displaySign}"
+						th:text="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+					>
+					</option>
+				</th:block>
+			</select>
+		</th:block>
+
+		<!--/* Show the operator of this binary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element binaryOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<!--/* Make a recursive call with the second expression in the list if the expression is set */-->
+		<th:block
+			th:if="${not #strings.isEmpty(expression.expressions[1].operatorId)}"
+		>
+			<showExpression
+				layout:replace="~{fragments/showExpression :: showExpression(
+                expression=${expression.expressions[1]}, pathPrefix='__${pathPrefix}__.expressions[1]', 
+                errors=${errors}, operators=${operators})}"
+			>
+			</showExpression>
+		</th:block>
+		<th:block
+			th:unless="${not #strings.isEmpty(expression.expressions[1].operatorId)}"
+		>
+			<!--/* Show the defalut operator */-->
+			<select
+				th:name="|${pathPrefix}.expressions[1]|"
+				class="form-control score-element"
+				onChange="handleExpression($(this))"
+			>
+				<option
+					class="defaultOption"
+					value="-1"
+					th:text="${messages.get(#locale, 'score.label.selectOperator', 'Select operator')}"
+				>
+				</option>
+				<th:block th:each="operator: ${operators}">
+					<option
+						th:value="${operator.id}"
+						th:data-operator="${operator.displaySign}"
+						th:text="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+					>
+					</option>
+				</th:block>
+			</select>
+		</th:block>
+
+		<span
+			th:name="|${pathPrefix}.closeBrace|"
+			>)</span
+		>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+
+	<!--/* UNARY EXPRESSION: valueOf */-->
+	<th:block th:if="${vars['currentOperator'] == 'valueOf'}">
+		<!--/* Show the operator of this unary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element unaryOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+		<!--/* Show the question of this unary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.questionId}"
+			class="form-control score-element valueElement"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="question: ${availableQuestionsForScore}">
+				<!--/* Set the variable with the localized texts for the include. */-->
+				<addVar
+					layout:replace="~{helper/var :: add(
+                    key='localizedMap', 
+                    value=${question.localizedQuestionText})}"
+				>
+				</addVar>
+				<th:block
+					layout:insert="~{helper/localeHelper/showDefaultLocalizedText}"
+				/>
+				<!--/* The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown */-->
+				<option
+					th:value="${question.id}"
+					th:label="|${question.position}: ${vars['defaultLocalizedText']}|"
+				></option>
+			</th:block>
+		</select>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+	<!--/* UNARY EXPRESSION: value */-->
+	<th:block th:if="${vars['currentOperator'] == 'value'}">
+		<!--/* Show the operator of this unary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element unaryOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+
+		<!--/* Add a input field for the value */-->
+		<input
+			type="number"
+			step="0.1"
+			th:field="*{__${pathPrefix}__.value}"
+			class="valueElement form-control score-element"
+		/>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+	<!--/* UNARY EXPRESSION: valueOfScore */-->
+	<th:block th:if="${vars['currentOperator'] == 'valueOfScore'}">
+		<!--/* Show the operator of this unary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.operatorId}"
+			class="form-control score-element unaryOperator"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="operator: ${operators}">
+				<option
+					th:value="${operator.id}"
+					th:data-operator="${operator.displaySign}"
+					th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+				>
+				</option>
+			</th:block>
+		</select>
+		<!--/* Show the question of this unary expression */-->
+		<select
+			th:field="*{__${pathPrefix}__.scoreId}"
+			class="form-control score-element valueElement"
+			onChange="handleExpression($(this))"
+		>
+			<th:block th:each="score: ${availableScoresForScore}">
+				<option
+					th:value="${score.id}"
+					th:label="${score.name}"
+				></option>
+			</th:block>
+		</select>
+
+		<!--/* Clear currentOperator */-->
+		<removeVar
+			layout:replace="~{helper/var :: remove(key='currentOperator')}"
+		/>
+	</th:block>
+</th:block>

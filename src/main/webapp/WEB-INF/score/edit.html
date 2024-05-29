@@ -1,0 +1,1761 @@
+<!--/*
+    * View to create a new score expression for a questionnaire
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'score.add.heading.title', 'Scores')}
+				+ '&nbsp;' + '&ldquo;'
+				+ ${questionnaire.name} + '&rdquo;'"
+>
+	<th:block layout:fragment="content">
+		<div 
+			class="panel-body score-panel"
+		>
+			<form
+				action="edit"
+				th:object="${scoreDTO}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+			>
+				<input
+					type="hidden"
+					th:field="*{id}"
+				/>
+				<input
+					type="hidden"
+					th:field="*{questionnaireId}"
+				/>
+
+				<div class="form-group">
+					<input
+						layout:replace="~{fragments/forms :: inputWithLabel(
+                        for='name', required=true, path='name',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'score.label.name', 'Name')})}"
+
+					/>
+				</div>
+
+				<error
+					layout:replace="~{fragments/forms :: errorField(path='expression*')}"
+				/>
+				<br />
+				<div
+					class="form-group"
+				>
+					<th:block th:if="${scoreDTO.expression ne null}">
+						<showExpression
+							layout:replace="~{fragments/showExpression :: showExpression(
+                            expression=${scoreDTO.expression}, pathPrefix='expression',
+                            errors=${#fields.errors('*')}, operators=${operators})}"
+						>
+						</showExpression>
+					</th:block>
+					<th:block th:unless="${scoreDTO.expression ne null}">
+						<select
+							th:field="*{expression}"
+							class="form-control score-element"
+							onChange="handleExpression($(this))"
+						>
+							<option
+								class="defaultOption"
+								value="-1"
+								th:label="${messages.get(#locale, 'score.label.selectOperator', 'Select operator')}"
+							>
+							</option>
+							<th:block th:each="operator: ${operators}">
+								<option
+									th:value="${operator.id}"
+									th:data-operator="${operator.displaySign}"
+									th:label="${messages.get(#locale, '__${operator.displaySign}__', 'Operator')}"
+								>
+								</option>
+							</th:block>
+						</select>
+					</th:block>
+				</div>
+				<div>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						value="save"
+						name="postAction"
+						th:text="${messages.get(#locale, 'button.save', 'Save')}"
+					>
+					</button>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						value="cancel"
+						name="postAction"
+						th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+					>
+					</button>
+				</div>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var switchFromAverageOperatorString =
+			/*[[${messages.get(#locale, 'score.expression.switchFromAverageOperator', 'Do you really want to change the operator? The whole average function, including every statement in this function, will be deleted.')}]]*/ "Do you really want to change the operator? The whole average function, including every statement in this function, will be deleted.";
+		var switchFromCounterOperatorString =
+			/*[[${messages.get(#locale, 'score.expression.switchFromCounterOperator', 'Do you really want to change the operator? The whole counter function, including every statement in this function, will be deleted.')}]]*/ "Do you really want to change the operator? The whole counter function, including every statement in this function, will be deleted.";
+		var switchFromMaximumOperatorString =
+			/*[[${messages.get(#locale, 'score.expression.switchFromMaxmimumOperator', 'Do you really want to change the operator? The whole maximum function, including every statement in this function, will be deleted.')}]]*/ "Do you really want to change the operator? The whole maximum function, including every statement in this function, will be deleted.";
+		var switchFromMinimumOperatorString =
+			/*[[${messages.get(#locale, 'score.expression.switchFromMinimumOperator', 'Do you really want to change the operator? The whole minimum function, including every statement in this function, will be deleted.')}]]*/ "Do you really want to change the operator? The whole minimum function, including every statement in this function, will be deleted.";
+		var switchFromSumOperatorString =
+			/*[[${messages.get(#locale, 'score.expression.switchFromSumOperator', 'Do you really want to change the operator? The whole sum function, including every statement in this function, will be deleted.')}]]*/ "Do you really want to change the operator? The whole sum function, including every statement in this function, will be deleted.";
+		var missingValuesLabel =
+			/*[[${messages.get(#locale, 'score.label.numberOfMissingValues', 'Number of<br/>missing values &nbsp')}]]*/ "Number of<br/>missing values &nbsp";
+
+		var defaultOption = $("<option>", {
+			value: "-1",
+			html: /*[[${messages.get(#locale, 'score.label.selectOperator', 'Select operator')}]]*/ "Select operator",
+			class: "defaultOption",
+		});
+
+		var availableQuestionsForScore = new Array();
+		/*[# th:each="question: ${availableQuestionsForScore}"]*/
+
+		/*[- Set the variable with the localized texts for the include. -]*/
+		var localizedMap = /*[[${question.localizedQuestionText}]]*/ "";
+		var currentLanguage = /*[[${#locale.toString}]]*/ "";
+		var defaultLocalizedText = localizedMap[currentLanguage];
+
+		if (defaultLocalizedText == null) {
+			var locale = currentLanguage;
+			if (currentLanguage.includes("_")) {
+				var locale = currentLanguage.split("_")[0];
+			}
+			defaultLocalizedText = localizedMap[locale];
+
+			if (defaultLocalizedText == null) {
+				Object.keys(localizedMap).forEach((key) => {
+					defaultLocalizedText = localizedMap[key];
+				});
+			}
+
+		}
+
+		var entry = {
+			id: /*[[${question.id}]]*/ "",
+			value: defaultLocalizedText,
+		};
+
+		var position =
+			/*[[${question.position}]]*/
+		entry.value = position + ": " + entry.value;
+		entry.value = entry.value.replace(/(<(['^>]+)>)/gi, "");
+
+		availableQuestionsForScore.push(entry);
+		/*[/]*/
+
+		var availableScoresForScore = new Array();
+		/*[# th:each="score, loop: ${availableScoresForScore}"]*/
+		/*[- The defaultLocalizedText variable is defined in the included fragment and represent the localized text which should be shown -]*/
+		var entry = {
+			id: /*[[${score.id}]]*/ "",
+			value: /*[[${score.name}]]*/ "",
+		};
+
+		entry.value = entry.value.replace(/(<(['^>]+)>)/gi, "");
+
+		availableScoresForScore.push(entry);
+		/*[/]*/
+
+		function getSelectWithAvailableQuestions(name) {
+			var select = $("<select>", {
+				name: name + ".questionId",
+				class: "valueElement form-control score-element",
+			});
+
+			$(availableQuestionsForScore).each(function () {
+				select.append($("<option>").attr("value", this.id).text(this.value));
+			});
+			return select;
+		}
+
+		function getSelectWithAvailableScores(name) {
+			var select = $("<select>", {
+				name: name + ".scoreId",
+				class: "valueElement form-control score-element",
+			});
+
+			$(availableScoresForScore).each(function () {
+				select.append($("<option>").attr("value", this.id).text(this.value));
+			});
+			return select;
+		}
+
+		function handleExpression(selectElement) {
+			var currentName = $(selectElement).attr("name");
+			/*[- If the element has the string 'operatorId' in his name, delete it -]*/
+			if (currentName.indexOf("operatorId") >= 0) {
+				currentName = currentName.substring(
+					0,
+					currentName.indexOf("operatorId") - 1
+				);
+			}
+			switch ($(selectElement).find("option:selected").attr("data-operator")) {
+				/*[- --- BINARY EXPRESSION --- -]*/
+				case "+":
+				case "-":
+				case "/":
+				case ">":
+				case ">=":
+				case "<":
+				case "<=":
+				case "*":
+					/*[- ------ 1. Check which operator the current element contains and handle it
+                        If this element is already is a binary operator just change the selection. No need for creating or deleting elements -]*/
+					if ($(selectElement).hasClass("binaryOperator") === true) {
+						break;
+						/*[- If the current element is a multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the current element with the new class and remove the other operator classes 
+                        Mark this select as binaryOperator  -]*/
+					$(selectElement).addClass("binaryOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom 
+                        Add two new select element for this binary expression with the default option -]*/
+					var firstElement = $(selectElement).clone();
+					firstElement.removeClass("binaryOperator");
+
+					/*[- If the default option is not available for the cloned element: add it. -]*/
+					if (firstElement.children().hasClass("defaultOption") === false) {
+						firstElement.prepend(defaultOption);
+					}
+					/*[- Select the default option -]*/
+					firstElement.val("-1");
+
+					/*[- Make a second select by cloning the first one -]*/
+					var secondElement = firstElement.clone();
+					/*[- Select the default option -]*/
+					secondElement.val("-1");
+
+					/*[- Create the right name for both new elements -]*/
+					firstElement.attr("name", currentName + ".expressions[0]");
+					secondElement.attr("name", currentName + ".expressions[1]");
+
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						name: currentName + ".openBrace",
+						html: "(",
+					});
+					var closeBrace = $("<span>", {
+						name: currentName + ".closeBrace",
+						html: ")",
+					});
+
+					/*[- Add them to the dom -]*/
+					$(selectElement).before(openBrace, [firstElement]);
+					$(selectElement).after(secondElement, [closeBrace]);
+
+					/*[- Mark the current element as an operator -]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+
+				case "==":
+				case "!=":
+					/*[- ------ 1. Check which operator the current element contains and handle it
+                        If this element is already is a binary operator just change the selection. No need for creating or deleting elements -]*/
+					if ($(selectElement).hasClass("binaryOperator") === true) {
+						break;
+						/*[- If the current element is a multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the curren element with the new class and remove the other operator classes
+                        Mark this select as binaryOperator -]*/
+					$(selectElement).addClass("binaryOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom 
+                        Add two new select element for this binary expression with the default option  -]*/
+					var firstElement = $(selectElement).clone();
+					firstElement.removeClass("binaryOperator");
+
+					/*[- If the default option is not available for the cloned element: add it -]*/
+					if (firstElement.children().hasClass("defaultOption") === false) {
+						firstElement.prepend(defaultOption);
+					}
+					/*[- Select the default option -]*/
+					firstElement.val("-1");
+
+					/*[- Make a second select by cloning the first one -]*/
+					var secondElement = firstElement.clone();
+					/*[- Select the default option -]*/
+					secondElement.val("-1");
+
+					/*[- Create the right name for both new elements -]*/
+					firstElement.attr("name", currentName + ".expressions[0]");
+					secondElement.attr("name", currentName + ".expressions[1]");
+
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						name: currentName + ".openBrace",
+						html: "(",
+					});
+					var closeBrace = $("<span>", {
+						name: currentName + ".closeBrace",
+						html: ")",
+					});
+
+					/*[- Add them to the dom -]*/
+					$(selectElement).before(openBrace, [firstElement]);
+					$(selectElement).after(secondElement, [closeBrace]);
+
+					/*[- Mark the current element as an operator -]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+
+					break;
+				/*[- --- UNARY EXPRESSION --- -]*/
+				case "value":
+				case "valueOf":
+				case "valueOfScore":
+					/*[- ------ 1. Check which operator the current element contains and handle it 
+                        Switch from binary operator to unary operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to unary operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+						/*[- If this is already a unary operator, remove the next element and recreate it depending of the type of the unaryOperator -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the curren element with the new class and remove the other operator classes 
+                        Mark the current select as unaryOperator -]*/
+					$(selectElement).addClass("unaryOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom 
+                        Mark the current element as an operator -]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					if (
+						$(selectElement).find("option:selected").attr("data-operator") ===
+						"value"
+					) {
+						/*[- Create a new input with the current name -]*/
+						var input = $("<input>", {
+							type: "number",
+							step: "0.1",
+							name: currentName + ".value",
+							class: "valueElement form-control",
+						});
+						/*[- Append the new input after the selected element -]*/
+						$(selectElement).after(input);
+					} else if (
+						$(selectElement).find("option:selected").attr("data-operator") ===
+						"valueOf"
+					) {
+						/*[- Create a question select with the current name and append it -]*/
+						$(selectElement).after(
+							getSelectWithAvailableQuestions(currentName)
+						);
+					} else if (
+						$(selectElement).find("option:selected").attr("data-operator") ===
+						"valueOfScore"
+					) {
+						/*[- Create a score select with the current name and append it -]*/
+						$(selectElement).after(getSelectWithAvailableScores(currentName));
+					}
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+
+					break;
+				/*[- --- MULTI EXPRESSION --- -]*/
+				case "counter":
+					/*[- ------ 1. Check which operator the current element contains and handle it 
+                        Switch from binary operator to multi operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+						/*[- If the current element is already a counter operator do nothing -]*/
+					} else if ($(selectElement).hasClass("counterOperator")) {
+						break;
+					}
+
+					/*[- ------ 2. Mark the curren element with the new class and remove the other operator classes 
+                        Mark the current element as a counter operator -]*/
+					$(selectElement).addClass("counterOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom 
+                        Create braces -]*/
+					var openBrace = $("<span>", {
+						html: "(",
+						name: currentName + ".openBrace",
+					});
+					var closeBrace = $("<span>", {
+						html: ")",
+						name: currentName + ".closeBrace",
+					});
+
+					/*[- Use the attributes data-depth and data-param-index for creating the right names for added elements in the counter function -]*/
+					var addButton = $("<a/>", {
+						class: "bi bi-plus-lg",
+						name: currentName + ".plusSign",
+						"data-depth": currentName,
+						"data-param-index": 0,
+					}).click(function () {
+						addCounterOperatorElement($(this));
+					});
+
+					var binaryOperatorSelect = $(selectElement).clone();
+					binaryOperatorSelect.removeClass("counterOperator");
+
+					/*[- Remove the default select option -]*/
+					binaryOperatorSelect.find(".defaultOption").remove();
+
+					/*[- Select the value operator (value = >) by default-]*/
+					var valueOfValueOperator = binaryOperatorSelect
+						.children("option[data-operator='>']")
+						.val();
+					binaryOperatorSelect.val(valueOfValueOperator);
+					binaryOperatorSelect.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].operatorId"
+					);
+					/*[- Mark the default operator select as binaryOperator -]*/
+					binaryOperatorSelect.addClass("binaryOperator");
+
+					var defaultOperator = binaryOperatorSelect.clone();
+					defaultOperator.removeClass("binaryOperator");
+					/*[- Remove the default select option -]*/
+					defaultOperator.find(".defaultOption").remove();
+
+					/*[- Select the value operator (value = 3) by default -]*/
+					var valueOfValueOperator = defaultOperator
+						.children("option[data-operator=valueOf]")
+						.val();
+					defaultOperator.val(valueOfValueOperator);
+					defaultOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].expressions[0].operatorId"
+					);
+					/*[- Mark the default operator select as unaryOperator -]*/
+					defaultOperator.addClass("unaryOperator");
+
+					/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+					var questionSelect = getSelectWithAvailableQuestions(
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].expressions[0]"
+					);
+
+					var secondBinaryOperator = binaryOperatorSelect.clone();
+					secondBinaryOperator.removeClass("binaryOperator");
+					/*[- If the default option is not available for the cloned element: add it. -]*/
+					if (
+						secondBinaryOperator.children().hasClass("defaultOption") === false
+					) {
+						secondBinaryOperator.prepend(defaultOption);
+					}
+					/*[- Select the default option -]*/
+					secondBinaryOperator.val("-1");
+					secondBinaryOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].expressions[1]"
+					);
+
+					$(selectElement).after(openBrace, [
+						defaultOperator,
+						questionSelect,
+						binaryOperatorSelect,
+						secondBinaryOperator,
+						addButton,
+						closeBrace,
+					]);
+
+					/*[- Mark the current element as an operator-]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+
+				case "sum":
+					/*[- ------ 1. Check which operator the current element contains and handle it -------]*/
+					/*[- Switch from binary operator to multi operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to multi operator -]*/
+					} else if ($(selectElement).hasClass("sumOperator")) {
+						break;
+					} else if (
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the current element with the new class and remove the other operator classes -------]*/
+					/*[- Mark the current element as a sum operator-]*/
+					$(selectElement).addClass("sumOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom -------]*/
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						html: "(",
+						name: currentName + ".openBrace",
+					});
+					var closeBrace = $("<span>", {
+						html: ")",
+						name: currentName + ".closeBrace",
+					});
+
+					/*[- Use the attributes data-depth and data-param-index for creating the right names for added elements in the sum function -]*/
+					var addButton = $("<a/>", {
+						class: "bi bi-plus-lg",
+						name: currentName + ".plusSign",
+						"data-depth": currentName,
+						"data-param-index": 0,
+					}).click(function () {
+						addSumOperatorElement($(this));
+					});
+
+					var defaultOperator = $(selectElement).clone();
+					defaultOperator.removeClass("sumOperator");
+					/*[- Remove the default select option -]*/
+					defaultOperator.find(".defaultOption").remove();
+
+					/*[- Select the value operator (value = 3) by default -]*/
+					var valueOfValueOperator = defaultOperator
+						.children("option[data-operator=valueOf]")
+						.val();
+					defaultOperator.val(valueOfValueOperator);
+					defaultOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].operatorId"
+					);
+					/*[- Mark the default operator select as unaryOperator -]*/
+					defaultOperator.addClass("unaryOperator");
+
+					/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+					var questionSelect = getSelectWithAvailableQuestions(
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"]"
+					);
+					$(selectElement).after(openBrace, [
+						defaultOperator,
+						questionSelect,
+						addButton,
+						closeBrace,
+					]);
+
+					/*[- Mark the current element as an operator-]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+
+				case "average":
+					/*[- ------ 1. Check which operator the current element contains and handle it -------]*/
+					/*[- Switch from binary operator to multi operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("maximumOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+					} else if ($(selectElement).hasClass("averageOperator")) {
+						break;
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the current element with the new class and remove the other operator classes -------]*/
+					/*[- Mark the current element as a average operator-]*/
+					$(selectElement).addClass("averageOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+					/*[- Remove the maximumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom -------]*/
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						html: "(",
+						name: currentName + ".openBrace",
+					});
+					var closeBrace = $("<span>", {
+						html: ")",
+						name: currentName + ".closeBrace",
+					});
+					var semicolon = $("<span>", {
+						html: "<b>;</b> &nbsp",
+						name: currentName + ".semicolon",
+					});
+					/*[-Create missing values label -]*/
+					var missingValues = $("<span>", {
+						id: "expression",
+						html: /*[[${messages.get(#locale, 'score.label.numberOfMissingValues', 'Number of<br/>missing values &nbsp')}]]*/ "Number of<br/>missing values &nbsp",
+						name: currentName + ".missingValues",
+						class: "unaryOperator",
+					});
+					/*[- Create a new input with the current name -]*/
+					var missingValuesCounter = $("<input>", {
+						type: "number",
+						step: "1",
+						min: "0",
+						value: "0",
+						required: "",
+						name: currentName + ".expressions[1].value",
+						class: "valueElement form-control score-element",
+					});
+
+					/*[- Use the attributes data-depth and data-param-index for creating the right names for added elements in the average function -]*/
+					var addButton = $("<a/>", {
+						class: "bi bi-plus-lg",
+						name: currentName + ".plusSign",
+						"data-depth": currentName,
+						"data-param-index": 0,
+					}).click(function () {
+						addAverageOperatorElement($(this));
+					});
+
+					var defaultOperator = $(selectElement).clone();
+					defaultOperator.removeClass("averageOperator");
+					/*[- Remove the default select option -]*/
+					defaultOperator.find(".defaultOption").remove();
+
+					/*[- Create a hidden Value Operator -]*/
+					var valueOperator = defaultOperator
+						.children("option[data-operator=value]")
+						.val();
+					var missingValuesHidden = $(selectElement).clone();
+					missingValuesHidden.removeClass("averageOperator");
+					missingValuesHidden.val(valueOperator);
+					missingValuesHidden.attr(
+						"name",
+						currentName + ".expressions[" + 1 + "].operatorId"
+					);
+					missingValuesHidden.addClass("unaryOperator");
+					missingValuesHidden.hide();
+
+					/*[- Select the value operator (value = 5) by default -]*/
+					var valueOfValueOperator = defaultOperator
+						.children("option[data-operator=valueOf]")
+						.val();
+					defaultOperator.val(valueOfValueOperator);
+					defaultOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].operatorId"
+					);
+					/*[- Mark the default operator select as unaryOperator -]*/
+					defaultOperator.addClass("unaryOperator");
+
+					/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+					var questionSelect = getSelectWithAvailableQuestions(
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"]"
+					);
+					$(selectElement).after(openBrace, [
+						defaultOperator,
+						questionSelect,
+						addButton,
+						semicolon,
+						missingValues,
+						missingValuesHidden,
+						missingValuesCounter,
+						closeBrace,
+					]);
+
+					/*[- Mark the current element as an operator-]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+				case "maximum":
+					/*[- ------ 1. Check which operator the current element contains and handle it -------]*/
+					/*[- Switch from binary operator to multi operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("minimumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+					} else if ($(selectElement).hasClass("maximumOperator")) {
+						break;
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the current element with the new class and remove the other operator classes -------]*/
+					/*[- Mark the current element as a average operator-]*/
+					$(selectElement).addClass("maximumOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("minimumOperator");
+
+					/*[- ------ 3. Manipulate the dom -------]*/
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						html: "(",
+						name: currentName + ".openBrace",
+					});
+					var closeBrace = $("<span>", {
+						html: ")",
+						name: currentName + ".closeBrace",
+					});
+
+					/*[- Use the attributes data-depth and data-param-index for creating the right names for added elements in the sum function -]*/
+					var addButton = $("<a/>", {
+						class: "bi bi-plus-lg",
+						name: currentName + ".plusSign",
+						"data-depth": currentName,
+						"data-param-index": 0,
+					}).click(function () {
+						addSumOperatorElement($(this));
+					});
+
+					var defaultOperator = $(selectElement).clone();
+					defaultOperator.removeClass("maximumOperator");
+					/*[- Remove the default select option -]*/
+					defaultOperator.find(".defaultOption").remove();
+
+					/*[- Select the value operator (value = 3) by default -]*/
+					var valueOfValueOperator = defaultOperator
+						.children("option[data-operator=valueOf]")
+						.val();
+					defaultOperator.val(valueOfValueOperator);
+					defaultOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].operatorId"
+					);
+					/*[- Mark the default operator select as unaryOperator -]*/
+					defaultOperator.addClass("unaryOperator");
+
+					/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+					var questionSelect = getSelectWithAvailableQuestions(
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"]"
+					);
+					$(selectElement).after(openBrace, [
+						defaultOperator,
+						questionSelect,
+						addButton,
+						closeBrace,
+					]);
+
+					/*[- Mark the current element as an operator-]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+				case "minimum":
+					/*[- ------ 1. Check which operator the current element contains and handle it -------]*/
+					/*[- Switch from binary operator to multi operator -]*/
+					if ($(selectElement).hasClass("binaryOperator")) {
+						handleSwitchFromBinaryOperator($(selectElement));
+						/*[- Switch from multi operator to multi operator -]*/
+					} else if (
+						$(selectElement).hasClass("sumOperator") ||
+						$(selectElement).hasClass("counterOperator") ||
+						$(selectElement).hasClass("averageOperator") ||
+						$(selectElement).hasClass("maximumOperator")
+					) {
+						if (handleSwitchFromMultiOperator($(selectElement)) === false) {
+							break;
+						}
+					} else if ($(selectElement).hasClass("minimumOperator")) {
+						break;
+						/*[- If the current element is a unary operator [e.g.: currentSelect:'value' nextSelect:Question] the next select has to be removed -]*/
+					} else if ($(selectElement).hasClass("unaryOperator")) {
+						$(selectElement).next().remove();
+					}
+
+					/*[- ------ 2. Mark the current element with the new class and remove the other operator classes -------]*/
+					/*[- Mark the current element as a average operator-]*/
+					$(selectElement).addClass("minimumOperator");
+					/*[- Remove the binaryOperator mark -]*/
+					$(selectElement).removeClass("binaryOperator");
+					/*[- Remove the unaryOperator mark -]*/
+					$(selectElement).removeClass("unaryOperator");
+					/*[- Remove the counterOperator mark -]*/
+					$(selectElement).removeClass("counterOperator");
+					/*[- Remove the sumOperator mark -]*/
+					$(selectElement).removeClass("sumOperator");
+					/*[- Remove the averageOperator mark -]*/
+					$(selectElement).removeClass("averageOperator");
+					/*[- Remove the minimumOperator mark -]*/
+					$(selectElement).removeClass("maximumOperator");
+
+					/*[- ------ 3. Manipulate the dom -------]*/
+					/*[- Create braces -]*/
+					var openBrace = $("<span>", {
+						html: "(",
+						name: currentName + ".openBrace",
+					});
+					var closeBrace = $("<span>", {
+						html: ")",
+						name: currentName + ".closeBrace",
+					});
+
+					/*[- Use the attributes data-depth and data-param-index for creating the right names for added elements in the sum function -]*/
+					var addButton = $("<a/>", {
+						class: "bi bi-plus-lg",
+						name: currentName + ".plusSign",
+						"data-depth": currentName,
+						"data-param-index": 0,
+					}).click(function () {
+						addSumOperatorElement($(this));
+					});
+
+					var defaultOperator = $(selectElement).clone();
+					defaultOperator.removeClass("minimumOperator");
+					/*[- Remove the default select option -]*/
+					defaultOperator.find(".defaultOption").remove();
+
+					/*[- Select the value operator (value = 3) by default -]*/
+					var valueOfValueOperator = defaultOperator
+						.children("option[data-operator=valueOf]")
+						.val();
+					defaultOperator.val(valueOfValueOperator);
+					defaultOperator.attr(
+						"name",
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"].operatorId"
+					);
+					/*[- Mark the default operator select as unaryOperator -]*/
+					defaultOperator.addClass("unaryOperator");
+
+					/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+					var questionSelect = getSelectWithAvailableQuestions(
+						currentName +
+							".expressions[" +
+							addButton.attr("data-param-index") +
+							"]"
+					);
+					$(selectElement).after(openBrace, [
+						defaultOperator,
+						questionSelect,
+						addButton,
+						closeBrace,
+					]);
+
+					/*[- Mark the current element as an operator-]*/
+					$(selectElement).attr("name", currentName + ".operatorId");
+
+					/*[- Remove the default select option -]*/
+					$(selectElement).find(".defaultOption").remove();
+					break;
+			}
+		}
+
+		function handleSwitchFromMultiOperator(selectElement) {
+			if (
+				$(selectElement).hasClass("sumOperator") &&
+				confirm(switchFromSumOperatorString) === false
+			) {
+				/*[- Select the sum operator -]*/
+				var valueOfValueOperator = $(selectElement)
+					.children("option[data-operator=sum]")
+					.val();
+				$(selectElement).val(valueOfValueOperator);
+				return false;
+			} else if (
+				$(selectElement).hasClass("counterOperator") &&
+				confirm(switchFromCounterOperatorString) === false
+			) {
+				/*[- Select the counter operator -]*/
+				var valueOfValueOperator = $(selectElement)
+					.children("option[data-operator=counter]")
+					.val();
+				$(selectElement).val(valueOfValueOperator);
+				return false;
+			} else if (
+				$(selectElement).hasClass("averageOperator") &&
+				confirm(switchFromAverageOperatorString) === false
+			) {
+				/*[- Select the average operator -]*/
+				var valueOfValueOperator = $(selectElement)
+					.children("option[data-operator=average]")
+					.val();
+				$(selectElement).val(valueOfValueOperator);
+				return false;
+			} else if (
+				$(selectElement).hasClass("maximumOperator") &&
+				confirm(switchFromMaximumOperatorString) === false
+			) {
+				/*[- Select the average operator -]*/
+				var valueOfValueOperator = $(selectElement)
+					.children("option[data-operator=maximum]")
+					.val();
+				$(selectElement).val(valueOfValueOperator);
+				return false;
+			} else if (
+				$(selectElement).hasClass("minimumOperator") &&
+				confirm(switchFromMinimumOperatorString) === false
+			) {
+				/*[- Select the average operator -]*/
+				var valueOfValueOperator = $(selectElement)
+					.children("option[data-operator=minimum]")
+					.val();
+				$(selectElement).val(valueOfValueOperator);
+				return false;
+			}
+
+			var depthOfSumExpression = $(selectElement).prop("name");
+			depthOfSumExpression = depthOfSumExpression.substring(
+				0,
+				depthOfSumExpression.lastIndexOf(".")
+			);
+
+			/*[-this string serves to check if the parent operator of the selected operand is a counter operator -]*/
+			var selectElementName =
+				depthOfSumExpression.substring(
+					0,
+					depthOfSumExpression
+						.substring(0, depthOfSumExpression.lastIndexOf("."))
+						.lastIndexOf(".")
+				) + ".operatorId";
+
+			/*[-the select element is the root of the expression tree or it is operand of a counter operator -]*/
+			if (
+				$(selectElement).attr("name") === "expression.operatorId" ||
+				($('[name="' + selectElementName + '"]').lenght !== 0 &&
+					$('[name="' + selectElementName + '"]').hasClass("counterOperator"))
+			) {
+				/*[- Remove all elements with the depth of the sum expression, except the sum select itself -]*/
+				$("[name*='" + depthOfSumExpression + "']")
+					.not("select:first")
+					.remove();
+				/*[-the select element is the first operator of a given multiple expression -]*/
+			} else if (
+				$('[name="' + depthOfSumExpression + '.minusSign"]').attr(
+					"data-param-index"
+				) === "0"
+			) {
+				/*[- Remove all elements with the depth of the sum expression, except the sum select itself and the appropriate remove button -]*/
+				$("[name*='" + depthOfSumExpression + "']")
+					.not("select:first, .bi-dash-lg:last")
+					.remove();
+				/*[-the select element is somewhere else -]*/
+			} else {
+				/*[- Remove all elements with the depth of the sum expression, except the sum select itself, comma and remove button -]*/
+				$("[name*='" + depthOfSumExpression + "']")
+					.not("select:first, .comma:first, .bi-dash-lg:last")
+					.remove();
+			}
+
+			return true;
+		}
+
+		function handleSwitchFromBinaryOperator(selectElement) {
+			/*[- If the previous checkbox contains questions (Means that the previous expression is a unary expression) -]*/
+			if ($(selectElement).prev().hasClass("valueElement")) {
+				$(selectElement).prev().remove();
+				$(selectElement).prev().remove();
+				/*[- If the previous element is a close brace, the hole expression between this braces must be deleted -]*/
+			} else if (
+				$(selectElement).prev().attr("name").indexOf("closeBrace") >= 0
+			) {
+				var depthOfSumExpression = $(selectElement).prev().attr("name");
+				depthOfSumExpression = depthOfSumExpression.substring(
+					0,
+					depthOfSumExpression.lastIndexOf(".")
+				);
+				/*[- Remove all elements with the depth of the sum expression, except the sum select itself -]*/
+				$("[name*='" + depthOfSumExpression + "']").remove();
+				/*[- Otherwise the prev element is a select element with the default option selected (value -1) --> remove it -]*/
+			} else if ($(selectElement).prev().val() === "-1") {
+				$(selectElement).prev().remove();
+			}
+
+			/*[- If the next element is a unary operator -]*/
+			if ($(selectElement).next().hasClass("unaryOperator")) {
+				$(selectElement).next().remove();
+				$(selectElement).next().remove();
+				/*[- If the next element is a sum operator or a open brace, the selection of a different operator delete the hole expression between the braces -]*/
+			} else if (
+				$(selectElement).next().hasClass("sumOperator") ||
+				$(selectElement).next().hasClass("counterOperator") ||
+				$(selectElement).next().hasClass("averageOperator") ||
+				$(selectElement).next().hasClass("maximumOperator") ||
+				$(selectElement).next().hasClass("minimumOperator") ||
+				$(selectElement).next().attr("name").indexOf("openBrace") >= 0
+			) {
+				var depthOfSumExpression = $(selectElement).next().attr("name");
+				depthOfSumExpression = depthOfSumExpression.substring(
+					0,
+					depthOfSumExpression.lastIndexOf(".")
+				);
+				/*[- Remove all elements with the depth of the sum expression, except the sum select itself -]*/
+				$("[name*='" + depthOfSumExpression + "']").remove();
+				/*[- Otherwise the next element is a select element with the default option selected (value -1) --> remove it -]*/
+			} else if ($(selectElement).next().val() === "-1") {
+				$(selectElement).next().remove();
+			}
+
+			/*[- If the selected element is surrounded by braces, delete them because they are not necessary -]*/
+			if (
+				$(selectElement).prev().attr("name") !== undefined &&
+				$(selectElement).prev().attr("name").indexOf("openBrace") >= 0 &&
+				$(selectElement).prev().attr("name") !== undefined &&
+				$(selectElement).next().attr("name").indexOf("closeBrace") >= 0
+			) {
+				$(selectElement).prev().remove();
+				$(selectElement).next().remove();
+			}
+		}
+
+		function addMaximumOperatorElement(elem) {
+			/*[-Add a remove button to the first expression if it was the only one before -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				addRemoveButton(
+					$(elem),
+					parseInt($(elem).attr("data-param-index")),
+					$(elem).attr("data-depth") +
+						".expressions[" +
+						$(elem).attr("data-param-index") +
+						"]"
+				);
+			}
+			$(elem).attr(
+				"data-param-index",
+				parseInt($(elem).attr("data-param-index")) + 1
+			);
+			$(elem)
+				.next("[name='expression.minusSign']")
+				.attr(
+					"data-param-index",
+					parseInt(
+						$(elem)
+							.next("[name='expression.minusSign']")
+							.attr("data-param-index")
+					) + 1
+				);
+			/*[- Clone the operator last added operator dropdown and select value operator -]*/
+			var defaultOperator = $(elem)
+				.parent()
+				.find("select[name*=operatorId]:first")
+				.clone();
+			/*[- Select the value operator by default -]*/
+			var valueOfValueOperator = defaultOperator
+				.children("option[data-operator=valueOf]")
+				.val();
+			defaultOperator.val(valueOfValueOperator);
+			/*[- Get the currentName for the data- attributes from this button -]*/
+			var currentName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"]";
+			/*[- Set the name of the new operator -]*/
+			defaultOperator.attr("name", currentName + ".operatorId");
+			/*[- Remove the default select option -]*/
+			defaultOperator.find(".defaultOption").remove();
+
+			/*[-  Mark the current element as a unary operator -]*/
+			defaultOperator.addClass("unaryOperator");
+			/*[- Remove the sumOperator mark -]*/
+			defaultOperator.removeClass("sumOperator");
+			/*[- Remove the binaryOperator mark -]*/
+			defaultOperator.removeClass("binaryOperator");
+			/*[- Remove the counterOperator mark -]*/
+			defaultOperator.removeClass("counterOperator");
+			/*[- Remove the averageOperator mark -]*/
+			defaultOperator.removeClass("averageOperator");
+			/*[- Remove the maximumOperator mark -]*/
+			defaultOperator.removeClass("maximumOperator");
+			/*[- Remove the minimumOperator mark -]*/
+			defaultOperator.removeClass("minimumOperator");
+
+			/*[- Create a question select with the current name, mark as deletable and append it after the open brace and before this button -]*/
+			var questionSelect = getSelectWithAvailableQuestions(currentName);
+
+			$(elem).before(
+				"<span class='comma' name=" +
+					currentName +
+					".comma>,</span>",
+				[defaultOperator, questionSelect]
+			);
+			/*[-add remove button to the new expression in front of the add button -]*/
+			addRemoveButton(
+				$(elem),
+				parseInt($(elem).attr("data-param-index")),
+				currentName
+			);
+		}
+
+		function addMinimumOperatorElement(elem) {
+			/*[-Add a remove button to the first expression if it was the only one before -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				addRemoveButton(
+					$(elem),
+					parseInt($(elem).attr("data-param-index")),
+					$(elem).attr("data-depth") +
+						".expressions[" +
+						$(elem).attr("data-param-index") +
+						"]"
+				);
+			}
+			$(elem).attr(
+				"data-param-index",
+				parseInt($(elem).attr("data-param-index")) + 1
+			);
+			$(elem)
+				.next("[name='expression.minusSign']")
+				.attr(
+					"data-param-index",
+					parseInt(
+						$(elem)
+							.next("[name='expression.minusSign']")
+							.attr("data-param-index")
+					) + 1
+				);
+			/*[- Clone the operator last added operator dropdown and select value operator -]*/
+			var defaultOperator = $(elem)
+				.parent()
+				.find("select[name*=operatorId]:first")
+				.clone();
+			/*[- Select the value operator by default -]*/
+			var valueOfValueOperator = defaultOperator
+				.children("option[data-operator=valueOf]")
+				.val();
+			defaultOperator.val(valueOfValueOperator);
+			/*[- Get the currentName for the data- attributes from this button -]*/
+			var currentName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"]";
+			/*[- Set the name of the new operator -]*/
+			defaultOperator.attr("name", currentName + ".operatorId");
+			/*[- Remove the default select option -]*/
+			defaultOperator.find(".defaultOption").remove();
+
+			/*[-  Mark the current element as a unary operator -]*/
+			defaultOperator.addClass("unaryOperator");
+			/*[- Remove the sumOperator mark -]*/
+			defaultOperator.removeClass("sumOperator");
+			/*[- Remove the binaryOperator mark -]*/
+			defaultOperator.removeClass("binaryOperator");
+			/*[- Remove the counterOperator mark -]*/
+			defaultOperator.removeClass("counterOperator");
+			/*[- Remove the averageOperator mark -]*/
+			defaultOperator.removeClass("averageOperator");
+			/*[- Remove the maximumOperator mark -]*/
+			defaultOperator.removeClass("maximumOperator");
+			/*[- Remove the minimumOperator mark -]*/
+			defaultOperator.removeClass("minimumOperator");
+
+			/*[- Create a question select with the current name, mark as deletable and append it after the open brace and before this button -]*/
+			var questionSelect = getSelectWithAvailableQuestions(currentName);
+
+			$(elem).before(
+				"<span class='comma' name=" +
+					currentName +
+					".comma>,</span>",
+				[defaultOperator, questionSelect]
+			);
+			/*[-add remove button to the new expression in front of the add button -]*/
+			addRemoveButton(
+				$(elem),
+				parseInt($(elem).attr("data-param-index")),
+				currentName
+			);
+		}
+
+		function addSumOperatorElement(elem) {
+			/*[-Add a remove button to the first expression if it was the only one before -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				addRemoveButton(
+					$(elem),
+					parseInt($(elem).attr("data-param-index")),
+					$(elem).attr("data-depth") +
+						".expressions[" +
+						$(elem).attr("data-param-index") +
+						"]"
+				);
+			}
+			$(elem).attr(
+				"data-param-index",
+				parseInt($(elem).attr("data-param-index")) + 1
+			);
+			$(elem)
+				.next("[name='expression.minusSign']")
+				.attr(
+					"data-param-index",
+					parseInt(
+						$(elem)
+							.next("[name='expression.minusSign']")
+							.attr("data-param-index")
+					) + 1
+				);
+			/*[- Clone the operator last added operator dropdown and select value operator -]*/
+			var defaultOperator = $(elem)
+				.parent()
+				.find("select[name*=operatorId]:first")
+				.clone();
+			/*[- Select the value operator by default -]*/
+			var valueOfValueOperator = defaultOperator
+				.children("option[data-operator=valueOf]")
+				.val();
+			defaultOperator.val(valueOfValueOperator);
+			/*[- Get the currentName for the data- attributes from this button -]*/
+			var currentName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"]";
+			/*[- Set the name of the new operator -]*/
+			defaultOperator.attr("name", currentName + ".operatorId");
+			/*[- Remove the default select option -]*/
+			defaultOperator.find(".defaultOption").remove();
+
+			/*[-  Mark the current element as a unary operator -]*/
+			defaultOperator.addClass("unaryOperator");
+			/*[- Remove the sumOperator mark -]*/
+			defaultOperator.removeClass("sumOperator");
+			/*[- Remove the binaryOperator mark -]*/
+			defaultOperator.removeClass("binaryOperator");
+			/*[- Remove the counterOperator mark -]*/
+			defaultOperator.removeClass("counterOperator");
+			/*[- Remove the averageOperator mark -]*/
+			defaultOperator.removeClass("averageOperator");
+			/*[- Remove the maximumOperator mark -]*/
+			defaultOperator.removeClass("maximumOperator");
+			/*[- Remove the minimumOperator mark -]*/
+			defaultOperator.removeClass("minimumOperator");
+
+			/*[- Create a question select with the current name, mark as deletable and append it after the open brace and before this button -]*/
+			var questionSelect = getSelectWithAvailableQuestions(currentName);
+
+			$(elem).before(
+				"<span class='comma' name=" +
+					currentName +
+					".comma>,</span>",
+				[defaultOperator, questionSelect]
+			);
+			/*[-add remove button to the new expression in front of the add button -]*/
+			addRemoveButton(
+				$(elem),
+				parseInt($(elem).attr("data-param-index")),
+				currentName
+			);
+		}
+
+		function addCounterOperatorElement(elem) {
+			var oldName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"].operatorId";
+			/*[- Add a remove button to the first expression if it was the only one before -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				addRemoveButton(
+					$(elem),
+					parseInt($(elem).attr("data-param-index")),
+					$(elem).attr("data-depth") +
+						".expressions[" +
+						$(elem).attr("data-param-index") +
+						"]"
+				);
+			}
+			$(elem).attr(
+				"data-param-index",
+				parseInt($(elem).attr("data-param-index")) + 1
+			);
+			$(elem)
+				.next("[name='expression.minusSign']")
+				.attr(
+					"data-param-index",
+					parseInt(
+						$(elem)
+							.next("[name='expression.minusSign']")
+							.attr("data-param-index")
+					) + 1
+				);
+			/*[- Get the currentName for the data- attributes from this button -]*/
+			var currentName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"]";
+			/*[- Clone the operator last added operator dropdown and select value operator -]*/
+
+			var binaryOperatorSelect = $(elem)
+				.parent()
+				.find('select[name*="' + oldName + '"]')
+				.clone();
+			/*[-  Mark the current element as a binary operator -]*/
+
+			binaryOperatorSelect.addClass("binaryOperator");
+			/*[- Remove the sumOperator mark -]*/
+			binaryOperatorSelect.removeClass("sumOperator");
+			/*[- Remove the binaryOperator mark -]*/
+			binaryOperatorSelect.removeClass("unaryOperator");
+			/*[- Remove the counterOperator mark -]*/
+			binaryOperatorSelect.removeClass("counterOperator");
+			/*[- Remove the averageOperator mark -]*/
+			binaryOperatorSelect.removeClass("averageOperator");
+			/*[- Remove the maximumOperator mark -]*/
+			binaryOperatorSelect.removeClass("maximumOperator");
+			/*[- Remove the minimumOperator mark -]*/
+			binaryOperatorSelect.removeClass("minimumOperator");
+
+			/*[- Select the value operator (value = >) by default -]*/
+			var valueOfValueOperator = binaryOperatorSelect
+				.children("option[data-operator='>']")
+				.val();
+			binaryOperatorSelect.val(valueOfValueOperator);
+			binaryOperatorSelect.attr("name", currentName + ".operatorId");
+
+			var defaultOperator = binaryOperatorSelect.clone();
+			defaultOperator.removeClass("binaryOperator");
+			/*[- Remove the default select option -]*/
+			defaultOperator.find(".defaultOption").remove();
+
+			/*[- Select the value operator (value = 3) by default -]*/
+			var valueOfValueOperator = defaultOperator
+				.children("option[data-operator=valueOf]")
+				.val();
+			defaultOperator.val(valueOfValueOperator);
+			defaultOperator.attr("name", currentName + ".expressions[0].operatorId");
+			/*[- Mark the default operator select as unaryOperator -]*/
+			defaultOperator.addClass("unaryOperator");
+
+			/*[- Create a question select with the current name and append it after the open brace and before the close brace-]*/
+			var questionSelect = getSelectWithAvailableQuestions(
+				currentName + ".expressions[0]"
+			);
+			var secondBinaryOperator = binaryOperatorSelect.clone();
+			secondBinaryOperator.removeClass("binaryOperator");
+			/*[- If the default option is not available for the cloned element: add it. -]*/
+			if (secondBinaryOperator.children().hasClass("defaultOption") === false) {
+				defaultOptionClone = defaultOption.clone();
+				secondBinaryOperator.prepend(defaultOptionClone);
+			}
+			/*[- Select the default option -]*/
+			secondBinaryOperator.val("-1");
+			secondBinaryOperator.attr("name", currentName + ".expressions[1]");
+
+			/*[- Insert remove button -]*/
+			$(elem).before(
+				"<span class='comma' name=" +
+					currentName +
+					".comma>,</span>",
+				[
+					defaultOperator,
+					questionSelect,
+					binaryOperatorSelect,
+					secondBinaryOperator,
+				]
+			);
+			/*[-add remove button to the new expression in front of the add button -]*/
+			addRemoveButton(
+				$(elem),
+				parseInt($(elem).attr("data-param-index")),
+				currentName
+			);
+		}
+
+		function addAverageOperatorElement(elem) {
+			/*[-Add a remove button to the first expression if it was the only one before -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				addRemoveButton(
+					$(elem),
+					parseInt($(elem).attr("data-param-index")),
+					$(elem).attr("data-depth") +
+						".expressions[" +
+						$(elem).attr("data-param-index") +
+						"]"
+				);
+			}
+			$(elem).attr(
+				"data-param-index",
+				parseInt($(elem).attr("data-param-index")) + 1
+			);
+			$(elem)
+				.next("[name='expression.minusSign']")
+				.attr(
+					"data-param-index",
+					parseInt(
+						$(elem)
+							.next("[name='expression.minusSign']")
+							.attr("data-param-index")
+					) + 1
+				);
+			/*[- Clone the operator first added operator dropdown and select value operator -]*/
+			var defaultOperator = $(elem)
+				.parent()
+				.find("select[name*=operatorId]:first")
+				.clone();
+			/*[- Select the value operator by default -]*/
+			var valueOfValueOperator = defaultOperator
+				.children("option[data-operator=valueOf]")
+				.val();
+			defaultOperator.val(valueOfValueOperator);
+			/*[- Get the currentName for the data- attributes from this button -]*/
+			var currentName =
+				$(elem).attr("data-depth") +
+				".expressions[" +
+				$(elem).attr("data-param-index") +
+				"]";
+			/*[- Set the name of the new operator -]*/
+			defaultOperator.attr("name", currentName + ".operatorId");
+			/*[- Remove the default select option -]*/
+			defaultOperator.find(".defaultOption").remove();
+			/*[- Increase the index of missingValuesCounter -]*/
+			$(elem)
+				.nextAll("input[name*=value]:first")
+				.attr(
+					"name",
+					incrementLastNumberInString(
+						$(elem).nextAll("input[name*=value]:first").attr("name")
+					)
+				);
+			/*[- Increase the index of missingValuesOperator (Text) -]*/
+			$(elem)
+				.nextAll("input[name*=value]:first")
+				.prev()
+				.attr(
+					"name",
+					incrementLastNumberInString(
+						$(elem).nextAll("input[name*=value]:first").prev().attr("name")
+					)
+				);
+
+			/*[-  Mark the current element as a unary operator -]*/
+			defaultOperator.addClass("unaryOperator");
+			/*[- Remove the sumOperator mark -]*/
+			defaultOperator.removeClass("sumOperator");
+			/*[- Remove the binaryOperator mark -]*/
+			defaultOperator.removeClass("binaryOperator");
+			/*[- Remove the counterOperator mark -]*/
+			defaultOperator.removeClass("counterOperator");
+			/*[- Remove the averageOperator mark -]*/
+			defaultOperator.removeClass("averageOperator");
+			/*[- Remove the maximumOperator mark -]*/
+			defaultOperator.removeClass("maximumOperator");
+			/*[- Remove the minimumOperator mark -]*/
+			defaultOperator.removeClass("minimumOperator");
+
+			/*[- Create a question select with the current name, mark as deletable and append it after the open brace and before this button -]*/
+			var questionSelect = getSelectWithAvailableQuestions(currentName);
+
+			$(elem).before(
+				"<span class='comma' name=" +
+					currentName +
+					".comma>,</span>",
+				[defaultOperator, questionSelect]
+			);
+			/*[-add remove button to the new expression in front of the add button -]*/
+			addRemoveButton(
+				$(elem),
+				parseInt($(elem).attr("data-param-index")),
+				currentName
+			);
+		}
+
+		function removeMultipleOperatorElement(elem) {
+			/*[-Last expresssion can be removed without any complication       
+            If it's not the last expression adjust the names of the following elements        
+            If there's only one element left after this one, remove minusSign-]*/
+
+			/*[-String to compare the expressions and operators that have to be deleted -]*/
+			var elementName = $(elem).attr("data-depth");
+
+			/*[-remove comma if the first expression was deleted -]*/
+			if ($(elem).attr("data-param-index") === "0") {
+				$(elem).next().remove();
+			}
+
+			var isFollower = false;
+			var firstPlusHasChanged = true;
+			var checkName = replaceLastNumberInString(
+				elementName,
+				$(elem).attr("data-param-index")
+			);
+			/*[- Remove all elements belonging to the clicked remove button's expression and adjust the names of the following ones -]*/
+			$(elem)
+				.parent()
+				.children()
+				.each(function () {
+					/*[-the substring to compare with the elementName to check if this element has to be removed -]*/
+					var thisName = $(this)
+						.attr("name")
+						.substring(0, parseInt(checkName.length));
+					/*[-index of the current element belonging to the expression to adjust names -]*/
+					var thisIndex = getLastNumberInString(thisName);
+
+					if (
+						thisIndex != null &&
+						thisIndex.toString().length >
+							getLastNumberInString(checkName).toString().length
+					) {
+						thisName = $(this)
+							.attr("name")
+							.substring(0, parseInt(checkName.length) + 1);
+					}
+
+					/*[-Create checkName to check later if the current elements' name has to be adjusted -]*/
+					if (
+						parseInt(thisIndex) > parseInt($(elem).attr("data-param-index"))
+					) {
+						checkName = replaceLastNumberInString(elementName, thisIndex);
+					}
+
+					/*[-remove element if it belongs to the same data-depth -]*/
+					if (elementName === thisName) {
+						$(this).remove();
+						isFollower = true;
+					} else if (isFollower === true && checkName === thisName) {
+					/*[- Adjust the names of the removed operator's following elements -]*/
+						var newName =
+							decrementLastNumberInString(
+								$(this).attr("name").substring(0, elementName.length)
+							) + $(this).attr("name").substring(elementName.length);
+						$(this).attr("name", newName);
+						/*[-adjust the data-depth and data-param-index of the following remove buttons -]*/
+						if ($(this).hasClass("bi-dash-lg") === true) {
+							$(this).attr(
+								"data-param-index",
+								decrementLastNumberInString($(this).attr("data-param-index"))
+							);
+							$(this).attr(
+								"data-depth",
+								decrementLastNumberInString($(this).attr("data-depth"))
+							);
+						}
+					} else if (
+					/*[-Change the data-param-index of the next plus button -]*/
+						isFollower === true &&
+						firstPlusHasChanged === true &&
+						$(this).hasClass("bi-plus-lg") === true
+					) {
+						firstPlusHasChanged = false;
+						$(this).attr(
+							"data-param-index",
+							parseInt($(this).attr("data-param-index")) - 1
+						);
+						/*[-Delete the previous remove button if this element is the only expression -]*/
+						if ($(this).attr("data-param-index") === "0") {
+							$(this).prev().remove();
+						}
+					}
+				});
+		}
+
+		function addRemoveButton(elem, paramIndex, name) {
+			var removeButton = $("<a/>", {
+				class: "bi bi-dash-lg",
+				name: name + ".minusSign",
+				"data-depth": name,
+				"data-param-index": paramIndex,
+			}).click(function () {
+				removeMultipleOperatorElement($(this));
+			});
+
+			$(elem).before(removeButton);
+		}
+
+		function incrementLastNumberInString(string) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, function (match) {
+				return parseInt(match, 10) + 1;
+			});
+		}
+
+		function decrementLastNumberInString(string) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, function (match) {
+				return parseInt(match, 10) - 1;
+			});
+		}
+
+		function replaceLastNumberInString(string, newValue) {
+			return string.replace(/[0-9]+(?!.*[0-9])/, newValue);
+		}
+
+		function getLastNumberInString(string) {
+			return string.match(/[0-9]+(?!.*[0-9])/);
+		}
+	</script>
+</th:block>

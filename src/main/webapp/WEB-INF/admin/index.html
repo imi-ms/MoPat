@@ -1,0 +1,88 @@
+<!--/*
+    Index page for admin / manager view. 
+*/-->
+<th:block
+    layout:decorate="~{layout/admin}"
+    th:with="title=${messages.get(#locale, 'admin.title', 'Admin')}"
+>
+    <th:block layout:fragment="content">
+        <div
+            sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN')"
+            class="panel-body"
+            th:with="message=${messages.get(#locale,
+                'encountermanager.welcome', 
+                messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
+                'Welcome Text')}"
+            th:utext="${message}"
+        >
+        </div>
+        <div
+            sec:authorize="hasRole('ROLE_ADMIN')"
+            class="panel-body"
+            th:with="message=${messages.get(#locale,
+                'admin.welcome', 
+                messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
+                'Welcome Text')}"
+            th:utext="${message}"
+        >
+        </div>
+        <div
+            class="mt-3"
+            sec:authorize="hasRole('ROLE_ADMIN')"
+        >
+            <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#adminPanel"
+                th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
+            ></button>
+
+            <div
+                class="modal modal-xl fade"
+                id="adminPanel"
+                tabindex="-1"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5
+                                th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
+                            ></h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            >
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table>
+                                <tr>
+                                    <td class="w-25">
+										[[${messages.get(#locale, 'admin.information.cache',
+                                        'Timestamp of last cache reset')}]]:
+									</td>
+                                    <td class="w-25">[[${cacheTimestamp}]]</td>
+                                    <td class="w-25">
+                                        <form
+                                            method="POST"
+                                            action="clearCache"
+                                        >
+                                            <button
+                                                class="btn btn-primary"
+                                                type="submit"
+                                                th:text="${messages.get(#locale, 'admin.information.cache.action', 'Clear cache')}"
+                                            ></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>

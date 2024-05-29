@@ -1,0 +1,9 @@
+<!--/*
+    * Layout that extends the main layout and changes the onLoad function    
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="onLoad='handleQuestionTypes(true);'"
+>
+	<th:block layout:fragment="content"> </th:block>
+</th:block>

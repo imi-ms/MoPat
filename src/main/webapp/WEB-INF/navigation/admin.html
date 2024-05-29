@@ -1,0 +1,210 @@
+<!--/*
+    * Special Fragment for the admin navigation bar
+*/-->
+<th:block layout:fragment="admin">
+	<div
+		sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+	>
+		<div class="navbar navbar-expand d-none d-lg-flex py-0 px-4">
+			<div
+				class="collapse navbar-collapse adminNavbar"
+				id="adminNav"
+			>
+				<div
+					id="adminNavLeft"
+					class="navbar-nav me-auto mb-2 mb-lg-0"
+				>
+					<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+						<li class="nav-item dropdown">
+							<a
+								class="nav-link d-flex align-items-center"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false"
+							>
+								<span
+									th:text="${messages.get(#locale, 'admin.navigation.header.questionnaire', 'Questionnaires')}"
+								></span>
+								&nbsp;
+								<i class="bi-caret-down-fill"></i>
+							</a>
+
+							<ul
+								class="dropdown-menu"
+								id="questionnaireDropdown"
+							>
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/questionnaire/list}"
+										th:text="${messages.get(#locale, 'admin.navigation.questionnaire', 'Manage questionnaires')}"
+									>
+									</a>
+								</li>
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/questionnaire/import/upload}"
+										th:text="#{questionnaire.button.import}"
+										>Import questionnaire</a
+									>
+								</li>
+							</ul>
+						</li>
+						<li class="nav-item">
+							<a
+								class="nav-link"
+								th:href="@{/bundle/list}"
+								th:text="#{admin.navigation.header.bundle}"
+								>Bundles</a
+							>
+						</li>
+						<li class="nav-item">
+							<a
+								class="nav-link"
+								th:href="@{/clinic/list}"
+								th:text="#{admin.navigation.header.clinic}"
+								>Clinics</a
+							>
+						</li>
+
+						<li class="nav-item dropdown">
+							<a
+								class="nav-link d-flex align-items-center"
+								data-bs-toggle="dropdown"
+								role="button"
+								aria-expanded="false"
+							>
+								<span
+									th:text="${messages.get(#locale, 'admin.navigation.header.user', 'User')}"
+								></span>
+								&nbsp;
+								<i class="bi-caret-down-fill"></i>
+							</a>
+
+							<ul class="dropdown-menu">
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/user/list}"
+										th:text="${messages.get(#locale, 'admin.navigation.user', 'Manage Users')}"
+									>
+									</a>
+								</li>
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/user/mailtoall}"
+										th:text="#{admin.navigation.user.mailToAll}"
+										>Send email to all users</a
+									>
+								</li>
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/invitation/list}"
+										th:text="#{admin.navigation.user.editInvitation}"
+										>Edit invitations</a
+									>
+								</li>
+							</ul>
+						</li>
+					</th:block>
+					<li
+						sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+						class="nav-item dropdown"
+					>
+						<a
+							class="nav-link d-flex align-items-center"
+							data-bs-toggle="dropdown"
+							role="button"
+							aria-expanded="false"
+						>
+							<span
+								th:text="${messages.get(#locale, 'admin.navigation.header.survey', 'Surveys')}"
+							></span>
+							&nbsp;
+							<i class="bi-caret-down-fill"></i>
+						</a>
+
+						<ul class="dropdown-menu">
+							<li>
+								<a
+									class="dropdown-item"
+									th:href="@{/encounter/list}"
+									th:text="${messages.get(#locale, 'admin.navigation.manageSurveys', 'Manage surveys')}"
+								>
+								</a>
+							</li>
+							<li>
+								<a
+									class="dropdown-item"
+									th:href="@{/encounter/schedule}"
+									th:text="#{admin.navigation.scheduleSurvey}"
+									>Schedule survey</a
+								>
+							</li>
+							<li>
+								<a
+									class="dropdown-item"
+									th:href="@{/mobile/survey/index}"
+									th:text="#{admin.navigation.executeSurvey}"
+									>Execute survey</a
+								>
+							</li>
+						</ul>
+					</li>
+				</div>
+
+				<div
+					id="adminNavRight"
+					sec:authorize="hasRole('ROLE_ADMIN')"
+					class="navbar-nav ms-auto mb-2 mb-lg-0"
+				>
+					<li class="nav-item dropdown">
+						<a
+							class="nav-link d-flex align-items-center"
+							data-bs-toggle="dropdown"
+							role="button"
+							aria-expanded="false"
+						>
+							<span
+								th:text="${messages.get(#locale, 'admin.navigation.header.statistic', 'Statistics')}"
+							></span>
+							&nbsp;
+							<i class="bi-caret-down-fill"></i>
+						</a>
+
+						<ul class="dropdown-menu">
+							<li>
+								<a
+									class="dropdown-item"
+									th:href="@{/statistic/index}"
+									th:text="${messages.get(#locale, 'admin.navigation.statistics', 'Statistics')}"
+								>
+								</a>
+							</li>
+							<li>
+								<a
+									class="dropdown-item"
+									th:href="@{/statistic/onetimestatistic}"
+									th:text="#{admin.navigation.statistics.oneTimeStatistics}"
+									>Execute survey</a
+								>
+							</li>
+						</ul>
+					</li>
+					<li class="nav-item">
+						<a
+							class="nav-link"
+							th:href="@{/configuration/edit}"
+							th:text="#{admin.navigation.configuration}"
+							>Configuration</a
+						>
+					</li>
+				</div>
+			</div>
+		</div>
+		<!-- toggle get grouped for better mobile display -->
+	</div>
+</th:block>

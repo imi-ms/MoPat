@@ -1,0 +1,268 @@
+<!--/*
+    * View to list all available bundles     
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'bundle.heading.title', 'Bundles')}"
+>
+	<th:block layout:fragment="content">
+		<div
+			th:if="${messageSuccess ne null}"
+			id="notification"
+			class="alert alert-success"
+			th:text="${messageSuccess}"
+		>
+		</div>
+		<div
+			th:if="${not #strings.isEmpty(messageFail)}"
+			id="notification"
+			class="alert alert-danger"
+			th:text="${messageFail}"
+		>
+		</div>
+		<div class="table-responsive">
+			<table
+				class="table table-hover pagedTable responsive"
+				style="width: 100%"
+			>
+				<thead>
+					<tr>
+						<th
+							data-priority="1"
+							th:text="${messages.get(#locale, 'bundle.label.bundleName', 'Name')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'bundle.label.availableLanguages', 'Available languages:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'bundle.label.containedInClinics', 'Contained in clinics:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'bundle.label.status', 'Status')}"
+						></th>
+						<th
+							data-priority="2"
+							class="actionColumn"
+							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+						>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:if="${not #lists.isEmpty(allBundles)}">
+						<tr th:each="item: ${allBundles}">
+							<td>
+								<a
+									th:if="${not #strings.isEmpty(item.name)}"
+									class="link"
+									th:href="@{fill?id=__${item.id}__}"
+									th:text="${item.name}"
+								>
+								</a>
+							</td>
+							<td style="text-align: left">
+								<addVar
+									layout:replace="~{helper/var :: add(key='localeCodes', value=${item.getAvailableLanguages()})}"
+								/>
+								<localizedFlag
+									layout:replace="~{helper/localeHelper/showLocalizedTextsAndFlags}"
+								></localizedFlag>
+							</td>
+							<td>
+								<ul style="margin-bottom: 0px">
+									<li th:each="bundleClinic: ${item.getBundleClinics()}">
+										<a
+											class="link"
+											th:href="@{/clinic/edit?id=__${bundleClinic.clinic.id}__}"
+											th:text="${bundleClinic.clinic.name}"
+										>
+										</a>
+									</li>
+								</ul>
+							</td>
+							<td>
+								<th:block
+									th:with="
+                                    case1=${#bools.isTrue(item.isPublished == true)},
+                                    case2=${#bools.isTrue(item.isPublished == false && 
+                                        (item.getBundleQuestionnaires().isEmpty() == true || item.hasActiveQuestionnaire() == false))}"
+								>
+									<th:block
+										th:if="${case1}"
+										th:text="${messages.get(#locale, 'bundle.status.released', 'released')}"
+									/>
+
+									<th:block
+										th:if="${case2}"
+										th:text="${messages.get(#locale, 'bundle.status.blocked', 'blocked')}"
+									/>
+
+									<th:block th:if="${not case1 && not case2}">
+										<th:block
+											th:text="${messages.get(#locale, 'bundle.status.blocked', 'blocked')}"
+										/>
+										(<a
+											class="link"
+											th:href="@{/mobile/survey/test?id=__${item.id}__}"
+											target="_blank"
+											th:text="${messages.get(#locale, 'bundle.label.url', 'URL for Testing')}"
+										>
+										</a
+										>)
+									</th:block>
+								</th:block>
+							</td>
+							<td class="actionColumn">
+								<div class="d-none d-xl-block">
+									<a
+										class="link"
+										th:href="@{fill?id=__${item.id}__}"
+									>
+										<i
+											class="bi-pencil-fill"
+											th:title="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
+										>
+										</i>
+									</a>
+									<a
+										th:if="${item.isPublished == true && item.isModifiable() == true}"
+										class="link"
+										th:href="@{togglepublish?id=__${item.id}__}"
+									>
+										<i
+											class="bi-x-circle-fill"
+											th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
+										>
+										</i>
+									</a>
+									<a
+										th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+										class="link"
+										th:href="@{togglepublish?id=__${item.id}__}"
+									>
+										<i
+											class="bi-check-circle-fill"
+											th:title="${messages.get(#locale, 'bundle.button.publish', 'Enable')}"
+										>
+										</i>
+									</a>
+									<a
+										class="link removeBundleLink"
+										th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
+										th:href="@{remove?id=__${item.id}__}"
+									>
+										<i
+											class="bi-trash-fill"
+											th:title="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
+										>
+										</i>
+									</a>
+								</div>
+								<!--/*Action dropdown for smaller resolutions*/-->
+								<div class="d-block d-xl-none">
+									<a
+										class="link"
+										data-bs-toggle="offcanvas"
+										th:href="|#${item.id}_offcanvas|"
+										><i
+											class="bi bi-three-dots"
+											style="font-size: 1.5rem"
+										></i
+									></a>
+									<th:block
+										layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${item.name}, id=|${item.id}_offcanvas|)}"
+									>
+										<th:block layout:fragment="optionsContent">
+											<a
+												class="link"
+												th:href="@{fill?id=__${item.id}__}"
+												th:text="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
+											></a>
+
+											<a
+												th:if="${item.isPublished == true && item.isModifiable() == true}"
+												class="link"
+												th:href="@{togglepublish?id=__${item.id}__}"
+												th:text="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
+											>
+											</a>
+											<a
+												th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+												class="link"
+												th:href="@{togglepublish?id=__${item.id}__}"
+												th:text="${messages.get(#locale, 'bundle.button.publish', 'Enable')}"
+											>
+											</a>
+											<a
+												class="link"
+												th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
+												th:href="@{remove?id=__${item.id}__}"
+												th:text="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
+											>
+											</a>
+										</th:block>
+									</th:block>
+								</div>
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="panel-body">
+			<form
+				th:object="${bundle}"
+				method="GET"
+				action="fill"
+			>
+				<button
+					type="submit"
+					class="btn btn-primary"
+					id="addBundle"
+					th:text="${messages.get(#locale, 'bundle.button.add', 'Add bundle')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var deleteBundleFromClinics =
+			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleFromClinics', 'This bundle is assigned to at least one clinic. Do you want to delete it anyway?')}]]*/ "This bundle is assigned to at least one clinic. Do you want to delete it anyway?";
+		var deleteBundleWithConditions =
+			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditions', 'The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
+		var deleteBundleWithConditionsAndClinics =
+			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditionsAndClinics', 'The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
+
+		$(".removeBundleLink").click(function (e) {
+			/*[- Initialize the result as true if there are no conditions or clinics asssociated -]*/
+			var result = true;
+
+			var hasConditions = $(this).attr("data-hasConditions");
+			var usedInClinics = $(this).attr("data-usedInClinics");
+
+			/*[- Check if the bundle has any corresponding clinics and/or conditions -]*/
+			if (usedInClinics === "true" && hasConditions === "true") {
+				/*[- Let the user confirm, that these clinics and conditions will also be deleted -]*/
+				result = confirm(deleteBundleWithConditionsAndClinics);
+			} else if (usedInClinics === "true") {
+				/*[- Let the user confirm, that these clinics will also be deleted -]*/
+				result = confirm(deleteBundleFromClinics);
+			} else if (hasConditions === "true") {
+				/*[- Let the user confirm, that these conditions will also be deleted -]*/
+				result = confirm(deleteBundleWithConditions);
+			}
+			if (result === true) {
+				return true;
+			} else {
+				return false;
+				e.preventDefault();
+			}
+		});
+	</script>
+</th:block>

@@ -1,0 +1,95 @@
+<!--/*
+    View for mobile Login Page
+*/-->
+
+<!--/* TODO: <%@ page session="true" %> */-->
+<th:block
+	layout:decorate="~{layout/login}"
+	th:with="onLoad='initLogin()', contenttype='centeredContent', isLogin='true'"
+>
+	<th:block layout:fragment="content">
+		<div class="text-center">
+			<img
+				class="mb-1 img-fluid mopatImage"
+				th:attr="src=@{/images/logo.svg}"
+			/>
+		</div>
+		<div class="login pb-5">
+			<form
+				method="post"
+				th:action="@{/mobile/user/login}"
+				data-ajax="false"
+			>
+				<div class="d-grid gap-2">
+					<input
+						class="form-control"
+						index="1"
+						name="username"
+						id="username"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+						data-inline="true"
+						type="text"
+						th:placeholder="#{user.label.username}"
+						th:value="${sessionScope?.LAST_USERNAME}"
+					/>
+
+					<input
+						class="form-control"
+						index="2"
+						name="password"
+						id="password"
+						type="password"
+						th:placeholder="#{user.label.password}"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+					/>
+
+					<th:block
+						th:if="${!#strings.isEmpty(message)}"
+						th:text="${message}"
+					></th:block>
+					<a
+						class="btn-link mobile-link"
+						data-ajax="true"
+						onclick="initUser();"
+						th:href="@{/mobile/user/password}"
+						th:text="|${messages.get(#locale, 'user.label.forgotPassword', 'Forgot password')}?|"
+					>
+					</a>
+
+					<button
+						class="btn btn-white btn-mobile"
+						index="3"
+						type="submit"
+						th:text="${messages.get(#locale, 'user.button.login', 'Login')}"
+					>
+					</button>
+				</div>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<!--/* TODO: Experiment moving script */-->
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		$(document).ready(function () {
+			var op = document
+				.getElementById("localeChanger")
+				.getElementsByTagName("option");
+			for (var i = 3; i < op.length; i++) {
+				/*[- op[i].disabled = true; -]*/
+				op[i].style.display = "none";
+			}
+		});
+	</script>
+</th:block>

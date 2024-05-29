@@ -1,0 +1,180 @@
+/**
+* 
+* Less file containing all styling information 
+* for the admin header(s)
+* 
+**/
+
+@import "includes/colors";
+@import "includes/sizes"; 
+@import "includes/variables";
+
+.resize-text {
+    @media only screen and (min-width:@b5-screen-xxl-min) {
+        font-size: 1.4rem;
+    }
+    @media only screen and (min-width:@b5-screen-lg-min) and (max-width: @b5-screen-xl-max) {
+        font-size: 1rem;
+    }
+}
+
+.header {
+    background-color: @color-white;
+    .dropdown {
+        padding:13px; 
+
+        a {
+            color: @color-gray-light !important;
+        }
+    }
+
+    .navbar-logo {
+        height: 70px;
+    }
+}
+
+.navigation {
+    .gradient();
+
+    box-shadow: @box-shadow-material-lg;
+    
+    .nav-link {
+        font-weight: bold; 
+        color: @color-white;
+    }
+}
+
+
+.navbar {
+    #adminNav {
+        /* Adaptive font size */
+        .nav-link, .nav-link > * {
+            .resize-text();
+        }
+        
+
+        .nav-link {
+            padding-bottom: 1.75rem;
+            padding-top: 1.75rem; 
+            text-transform: uppercase;
+            font-weight: 500; 
+
+            & > * {
+                color: @color-white;
+            }
+
+        }
+
+        .nav-item {
+            margin-left: 15px; 
+            margin-right: 15px; 
+            .nav-link {
+                //Underline from left effect
+                display: inline-block;
+                position: relative;
+                &:after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    transform: scaleX(0);
+                    height: 3px;
+                    bottom: 5px;
+                    left: 0;
+                    background-color: @color-blue-dark-darker;
+                    transform-origin: bottom left;
+                    transition: @transition-value;
+                }
+
+                &:hover:after {
+                    transform: scaleX(1);
+                    transform-origin: bottom left;
+                }
+            }
+        }
+
+        .dropdown-menu {
+            margin-top: 0;
+        }
+        
+        // Deactivated due to design choices
+        
+        /* Open dropdown menu in Navbar on hover but only for expanded navbar 
+        @media (min-width: @b5-screen-lg-min) {
+            .dropdown:hover .dropdown-menu {
+                display: block;
+            }
+        }
+        */
+    }
+
+    .dropdown-item {
+        color: @color-black;
+    }
+
+    .navbar-brand {
+        font-size: 2rem; 
+    }
+    
+}
+
+
+#mobileAdmin {
+    .offcanvas-body {
+
+        a, span {
+            font-size: 1.2rem; 
+            color: @color-black;
+        }
+
+        a {
+            text-align: left;
+            padding-top:10px;
+            padding-bottom:10px;
+    
+            &:hover {
+                background-color: @color-gray-lighter;
+                transition: @transition-value;
+            }
+
+            &.accountLink, &b {
+                font-size: 1.4rem; 
+                padding-top: 20px; 
+                padding-bottom: 20px; 
+                border-bottom: solid 0.05rem;
+                border-color: @color-gray-border;
+            }
+        }
+
+        .smallLink {
+            font-size: 0.8rem !important; 
+        }
+
+        .borderBottom {
+            border-bottom: solid 0.05rem;
+            border-color: @color-gray-border;
+        }
+        .borderTop {
+            border-top: solid 0.05rem;
+            border-color: @color-gray-border;
+        }
+    }
+
+    .navbar {
+        background-color: @color-gray-background;
+    }
+
+    .navbar-logo {
+        height: 60px;
+    }
+
+    .navbar-brand {
+        color: @color-blue-dark;
+        font-size: 2rem;
+    }
+
+    .bi-list {
+        color: @color-blue-dark;
+        font-size: 2.5rem;
+    }
+}
+

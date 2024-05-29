@@ -1,0 +1,175 @@
+/**
+*
+* Adjustment of dataTables to fit MoPat design
+*
+**/
+
+@import "includes/colors";
+@import "includes/sizes";
+@import "includes/variables";
+
+.dataTables_wrapper {
+    width: 99%;
+    .row {
+        padding-left: 10px;
+        padding-right: 10px;
+        &:first-child {
+            padding-top: 10px;
+        }
+        &:last-child {
+            padding-bottom: 10px;
+        }
+    }
+
+    .actionColumn {
+        text-align: center !important;
+        a {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+}
+
+table.dataTable tbody td {
+    vertical-align: middle;
+}
+
+.table-responsive {
+    overflow-x: visible !important;
+}
+
+.active {
+    > .page-link {
+        background-color: @color-blue-dark !important;
+        border-color: @color-blue-dark !important;
+        color: @color-white !important;
+    }
+}
+.page-link {
+    color: @color-blue-light;
+    &:hover {
+        background-color: @color-gray-background;
+        transition: @transition-value;
+    }
+}
+
+.link {
+    color: @color-blue-links;
+    text-decoration: none;
+    font-size: 16px; 
+    a {
+        &:link, &:visited {
+            color: @color-blue-links;
+            text-decoration: none;
+        }
+        &:hover {
+            color: @color-blue-dark; 
+            text-decoration: underline;
+        }
+    }
+    
+} 
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+
+    &-content {
+        display: none;
+        position: absolute;
+        background-color: @color-white;
+        box-shadow: @box-shadow; 
+        border-radius: @bs-border-radius;
+        z-index: 4;
+        border-top: 1px solid @color-gray-border;
+        right: 0;
+        left: initial;
+    
+        a {
+            padding: 5px 40px;
+            display: block;
+            border-bottom: 1px solid @color-gray-border;
+            border-left: 1px solid @color-gray-border;
+            border-right: 1px solid @color-gray-border;
+    
+            &:hover {
+                background-color: @color-gray-lighter;
+                transition: @transition-value;
+            }
+        }
+    }
+
+    &:hover .dropdown-content {
+        display: block;
+    }
+}
+
+.dropdown-title {
+    padding-left: 5px; 
+    padding-right: 5px; 
+    border: solid .3em @color-white;
+}
+
+
+/*Collapse symbol before collapsed data rows */
+
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before, table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    top: 50%;
+    left: 5px;
+    height: 1em;
+    width: 1em;
+    margin-top: -9px;
+    display: block;
+    position: absolute;
+    color: @color-blue-dark;
+    box-sizing: content-box;
+    text-align: center;
+    text-indent: 0 !important;
+    font-family: "Bootstrap-icons";
+    line-height: 1em;
+    content: "\F139";
+    background: none;
+    transition: 1s;
+  }
+
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control::before, table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th.dtr-control::before {
+    content: "\F139";
+    background: none;
+    -o-transform:rotate(180deg);
+    -ms-transform:rotate(180deg);
+    -moz-transform:rotate(180deg);
+    -webkit-transform:rotate(180deg);
+    transform:rotate(180deg);
+  }
+
+
+.optionsMenu {
+    height: auto !important;
+    
+    .offcanvas-body {
+        a {
+            text-align: left;
+            border:solid 0.05em; 
+            border-left: 0;
+            border-right: 0;
+            border-top: 0;
+            border-color: @color-gray-border;
+            padding-top:5px;
+            padding-bottom:5px;
+    
+            &:hover {
+                background-color: @color-gray-lighter;
+                transition: @transition-value;
+            }
+        }
+        .optionsTitle {
+            font-size: 1.1rem; 
+            text-align: left; 
+            margin-top: 10px; 
+            padding-left: 5px;
+            padding-right: 5px; 
+        }
+    }
+}
+
+

@@ -1,0 +1,207 @@
+<!--/*
+    * View that exports a one time statistic for a specific patient in a given time period 
+*/-->
+<th:block
+	layout:decorate="~{layout/main}"
+	th:with="title=${messages.get(#locale, 'statistic.heading.statistic', 'Statistics')}"
+>
+	<th:block layout:fragment="content">
+		<div class="panel-body">
+			<form
+				name="oneTimeStatisticDTO"
+				th:object="${oneTimeStatisticDTO}"
+				enctype="application/x-www-form-urlencoded"
+				method="POST"
+				action="onetimestatistic"
+			>
+				<div class="form-group">
+					<label
+						th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.encounterCountByBundleInInterval', 'How often was the chosen bundle filled out during the selected time period:')}"
+					>
+					</label>
+				</div>
+				<div class="form-group">
+					<label
+						for="bundleId"
+						th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.bundle', 'Bundle:')}"
+					>
+					</label>
+					<selectOptions
+						layout:replace="~{fragments/selectOptions :: selectOptions(
+                        clazz='form-control', path='bundleId', items=${bundles},
+                        itemLabel='name', itemValue='id', localize=true,
+                        onChangeFunction='', id='bundleDropDown')}"
+					>
+					</selectOptions>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='bundleId')}"
+					/>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='bundleStartDate', required=false,
+                        path='bundleStartDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.startdate', 'Startdate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='bundleEndDate', required=false,
+                        path='bundleEndDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.enddate', 'Enddate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<th:block
+						th:if="${not #strings.isEmpty(oneTimeStatisticDTO.encounterCountByBundleInInterval)}"
+					>
+						<label
+							for="encounterCountByBundleInInterval"
+							th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.count', 'Count:')}"
+						>
+						</label>
+						<input
+							th:field="*{encounterCountByBundleInInterval}"
+							class="form-control"
+							disabled="true"
+						/>
+					</th:block>
+				</div>
+
+				<div class="form-group">
+					<label
+						for="questionnaireDropDown"
+						th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.encounterCountByCaseNumberInInterval', 'How many surveys has the chosen patient filled out during the selected time period:')}"
+					>
+					</label>
+				</div>
+				<div class="form-group">
+					<select
+						layout:replace="~{fragments/forms :: selectWithLabel(
+                        for='patientId', path='patientId', required=false,
+                        items=${patients}, showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.patient', 'Patient:')})}"
+					>
+					</select>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='patientStartDate', required=false,
+                        path='patientStartDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.startdate', 'Startdate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='patientEndDate', required=false,
+                        path='patientEndDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.enddate', 'Enddate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<th:block
+						th:if="${not #strings.isEmpty(oneTimeStatisticDTO.encounterCountByCaseNumberInInterval)}"
+					>
+						<label
+							for="encounterCountByCaseNumberInInterval"
+							th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.count', 'Count:')}"
+						>
+						</label>
+						<input
+							th:field="*{encounterCountByCaseNumberInInterval}"
+							class="form-control"
+							disabled="true"
+						/>
+					</th:block>
+				</div>
+				<div class="form-group">
+					<label
+						th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.encounterCountByCaseNumberByBundleInInterval', 'How often was has the chosen patient filled out the chosen bundle during the selected time period:')}"
+					>
+					</label>
+				</div>
+				<div class="form-group">
+					<select
+						layout:replace="~{fragments/forms :: selectWithLabel(
+                        for='bundlePatientPatientId', path='bundlePatientPatientId', required=false,
+                        items=${patients}, showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.patient', 'Patient:')})}"
+					>
+					</select>
+				</div>
+				<div class="form-group">
+					<label
+						for="bundlePatientBundleId"
+						th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.bundle', 'Bundle:')}"
+					>
+					</label>
+					<selectOptions
+						layout:replace="~{fragments/selectOptions :: selectOptions(
+                        clazz='form-control', path='bundlePatientBundleId', items=${bundles},
+                        itemLabel='name', itemValue='id', localize=true, 
+                        onChangeFunction='', id='bundleDropDown')}"
+					>
+					</selectOptions>
+					<error
+						layout:replace="~{fragments/forms :: errorField(path='bundlePatientBundleId')}"
+					/>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='bundlePatientStartDate', required=false,
+                        path='bundlePatientStartDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.startdate', 'Startdate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<date
+						layout:replace="~{fragments/forms :: dateWithLabel(
+                        for='bundlePatientEndDate', required=false,
+                        path='bundlePatientEndDate',
+                        clazz='form-control', showErrors=true,
+                        text=${messages.get(#locale, 'statistic.onetimestatistic.label.enddate', 'Enddate')})}"
+					>
+					</date>
+				</div>
+				<div class="form-group">
+					<th:block
+						th:if="${not #strings.isEmpty(oneTimeStatisticDTO.encounterCountByCaseNumberByBundleInInterval)}"
+					>
+						<label
+							for="encounterCountByCaseNumberByBundleInInterval"
+							th:text="${messages.get(#locale, 'statistic.onetimestatistic.label.count', 'Count:')}"
+						>
+						</label>
+						<input
+							th:field="*{encounterCountByCaseNumberByBundleInInterval}"
+							class="form-control"
+							disabled="true"
+						/>
+					</th:block>
+				</div>
+
+				<button
+					type="submit"
+					class="btn btn-primary"
+					th:text="${messages.get(#locale, 'statistic.button.calculate', 'Calculate')}"
+				>
+				</button>
+			</form>
+		</div>
+	</th:block>
+</th:block>

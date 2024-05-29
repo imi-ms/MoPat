@@ -1,0 +1,203 @@
+<!--/* This fragment is used to store messages in an array that can be accessed in survey.js */-->
+<th:block layout:fragment="surveyMessages">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var strings = new Array();
+		strings["survey.questionnaire.dropDownNoSelect"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.dropDownNoSelect', 'please choose')}]]*/ "please choose";
+		strings["survey.bundle.questionnaires"] =
+			/*[[${messages.get(#locale, 'survey.bundle.questionnaires', 'This bundle contains the following questionnaires')}]]*/ "This bundle contains the following questionnaires";
+		strings["survey.check.barcodereader.content"] =
+			/*[[${messages.get(#locale, 'survey.check.barcodereader.content', 'Please hold the barcode in front of your camera:')}]]*/ "Please hold the barcode in front of your camera:";
+		strings["survey.check.barcodereader.header"] =
+			/*[[${messages.get(#locale, 'survey.check.barcodereader.header', 'Barcode scanner')}]]*/ "Barcode scanner";
+		strings["survey.check.barcodereader.switchCamera"] = 
+			/*[[${messages.get(#locale, 'survey.check.barcodereader.switchCamera', 'Switch camera')}]]*/ "Switch camera"; 
+		strings["survey.questionnaire.button.nextQuestion"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.nextQuestion', 'next Question')}]]*/ "next Question";
+		strings["survey.questionnaire.button.previousQuestion"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.previousQuestion', 'previous Question')}]]*/ "previous Question";
+		strings["survey.questionnaire.button.nextQuestionnaire"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.nextQuestionnaire', 'next Questionnaire')}]]*/ "next Questionnaire";
+		strings["survey.questionnaire.button.startSurvey"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.startSurvey', 'start Survey')}]]*/ "start Survey";
+		strings["survey.questionnaire.button.finishSurvey"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.finishSurvey', 'finish Survey')}]]*/ "finish Survey";
+		strings["survey.questionnaire.button.startQuestionnaire"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.startQuestionnaire', 'start Questionnaire')}]]*/ "start Questionnaire";
+		strings["survey.questionnaire.button.finishQuestionnaire"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.finishQuestionnaire', 'finish Questionnaire')}]]*/ "finish Questionnaire";
+		strings["survey.questionnaire.button.closeApplication"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.closeApplication', 'Close Application')}]]*/ "Close Application";
+		strings["survey.questionnaire.button.returnToQuestionnaire"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.returnToQuestionnaire', 'Return to Questionnaire')}]]*/ "Return to Questionnaire";
+		strings["survey.questionnaire.button.completenessCheck"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.completenessCheck', 'Completeness check')}]]*/ "Completeness check";
+		strings["survey.questionnaire.button.answerQuestionsSingle"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.answerQuestionsSingle', 'Answer question')}]]*/ "Answer question";
+		strings["survey.questionnaire.button.answerQuestionsMultiple"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.answerQuestionsMultiple', 'Answer questions')}]]*/ "Answer questions";
+		strings["survey.questionnaire.button.completenessCheckTitlePartSingle"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.completenessCheckTitlePartSingle', 'The questionnaire contains one incomplete question. Do you want to answer it now?')}]]*/ "The questionnaire contains one incomplete question. Do you want to answer it now?";
+		strings["survey.questionnaire.button.completenessCheckTitlePartMultiple"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.button.completenessCheckTitlePartMultiple', 'The questionnaire contains {numberQuestions} incomplete questions. Do you want to answer them now?')}]]*/ "The questionnaire contains {numberQuestions} incomplete questions. Do you want to answer them now?";
+		strings["survey.questionnaire.label.answeredQuestions"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.answeredQuestions', 'Questionnaire:')}]]*/ "Questionnaire:";
+		strings["survey.questionnaire.label.answeredQuestionsDescription"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.answeredQuestionsDescription', 'Questionnaire:')}]]*/ "Questionnaire:";
+		strings["survey.questionnaire.label.questionnaire"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.questionnaire', 'Questionnaire:')}]]*/ "Questionnaire:";
+		strings["survey.questionnaire.label.question"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.question', 'Question')}]]*/ "Question";
+		strings["survey.questionnaire.label.questions"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.questions', 'Questions')}]]*/ "Questions";
+		strings["survey.questionnaire.label.of"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.of', 'of')}]]*/ "of";
+		strings["survey.questionnaire.label.finishedSurvey"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.finishedSurvey', 'finished Survey')}]]*/ "finished Survey";
+		strings["survey.questionnaire.label.endHomeDevice"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.endHomeDevice', 'You have finished the survey. You can close the application.')}]]*/ "You have finished the survey. You can close the application.";
+		strings["survey.questionnaire.label.returnDevice"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.returnDevice', 'Please return the device.')}]]*/ "Please return the device.";
+		strings["survey.questionnaire.label.progress"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.progress', 'Progress')}]]*/ "Progress";
+		strings["survey.questionnaire.label.date"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.date', 'Date')}]]*/ "Date";
+		strings["survey.questionnaire.label.questionnaireNotActiveDuringSurvey"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.questionnaireNotActiveDuringSurvey', 'Questionnaire has not been active during survey')}]]*/ "Questionnaire has not been active during survey";
+		strings["survey.questionnaire.label.dateDescription"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.dateDescription', 'Date')}]]*/ "Date";
+		strings["survey.questionnaire.MaxAnswer"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.MaxAnswer', 'Choose up to {max} answers.')}]]*/ "Choose up to {max} answers.";
+		strings["survey.questionnaire.MinAnswer"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.MinAnswer', 'Choose at least {min} answers.')}]]*/ "Choose at least {min} answers.";
+		strings["survey.questionnaire.MinMaxAnswer"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.MinMaxAnswer', 'Choose between {min} and {max} answers.')}]]*/ "Choose between {min} and {max} answers.";
+		strings["survey.questionnaire.ExactAnswer"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.ExactAnswer', 'Choose exactly {min} answer(s).')}]]*/ "Choose exactly {min} answer(s).";
+		strings["survey.questionnaire.label.date.endDate"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.date.endDate', 'The maximal permitted date is {endDate}.')}]]*/ "The maximal permitted date is {endDate}.";
+		strings["survey.questionnaire.label.date.startEndDate"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.date.startEndDate', 'The minimal permitted date is {startDate} and the maximal permitted date is {endDate}.')}]]*/ "The minimal permitted date is {startDate} and the maximal permitted date is {endDate}.";
+		strings["survey.questionnaire.label.date.startDate"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.date.startDate', 'The minimal permitted date is {startDate}.')}]]*/ "The minimal permitted date is {startDate}.";
+		strings["survey.questionnaire.label.numberInput.decimal"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.decimal', 'Please enter a decimal')}]]*/ "Please enter a decimal";
+		strings["survey.questionnaire.label.numberInput.integer"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.integer', 'Please enter a integer')}]]*/ "Please enter a integer";
+		strings["survey.questionnaire.label.numberInput.wrongInputDecimal"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.wrongInputDecimal', 'Only decimal inputs are allowed. Other input will be ignored.')}]]*/ "Only decimal inputs are allowed. Other input will be ignored.";
+		strings["survey.questionnaire.label.numberInput.wrongInputInteger"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.wrongInputInteger', 'Only integer inputs are allowed. Other input will be ignored.')}]]*/ "Only integer inputs are allowed. Other input will be ignored.";
+		strings["survey.questionnaire.label.numberInput.minMax"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.minMax', 'Minimum value is {min} and maximum value is {max}.')}]]*/ "Minimum value is {min} and maximum value is {max}.";
+		strings["survey.questionnaire.label.numberInput.max"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.max', 'Maximum value is {max}.')}]]*/ "Maximum value is {max}.";
+		strings["survey.questionnaire.label.numberInput.min"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.min', 'Minimum value is {min}.')}]]*/ "Minimum value is {min}.";
+		strings["survey.questionnaire.label.numberInput.roundingNote"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.roundingNote', 'If your input doesnot comply with the step size specified, it will be rounded of to the nearest step size.')}]]*/ "If your input doesnot comply with the step size specified, it will be rounded of to the nearest step size.";
+		strings['survey.questionnaire.label.numberInput.stepSize'] = 
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.numberInput.stepSize', 'Your inputs should match the stepsize.')}]]*/ 'Your inputs should match the stepsize.'; 
+		strings["survey.questionnaire.label.required"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.required', 'This answer is required. Do you want to skip this question anyway?.')}]]*/ "This answer is required. Do you want to skip this question anyway?";
+		strings["survey.questionnaire.label.optional"] =
+			/*[[${messages.get(#locale, 'survey.questionnaire.label.optional', 'optional')}]]*/ "optional";
+		strings["survey.question.bodyPart.hint"] =
+			/*[[${messages.get(#locale, 'survey.question.bodyPart.hint', 'To answer the question choose the body parts that are marked on the picture.\n')}]]*/ "To answer the question choose the body parts that are marked on the picture.\n";
+		strings["survey.question.barcode.clearButton"] =
+			/*[[${messages.get(#locale, 'survey.question.barcode.clearButton', 'Clear input')}]]*/ "Clear input";
+		strings["survey.question.barcode.scanButton"] =
+			/*[[${messages.get(#locale, 'survey.question.barcode.scanButton', 'Scan code')}]]*/ "Scan code";
+		strings["survey.question.infotext.hint"] =
+			/*[[${messages.get(#locale, 'survey.question.infotext.hint', 'This text is just for your information. Click on "next Question" in the upper right corner to continue this survey.')}]]*/ 'This text is just for your information. Click on "next Question" in the upper right corner to continue this survey.';
+		strings["survey.question.image.button.redo"] =
+			/*[[${messages.get(#locale, 'survey.question.image.button.redo', 'Redo')}]]*/ "Redo";
+		strings["survey.question.image.button.undo"] =
+			/*[[${messages.get(#locale, 'survey.question.image.button.undo', 'Undo')}]]*/ "Undo";
+		strings["survey.question.image.flipswitch.black"] =
+			/*[[${messages.get(#locale, 'survey.question.image.flipswitch.black', 'Black')}]]*/ "Black";
+		strings["survey.question.image.flipswitch.white"] =
+			/*[[${messages.get(#locale, 'survey.question.image.flipswitch.white', 'White')}]]*/ "White";
+		strings["layout.label.exitHelp"] =
+			/*[[${messages.get(#locale, 'layout.label.exitHelp', 'Exit Help')}]]*/ "Exit Help";
+		strings["layout.label.help"] =
+			/*[[${messages.get(#locale, 'layout.label.help', 'Help')}]]*/ "Help";
+		strings["helpMode.label.increaseDecrease"] =
+			/*[[${messages.get(#locale, 'helpMode.label.increaseDecrease', 'You can increase or decrese the font size here.')}]]*/ "You can increase or decrese the font size here.";
+		strings["helpMode.label.bundleWelcome.listText"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleWelcome.listText', 'These are the questionnaires you will complete in this survey. If a questionnaire is marked as optional, this questionnare will perhaps be deactivated during the survey and you don''t have to complete it.')}]]*/ "These are the questionnaires you will complete in this survey. If a questionnaire is marked as optional, this questionnare will perhaps be deactivated during the survey and you don't have to complete it.";
+		strings["helpMode.label.bundleWelcome.nextButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleWelcome.nextButton', 'If you click here, the survey will start.')}]]*/ "If you click here, the survey will start.";
+		strings["helpMode.label.bundleWelcome.title"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleWelcome.title', 'This is the title of the bundle.')}]]*/ "This is the title of the bundle.";
+		strings["helpMode.label.bundleWelcome.welcomeText"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleWelcome.welcomeText', 'This is the welcome text of the bundle.')}]]*/ "This is the welcome text of the bundle.";
+		strings["helpMode.label.questionnaireWelcome.logo"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireWelcome.logo', 'This is the logo of the questionnaire.')}]]*/ "This is the logo of the questionnaire.";
+		strings["helpMode.label.questionnaireWelcome.nextButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireWelcome.nextButton', 'If you click here, the questionnaire will start.')}]]*/ "If you click here, the questionnaire will start.";
+		strings["helpMode.label.questionnaireWelcome.text"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireWelcome.text', 'This is the title of the questionnaire.')}]]*/ "This is the title of the questionnaire.";
+		strings["helpMode.label.questionnaireWelcome.title"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireWelcome.title', 'This is the welcome text of the questionnaire.')}]]*/ "This is the welcome text of the questionnaire.";
+		strings["helpMode.label.questionnaire.finishQuestionnaireButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaire.finishQuestionnaireButton', 'If you click here, you will finish the questionnaire.')}]]*/ "If you click here, you will finish the questionnaire.";
+		strings["helpMode.label.questionnaire.nextQuestionButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaire.nextQuestionButton', 'If you click here, you will get to the next question.')}]]*/ "If you click here, you will get to the next question.";
+		strings["helpMode.label.questionnaire.previousQuestionButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaire.previousQuestionButton', 'If you click here, you will get to the previous question.')}]]*/ "If you click here, you will get to the previous question.";
+		strings["helpMode.label.questionnaire.titleAndProgress"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaire.titleAndProgress', 'This is the title of this questionnaire and your previous progress in this questionnaire.')}]]*/ "This is the title of this questionnaire and your previous progress in this questionnaire.";
+		strings["helpMode.label.questionnaire.titleAndProgressPerBundle"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaire.titleAndProgressPerBundle', 'This is the title of this questionnaire and your previous progress in this survey.')}]]*/ "This is the title of this questionnaire and your previous progress in this survey.";
+		strings["helpMode.label.completenessCheck.finishQuestionnaireButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.completenessCheck.finishQuestionnaireButton', 'If you click here, you will finish this questionnaire. A subsequent answer to the questions is not possible.')}]]*/ "If you click here, you will finish this questionnaire. A subsequent answer to the questions is not possible.";
+		strings["helpMode.label.completenessCheck.nextQuestionnaireButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.completenessCheck.nextQuestionnaireButton', 'If you click here, you will get to the next questionnaire. A subsequent answer to the questions is not possible.')}]]*/ "If you click here, you will get to the next questionnaire. A subsequent answer to the questions is not possible.";
+		strings["helpMode.label.completenessCheck.previousButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.completenessCheck.previousButton', 'If you click here, you can answer the incomplete questions.')}]]*/ "If you click here, you can answer the incomplete questions.";
+		strings["helpMode.label.questionnaireFinal.endSurveyButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireFinal.endSurveyButton', 'If you click here, the survey will be finished.')}]]*/ "If you click here, the survey will be finished.";
+		strings["helpMode.label.questionnaireFinal.nextQuestionnaireButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireFinal.nextQuestionnaireButton', 'If you click here, you will get to the next questionnaire.')}]]*/ "If you click here, you will get to the next questionnaire.";
+		strings["helpMode.label.questionnaireFinal.previousQuestionnaireButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireFinal.previousQuestionnaireButton', 'If you click here, you can get one last time back to this questionnaire.')}]]*/ "If you click here, you can get one last time back to this questionnaire.";
+		strings["helpMode.label.questionnaireFinal.text"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireFinal.text', 'This is final text of the questionnaire.')}]]*/ "This is final text of the questionnaire.";
+		strings["helpMode.label.questionnaireFinal.title"] =
+			/*[[${messages.get(#locale, 'helpMode.label.questionnaireFinal.title', 'This is the title of the quetionnaire.')}]]*/ "This is the title of the quetionnaire.";
+		strings["helpMode.label.bundleFinal.closeButton"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleFinal.closeButton', 'If you click here, you will exit MoPat.')}]]*/ "If you click here, you will exit MoPat.";
+		strings["helpMode.label.bundleFinal.overview"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleFinal.overview', 'Here you can see the questionnaires and how many questions you have answered.')}]]*/ "Here you can see the questionnaires and how many questions you have answered.";
+		strings["helpMode.label.bundleFinal.text"] =
+			/*[[${messages.get(#locale, 'helpMode.label.bundleFinal.text', 'This is the final text of the bundle.')}]]*/ "This is the final text of the bundle.";
+		strings["helpMode.label.question.title"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.title', 'This is the question. Please read it carefully and answer it afterwards.')}]]*/ "This is the question. Please read it carefully and answer it afterwards.";
+		strings["helpMode.label.question.bodyPart"] = 
+			/*[[${messages.get(#locale, 'helpMode.label.question.bodyPart', 'This question allows choosing a body part to answer the given question. Please click on a highlighted body part. You can delete your answer by clicking on the same body part again.')}]]*/ 'This question allows choosing a body part to answer the given question. Please click on a highlighted body part. You can delete your answer by clicking on the same body part again.'; 
+		strings["helpMode.label.question.date"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.date', 'This is an date question. Please click on the field and select the desired date.')}]]*/ "This is an date question. Please click on the field and select the desired date.";
+		strings["helpMode.label.question.dropDown"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.dropDown', 'This is a dropdown question. Please click on the box and choose an answer from the list.')}]]*/ "This is a dropdown question. Please click on the box and choose an answer from the list.";
+		strings["helpMode.label.question.freeText"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.freeText', 'This is a freetext question. Please write your answer in the box below.')}]]*/ "This is a freetext question. Please write your answer in the box below.";
+		strings["helpMode.label.question.image"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.image', 'This is an image question. Please mark the specific position with a click/tap on the image.')}]]*/ "This is an image question. Please mark the specific position with a click/tap on the image.";
+		strings["helpMode.label.question.multipleChoice"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.multipleChoice', 'This is a multiple choice question. Please select so many questions as described.')}]]*/ "This is a multiple choice question. Please select so many questions as described.";
+		strings["helpMode.label.question.numberCheckbox"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.numberCheckbox', 'This is a checkbox question. Just click on the desired number to select it.')}]]*/ "This is a checkbox question. Just click on the desired number to select it.";
+		strings["helpMode.label.question.numberCheckboxText"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.numberCheckboxText', 'This is a checkbox-freetext question. Just click on the desired number to select it and write your text in the box below.')}]]*/ "This is a checkbox-freetext question. Just click on the desired number to select it and write your text in the box below.";
+		strings["helpMode.label.question.numberInput"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.numberInput', 'This is a number input question. Please enter an integer in the possibly given range into the field.')}]]*/ "This is a number input question. Please enter an integer in the possibly given range into the field.";
+		strings["helpMode.label.question.slider"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.slider', 'This is a slider question. Tap and hold the controller to move it to the desired position.')}]]*/ "This is a slider question. Tap and hold the controller to move it to the desired position.";
+		strings["helpMode.label.question.toolbar"] =
+			/*[[${messages.get(#locale, 'helpMode.label.question.toolbar', 'Here you can undo or redo your changes and choose the color of the markings.')}]]*/ "Here you can undo or redo your changes and choose the color of the markings.";
+	</script>
+</th:block>
