@@ -549,6 +549,7 @@ public class QuestionnaireController {
         if ((url == null || url.trim().isEmpty()) && !file.getOriginalFilename()
             .contains(".json")) {
             model.addAttribute("fileUpload", true);
+
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setNamespaceAware(true);
             DocumentBuilder documentBuilder = null;
@@ -559,6 +560,11 @@ public class QuestionnaireController {
 
                 //Check the nodes if it corresponds to a standards specification
                 NodeList nodes = document.getElementsByTagName("ODM");
+                if (nodes == null || nodes.getLength() < 1) {
+                    //Try to also use our custom format odm:ODM
+                    nodes = document.getElementsByTagName("odm:ODM");
+                }
+
                 if (nodes != null && nodes.getLength() > 0) {
                     exportTemplateType = ExportTemplateType.ODM;
                 }
