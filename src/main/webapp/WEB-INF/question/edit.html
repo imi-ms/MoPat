@@ -1023,7 +1023,7 @@
 									/>
 									<file
 										layout:replace="~{fragments/forms :: fileWithLabel(
-                                        for='imageFile', required=true, showErrors=true,
+                                        for='imageFile', required=true, showErrors=true, accept='.png,.jpeg,.jpg',
                                         path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile', clazz='form-control',
                                         text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
 									>

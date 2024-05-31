@@ -55,6 +55,7 @@
 		<input
 			th:id="${configuration.id}"
 			type="file"
+			accept=".png,.jpg,.jpeg"
 			th:attr="data-path=|${configuration.value ne null ? configuration.value : ''}|"
 			th:attrappend="name=files[__${configuration.id}__]"
 		/>
