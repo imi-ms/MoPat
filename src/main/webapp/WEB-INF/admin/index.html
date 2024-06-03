@@ -59,6 +59,30 @@
                         </div>
                         <div class="modal-body">
                             <table>
+                                <!-- Git Properties -->
+                                <h6
+                                        th:text="${messages.get(#locale, 'admin.information.git.title', 'Git Repository Information')}"
+                                ></h6>
+                                <tr>
+                                    <td class="w-25">[[${messages.get(#locale, 'admin.information.git.build.version', 'Build Version')}]]:</td>
+                                    <td class="w-50">[[${gitProperties.buildVersion}]]</td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25">[[${messages.get(#locale, 'admin.information.git.branch', 'Branch')}]]:</td>
+                                    <td class="w-50">[[${gitProperties.branch}]]</td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25">[[${messages.get(#locale, 'admin.information.git.commit.id', 'Commit ID')}]]:</td>
+                                    <td class="w-50">[[${gitProperties.commitId}]]</td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25">[[${messages.get(#locale, 'admin.information.git.commit.message', 'Commit Message')}]]:</td>
+                                    <td class="w-50">[[${gitProperties.commitMessageShort}]]</td>
+                                </tr>
+                                <!-- End of Git Properties -->
+                                <tr>
+                                    <td colspan="4"><hr></td>
+                                </tr>
                                 <tr>
                                     <td class="w-25">
 										[[${messages.get(#locale, 'admin.information.cache',
