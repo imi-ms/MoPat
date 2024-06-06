@@ -74,12 +74,13 @@
 </th:block>
 
 <!--/* File field. Clazz and id are optional */-->
-<th:block layout:fragment="fileInput(clazz, id, path, showErrors,imageBase64)">
+<th:block layout:fragment="fileInput(clazz, id, path, showErrors, imageBase64, accept)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
 		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
 		th:attr="data-path=${imageBase64}"
+		th:accept="${not #strings.isEmpty(accept)} ? ${accept} : ''"
 		type="file"
 	/>
 	<!--/* Error block */-->
@@ -241,13 +242,13 @@
 
 <!--/* Combine file and label fragments */-->
 <th:block
-	layout:fragment="fileWithLabel(for, text, required, clazz, id, path, showErrors,imageBase64)"
+	layout:fragment="fileWithLabel(for, text, required, clazz, id, path, showErrors, imageBase64, accept)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 	<th:block
-		layout:insert="~{fragments/forms :: fileInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors},imageBase64=${imageBase64})}"
+		layout:insert="~{fragments/forms :: fileInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors},imageBase64=${imageBase64},accept=${accept})}"
 	/>
 </th:block>
 

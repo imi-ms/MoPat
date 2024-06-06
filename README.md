@@ -14,7 +14,7 @@ Currently MoPat supports the automatic export to the following data formats or s
 <img width="100%" src="mopat.svg">
 
 ## Documentation and Wiki
-We have a dedicated [GitHub Wiki]() that describes MoPats functions in detail.
+We have a dedicated [GitHub Wiki](https://github.com/imi-ms/MoPat/wiki) that describes MoPats functions in detail.
 
 ## Prerequisites
 
@@ -56,7 +56,7 @@ In order to run the application as a service on a server the use of Tomcat is hi
 
 
 ## Setup development environment
-You can either use our precompiled .war to run the application on a local server or you can compile the code for yourself.
+You can either use our [precompiled .war](https://github.com/imi-ms/MoPat/releases) to run the application on a local server or you can compile the code for yourself.
 
 Steps to install the project locally:
 
@@ -80,7 +80,7 @@ On Linux, you can use system management tools like systemd or init to configure 
 Alternatively, if you are not running Tomcat as a service, you can start it manually using the startup.sh script (on Linux/Unix) or startup.bat script (on Windows) located in the bin directory of your Tomcat installation folder.
 
 #### Deploying MoPat
-Build the WAR (Web Application Archive) file from the MoPat source code or obtain a pre-built WAR file from the repository.
+Build the WAR (Web Application Archive) file from the MoPat source code or obtain a [pre-built WAR](https://github.com/imi-ms/MoPat/releases) file from the repository.
 MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please adjust `src/main/resources/mopat.properties`:
 ```conf
 de.imi.mopat.logback.email.host=
@@ -106,7 +106,7 @@ Once deployed, you can access MoPat by navigating to the Tomcat URL where the WA
 After successfully deploying MoPat, you have to configure several aspects of the application.
 Initially an Admin user will be created with the credentials "admin"/"admin123". Please create a secure admin account with the invitation feature of MoPat and deactivate the initial admin user. Alternatively you can directly delete the account from the database.
 
-After that, open the configuration page and configure MoPat to fit to your needs. There are many aspects that can be configured, so it is advised to read the [Wiki]() for more info on the different configuration possibilities.
+After that, open the configuration page and configure MoPat to fit to your needs. There are many aspects that can be configured, so it is advised to read the [Wiki](https://github.com/imi-ms/MoPat/wiki/MoPat-Admin-instructions#configuration) for more info on the different configuration possibilities.
 **Make sure to at least configure the file paths for MoPat, as the application will not work correctly otherwise.**
 
 ## Troubleshooting
