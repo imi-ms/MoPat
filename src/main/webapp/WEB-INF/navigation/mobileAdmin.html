@@ -62,7 +62,7 @@
 				</a>
 
 				<th:block
-					sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+						sec:authorize="hasRole('ROLE_EDITOR')"
 				>
 					<a
 						class="link d-flex"
@@ -85,6 +85,7 @@
 					</a>
 
 					<a
+						sec:authorize="hasRole('ROLE_ADMIN')"
 						class="link"
 						th:href="@{/clinic/list}"
 						th:text="${messages.get(#locale, 'admin.navigation.header.clinic', 'Clinics')}"
@@ -92,6 +93,7 @@
 					</a>
 
 					<a
+						sec:authorize="hasRole('ROLE_ADMIN')"
 						class="link d-flex"
 						data-bs-toggle="offcanvas"
 						href="#userOffcanvas"
@@ -290,7 +292,7 @@
 		</th:block>
 
 		<th:block
-			sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+				sec:authorize="hasRole('ROLE_EDITOR')"
 			layout:insert="~{fragments/structures :: mobileNavMenu(
             title=${messages.get(#locale, 'admin.navigation.header.survey', 'Surveys')},
             id=surveyOffcanvas,
