@@ -7,10 +7,10 @@
 >
     <th:block layout:fragment="content">
         <div
-            sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN')"
-            class="panel-body"
-            th:with="message=${messages.get(#locale,
-                'encountermanager.welcome', 
+                sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN')"
+                class="panel-body"
+                th:with="message=${messages.get(#locale,
+                'editor.welcome',
                 messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
                 'Welcome Text')}"
             th:utext="${message}"
