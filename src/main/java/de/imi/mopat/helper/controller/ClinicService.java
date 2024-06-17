@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Question;
@@ -19,6 +20,8 @@ public class ClinicService {
 
     @Autowired
     private BundleClinicService bundleClinicService;
+    @Autowired
+    private ClinicDao clinicDao;
 
     /*
      * Converts this {@link Clinic} object to an {@link ClinicDTO} object.
@@ -43,5 +46,12 @@ public class ClinicService {
         return clinicDTO;
     }
 
+    public List<ClinicDTO> getAllClinics(){
+        return clinicDao.getAllElements().stream()
+                .map(this::toClinicDTO).toList();
+    }
 
+    public void merge(Clinic clinic) {
+        clinicDao.merge(clinic);
+    }
 }
