@@ -9,10 +9,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
@@ -57,7 +54,11 @@ import java.util.Set;
     "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
     "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl",
     "de.imi.mopat.model", "de.imi.mopat.validator"})
-@PropertySource("classpath:mopat.properties")
+
+@PropertySources({
+        @PropertySource("classpath:mopat.properties"),
+        @PropertySource("classpath:git.properties")
+})
 @PropertySource(value = "file:${de.imi.mopat.config.path}/${de.imi.mopat.config.name}", ignoreResourceNotFound = true)
 @EnableJpaRepositories(basePackages = {"de.imi.mopat.dao"}, entityManagerFactoryRef = "MoPat")
 @EnableTransactionManagement

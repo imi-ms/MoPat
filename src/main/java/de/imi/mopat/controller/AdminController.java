@@ -2,6 +2,7 @@ package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.CacheService;
+import de.imi.mopat.helper.controller.GitPropertiesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,9 @@ public class AdminController {
     @Autowired
     private CacheService cacheService;
 
+    @Autowired
+    private GitPropertiesService gitPropertiesService;
+
     /**
      * @param model The model, which holds the information for the view.
      * @return The <i>/admin/index</i> website.
@@ -35,6 +39,7 @@ public class AdminController {
         //Get the default language of the application from the configuration
         model.addAttribute("defaultLanguage", configurationDao.getDefaultLocale());
         model.addAttribute("cacheTimestamp", cacheService.getTimeStamp());
+        model.addAttribute("gitProperties", gitPropertiesService.getGitProperties());
         return "admin/index";
     }
 
