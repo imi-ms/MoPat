@@ -2,6 +2,8 @@ package de.imi.mopat.model.dto;
 
 import jakarta.validation.constraints.Pattern;
 
+import java.util.Objects;
+
 /**
  *
  */
@@ -57,5 +59,13 @@ public class UserDTO {
 
     public void setEmail(final String email) {
         this.email = email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserDTO userDTO = (UserDTO) o;
+        return Objects.equals(id, userDTO.id) && Objects.equals(username, userDTO.username) && Objects.equals(firstname, userDTO.firstname) && Objects.equals(lastname, userDTO.lastname) && Objects.equals(email, userDTO.email);
     }
 }
