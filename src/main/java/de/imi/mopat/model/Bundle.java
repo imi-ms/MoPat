@@ -115,6 +115,8 @@ public class Bundle implements Serializable {
     @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
     private Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
+    @OneToMany(mappedBy = "bundle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
 
     public Bundle() { //default constructor (in protected state), should not
         // be accessible to anything else but the JPA implementation (here:
@@ -835,5 +837,13 @@ public class Bundle implements Serializable {
             return false;
         }
         return getUUID().equals(other.getUUID());
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 }
