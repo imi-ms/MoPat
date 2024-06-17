@@ -13,6 +13,9 @@ import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.controller.UserService;
+import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -24,9 +27,7 @@ import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
-import de.imi.mopat.model.dto.BundleDTO;
-import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.model.dto.*;
 import de.imi.mopat.model.user.AclObjectIdentity;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.BundleDTOValidator;
@@ -65,11 +66,7 @@ public class BundleController {
     @Autowired
     private BundleDao bundleDao;
     @Autowired
-    private ClinicDao clinicDao;
-    @Autowired
     private ConditionDao conditionDao;
-    @Autowired
-    private EncounterDao encounterDao;
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
@@ -84,6 +81,12 @@ public class BundleController {
     private QuestionnaireService questionnaireService;
     @Autowired
     private BundleService bundleService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ClinicService clinicService;
+    @Autowired
+    private ReviewService reviewService;
 
     /**
      * @param id for bundle
@@ -185,7 +188,27 @@ public class BundleController {
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("availableQuestionnaireDTOs", getAvailableQuestionnaires(bundleId));
+        model.addAttribute("availableReviewers", getAvailableReviewers());
+//        TODO: remove
+        List<UserDTO> assignedUserDTOs = new ArrayList<>();
+        model.addAttribute("assignedReviewersDTOs", assignedUserDTOs);
+
         return "bundle/edit";
+    }
+
+    private List<UserDTO> getAvailableReviewers() {
+        String username = userService.getUsername();
+        if (username == null) {
+            return Collections.emptyList();
+        }
+        UserDTO user = userService.getUserByUsername(username);
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        // Hole alle Kliniken
+        List<ClinicDTO> clinics = clinicService.getAllClinics();
+        clinics.forEach(clinicDTO -> clinicDTO.setAssignedUserDTOs(userService.getAssignedUserDTOs(clinicDTO.getId())));
+        return userService.getClinicModeratorsAndAdmins(clinics, user);
     }
 
     /**
@@ -400,7 +423,7 @@ public class BundleController {
                 for (BundleClinic bundleClinic : bundle.getBundleClinics()) {
                     Clinic clinic = bundleClinic.getClinic();
                     clinic.removeBundleClinic(bundleClinic);
-                    clinicDao.merge(clinic);
+                    clinicService.merge(clinic);
                 }
 
                 // Delete connection to the questionnaires
