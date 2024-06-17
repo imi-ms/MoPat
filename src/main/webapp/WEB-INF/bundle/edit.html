@@ -666,6 +666,342 @@
 					id="draggableContainer"
 				></div>
 
+				<div sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN') and not hasRole('ROLE_MODERATOR')">
+				<!--/* assigned reviewer table */-->
+				<th:block th:with="bundleReviewerIndex=${counter.clear()}">
+					<div
+							class="container-fluid doubleList"
+							id="userTable"
+					>
+						<div class="row removableFlex toggleCollapseTable">
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<!--/* Title of the table */-->
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<!--/* The 2 tables, bundles assigned to the clinic and bundles available to be assigned to the clinic */-->
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.heading.assignedReviewer', 'Reveiwers assigned:')}"
+											/>
+										</div>
+										<div class="col-4">
+											<input
+													class="form-control input-sm"
+													id="assignedReviewerFilter"
+													onkeyup="DragNDropList.filter($(this), '#assignedReviewersTable')"
+													type="text"
+													th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+													data-bs-toggle="collapse"
+													class="bi bi-plus-lg"
+													onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+													data-bs-toggle="collapse"
+													class="bi bi-dash-lg"
+													onclick="DragNDropList.toggleCollapseTable(this)"
+													style="display: none"
+											></a>
+										</div>
+									</div>
+									<!--/* Header of the table */-->
+									<div class="row removableFlex list-group-item active">
+										<div class="col-6">
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.table.reviewerName', 'Name')}"
+											/>
+										</div>
+										<div class="col-6">
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.table.reviewerEmail', 'E-Mail')}"
+											/>
+										</div>
+									</div>
+									<!--/* Body of the table */-->
+									<div
+											id="assignedReviewersTable"
+											class="sortable collapsable assignedTable"
+									>
+										<div
+												class="row removableFlex list-group-item placeholderRow notDraggable"
+												style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+												class="row removableFlex list-group-item notDraggable"
+												id="filterEmptyRow"
+												style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+														th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+										<th:block
+												th:if="${#lists.isEmpty(assignedReviewersDTOs)}"
+										>
+											<div
+													class="row removableFlex list-group-item notDraggable"
+													id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewersEmpty', 'No reviwers assigned')}"
+													/>
+												</div>
+											</div>
+											<div
+													class="row removableFlex list-group-item"
+													style="display: none"
+											>
+												<div class="col-5">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewerName', 'Name:')}"
+													/>
+												</div>
+												<div class="col-6">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewerEmail', 'E-Mail:')}"
+													/>
+												</div>
+												<div class="col-1"></div>
+											</div>
+										</th:block>
+										<th:block
+												th:if="not ${#lists.isEmpty(assignedReviewersDTOs)}"
+										>
+											<div
+													class="row removableFlex list-group-item notDraggable"
+													id="emptyRow"
+													style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewersEmpty', 'No users assigned')}"
+													/>
+												</div>
+											</div>
+											<!--/* iterating through the assigned bundles, giving each bundle a table row */-->
+											<th:block
+													th:each="user, loop: ${assignedUserDTOs}"
+											>
+												<div
+														class="row removableFlex list-group-item draggable user"
+												>
+													<div class="col-5">
+														<span>
+															<th:block th:text="${user.username}" />
+														</span>
+													</div>
+													<div class="col-6">
+														<span>
+															<th:block th:text="${user.email}" />
+														</span>
+													</div>
+													<div class="col-1">
+														<a
+																data-bs-toggle="collapse"
+																onClick="move($(this), $('#assignedReviewersTable'), $('#availableReviewersTable'))"
+														>
+															<span class="bi bi-chevron-right"></span>
+														</a>
+													</div>
+													<input
+															type="hidden"
+															th:name="|assignedReviewersDTOs[${counter.get()}].id|"
+															th:value="${user.id}"
+													/>
+													<input
+															type="hidden"
+															th:value="${user.username}"
+															class="filterName"
+													/>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+														th:with="bundleReviewerIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span
+										style="float: right"
+										class="bi bi-chevron-left"
+								></span>
+							</div>
+							<div class="col-md-1 d-md-block d-none doubleListIcon">
+								<span class="bi bi-chevron-right"></span>
+							</div>
+
+							<!--/* showing the table of available reviewer */-->
+							<div class="col-md-5">
+								<div class="list-group mb-2">
+									<div class="row removableFlex list-group-item">
+										<div class="col-7 drag-n-drop-header-item">
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.heading.availableReviewer', 'Reviewer available')}"
+											/>
+										</div>
+										<div class="col-4">
+											<input
+													class="form-control input-sm"
+													id="availableReviewersFilter"
+													onkeyup="DragNDropList.filter($(this), '#availableReviewersTable')"
+													type="text"
+													th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+											/>
+										</div>
+										<div class="col-1 drag-n-drop-header-item">
+											<a
+													data-bs-toggle="collapse"
+													class="bi bi-plus-lg"
+													onclick="DragNDropList.toggleCollapseTable(this)"
+											></a>
+											<a
+													data-bs-toggle="collapse"
+													class="bi bi-dash-lg"
+													onclick="DragNDropList.toggleCollapseTable(this)"
+													style="display: none"
+											></a>
+										</div>
+									</div>
+									<div class="row removableFlex list-group-item active">
+										<div class="col-md-1"> </div>
+										<div class="col-5">
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.table.reviewerName', 'Name')}"
+											/>
+										</div>
+										<div class="col-6">
+											<th:block
+													th:text="${messages.get(#locale, 'bundle.table.reviewerEmail', 'E-Mail')}"
+											/>
+										</div>
+									</div>
+									<div
+											id="availableReviewersTable"
+											class="sortable collapsable availableTable"
+									>
+										<div
+												class="row removableFlex list-group-item placeholderRow notDraggable"
+												style="display: none"
+										>
+											<div class="col-12"> &nbsp; </div>
+										</div>
+										<div
+												class="row removableFlex list-group-item notDraggable"
+												id="filterEmptyRow"
+												style="display: none"
+										>
+											<div class="col-12">
+												<th:block
+														th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+												/>
+											</div>
+										</div>
+										<!--/* if there is no reviewer available (anymore), the heading of this table does not have to be presented; instead, a message like 'no reviewer available' is shown */-->
+										<th:block th:if="${#lists.isEmpty(availableReviewers)}">
+											<div
+													class="row removableFlex list-group-item notDraggable"
+													id="emptyRow"
+											>
+												<div class="col-12">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.noMoreReviewers', 'No reviewers available')}"
+													/>
+												</div>
+											</div>
+											<div
+													class="row removableFlex list-group-item"
+													style="display: none"
+											>
+												<div class="col-md-2">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.moveReviewer', 'Move')}"
+													/>
+												</div>
+												<div class="col-5">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewerName', 'Name')}"
+													/>
+												</div>
+												<div class="col-5">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.reviewerEmail', 'E-Mail')}"
+													/>
+												</div>
+											</div>
+										</th:block>
+										<!--/* at least one reviewer is available, thus the heading of this table is presented; the message 'no reviewer available' is hidden instead */-->
+										<th:block th:unless="${#lists.isEmpty(availableReviewers)}">
+											<div
+													class="row removableFlex list-group-item notDraggable"
+													id="emptyRow"
+													style="display: none"
+											>
+												<div class="col-12">
+													<th:block
+															th:text="${messages.get(#locale, 'bundle.table.noMoreReviewers', 'No reviewers available')}"
+													/>
+												</div>
+											</div>
+											<!--/* iterating over the reviewer available to be assigned to the bundle review */-->
+											<th:block th:each="item, loop: ${availableReviewers}">
+												<div
+														class="row removableFlex list-group-item draggable user"
+												>
+													<div class="col-1">
+														<a
+																data-bs-toggle="collapse"
+																onClick="move($(this), $('#availableReviewersTable'), $('#assignedReviewersTable'))"
+														><span class="bi bi-chevron-left"
+														/></a>
+													</div>
+													<div class="col-5">
+														<span>
+															<th:block th:text="${item.username}" />
+														</span>
+													</div>
+													<div class="col-6">
+														<span>
+															<th:block th:text="${item.email}" />
+														</span>
+													</div>
+													<input
+															disabled="true"
+															type="hidden"
+															th:name="|assignedReviewersDTOs[${counter.get()}].id|"
+															th:value="${item.id}"
+													/>
+													<input
+															type="hidden"
+															th:value="${item.username}"
+															class="filterName"
+													/>
+												</div>
+												<!--/* Increment the index */-->
+												<th:block
+														th:with="bundleReviewerIndex=${counter.increment()}"
+												/>
+											</th:block>
+										</th:block>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</th:block>
+				</div>
+
 				<button
 					type="submit"
 					th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
@@ -751,6 +1087,26 @@
 					.attr("disabled", "true");
 			}
 
+			if ($.contains($("#availableReviewersTable")[0], $(element)[0])) {
+				startTable = $("#availableReviewersTable");
+				targetTable = $("#assignedReviewersTable");
+				$(element)
+					.parents(".draggable")
+					.find(".enable")
+					.children("input")
+					.attr("disabled", "true");
+			}
+
+			if ($.contains($("#assignedReviewersTable")[0], $(element)[0])) {
+				startTable = $("#assignedReviewersTable");
+				targetTable = $("#availableReviewersTable");
+				$(element)
+					.parents(".draggable")
+					.find(".enable")
+					.children("input")
+					.attr("disabled", "true");
+			}
+
 			DragNDropList.moveElementToTargetList(element, targetTable);
 			checkPublishingState();
 		}
@@ -773,6 +1129,25 @@
 				DragNDropList.onChange(e); 
 			} 
 
+		});
+
+		$("#assignedReviewersTable, #availableReviewersTable").each(function(i) {
+			$(this).sortable({
+				group: "users",
+				sort: true,
+				animation:150,
+				easing: "cubic-bezier(1, 0, 0, 1)",
+				draggable: ".list-group-item",
+				filter: ".notDraggable",
+				onStart: function(e) {
+					startTable = $(e.from);
+					targetTable = $(e.from);
+				},
+				onChange: function(e) {
+					DragNDropList.onChange(e);
+				}
+
+			});
 		});
 	</script>
 </th:block>
