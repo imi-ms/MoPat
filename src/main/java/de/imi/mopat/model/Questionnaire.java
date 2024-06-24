@@ -132,6 +132,12 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @OneToMany(mappedBy = "questionnaire", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Score> scores = new HashSet<Score>();
 
+    @Column(name = "version", nullable = false)
+    private Integer version = 1;
+
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
@@ -812,5 +818,48 @@ public class Questionnaire implements ConditionTarget, Serializable {
         availableScores.removeAll(dependingScores);
         availableScores.remove(score);
         return new ArrayList<>(availableScores);
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public void setQuestions(Set<Question> questions) {
+        this.questions = questions;
+    }
+
+    public Questionnaire deepCopy() {
+        Questionnaire copy = new Questionnaire();
+        copy.setName(this.name);
+        copy.setDescription(this.description);
+        copy.setLocalizedWelcomeText(new HashMap<>(this.localizedWelcomeText));
+        copy.setLocalizedFinalText(new HashMap<>(this.localizedFinalText));
+        copy.setLocalizedDisplayName(new HashMap<>(this.localizedDisplayName));
+
+        // Deep copy of questions
+
+//        for (Question question : this.questions){
+//            System.out.println(question);
+//        }
+
+        List<Question> originalQuestions = new ArrayList<>(this.questions);
+        Set<Question> copiedQuestions = new HashSet<>();
+        for (Question question : originalQuestions) {
+            copiedQuestions.add(question.cloneWithAnswersAndReferenceToQuestionnaire());
+        }
+        copy.setQuestions(copiedQuestions);
+        return copy;
     }
 }
