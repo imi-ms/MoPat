@@ -26,6 +26,7 @@ import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ODMProcessingBean;
 import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
 import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
@@ -134,13 +135,9 @@ public class QuestionnaireController {
     @Autowired
     private OperatorDao operatorDao;
     @Autowired
-    private QuestionnaireDTOValidator questionnaireDTOValidator;
-    @Autowired
     private QuestionValidator questionValidator;
     @Autowired
     private ExportTemplateDao exportTemplateDao;
-    @Autowired
-    private EncounterDao encounterDao;
     @Autowired
     private ConfigurationDao configurationDao;
     @Autowired
@@ -153,6 +150,8 @@ public class QuestionnaireController {
     private LocaleHelper localeHelper;
     @Autowired
     private QuestionnaireService questionnaireService;
+    @Autowired
+    private AuthService authService;
 
 
     @Autowired
@@ -248,120 +247,31 @@ public class QuestionnaireController {
             return "redirect:/questionnaire/list";
         }
 
-        // Check if one of the welcome texts has only one newline and change
-        // it to an empty string
-        SortedMap<String, String> tempLocalizedWelcomeText = questionnaireDTO.getLocalizedWelcomeText();
-        for (SortedMap.Entry localizedWelcomeText : tempLocalizedWelcomeText.entrySet()) {
-            if (localizedWelcomeText.getValue().equals("<p><br></p>")
-                || localizedWelcomeText.getValue().equals("<br>")) {
-                localizedWelcomeText.setValue("");
-            }
-        }
-        questionnaireDTO.setLocalizedWelcomeText(tempLocalizedWelcomeText);
-
-        // Check if one of the final texts has only one newline and change it
-        // to an empty string
-        SortedMap<String, String> tempLocalizedFinalText = questionnaireDTO.getLocalizedFinalText();
-        for (SortedMap.Entry localizedFinalText : tempLocalizedFinalText.entrySet()) {
-            if (localizedFinalText.getValue().equals("<p><br></p>") || localizedFinalText.getValue()
-                .equals("<br>")) {
-                localizedFinalText.setValue("");
-            }
-        }
-        questionnaireDTO.setLocalizedFinalText(tempLocalizedFinalText);
-
-        // Validate the questionnaire object
-        questionnaireDTOValidator.validate(questionnaireDTO, result);
-
-        // If a new logo has been uploaded the new one will be stored only if
-        // the image type is supported.
-        if (!logo.isEmpty()) {
-            // Check if the uploaded file is an image
-            String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
-            if (!logoExtension.equalsIgnoreCase("png") && !logoExtension.equalsIgnoreCase("jpg")
-                && !logoExtension.equalsIgnoreCase("jpeg")) {
-                result.rejectValue("logo", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("bundle.error.wrongImageType", new Object[]{},
-                        LocaleContextHolder.getLocale()));
-            }
-        }
+        questionnaireService.processLocalizedText(questionnaireDTO);
+        questionnaireService.validateQuestionnaire(questionnaireDTO, result);
 
         if (result.hasErrors()) {
-            if (questionnaireDTO.getId() != null) {
-                questionnaireDTO.setLogo(
-                    questionnaireDao.getElementById(questionnaireDTO.getId()).getLogo());
-            }
-            model.addAttribute("questionnaireDTO", questionnaireDTO);
-            model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-            return "questionnaire/edit";
+            return handleValidationErrors(questionnaireDTO, model);
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User principal = (User) authentication.getPrincipal();
-
-        // Make a questionnaire object based on the questionnaireDTO object
-        Questionnaire questionnaire;
-        if (questionnaireDTO.getId() != null) {
-            questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-            questionnaire.setDescription(questionnaireDTO.getDescription());
-            questionnaire.setName(questionnaireDTO.getName());
-            questionnaire.setChangedBy(principal.getId());
-        } else {
-            questionnaire = new Questionnaire(questionnaireDTO.getName(),
-                questionnaireDTO.getDescription(), principal.getId(), Boolean.TRUE);
-        }
-
-        questionnaire.setLocalizedWelcomeText(questionnaireDTO.getLocalizedWelcomeText());
-        questionnaire.setLocalizedFinalText(questionnaireDTO.getLocalizedFinalText());
-        questionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
-        // Merge questionnaire before storing logo to ensure that
-        // questionnaire.getId() is not null
-        questionnaireDao.merge(questionnaire);
-        // If a new logo has been uploaded or the old logo is marked as deleted
-        if (!logo.isEmpty() || questionnaireDTO.isDeleteLogo()) {
-            String imagePath =
-                configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/"
-                    + questionnaire.getId().toString();
-            // Delete the old logo
-            if (questionnaire.getLogo() != null) {
-                File deleteFile = new File(imagePath + "/" + questionnaire.getLogo());
-                deleteFile.delete();
-                questionnaire.setLogo(null);
-            }
-
-            // If a new logo has been uploaded the new one is uploaded
-            if (!logo.isEmpty()) {
-                // Check if the uploaded file is an image
-                String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
-
-                questionnaire.setLogo("logo." + logoExtension);
-
-                // Check if the upload dir exists. If not, create it
-                File uploadDir = new File(imagePath);
-                if (!uploadDir.isDirectory()) {
-                    uploadDir.mkdirs();
-                }
-                File uploadFile = new File(imagePath, "logo." + logoExtension);
-                BufferedImage resizedImage = null;
-                try {
-                    // Resize the uploaded image and write it to disk
-                    BufferedImage uploadImage = ImageIO.read(logo.getInputStream());
-                    resizedImage = GraphicsUtilities.resizeImage(uploadImage, 300);
-                    ImageIO.write(resizedImage, logoExtension, uploadFile);
-                } catch (IOException ex) {
-                    LOGGER.debug(
-                        "Error uploading the picture for the " + "questionnaire " + "with id {}: "
-                            + ex.getLocalizedMessage(), questionnaireDTO.getId());
-                }
-            }
-        }
-        questionnaireDao.merge(questionnaire);
+        Long principalId = authService.getAuthenticatedUserId();
+        System.out.println(principalId);
+        Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logo, principalId);
 
         if (action.equals("saveEditButton")) {
             return "redirect:/question/list?id=" + questionnaire.getId();
         } else {
             return "redirect:/questionnaire/list";
         }
+    }
+
+    private String handleValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
+        if (questionnaireDTO.getId() != null) {
+            questionnaireDTO.setLogo(questionnaireDao.getElementById(questionnaireDTO.getId()).getLogo());
+        }
+        model.addAttribute("questionnaireDTO", questionnaireDTO);
+        model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
+        return "questionnaire/edit";
     }
 
     /**
