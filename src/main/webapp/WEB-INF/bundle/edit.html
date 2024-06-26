@@ -19,7 +19,7 @@
 					id="errors"
 					class="alert alert-danger"
 					style="width: 100%"
-					th:text="${messages.get(#locale, 'bundle.error.notModifiable', 
+					th:text="${messages.get(#locale, 'bundle.error.notModifiable',
                         'This bundle is not editable due to at least one unfinished encounter associated to this bundle.')}"
 				>
 				</div>
@@ -64,7 +64,7 @@
 					<input
 						layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
-                        clazz='form-control', showErrors=true, 
+                        clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')})}"
 
 					/>
@@ -73,7 +73,7 @@
 					<textarea
 						layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
-                        clazz='wysiwyg', showErrors=true, 
+                        clazz='wysiwyg', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.description', 'Description')})}"
 					>
 					</textarea>
@@ -85,7 +85,7 @@
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedWelcomeTextCollapsableText',
                         inputType='textarea',
-                        inputClazz='form-control wysiwyg localablePostElement', 
+                        inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedWelcomeText[#INDEXFIELD]',
                         firstRequiredLocalableElement=true)}"
 					>
@@ -104,7 +104,7 @@
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedFinalTextCollapsableText',
                         inputType='textarea',
-                        inputClazz='form-control wysiwyg localablePostElement', 
+                        inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedFinalText[#INDEXFIELD]')}"
 					>
 						<th:block layout:fragment="collapseLabel">
@@ -160,14 +160,14 @@
 								<div class="row removableFlex list-group-item">
 									<div class="col-7 drag-n-drop-header-item">
 										<th:block
-											th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 
+											th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires',
                                             'Assigned questionnaires')}"
 										>
 										</th:block>
 										<span
 											class="bi bi-info-circle-fill"
 											style="display: inline-block"
-											th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 
+											th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo',
                                             'For each questionnaire it is possible to enable the export templates to be exported')}"
 										>
 										</span>
@@ -185,6 +185,7 @@
 										<a
 											data-bs-toggle="collapse"
 											class="bi bi-plus-lg"
+											id="moreQuestionnaire"
 											onclick="DragNDropList.toggleCollapseTable(this)"
 										>
 										</a>
@@ -661,7 +662,7 @@
 					</div>
 				</div>
 
-				<div 
+				<div
 					class="d-none"
 					id="draggableContainer"
 				></div>
@@ -757,21 +758,21 @@
 
 		$(".sortable").sortable({
 			group: "questionnaires",
-			sort: true, 
+			sort: true,
 			animation:150,
 			easing: "cubic-bezier(1, 0, 0, 1)",
 			draggable: ".list-group-item",
 			filter: ".notDraggable",
 			onStart: function(e) {
 				startTable = $(e.from);
-				targetTable = $(e.from); 
+				targetTable = $(e.from);
 			},
 			onEnd: function(e) {
-				checkPublishingState(); 
+				checkPublishingState();
 			},
 			onChange: function(e) {
-				DragNDropList.onChange(e); 
-			} 
+				DragNDropList.onChange(e);
+			}
 
 		});
 	</script>

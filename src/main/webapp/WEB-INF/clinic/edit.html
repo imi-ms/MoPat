@@ -1,5 +1,5 @@
 <!--/*
-    * View to create a new clinic entry or edit an existing one    
+    * View to create a new clinic entry or edit an existing one
 */-->
 
 <th:block
@@ -177,7 +177,7 @@
 												th:each="bundleClinicDTO, loop: ${clinicDTO.bundleClinicDTOs}"
 											>
 												<div
-													class="row removableFlex list-group-item draggable bundle"
+													class="row removableFlex list-group-item draggable bundle" th:classappend="${#strings.replace(bundleClinicDTO.bundleDTO.name, ' ', '')}"
 												>
 													<input
 														type="hidden"
@@ -316,10 +316,10 @@
 											</div>
 										</div>
 
-										<!--/* 
-                                            * if there is no bundle available (anymore), 
-                                            * the heading of this table does not have to be 
-                                            * presented; instead, a message like 'no bundles available' is shown 
+										<!--/*
+                                            * if there is no bundle available (anymore),
+                                            * the heading of this table does not have to be
+                                            * presented; instead, a message like 'no bundles available' is shown
                                         */-->
 										<th:block th:if="${#lists.isEmpty(availableBundleDTOs)}">
 											<div
@@ -352,8 +352,8 @@
 											</div>
 										</th:block>
 										<!--/*
-                                                * at least one bundle is available, thus the heading of this table 
-                                                * is presented; the message 'no bundles available' is hidden instead 
+                                                * at least one bundle is available, thus the heading of this table
+                                                * is presented; the message 'no bundles available' is hidden instead
                                         */-->
 										<th:block
 											th:unless="${#lists.isEmpty(availableBundleDTOs)}"
@@ -375,7 +375,7 @@
 												th:each="bundleDTO, loop: ${availableBundleDTOs}"
 											>
 												<div
-													class="row removableFlex list-group-item draggable bundle"
+													class="row removableFlex list-group-item draggable bundle" th:classappend="${#strings.replace(bundleDTO.name, ' ', '')}"
 												>
 													<input
 														disabled="true"
@@ -546,7 +546,7 @@
 												th:each="user, loop: ${clinicDTO.assignedUserDTOs}"
 											>
 												<div
-													class="row removableFlex list-group-item draggable user"
+													class="row removableFlex list-group-item draggable username" th:classappend="${user.username}"
 												>
 													<div class="col-11">
 														<span>
@@ -697,7 +697,7 @@
 											<!--/* iterating over the users available to be assigned to the clinic */-->
 											<th:block th:each="item, loop: ${availableUserDTOs}">
 												<div
-													class="row removableFlex list-group-item draggable user"
+													class="row removableFlex list-group-item draggable username" th:classappend="${item.username}"
 												>
 													<div class="col-1">
 														<a
@@ -805,19 +805,19 @@
 		$("#assignedBundlesTable, #availableBundlesTable").each(function(i) {
 			$(this).sortable({
 				group: "bundles",
-				sort: true, 
+				sort: true,
 				animation:150,
 				easing: "cubic-bezier(1, 0, 0, 1)",
 				draggable: ".list-group-item",
 				filter: ".notDraggable",
 				onStart: function(e) {
 					startTable = $(e.from);
-					targetTable = $(e.from); 
+					targetTable = $(e.from);
 				},
-				
+
 				onChange: function(e) {
-					DragNDropList.onChange(e); 
-				} 
+					DragNDropList.onChange(e);
+				}
 
 			});
 		});
@@ -825,18 +825,18 @@
 		$("#assignedUsersTable, #availableUsersTable").each(function(i) {
 			$(this).sortable({
 				group: "users",
-				sort: true, 
+				sort: true,
 				animation:150,
 				easing: "cubic-bezier(1, 0, 0, 1)",
 				draggable: ".list-group-item",
 				filter: ".notDraggable",
 				onStart: function(e) {
 					startTable = $(e.from);
-					targetTable = $(e.from); 
+					targetTable = $(e.from);
 				},
 				onChange: function(e) {
-					DragNDropList.onChange(e); 
-				} 
+					DragNDropList.onChange(e);
+				}
 
 			});
 		});
