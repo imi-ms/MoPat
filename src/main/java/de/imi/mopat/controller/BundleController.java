@@ -188,11 +188,6 @@ public class BundleController {
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("availableQuestionnaireDTOs", getAvailableQuestionnaires(bundleId));
-        model.addAttribute("availableReviewers", getAvailableReviewers());
-//        TODO: remove
-        List<UserDTO> assignedUserDTOs = new ArrayList<>();
-        model.addAttribute("assignedReviewersDTOs", assignedUserDTOs);
-
         return "bundle/edit";
     }
 

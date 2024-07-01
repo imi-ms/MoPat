@@ -255,7 +255,6 @@ public class QuestionnaireController {
         }
 
         Long principalId = authService.getAuthenticatedUserId();
-        System.out.println(principalId);
         Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logo, principalId);
 
         if (action.equals("saveEditButton")) {

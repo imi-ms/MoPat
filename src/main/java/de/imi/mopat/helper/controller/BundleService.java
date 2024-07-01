@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Question;
@@ -24,6 +25,9 @@ public class BundleService {
 
     @Autowired
     private QuestionnaireService questionnaireService;
+
+    @Autowired
+    private BundleQuestionnaireDao bundleQuestionnaireDao;
 
     /**
      * Converts this {@link Bundle} object to an {@link BundleDTO} object.
@@ -72,4 +76,7 @@ public class BundleService {
     }
 
 
+    public List<BundleQuestionnaire> findByQuestionnaire(Long questionnaireID) {
+        return bundleQuestionnaireDao.findByQuestionnaire(questionnaireID);
+    }
 }

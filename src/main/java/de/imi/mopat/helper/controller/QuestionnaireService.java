@@ -8,6 +8,7 @@ import de.imi.mopat.model.BodyPartAnswer;
 import de.imi.mopat.model.DateAnswer;
 import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
+import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.SelectAnswer;
@@ -59,26 +60,38 @@ public class QuestionnaireService {
         org.slf4j.LoggerFactory.getLogger(Question.class);
 
     @Autowired
-    private QuestionService questionService;
+    @Qualifier("MoPat")
+    private PlatformTransactionManager transactionManager;
 
     @Autowired
     private ConfigurationDao configurationDao;
 
     @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private QuestionService questionService;
+
+    @Autowired
+    private BundleService bundleService;
+
+    @Autowired
+    private EncounterService encounterService;
+
+    @Autowired
+    private ClinicService clinicService;
+
+    @Autowired
     private QuestionnaireDao questionnaireDao;
+
+    @Autowired
+    private QuestionnaireVersionDao questionnaireVersionDao;
 
     @Autowired
     private QuestionnaireDTOValidator questionnaireDTOValidator;
 
     @Autowired
     private MessageSource messageSource;
-
-    @Autowired
-    private QuestionnaireVersionDao questionnaireVersionDao;
-
-    @Autowired
-    @Qualifier("MoPat")
-    private PlatformTransactionManager transactionManager;
 
     /**
      * Converts this {@link Questionnaire} object to an
@@ -145,35 +158,93 @@ public class QuestionnaireService {
 
     @Transactional(transactionManager = "MoPat")
     public Questionnaire saveOrUpdateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
-        Questionnaire newQuestionnaire;
+
+        // Update questionnaire directly if editing is allowed
         if (questionnaireDTO.getId() != null) {
-            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-            newQuestionnaire = existingQuestionnaire.deepCopy();
-            newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
-            newQuestionnaire.setChangedBy(userId);
-
-            // Save the versioning information
-            QuestionnaireVersion version = new QuestionnaireVersion();
-            version.setCurrentQuestionnaire(newQuestionnaire);
-            version.setPreviousQuestionnaire(existingQuestionnaire);
-            questionnaireVersionDao.merge(version);
-        } else {
-            newQuestionnaire = new Questionnaire(questionnaireDTO.getName(),
-                    questionnaireDTO.getDescription(), userId, Boolean.TRUE);
-            newQuestionnaire.setCreatedBy(userId);
+            return updateExistingQuestionnaire(questionnaireDTO, logo, userId);
         }
 
-        newQuestionnaire.setLocalizedWelcomeText(questionnaireDTO.getLocalizedWelcomeText());
-        newQuestionnaire.setLocalizedFinalText(questionnaireDTO.getLocalizedFinalText());
-        newQuestionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
+        // Default: Create new questionnaire if ID is null
+        return createNewQuestionnaire(questionnaireDTO, logo, userId);
+    }
 
-        if (!logo.isEmpty() || questionnaireDTO.isDeleteLogo()) {
-            handleLogoUpload(newQuestionnaire, logo, questionnaireDTO.isDeleteLogo());
+    public boolean editingQuestionnaireAllowed(QuestionnaireDTO questionnaireDTO) {
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+
+        // Admins and moderators can edit if there are no encounters
+        if (authService.hasRoleOrAbove("ROLE_MODERATOR")) {
+            return questionnaire.isModifiable();
         }
 
+        // Editors can edit if questionnaire is not part of any bundle or if the bundle has no encounters
+        if (authService.hasExactRole("ROLE_EDITOR")) {
+            return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
+        }
+
+        // By default, editing is not allowed
+        return false;
+    }
+
+
+    private boolean isQuestionnairePartOfEnabledBundle(Questionnaire questionnaire) {
+        List<BundleQuestionnaire> bundleQuestionnaires = bundleService.findByQuestionnaire(questionnaire.getId());
+        for (BundleQuestionnaire bundleQuestionnaire : bundleQuestionnaires) {
+            if(bundleQuestionnaire.getIsEnabled()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+        Questionnaire newQuestionnaire = new Questionnaire(questionnaireDTO.getName(),
+                questionnaireDTO.getDescription(), userId, Boolean.TRUE);
+        setCommonAttributes(newQuestionnaire, questionnaireDTO, logo);
         questionnaireDao.merge(newQuestionnaire);
         return newQuestionnaire;
     }
+
+    private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+        Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+        existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
+        existingQuestionnaire.setName(questionnaireDTO.getName());
+        existingQuestionnaire.setChangedBy(userId);
+        setCommonAttributes(existingQuestionnaire, questionnaireDTO, logo);
+        questionnaireDao.merge(existingQuestionnaire);
+        return existingQuestionnaire;
+    }
+
+    private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+        Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+        Questionnaire newQuestionnaire = existingQuestionnaire.deepCopy();
+//        newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
+        newQuestionnaire.setChangedBy(userId);
+//        newQuestionnaire.setCreatedBy(userId);
+
+        saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
+
+        setCommonAttributes(newQuestionnaire, questionnaireDTO, logo);
+        questionnaireDao.merge(newQuestionnaire);
+        return newQuestionnaire;
+    }
+
+    private void saveVersioningInformation(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
+        QuestionnaireVersion version = new QuestionnaireVersion();
+        version.setCurrentQuestionnaire(newQuestionnaire);
+        version.setPreviousQuestionnaire(existingQuestionnaire);
+        questionnaireVersionDao.merge(version);
+    }
+
+    private void setCommonAttributes(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
+        questionnaire.setLocalizedWelcomeText(questionnaireDTO.getLocalizedWelcomeText());
+        questionnaire.setLocalizedFinalText(questionnaireDTO.getLocalizedFinalText());
+        questionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
+
+        if (!logo.isEmpty() || questionnaireDTO.isDeleteLogo()) {
+            handleLogoUpload(questionnaire, logo, questionnaireDTO.isDeleteLogo());
+        }
+    }
+
 
     private void handleLogoUpload(Questionnaire questionnaire, MultipartFile logo, boolean isDeleteLogo) {
         String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
