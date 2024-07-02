@@ -24,15 +24,33 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 public class UserValidator implements Validator {
 
     @Autowired
-    private SpringValidatorAdapter validator;
-    @Autowired
     UserDao userDao;
+    @Autowired
+    private SpringValidatorAdapter validator;
     @Autowired
     private PepperedBCryptPasswordEncoder passwordEncoder;
     @Autowired
     private MessageSource messageSource;
     @Autowired
     private ApplicationContext appContext;
+
+    /**
+     * Helper function to check, if pin is a consecutive number like 123456, 12345678, etc.
+     *
+     * @param pin to be checked
+     * @return true if pin is consecutive number, false otherwise
+     */
+    private static boolean isConsecutiveSequence(String pin) {
+        for (int i = 0; i <= pin.length() - 2; i++) {
+            int first = Character.getNumericValue(pin.charAt(i));
+            int second = Character.getNumericValue(pin.charAt(i + 1));
+
+            if (first + 1 != second && first - 1 != second) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -129,9 +147,23 @@ public class UserValidator implements Validator {
                         LocaleContextHolder.getLocale()));
             }
         }
+
+        // Check if Pin is long enough
+        if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
+            errors.rejectValue("pin", "errormessage",
+                messageSource.getMessage("user.error.pinTooShort", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+        }
+        //Check if pin is a single repeated digit or a consecutive number
+        if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(user.getPin())) {
+            errors.rejectValue("pin", "errormessage",
+                messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+        }
     }
 
     public boolean isPasswordCorrect(final User user) {
         return passwordEncoder.matches(user.getOldPassword(), user.getPassword());
     }
+
 }
