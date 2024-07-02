@@ -50,7 +50,41 @@
 					clazz='form-control', showErrors=true,
 					text=${messages.get(#locale, 'user.label.email', 'Email:')})}"
 				/>
+
+
 			</div>
+			
+			<!--/* PIN INPUTS WITH SWITCH*/-->
+			<div class="form-group">
+				<label layout:replace="~{fragments/forms :: label(
+					text=${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin')}, 
+					for='pin', 
+					required=false
+				)}"/>
+
+				<div class="d-flex align-items-center">
+					<div class="form-check form-switch">
+						<input
+							class="form-check-input form-control me-3"
+							th:field="*{usePin}"
+							role="switch"
+							type="checkbox"
+						/>
+					</div>
+
+					<input layout:replace="~{fragments/forms :: plainInput(
+						clazz='form-control', type='password', id='pin', name='pin')}"
+					/>
+				</div>
+					
+				<error
+					layout:replace="~{fragments/forms :: errorField(path='usePin')}"
+				/>
+				<error
+					layout:replace="~{fragments/forms :: errorField(path='pin')}"
+				/>
+			</div>
+				
 			<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
 				<div class="form-group">
 					<input

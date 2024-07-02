@@ -172,6 +172,51 @@
 					<div class="col-lg-3 col-md-12">
 						<label
 							class="col-form-label"
+							for="usePin"
+							id="usePinLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin:')}"
+							></b>
+						</label>
+					</div>
+
+					<div class="col-lg-5 col-md-12">
+						<div class="d-flex align-items-center">
+							<div class="form-check form-switch">
+								<input
+									class="form-check-input form-control me-3"
+									th:field="*{usePin}"
+									role="switch"
+									type="checkbox"
+								/>
+							</div>
+
+							<input
+								class="form-control"
+								th:field="*{pin}"
+								type="password"
+							/>
+						</div>
+					</div>
+
+					<div class="col-lg-4 col-md-12">
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='usePin')}"
+						/>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='pin')}"
+						/>
+					</div>
+				</div>
+
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div class="col-lg-3 col-md-12">
+						<label
+							class="col-form-label"
 							for="firstname"
 							id="firstnameLabel"
 						>
