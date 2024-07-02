@@ -1,5 +1,6 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.auth.PinAuthorizationService;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
@@ -10,6 +11,8 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ResponseDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.dao.user.PinAuthorizationDao;
+import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.EncounterService;
 import de.imi.mopat.helper.controller.LocaleHelper;
@@ -36,6 +39,8 @@ import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.user.PinAuthorization;
+import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
@@ -62,6 +67,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -111,6 +117,12 @@ public class SurveyController {
     private BundleService bundleService;
     @Autowired
     private EncounterService encounterService;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private PinAuthorizationDao pinAuthorizationDao;
+    @Autowired
+    private PinAuthorizationService pinAuthorizationService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -464,6 +476,10 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/questionnaire", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showQuestionnaire(final Model model, final HttpSession session) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        String username = user.getUsername();
+
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         encounterDTO.removeDemographics();
         model.addAttribute("encounterDTO", encounterDTO);
@@ -479,9 +495,14 @@ public class SurveyController {
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
 
-        // invalidate the current session
-        SecurityContextHolder.getContext().setAuthentication(null);
-        session.invalidate();
+        if (configurationDao.isGlobalPinAuthEnabled()) {
+            pinAuthorizationService.resetPinAuthForUser(user);
+        } else {
+            // invalidate the current session
+            SecurityContextHolder.getContext().setAuthentication(null);
+            session.invalidate();
+        }
+
         return "mobile/survey/questionnaire";
     }
 
