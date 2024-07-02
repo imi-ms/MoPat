@@ -306,6 +306,8 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
   `firstname` varchar(255) NOT NULL,
   `lastname` varchar(255) NOT NULL,
   `is_enabled` tinyint(1) NOT NULL,
+  `use_pin` tinyint(1),
+  `pin` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
@@ -313,9 +315,9 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
 -- Daten für Tabelle `acl_sid`
 --
 
-INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`) VALUES
-(1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1),
-(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1);
+INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`, `use_pin`, `pin`) VALUES
+(1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1, 0, NULL),
+(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1, 0, NULL);
 
 
 -- --------------------------------------------------------
@@ -400,6 +402,18 @@ CREATE TABLE IF NOT EXISTS `invitation_acl_object_identity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table for the quick pin login
+--
+CREATE TABLE IF NOT EXISTS `pin_authorization` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `sid` bigint(20) NOT NULL,
+  `created_on` datetime DEFAULT CURDATE() NOT NULL,
+  `remaining_tries` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `foreign_fk_6` (`sid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+--
 -- Constraints der exportierten Tabellen
 --
 
@@ -415,6 +429,12 @@ ALTER TABLE `acl_entry`
   ADD CONSTRAINT `foreign_fk_4` FOREIGN KEY (`acl_object_identity`) REFERENCES `acl_object_identity` (`id`);
 ALTER TABLE `acl_entry`
   ADD CONSTRAINT `foreign_fk_5` FOREIGN KEY (`sid`) REFERENCES `acl_sid` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `pin_authorization`
+--
+ALTER TABLE `pin_authorization`
+  ADD CONSTRAINT `foreign_fk_6` FOREIGN KEY (`sid`) REFERENCES `acl_sid` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints der Tabelle `acl_object_identity`
