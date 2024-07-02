@@ -3,6 +3,7 @@ package de.imi.mopat.controller;
 import com.mchange.v1.db.sql.UnsupportedTypeException;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.MultiPartFileUploadBean;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Configuration;
@@ -65,6 +66,9 @@ public class ConfigurationController {
 
     @Autowired
     private ApplicationContext appContext;
+
+    @Autowired
+    private MailSender mailSender;
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         ConfigurationController.class);
@@ -357,6 +361,7 @@ public class ConfigurationController {
                 }
             }
         }
+        mailSender.update();
         redirectAttributes.addFlashAttribute("success",
             messageSource.getMessage("configuration.success.changed", new Object[]{},
                 LocaleContextHolder.getLocale()));
