@@ -1,0 +1,77 @@
+<!--/*
+    View for quick pin login
+*/-->
+
+<!--/* TODO: <%@ page session="true" %> */-->
+<th:block
+	layout:decorate="~{layout/pinlogin}"
+	th:with="contenttype='centeredContent', isLogin='true'"
+>
+	<th:block layout:fragment="content">
+		<div class="text-center">
+			<img
+				class="mb-1 img-fluid mopatImage"
+				th:attr="src=@{/images/logo.svg}"
+			/>
+		</div>
+		<div class="login pb-5">
+			<form
+				method="post"
+				th:action="@{/mobile/user/pinlogin}"
+				data-ajax="false"
+			>
+				<div class="d-grid gap-2">
+                    <div class="text-center">
+                        <i class="bi bi-lock-fill" style="font-size: 500%"></i>
+                    </div>
+
+                    <h3 class="d-flex justify-content-center align-content-center">
+                        <th:block
+                            th:text="${messages.get(#locale, 'user.label.loggedInAs', 'Currently logged in as')}"
+                        ></th:block>:&nbsp;
+                        <h2 sec:authentication="principal.username"></h2>
+                    </h3>
+
+					<input
+						class="form-control"
+                        inputmode="numeric"
+						index="2"
+						name="pin"
+						id="pin"
+						type="password"
+						th:placeholder="#{user.label.pin}"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+					/>
+
+					<th:block
+						th:if="${!#strings.isEmpty(message)}"
+						th:text="${message}"
+					></th:block>
+
+					<button
+						class="btn btn-white btn-mobile"
+						index="3"
+						type="submit"
+						th:text="${messages.get(#locale, 'user.label.unlock', 'Unlock')}"
+					>
+					</button>
+
+                    <a
+						class="btn-link mobile-link"
+						data-ajax="true"
+						onclick="initUser();"
+						th:href="@{/mobile/user/pinlogout}"
+						th:text="|${messages.get(#locale, 'user.label.changeUser', 'Login with another account')}|"
+					>
+					</a>
+				</div>
+			</form>
+		</div>
+	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+</th:block>
