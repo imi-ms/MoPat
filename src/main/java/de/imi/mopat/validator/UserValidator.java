@@ -149,16 +149,18 @@ public class UserValidator implements Validator {
         }
 
         // Check if Pin is long enough
-        if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
-            errors.rejectValue("pin", "errormessage",
-                messageSource.getMessage("user.error.pinTooShort", new Object[]{},
-                    LocaleContextHolder.getLocale()));
-        }
-        //Check if pin is a single repeated digit or a consecutive number
-        if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(user.getPin())) {
-            errors.rejectValue("pin", "errormessage",
-                messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+        if (user.getPin() != null) {
+            if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
+                errors.rejectValue("pin", "errormessage",
+                    messageSource.getMessage("user.error.pinTooShort", new Object[]{},
+                        LocaleContextHolder.getLocale()));
+            }
+            //Check if pin is a single repeated digit or a consecutive number
+            if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(user.getPin())) {
+                errors.rejectValue("pin", "errormessage",
+                    messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
+                        LocaleContextHolder.getLocale()));
+            }
         }
     }
 
