@@ -53,15 +53,11 @@ public class PinAuthorization {
         return this.id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public User getUser() {
         return this.user;
     }
 
-    public void setUser(User user) {
+    private void setUser(User user) {
         this.user = user;
     }
 
