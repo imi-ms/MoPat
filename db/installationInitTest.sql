@@ -117,7 +117,8 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (74, 'GENERAL', 5, 72, 14, 'clientPKCSPassword', 'PASSWORD', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ClientPKCSPassword', NULL, NULL, '7273b090-d149-45f2-a787-6af5838345b6', '', NULL),
 (75, 'GENERAL', 1, NULL, 12, 'imageUploadPath', 'LOCAL_PATH', NULL, 'GLOBAL', 'configuration.label.imageUploadPath', NULL, NULL, 'fb1db996-4538-47e3-bd7b-7c5ce4f03264', '/var/lib/tomcat10/images', NULL),
 (76, 'GENERAL', 10, NULL, 3, 'FHIRsystemURI', 'STRING', NULL, 'GLOBAL', 'configuration.label.FHIRsystemURI', NULL, NULL, 'cbd13c7f-a41b-42fa-9f87-7f78bc7e8a5d', 'https://mopat.uni-muenster.de/FHIR/', NULL),
-(77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL);
+(77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL),
+(78, 'GENERAL', 1, NULL, 15, 'enableGlobalPinAuth', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.enableGlobalPinAuth', NULL, NULL, '5c4ca0df-fe5e-4582-8e9e-e290e1ed8efe', 'true', NULL);
 
 --
 -- Tabellenstruktur für Tabelle `Configuration_Group`
