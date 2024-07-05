@@ -291,9 +291,9 @@
             <version>1.12.5</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-            <version>2.1.2</version>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>jakarta.el</groupId>
