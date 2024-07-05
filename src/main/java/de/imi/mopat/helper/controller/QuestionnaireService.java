@@ -37,12 +37,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Set;
 
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -74,9 +76,6 @@ public class QuestionnaireService {
 
     @Autowired
     private BundleService bundleService;
-
-    @Autowired
-    private EncounterService encounterService;
 
     @Autowired
     private ClinicService clinicService;
@@ -152,7 +151,12 @@ public class QuestionnaireService {
         questionnaireDTO.setLocalizedFinalText(tempLocalizedFinalText);
     }
 
-    public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, BindingResult result) {
+    public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, BindingResult result) {
+        validateQuestionnaireDTO(questionnaireDTO, result);
+        validateLogo(logo, result);
+    }
+
+    private void validateQuestionnaireDTO(QuestionnaireDTO questionnaireDTO, BindingResult result) {
         questionnaireDTOValidator.validate(questionnaireDTO, result);
     }
 
@@ -160,8 +164,13 @@ public class QuestionnaireService {
     public Questionnaire saveOrUpdateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
 
         // Update questionnaire directly if editing is allowed
-        if (questionnaireDTO.getId() != null) {
+        if (questionnaireDTO.getId() != null && editingQuestionnaireAllowed(questionnaireDTO)) {
             return updateExistingQuestionnaire(questionnaireDTO, logo, userId);
+        }
+
+        // Create a copy of the existing questionnaire if editing is not allowed
+        if (questionnaireDTO.getId() != null && !editingQuestionnaireAllowed(questionnaireDTO)) {
+            return createQuestionnaireCopy(questionnaireDTO, logo, userId);
         }
 
         // Default: Create new questionnaire if ID is null
@@ -176,7 +185,7 @@ public class QuestionnaireService {
             return questionnaire.isModifiable();
         }
 
-        // Editors can edit if questionnaire is not part of any bundle or if the bundle has no encounters
+        // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has no encounters
         if (authService.hasExactRole("ROLE_EDITOR")) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
@@ -197,34 +206,52 @@ public class QuestionnaireService {
     }
 
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
-        Questionnaire newQuestionnaire = new Questionnaire(questionnaireDTO.getName(),
-                questionnaireDTO.getDescription(), userId, Boolean.TRUE);
-        setCommonAttributes(newQuestionnaire, questionnaireDTO, logo);
+        Questionnaire newQuestionnaire = new Questionnaire(
+                questionnaireDTO.getName(),
+                questionnaireDTO.getDescription(),
+                userId,
+                Boolean.TRUE
+        );
+        newQuestionnaire.setCreatedBy(userId);
+
+        setCommonAttributes(newQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(newQuestionnaire);
+        handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         return newQuestionnaire;
     }
 
     private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+
         existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
         existingQuestionnaire.setName(questionnaireDTO.getName());
         existingQuestionnaire.setChangedBy(userId);
-        setCommonAttributes(existingQuestionnaire, questionnaireDTO, logo);
+
+        setCommonAttributes(existingQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(existingQuestionnaire);
+        handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
         return existingQuestionnaire;
     }
 
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-        Questionnaire newQuestionnaire = existingQuestionnaire.deepCopy();
-//        newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
-        newQuestionnaire.setChangedBy(userId);
-//        newQuestionnaire.setCreatedBy(userId);
+        Questionnaire newQuestionnaire = new Questionnaire(
+                questionnaireDTO.getName(),
+                questionnaireDTO.getDescription(),
+                userId,
+                Boolean.TRUE
+        );
+        newQuestionnaire.setCreatedBy(userId);
 
+        newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
         saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
 
-        setCommonAttributes(newQuestionnaire, questionnaireDTO, logo);
+        Set<Question> newQuestions = questionService.copyQuestionsToQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
+        newQuestionnaire.setQuestions(newQuestions);
+
+        setCommonAttributes(newQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(newQuestionnaire);
+        handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         return newQuestionnaire;
     }
 
@@ -235,21 +262,17 @@ public class QuestionnaireService {
         questionnaireVersionDao.merge(version);
     }
 
-    private void setCommonAttributes(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
+    private void setCommonAttributes(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO) {
+        questionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
         questionnaire.setLocalizedWelcomeText(questionnaireDTO.getLocalizedWelcomeText());
         questionnaire.setLocalizedFinalText(questionnaireDTO.getLocalizedFinalText());
-        questionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
-
-        if (!logo.isEmpty() || questionnaireDTO.isDeleteLogo()) {
-            handleLogoUpload(questionnaire, logo, questionnaireDTO.isDeleteLogo());
-        }
     }
 
 
-    private void handleLogoUpload(Questionnaire questionnaire, MultipartFile logo, boolean isDeleteLogo) {
+    private void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
 
-        if (isDeleteLogo || !logo.isEmpty()) {
+        if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
             // Altes Logo löschen
             if (questionnaire.getLogo() != null) {
                 File deleteFile = new File(imagePath + "/" + questionnaire.getLogo());
@@ -278,4 +301,15 @@ public class QuestionnaireService {
         }
     }
 
+    public void validateLogo(MultipartFile logo, BindingResult result) {
+        if (logo != null && !logo.isEmpty()) {
+            String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
+            if (!logoExtension.equalsIgnoreCase("png") && !logoExtension.equalsIgnoreCase("jpg")
+                    && !logoExtension.equalsIgnoreCase("jpeg")) {
+                result.rejectValue("logo", "error.wrongImageType",
+                        messageSource.getMessage("bundle.error.wrongImageType", new Object[]{},
+                                LocaleContextHolder.getLocale()));
+            }
+        }
+    }
 }
