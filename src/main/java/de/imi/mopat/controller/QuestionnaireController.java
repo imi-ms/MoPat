@@ -248,8 +248,8 @@ public class QuestionnaireController {
         }
 
         questionnaireService.processLocalizedText(questionnaireDTO);
-        questionnaireService.validateQuestionnaire(questionnaireDTO, result);
 
+        questionnaireService.validateQuestionnaire(questionnaireDTO, logo, result);
         if (result.hasErrors()) {
             return handleValidationErrors(questionnaireDTO, model);
         }
