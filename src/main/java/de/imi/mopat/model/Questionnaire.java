@@ -132,11 +132,11 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @OneToMany(mappedBy = "questionnaire", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Score> scores = new HashSet<Score>();
 
-//    @Column(name = "version", nullable = false)
-//    private Integer version = 1;
-//
-//    @Column(name = "created_by", nullable = false)
-//    private Long createdBy;
+    @Column(name = "version", nullable = false)
+    private Integer version = 1;
+
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -820,21 +820,21 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return new ArrayList<>(availableScores);
     }
 
-//    public Integer getVersion() {
-//        return version;
-//    }
-//
-//    public void setVersion(Integer version) {
-//        this.version = version;
-//    }
-//
-//    public Long getCreatedBy() {
-//        return createdBy;
-//    }
-//
-//    public void setCreatedBy(Long createdBy) {
-//        this.createdBy = createdBy;
-//    }
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public void setQuestions(Set<Question> questions) {
         this.questions = questions;
