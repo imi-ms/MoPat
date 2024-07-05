@@ -930,4 +930,15 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
         }
         return newQuestion;
     }
+
+    public Question cloneWithAnswersAndReferenceToQuestionnaire(Questionnaire questionnaire) {
+        Question newQuestion = new Question(new HashMap<>(getLocalizedQuestionText()),
+                getIsRequired(), getIsEnabled(), getQuestionType(), getPosition(), questionnaire); // Set questionnaire to null initially
+        newQuestion.setMinMaxNumberAnswers(getMinNumberAnswers(), getMaxNumberAnswers());
+        for (Answer answer : getAnswers()) {
+            Answer newAnswer = answer.cloneWithoutReferences();
+            newQuestion.addAnswer(newAnswer);
+        }
+        return newQuestion;
+    }
 }
