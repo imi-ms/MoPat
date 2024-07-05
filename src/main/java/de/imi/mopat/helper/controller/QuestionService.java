@@ -13,6 +13,7 @@ import de.imi.mopat.model.SliderAnswer;
 import de.imi.mopat.model.SliderFreetextAnswer;
 import de.imi.mopat.model.SliderIcon;
 import de.imi.mopat.model.conditions.Condition;
+import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.ConditionDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Set;
+import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -206,5 +209,15 @@ public class QuestionService {
 
         questionDTO.setAnswers(answerDTOs);
         return questionDTO;
+    }
+
+    public Set<Question> copyQuestionsToQuestionnaire(Set<Question> originalQuestions, Questionnaire questionnaire) {
+        Set<Question> copiedQuestions = new HashSet<>();
+        for (Question question : originalQuestions) {
+            Question newQuestion = question.cloneWithAnswersAndReferenceToQuestionnaire(questionnaire);
+            copiedQuestions.add(newQuestion);
+            newQuestion.setQuestionnaire(questionnaire);
+        }
+        return copiedQuestions;
     }
 }
