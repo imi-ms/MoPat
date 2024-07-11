@@ -2,6 +2,7 @@ package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import de.imi.mopat.auth.*;
+import de.imi.mopat.helper.controller.NoOpAclCache;
 import org.apache.groovy.util.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -14,7 +15,6 @@ import org.springframework.security.acls.AclPermissionEvaluator;
 import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
 import org.springframework.security.acls.domain.ConsoleAuditLogger;
 import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
-import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
 import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.acls.model.AclCache;
@@ -140,8 +140,7 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public AclCache aclCache() {
-        return new SpringCacheBasedAclCache(cacheManager.getCache("aclCache"),
-            permissionGrantingStrategy(), aclAuthorizationStrategy());
+        return new NoOpAclCache("aclCache");
     }
 
     /**
