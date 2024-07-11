@@ -63,10 +63,14 @@
 				)}"/>
 
 				<div class="d-flex align-items-center">
-					<div class="form-check form-switch">
+					<div class="form-check form-switch"
+						style="margin-left: 10px !important;"
+					>
 						<input
 							class="form-check-input form-control me-3"
 							th:field="*{usePin}"
+							id="usePin"
+							onchange="switchPinInput(this);"
 							role="switch"
 							type="checkbox"
 						/>
@@ -123,9 +127,9 @@
 			<div class="form-group">
 				<button
 					type="submit"
-					class="btn btn-mobile col-bp-4 col-12 mb-2"
+					class="btn btn-mobile col-bp-4 col-12 mb-2 me-2"
 					value="cancel"
-					id="saveButton"
+					id="cancelButton"
 					name="action"
 					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
 				>
@@ -155,6 +159,21 @@
 				/*[[${messages.get(#locale, 'user.heading.editProfile', 'Change password')}]]*/ "Change password"
 			);
 
+			switchPinInput($("#usePin"));
+
 	});
+
+
+	function switchPinInput(element) {
+		var isPinActive = $(element).get(0).checked;
+
+		if (isPinActive) {
+			// Activate input
+			$("#pin").removeAttr("disabled");
+		} else {
+			// Deactivate input
+			$("#pin").attr("disabled", "disabled");
+		}
+	}
 	</script>
 </th:block>
