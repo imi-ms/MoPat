@@ -606,6 +606,10 @@ public class UserController {
             pinAuthorizationService.removePinAuthForUser(user);
         } else {
             pinAuthorizationService.decreaseRemainingTriesForUser(user);
+            //Refetch the entry
+            pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
+                .toList().get(0);
+
             model.addAttribute("message",
                 messageSource.getMessage("user.error.badPin", new Object[]{
                     String.valueOf(pinAuthorization.getRemainingTries())
