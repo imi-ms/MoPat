@@ -148,8 +148,13 @@ public class UserValidator implements Validator {
             }
         }
 
-        // Check if Pin is long enough
-        if (user.getPin() != null) {
+        //Check if pin is activated, but not set
+        if (user.getUsePin() && (user.getPin().isEmpty() || user.getPin() == null)) {
+            errors.rejectValue("pin", "errormessage",
+                messageSource.getMessage("user.error.pinActivatedButNull", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+        } else {
+            // Check if Pin is long enough
             if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
                 errors.rejectValue("pin", "errormessage",
                     messageSource.getMessage("user.error.pinTooShort", new Object[]{},
@@ -162,6 +167,7 @@ public class UserValidator implements Validator {
                         LocaleContextHolder.getLocale()));
             }
         }
+
     }
 
     public boolean isPasswordCorrect(final User user) {
