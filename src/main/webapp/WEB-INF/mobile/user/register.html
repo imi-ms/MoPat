@@ -186,7 +186,9 @@
 							<div class="form-check form-switch">
 								<input
 									class="form-check-input form-control me-3"
+									id="usePin"
 									th:field="*{usePin}"
+									onchange="switchPinInput(this)"
 									role="switch"
 									type="checkbox"
 								/>
@@ -194,6 +196,7 @@
 
 							<input
 								class="form-control"
+								id="pin"
 								th:field="*{pin}"
 								type="password"
 							/>
@@ -324,6 +327,11 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
+
+		$(document).ready(function () {
+			switchPinInput($("#usePin"));
+		});
+
 		$("#closeDialogButton").remove();
 		$("#helpButton").remove();
 
@@ -346,6 +354,19 @@
 				$("#passwordApproveWrapper").show();
 			}
 		});
+
+
+		function switchPinInput(element) {
+			var isPinActive = $(element).get(0).checked;
+
+			if (isPinActive) {
+				// Activate input
+				$("#pin").removeAttr("disabled");
+			} else {
+				// Deactivate input
+				$("#pin").attr("disabled", "disabled");
+			}
+		}
 
 		$("#isLdap").val(/*[[${#strings.toString(isLdap)}]]*/ 'true').trigger("change");
 	</script>
