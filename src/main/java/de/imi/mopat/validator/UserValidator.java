@@ -149,25 +149,27 @@ public class UserValidator implements Validator {
         }
 
         //Check if pin is activated, but not set
-        if (user.getUsePin() && (user.getPin().isEmpty() || user.getPin() == null)) {
-            errors.rejectValue("pin", "errormessage",
-                messageSource.getMessage("user.error.pinActivatedButNull", new Object[]{},
-                    LocaleContextHolder.getLocale()));
-        } else {
-            // Check if Pin is long enough
-            if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
+        if (user.getUsePin()) {
+            if (user.getPin().isEmpty() || user.getPin() == null) {
                 errors.rejectValue("pin", "errormessage",
-                    messageSource.getMessage("user.error.pinTooShort", new Object[]{},
+                    messageSource.getMessage("user.error.pinActivatedButNull", new Object[]{},
                         LocaleContextHolder.getLocale()));
-            }
-            //Check if pin is a single repeated digit or a consecutive number
-            if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(user.getPin())) {
-                errors.rejectValue("pin", "errormessage",
-                    messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+            } else {
+                // Check if Pin is long enough
+                if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
+                    errors.rejectValue("pin", "errormessage",
+                        messageSource.getMessage("user.error.pinTooShort", new Object[]{},
+                            LocaleContextHolder.getLocale()));
+                }
+                //Check if pin is a single repeated digit or a consecutive number
+                if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(
+                    user.getPin())) {
+                    errors.rejectValue("pin", "errormessage",
+                        messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
+                            LocaleContextHolder.getLocale()));
+                }
             }
         }
-
     }
 
     public boolean isPasswordCorrect(final User user) {
