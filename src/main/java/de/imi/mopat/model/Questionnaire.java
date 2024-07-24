@@ -840,24 +840,6 @@ public class Questionnaire implements ConditionTarget, Serializable {
         this.questions = questions;
     }
 
-    public Questionnaire deepCopy() {
-        Questionnaire copy = new Questionnaire();
-        copy.setName(this.name);
-        copy.setDescription(this.description);
-        copy.setLocalizedWelcomeText(new HashMap<>(this.localizedWelcomeText));
-        copy.setLocalizedFinalText(new HashMap<>(this.localizedFinalText));
-        copy.setLocalizedDisplayName(new HashMap<>(this.localizedDisplayName));
-
-        // Deep copy of questions
-        List<Question> originalQuestions = new ArrayList<>(this.questions);
-        Set<Question> copiedQuestions = new HashSet<>();
-        for (Question question : originalQuestions) {
-            copiedQuestions.add(question.cloneWithAnswersAndReferenceToQuestionnaire());
-        }
-        copy.setQuestions(copiedQuestions);
-        return copy;
-    }
-
     public boolean isModifiable() {
         for (Question question : this.getQuestions()) {
             if (!question.isModifiable()) {
