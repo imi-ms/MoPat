@@ -142,9 +142,10 @@ public class User implements Serializable, UserDetails {
         return Collections.unmodifiableCollection(auth);
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return this.authority.stream()
                 .map(Authority::getAuthority)
+                .map(UserRole::fromString)
                 .findFirst()
                 .orElse(null);
     }
