@@ -569,4 +569,13 @@ public class QuestionnaireService {
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
     }
+
+    public void removeDuplicateVersions(Questionnaire questionnaire) {
+        List<QuestionnaireVersion> versionsToDelete = questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
+                .toList();
+        for (QuestionnaireVersion version : versionsToDelete) {
+            questionnaireVersionDao.remove(version);
+        }
+    }
 }
