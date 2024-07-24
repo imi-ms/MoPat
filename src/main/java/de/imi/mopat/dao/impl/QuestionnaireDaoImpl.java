@@ -44,4 +44,19 @@ public class QuestionnaireDaoImpl extends MoPatDaoImpl<Questionnaire> implements
             return true;
         }
     }
+
+    @Override
+    public boolean isQuestionnaireNameUsed(final String name) {
+        try {
+            Query query = moPatEntityManager.createQuery(
+                    "SELECT COUNT(q) FROM Questionnaire q WHERE q.name = :name");
+            query.setParameter("name", name);
+            Long count = (Long) query.getSingleResult();
+            return count > 0;
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
+
+
 }

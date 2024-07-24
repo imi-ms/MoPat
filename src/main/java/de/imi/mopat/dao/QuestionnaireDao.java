@@ -18,4 +18,6 @@ public interface QuestionnaireDao extends MoPatDao<Questionnaire> {
      */
     boolean isQuestionnaireNameUnused(String name, Long id);
     boolean isQuestionnaireNameUnique(String name, Long id);
+
+    boolean isQuestionnaireNameUsed(String name);
 }
