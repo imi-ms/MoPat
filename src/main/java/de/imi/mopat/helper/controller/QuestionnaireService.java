@@ -266,6 +266,56 @@ public class QuestionnaireService {
         return newQuestionnaire;
     }
 
+    private String generateUniqueName(QuestionnaireDTO questionnaireDTO, Questionnaire existingQuestionnaire) {
+        // If the names are different, use the name from questionnaireDTO directly.
+        if (!questionnaireDTO.getName().equals(existingQuestionnaire.getName())) {
+            return questionnaireDTO.getName();
+        }
+
+        // Get the original questionnaire name.
+        String originalQuestionnaireName = findOriginalQuestionnaire(existingQuestionnaire).getName();
+
+        // Determine the next available version number.
+        int nextVersion = determineNextAvailableVersion(findOriginalQuestionnaire(existingQuestionnaire));
+
+        // Generate a new name with the version number.
+        String newName;
+        do {
+            newName = originalQuestionnaireName + " v" + nextVersion;
+            nextVersion++;
+        } while (questionnaireDao.isQuestionnaireNameUsed(newName));
+
+        return newName;
+    }
+
+    private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
+        // Find the original questionnaire if the existing one is a duplicate
+        Questionnaire originalQuestionnaire = findOriginalQuestionnaire(existingQuestionnaire);
+
+        // Find the max version for duplicates of the original questionnaire
+        int maxVersion = getMaxVersionForOriginal(originalQuestionnaire);
+
+        return maxVersion + 1;
+    }
+
+    private Questionnaire findOriginalQuestionnaire(Questionnaire questionnaire) {
+        Optional<QuestionnaireVersion> originalVersion = questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
+                .findFirst();
+
+
+
+        return originalVersion.map(QuestionnaireVersion::getPreviousQuestionnaire).orElse(questionnaire);
+    }
+
+    private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getPreviousQuestionnaire().equals(originalQuestionnaire))
+                .map(version -> version.getCurrentQuestionnaire().getVersion())
+                .max(Integer::compare)
+                .orElse(originalQuestionnaire.getVersion());
+    }
+
     private void saveVersioningInformation(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
         QuestionnaireVersion version = new QuestionnaireVersion();
         version.setCurrentQuestionnaire(newQuestionnaire);
