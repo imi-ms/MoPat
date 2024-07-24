@@ -208,7 +208,10 @@ public class QuestionnaireService {
         // Default: Create new questionnaire if ID is null
         return createNewQuestionnaire(questionnaireDTO, logo, userId);
     }
-
+    private String getLocalizedMessage(String messageKey) {
+        String defaultMessage = "The questionnaire cannot be edited. You can duplicate it instead.";
+        return messageSource.getMessage(messageKey, new Object[]{}, defaultMessage, LocaleContextHolder.getLocale());
+    }
     public boolean editingQuestionnaireAllowed(QuestionnaireDTO questionnaireDTO) {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
