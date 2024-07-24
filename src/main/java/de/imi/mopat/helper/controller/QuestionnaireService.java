@@ -270,6 +270,12 @@ public class QuestionnaireService {
         QuestionnaireVersion version = new QuestionnaireVersion();
         version.setCurrentQuestionnaire(newQuestionnaire);
         version.setPreviousQuestionnaire(existingQuestionnaire);
+
+        // Ensure the new version has been persisted
+        if (newQuestionnaire.getId() == null) {
+            throw new IllegalStateException("The new questionnaire must be persisted before saving versioning information.");
+        }
+
         questionnaireVersionDao.merge(version);
     }
 
