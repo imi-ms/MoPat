@@ -164,23 +164,31 @@ public class QuestionnaireService {
     }
 
     public void processLocalizedText(QuestionnaireDTO questionnaireDTO) {
-        // Verarbeitung des Willkommenstextes
-        SortedMap<String, String> tempLocalizedWelcomeText = questionnaireDTO.getLocalizedWelcomeText();
-        for (SortedMap.Entry<String, String> entry : tempLocalizedWelcomeText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        questionnaireDTO.setLocalizedWelcomeText(tempLocalizedWelcomeText);
+        questionnaireDTO.setLocalizedWelcomeText(
+                processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
+        questionnaireDTO.setLocalizedFinalText(
+                processLocalizedMap(questionnaireDTO.getLocalizedFinalText()));
+    }
 
-        // Verarbeitung des Abschlusstextes
-        SortedMap<String, String> tempLocalizedFinalText = questionnaireDTO.getLocalizedFinalText();
-        for (SortedMap.Entry<String, String> entry : tempLocalizedFinalText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        questionnaireDTO.setLocalizedFinalText(tempLocalizedFinalText);
+    /**
+     * Helper method to process the localized text map by removing unnecessary HTML tags
+     *
+     * @param localizedTextMap The map containing localized texts to be processed
+     * @return A processed map with unnecessary HTML tags removed
+     */
+    private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
+        return localizedTextMap.entrySet().stream()
+                .peek(entry -> {
+                    if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
+                        entry.setValue("");
+                    }
+                })
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        TreeMap::new
+                ));
     }
 
     public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, BindingResult result) {
