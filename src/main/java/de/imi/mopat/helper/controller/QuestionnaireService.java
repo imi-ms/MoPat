@@ -316,43 +316,54 @@ public class QuestionnaireService {
         String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
 
         if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
-            // Altes Logo löschen
-            if (questionnaire.getLogo() != null) {
-                File deleteFile = new File(imagePath + "/" + questionnaire.getLogo());
-                deleteFile.delete();
-                questionnaire.setLogo(null);
-            }
+            deleteExistingLogo(questionnaire, imagePath);
         }
 
         if (!logo.isEmpty()) {
-            // Neues Logo hochladen
-            String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
-            questionnaire.setLogo("logo." + logoExtension);
-
-            File uploadDir = new File(imagePath);
-            if (!uploadDir.isDirectory()) {
-                uploadDir.mkdirs();
-            }
-            File uploadFile = new File(imagePath, "logo." + logoExtension);
-            try {
-                BufferedImage uploadImage = ImageIO.read(logo.getInputStream());
-                BufferedImage resizedImage = GraphicsUtilities.resizeImage(uploadImage, 300);
-                ImageIO.write(resizedImage, logoExtension, uploadFile);
-            } catch (IOException ex) {
-                LOGGER.debug("Error uploading the picture for the questionnaire with id {}: {}", questionnaire.getId(), ex.getLocalizedMessage());
-            }
+            uploadNewLogo(questionnaire, logo, imagePath);
         }
     }
 
-    public void validateLogo(MultipartFile logo, BindingResult result) {
-        if (logo != null && !logo.isEmpty()) {
-            String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
-            if (!logoExtension.equalsIgnoreCase("png") && !logoExtension.equalsIgnoreCase("jpg")
-                    && !logoExtension.equalsIgnoreCase("jpeg")) {
-                result.rejectValue("logo", "error.wrongImageType",
-                        messageSource.getMessage("bundle.error.wrongImageType", new Object[]{},
-                                LocaleContextHolder.getLocale()));
+    /**
+     * Uploads a new logo for the questionnaire
+     *
+     * @param questionnaire The {@link Questionnaire} entity
+     * @param logo          The {@link MultipartFile} containing the new logo file
+     * @param imagePath     The path to the image directory
+     */
+    private void uploadNewLogo(Questionnaire questionnaire, MultipartFile logo, String imagePath) {
+        String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
+        String logoFilename = "logo." + logoExtension;
+        questionnaire.setLogo(logoFilename);
+
+        File uploadDir = new File(imagePath);
+        if (!uploadDir.exists() && !uploadDir.mkdirs()) {
+            LOGGER.warn("Failed to create directory for questionnaire with id {}", questionnaire.getId());
+        }
+
+        File uploadFile = new File(imagePath, logoFilename);
+        try {
+            BufferedImage uploadImage = ImageIO.read(logo.getInputStream());
+            BufferedImage resizedImage = GraphicsUtilities.resizeImage(uploadImage, 300);
+            ImageIO.write(resizedImage, logoExtension, uploadFile);
+        } catch (IOException ex) {
+            LOGGER.error("Error uploading the picture for the questionnaire with id {}: {}", questionnaire.getId(), ex.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Deletes the existing logo of the questionnaire if it exists
+     *
+     * @param questionnaire The {@link Questionnaire} entity
+     * @param imagePath     The path to the image directory
+     */
+    private void deleteExistingLogo(Questionnaire questionnaire, String imagePath) {
+        if (questionnaire.getLogo() != null) {
+            File deleteFile = new File(imagePath + "/" + questionnaire.getLogo());
+            if (deleteFile.exists() && !deleteFile.delete()) {
+                LOGGER.warn("Failed to delete the existing logo for questionnaire with id {}", questionnaire.getId());
             }
+            questionnaire.setLogo(null);
         }
     }
     /**
