@@ -245,8 +245,9 @@ public class QuestionnaireService {
 
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+        String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
-                existingQuestionnaire.getName(),
+                newName,
                 questionnaireDTO.getDescription(),
                 userId,
                 userId,
@@ -254,7 +255,8 @@ public class QuestionnaireService {
         );
         questionnaireDao.merge(newQuestionnaire);
 
-        newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
+        int version = determineNextAvailableVersion(existingQuestionnaire);
+        newQuestionnaire.setVersion(version);
         saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
 
         // Copy questions and create a mapping copyQuestionsToQuestionnaire
