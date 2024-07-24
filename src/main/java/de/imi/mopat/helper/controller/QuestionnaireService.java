@@ -394,4 +394,118 @@ public class QuestionnaireService {
 
         return Pair.of(true, null);
     }
+
+    /**
+     * Copies scores from the original questionnaire to the new questionnaire
+     * This method should handle the copying in memory and return a set of copied scores
+     *
+     * @param originalScores  The set of original scores to copy
+     * @param newQuestionnaire The new questionnaire to which scores are being copied
+     * @param questionMap      A map of original questions to copied questions
+     * @return A set of copied scores
+     */
+    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
+        Set<Score> copiedScores = new HashSet<>();
+        Map<Score, Score> scoreMap = new HashMap<>();
+
+        for (Score originalScore : originalScores) {
+            Score copiedScore = new Score();
+            copiedScore.setName(originalScore.getName());
+            copiedScore.setQuestionnaire(newQuestionnaire);
+
+            // Copy expression using the modified copyExpression method
+            Expression copiedExpression = copyExpression(originalScore.getExpression(), questionMap, scoreMap);
+            copiedScore.setExpression(copiedExpression);
+
+            copiedScores.add(copiedScore);
+            scoreMap.put(originalScore, copiedScore);
+        }
+
+        newQuestionnaire.setScores(copiedScores);
+        return copiedScores;
+    }
+
+    /**
+     * Copies the given {@link Expression} object based on its type
+     *
+     * @param originalExpression The original {@link Expression} to copy
+     * @param questionMap        The map of original to copied {@link Question} objects
+     * @param scoreMap           The map of original to copied {@link Score} objects
+     *
+     * @return The copied {@link Expression}
+     */
+    private Expression copyExpression(Expression originalExpression, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+        if (originalExpression instanceof UnaryExpression unary) {
+            return copyUnaryExpression(unary, questionMap, scoreMap);
+        } else if (originalExpression instanceof BinaryExpression binary) {
+            return copyBinaryExpression(binary, questionMap, scoreMap);
+        } else if (originalExpression instanceof MultiExpression multi) {
+            return copyMultiExpression(multi, questionMap, scoreMap);
+        } else {
+            throw new IllegalArgumentException("Unknown expression type: " + originalExpression.getClass());
+        }
+    }
+
+    /**
+     * Copies a {@link UnaryExpression}
+     *
+     * @param originalUnary The original {@link UnaryExpression} to copy
+     * @param questionMap   The map of original to copied {@link Question} objects
+     * @param scoreMap      The map of original to copied {@link Score} objects
+     * @return The copied {@link UnaryExpression}
+     */
+    private UnaryExpression copyUnaryExpression(UnaryExpression originalUnary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+        UnaryExpression copyUnary = new UnaryExpression();
+        copyUnary.setOperator((UnaryOperator) originalUnary.getOperator());
+        if (originalUnary.getQuestion() != null) {
+            copyUnary.setQuestion(questionMap.get(originalUnary.getQuestion()));
+        } else if (originalUnary.getScore() != null) {
+            copyUnary.setScore(scoreMap.get(originalUnary.getScore()));
+        } else {
+            copyUnary.setValue(originalUnary.getValue());
+        }
+        return copyUnary;
+    }
+
+    /**
+     * Copies a {@link BinaryExpression}.
+     *
+     * @param originalBinary The original {@link BinaryExpression} to copy
+     * @param questionMap    The map of original to copied {@link Question} objects
+     * @param scoreMap       The map of original to copied {@link Score} objects
+     * @return The copied {@link BinaryExpression}
+     */
+    private BinaryExpression copyBinaryExpression(BinaryExpression originalBinary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+        BinaryExpression copyBinary = new BinaryExpression();
+        copyBinary.setOperator((BinaryOperator) originalBinary.getOperator());
+        List<Expression> copiedChildren = new ArrayList<>();
+        for (Expression child : originalBinary.getExpressions()) {
+            Expression copiedChild = copyExpression(child, questionMap, scoreMap);
+            copiedChild.setParent(copyBinary);
+            copiedChildren.add(copiedChild);
+        }
+        copyBinary.setExpressions(copiedChildren);
+        return copyBinary;
+    }
+
+    /**
+     * Copies a {@link MultiExpression}.
+     *
+     * @param originalMulti The original {@link MultiExpression} to copy
+     * @param questionMap   The map of original to copied {@link Question} objects
+     * @param scoreMap      The map of original to copied {@link Score} objects
+     * @return The copied {@link MultiExpression}
+     */
+    private MultiExpression copyMultiExpression(MultiExpression originalMulti, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+        MultiExpression copyMulti = new MultiExpression();
+        copyMulti.setOperator((MultiOperator) originalMulti.getOperator());
+        List<Expression> copiedChildren = new ArrayList<>();
+        for (Expression child : originalMulti.getExpressions()) {
+            Expression copiedChild = copyExpression(child, questionMap, scoreMap);
+            copiedChild.setParent(copyMulti);
+            copiedChildren.add(copiedChild);
+        }
+        copyMulti.setExpressions(copiedChildren);
+        return copyMulti;
+    }
 }
