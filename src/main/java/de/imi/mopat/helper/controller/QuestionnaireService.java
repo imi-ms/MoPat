@@ -54,12 +54,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
-
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Set;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Optional;
+import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.model.score.BinaryExpression;
+import de.imi.mopat.model.score.BinaryOperator;
+import de.imi.mopat.model.score.Expression;
+import de.imi.mopat.model.score.MultiExpression;
+import de.imi.mopat.model.score.MultiOperator;
+import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.score.UnaryExpression;
+import de.imi.mopat.model.score.UnaryOperator;
+import de.imi.mopat.validator.LogoValidator;
+import org.apache.commons.lang3.tuple.Pair;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
+import de.imi.mopat.helper.model.QuestionnaireFactory;
 @Service
 public class QuestionnaireService {
 
     private static final org.slf4j.Logger LOGGER =
         org.slf4j.LoggerFactory.getLogger(Question.class);
+
+    @Autowired
+    LogoValidator logoValidator;
+    @Autowired
+    QuestionnaireFactory questionnaireFactory;
+    @Autowired
+    QuestionnaireDTOMapper questionnaireDTOMapper;
 
     @Autowired
     @Qualifier("MoPat")
@@ -311,5 +343,18 @@ public class QuestionnaireService {
                                 LocaleContextHolder.getLocale()));
             }
         }
+    }
+    /**
+     * Retrieves a {@link QuestionnaireDTO} by its ID
+     *
+     * @param questionnaireId The ID of the {@link Questionnaire} to retrieve
+     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise
+     */
+    public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
+        if (questionnaireId == null || questionnaireId <= 0) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
+                .map(questionnaireDTOMapper);
     }
 }

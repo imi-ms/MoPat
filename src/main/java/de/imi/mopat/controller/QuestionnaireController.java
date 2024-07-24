@@ -212,13 +212,8 @@ public class QuestionnaireController {
     public String fillQuestionnaire(
         @RequestParam(value = "id", required = false) final Long questionnaireId,
         final HttpServletRequest request, final Model model) {
-        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
-        if (questionnaireId != null && questionnaireId > 0) {
-            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-            if (questionnaire != null) {
-                questionnaireDTO = questionnaireService.toQuestionnaireDTO(questionnaire);
-            }
-        }
+        QuestionnaireDTO questionnaireDTO = questionnaireService.getQuestionnaireDTOById(questionnaireId)
+                .orElse(new QuestionnaireDTO());
         model.addAttribute("questionnaireDTO", questionnaireDTO);
         model.addAttribute("localeHelper", localeHelper);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
