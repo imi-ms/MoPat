@@ -142,6 +142,18 @@ public class User implements Serializable, UserDetails {
         return Collections.unmodifiableCollection(auth);
     }
 
+    public String getRole() {
+        return this.authority.stream()
+                .map(Authority::getAuthority)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void setRole(UserRole role) {
+        this.authority.clear();
+        this.authority.add(new Authority(this, role));
+    }
+
     /**
      * Returns all authorities of the current user object.
      *
