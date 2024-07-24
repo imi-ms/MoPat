@@ -252,14 +252,17 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
+        questionnaireDao.merge(newQuestionnaire);
 
         newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
         saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
 
-        Set<Question> newQuestions = questionService.copyQuestionsToQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
-        newQuestionnaire.setQuestions(newQuestions);
+        // Copy questions and create a mapping copyQuestionsToQuestionnaire
+        Map<Question, Question> questionMap = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
 
-        questionnaireDao.merge(newQuestionnaire);
+        // Copy scores
+        copyScores(existingQuestionnaire.getScores(), newQuestionnaire, questionMap);
+
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         questionnaireDao.merge(newQuestionnaire);
