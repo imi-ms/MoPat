@@ -185,7 +185,7 @@ public class QuestionnaireService {
 
     public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, BindingResult result) {
         validateQuestionnaireDTO(questionnaireDTO, result);
-        validateLogo(logo, result);
+        logoValidator.validateLogo(logo, result);
     }
 
     private void validateQuestionnaireDTO(QuestionnaireDTO questionnaireDTO, BindingResult result) {
