@@ -357,4 +357,41 @@ public class QuestionnaireService {
         return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
                 .map(questionnaireDTOMapper);
     }
+
+    /**
+     * Determines if editing the given {@link QuestionnaireDTO} is allowed.
+     * Provides specific reasons if editing is not allowed.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
+     * @return A {@link Pair} containing a boolean indicating if editing is allowed
+     *         and a message explaining why editing is not allowed (if applicable).
+     */
+    public Pair<Boolean, String> canEditQuestionnaireWithReason(QuestionnaireDTO questionnaireDTO) {
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+
+        if (questionnaire == null) {
+            return Pair.of(true, null);
+        }
+
+        boolean isModifiable = questionnaire.isModifiable();
+        boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
+
+        if (authService.hasRoleOrAbove("ROLE_MODERATOR") && !isModifiable) {
+            return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
+        }
+
+        if (authService.hasExactRole("ROLE_EDITOR")) {
+            if (!isModifiable && partOfEnabledBundle) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
+            }
+            if (!isModifiable) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
+            }
+            if (partOfEnabledBundle) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.enabledBundle"));
+            }
+        }
+
+        return Pair.of(true, null);
+    }
 }

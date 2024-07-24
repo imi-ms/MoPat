@@ -88,6 +88,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -214,6 +215,10 @@ public class QuestionnaireController {
         final HttpServletRequest request, final Model model) {
         QuestionnaireDTO questionnaireDTO = questionnaireService.getQuestionnaireDTOById(questionnaireId)
                 .orElse(new QuestionnaireDTO());
+        Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(questionnaireDTO);
+
+        model.addAttribute("canEdit", canEditWithReason.getLeft());
+        model.addAttribute("infoMessage", canEditWithReason.getRight());
         model.addAttribute("questionnaireDTO", questionnaireDTO);
         model.addAttribute("localeHelper", localeHelper);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
