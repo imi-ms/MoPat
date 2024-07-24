@@ -225,6 +225,7 @@ public class QuestionnaireService {
         questionnaireDao.merge(newQuestionnaire);
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
+        questionnaireDao.merge(newQuestionnaire);
         return newQuestionnaire;
     }
 
@@ -238,6 +239,7 @@ public class QuestionnaireService {
         questionnaireDao.merge(existingQuestionnaire);
         copyLocalizedTextsToQuestionnaire(existingQuestionnaire, questionnaireDTO);
         handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
+        questionnaireDao.merge(existingQuestionnaire);
         return existingQuestionnaire;
     }
 
@@ -260,6 +262,7 @@ public class QuestionnaireService {
         questionnaireDao.merge(newQuestionnaire);
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
+        questionnaireDao.merge(newQuestionnaire);
         return newQuestionnaire;
     }
 
