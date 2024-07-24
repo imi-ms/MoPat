@@ -32,7 +32,7 @@ public class QuestionnaireDaoImpl extends MoPatDaoImpl<Questionnaire> implements
     }
 
     @Override
-    public boolean isQuestionnaireNameUnused(final String name, final Long id) {
+    public boolean isQuestionnaireNameUnique(final String name, final Long id) {
         try {
             Query query = moPatEntityManager.createQuery(
                 "SELECT q FROM " + "Questionnaire q WHERE q.name='" + name + "'");

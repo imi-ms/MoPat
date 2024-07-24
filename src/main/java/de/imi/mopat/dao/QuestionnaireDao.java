@@ -17,4 +17,5 @@ public interface QuestionnaireDao extends MoPatDao<Questionnaire> {
      * @return true if the name is free for usage and false otherwise
      */
     boolean isQuestionnaireNameUnused(String name, Long id);
+    boolean isQuestionnaireNameUnique(String name, Long id);
 }

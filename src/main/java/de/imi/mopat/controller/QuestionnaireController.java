@@ -625,7 +625,7 @@ public class QuestionnaireController {
 
                 // Add timestamp to the questionnaire's name if it's used
                 // already
-                if (!questionnaireDao.isQuestionnaireNameUnused(questionnaire.getName(), 0L)) {
+                if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), 0L)) {
                     questionnaire.setName(
                         questionnaire.getName() + " " + new Timestamp(new Date().getTime()));
                 }
@@ -779,7 +779,7 @@ public class QuestionnaireController {
 
                                     // If the questionnaire name is already
                                     // taken within MoPat
-                                    if (!questionnaireDao.isQuestionnaireNameUnused(
+                                    if (!questionnaireDao.isQuestionnaireNameUnique(
                                         questionnaire.getName(), 0L)) {
                                         // Add the current timestamp to the
                                         // questionnaire name
@@ -958,7 +958,7 @@ public class QuestionnaireController {
 
                 // Just append the current date if the questionnaire's name
                 // is already in use
-                if (!questionnaireDao.isQuestionnaireNameUnused(questionnaire.getName(), null)) {
+                if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), null)) {
                     questionnaire.setName(
                         questionnaire.getName() + " " + dateFormat.format(new Date()));
                 }

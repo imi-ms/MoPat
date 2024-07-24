@@ -91,7 +91,7 @@ public class QuestionnaireDaoImplTest {
     }
 
     /**
-     * Test of {@link QuestionnaireDaoImpl#isQuestionnaireNameUnused}.<br> Valid input: random name
+     * Test of {@link QuestionnaireDaoImpl#isQuestionnaireNameUnique}.<br> Valid input: random name
      * and random Id, existing name and null, existing name and random Id, existing name and
      * associated Id
      */
@@ -101,17 +101,17 @@ public class QuestionnaireDaoImplTest {
         String testName = Helper.getRandomAlphabeticString(random.nextInt(253) + 3);
 
         assertTrue("A random new name was already used",
-            testQuestionnaireDao.isQuestionnaireNameUnused(testName, random.nextLong()));
+            testQuestionnaireDao.isQuestionnaireNameUnique(testName, random.nextLong()));
 
         testQuestionnaire.setName(testName);
         testQuestionnaireDao.merge(testQuestionnaire);
 
         assertFalse("The method returned true although the given Id was null",
-            testQuestionnaireDao.isQuestionnaireNameUnused(testName, null));
+            testQuestionnaireDao.isQuestionnaireNameUnique(testName, null));
         assertFalse("The method returned true although the given Id was random",
-            testQuestionnaireDao.isQuestionnaireNameUnused(testName, random.nextLong()));
+            testQuestionnaireDao.isQuestionnaireNameUnique(testName, random.nextLong()));
         assertTrue("The name was already used in another Bundle",
-            testQuestionnaireDao.isQuestionnaireNameUnused(testName, testQuestionnaire.getId()));
+            testQuestionnaireDao.isQuestionnaireNameUnique(testName, testQuestionnaire.getId()));
     }
 
     /**
