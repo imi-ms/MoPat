@@ -1,13 +1,17 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.dao.MoPatDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.UserDTO;
+import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,6 +38,9 @@ public class UserService {
 
     @Autowired
     private AclEntryDao aclEntryDao;
+
+    @Autowired
+    private ClinicDao clinicDao;
 
 
     public List<UserDTO> getAllUser(){
@@ -145,5 +153,33 @@ public class UserService {
 
     public User getUserByUsername2(String username) {
         return userDao.loadUserByUsername(username);
+    }
+
+    public void updateUserRole(User user, UserRole role) {
+        user.setRole(role);
+        userDao.merge(user);
+    }
+
+    public void updateUserClinicRights(User user, List<Long> clinicIDs) {
+        Collection<Clinic> assignedClinics = clinicDao.getElementsById(
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
+        Collection<Clinic> currentClinics = new ArrayList<>();
+        if (clinicIDs != null && !clinicIDs.isEmpty()) {
+            currentClinics = clinicDao.getElementsById(clinicIDs);
+        }
+        assignedClinics.removeAll(currentClinics);
+        currentClinics.removeAll(assignedClinics);
+        for (Clinic clinic : currentClinics) {
+            AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
+            if (clinicACLEntry == null) {
+                clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
+            }
+        }
+        for (Clinic clinic : assignedClinics) {
+            AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
+            if (clinicACLEntry != null) {
+                clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
+            }
+        }
     }
 }

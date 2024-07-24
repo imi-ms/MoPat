@@ -12,6 +12,7 @@ import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
 import de.imi.mopat.helper.controller.CacheService;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.Clinic;
@@ -26,6 +27,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 
@@ -83,6 +85,8 @@ public class UserController {
     private ApplicationMailer applicationMailer;
     @Autowired
     private ConfigurationDao configurationDao;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private CacheService cacheService;
@@ -564,13 +568,15 @@ public class UserController {
             return "redirect:/user/list";
         }
 
+        User user = (User) model.asMap().get("user");
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                (User) model.asMap().get("user"), PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
         Collection<Clinic> availableClinics = clinicDao.getAllElements();
         availableClinics.removeAll(assignedClinics);
         model.addAttribute("availableClinics", availableClinics);
         model.addAttribute("assignedClinics", assignedClinics);
+        model.addAttribute("roleList", new ArrayList<>(Arrays.asList(UserRole.values())));
+        model.addAttribute("userRole", user.getRole());
         return "user/clinicrights";
     }
 
@@ -588,34 +594,15 @@ public class UserController {
      * @return The <i>/user/clinicrights</i> website.
      */
     @RequestMapping(value = "/user/clinicrights", method = RequestMethod.POST)
-    public String editClinicRights(
-        @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
-        @RequestParam(value = "action", required = true) final String action,
-        @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String updateUserClinicRightsAndRole(
+            @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
+            @RequestParam(value = "action", required = true) final String action,
+            @RequestParam(value = "role") final UserRole role,
+            @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
         if (action.equalsIgnoreCase("save")) {
-            Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user,
-                    PermissionType.READ));
-            Collection<Clinic> currentClinics = new ArrayList<>();
-            if (clinicIDs != null && !clinicIDs.isEmpty()) {
-                currentClinics = clinicDao.getElementsById(clinicIDs);
-            }
-            assignedClinics.removeAll(currentClinics);
-            currentClinics.removeAll(assignedClinics);
-            for (Clinic clinic : currentClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry == null) {
-                    clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
-            for (Clinic clinic : assignedClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry != null) {
-                    clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
+            userService.updateUserClinicRights(user, clinicIDs);
+            userService.updateUserRole(user, role);
         }
         //Delete ACL caches to make changes directly visible
         cacheService.evictAllCaches();
