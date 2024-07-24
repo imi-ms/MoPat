@@ -2,6 +2,7 @@ package de.imi.mopat.helper.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Question;
@@ -21,10 +22,10 @@ import org.springframework.stereotype.Service;
 public class BundleService {
 
     private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+        org.slf4j.LoggerFactory.getLogger(BundleService.class);
 
     @Autowired
-    private QuestionnaireService questionnaireService;
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
     @Autowired
     private BundleQuestionnaireDao bundleQuestionnaireDao;
@@ -50,26 +51,18 @@ public class BundleService {
             bundleDTO.setLocalizedFinalText(new TreeMap<>(bundle.getLocalizedFinalText()));
             bundleDTO.setdeactivateProgressAndNameDuringSurvey(bundle.getDeactivateProgressAndNameDuringSurvey());
             bundleDTO.setShowProgressPerBundle(bundle.getShowProgressPerBundle());
-            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs =
-                new ArrayList<>();
             // this.getBundleQuestionnaires() can never be null because it is
             // initialized with an empty HashMap when a Bundle is created
-            if (!bundle.getBundleQuestionnaires()
-                .isEmpty()) {
-                for (BundleQuestionnaire bundleQuestionnaire :
-                    bundle.getBundleQuestionnaires()) {
-                    if (bundleQuestionnaire.getQuestionnaire()
-                        .getId()
-                        == null) {
-                        continue;
-                    }
-                    BundleQuestionnaireDTO bundleQuestionnaireDTO =
-                        bundleQuestionnaire.toBundleQuestionnaireDTO();
-                    bundleQuestionnaireDTO.setQuestionnaireDTO(questionnaireService.toQuestionnaireDTO(bundleQuestionnaire.getQuestionnaire()));
-                    bundleQuestionnaireDTO.setBundleId(bundle.getId());
-                    bundleQuestionnaireDTOs.add(bundleQuestionnaireDTO);
-                }
-            }
+            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = bundle.getBundleQuestionnaires().stream()
+                    .filter(bundleQuestionnaire -> bundleQuestionnaire.getQuestionnaire().getId() != null)
+                    .map(bundleQuestionnaire -> {
+                        BundleQuestionnaireDTO bundleQuestionnaireDTO = bundleQuestionnaire.toBundleQuestionnaireDTO();
+                        bundleQuestionnaireDTO.setQuestionnaireDTO(questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire()));
+                        bundleQuestionnaireDTO.setBundleId(bundle.getId());
+                        return bundleQuestionnaireDTO;
+                    })
+                    .toList();
+
             bundleDTO.setBundleQuestionnaireDTOs(bundleQuestionnaireDTOs);
         }
         return bundleDTO;
