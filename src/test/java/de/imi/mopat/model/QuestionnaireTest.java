@@ -79,7 +79,7 @@ public class QuestionnaireTest {
 
         Boolean isPublished = random.nextBoolean();
 
-        Questionnaire questionnaire = new Questionnaire(name, description, changedBy, isPublished);
+        Questionnaire questionnaire = new Questionnaire(name, description, changedBy, changedBy, isPublished);
 
         return questionnaire;
 

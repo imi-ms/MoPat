@@ -245,7 +245,7 @@ public class ODMv132ToMoPatConverter {
         LOGGER.debug("All info for Questionnaire complete (name: '{}', "
             + "description: '{}', changedBy: '{}', isPublished: '{}'). "
             + "Will now create and set it.", name, description, changedBy, isPublished);
-        Questionnaire questionnaire = new Questionnaire(name, description, changedBy, isPublished);
+        Questionnaire questionnaire = new Questionnaire(name, description, changedBy, changedBy, isPublished);
         result.setQuestionnaire(questionnaire);
 
         List<ODMcomplexTypeDefinitionItemGroupRef> itemGroupRefList = formDef.getItemGroupRef();

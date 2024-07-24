@@ -158,12 +158,12 @@ public class Questionnaire implements ConditionTarget, Serializable {
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy,
+    public Questionnaire(final String name, final String description, final Long changedBy, final Long createdBy,
         final Boolean isPublished) {
-
         setName(name);
         setDescription(description);
         setChangedBy(changedBy);
+        setCreatedBy(createdBy);
         setPublished(isPublished);
     }
 
