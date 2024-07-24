@@ -124,44 +124,9 @@ public class QuestionnaireService {
     @Autowired
     private MessageSource messageSource;
 
-    /**
-     * Converts this {@link Questionnaire} object to an
-     * {@link QuestionnaireDTO} object.
-     *
-     * @return An {@link QuestionnaireDTO} object based on this
-     * {@link Questionnaire} object.
-     */
-    public QuestionnaireDTO toQuestionnaireDTO(Questionnaire questionnaire) {
-        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
-        questionnaireDTO.setDescription(questionnaire.getDescription());
-        questionnaireDTO.setLocalizedFinalText(new TreeMap<>(questionnaire.getLocalizedFinalText()));
-        questionnaireDTO.setId(questionnaire.getId());
-        questionnaireDTO.setName(questionnaire.getName());
-        questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(questionnaire.getLocalizedWelcomeText()));
-        questionnaireDTO.setLocalizedDisplayName(new TreeMap<>(questionnaire.getLocalizedDisplayName()));
-        questionnaireDTO.setExportTemplates(questionnaire.getExportTemplates());
-        try{
-            String fileName = questionnaire.getLogo();
-            if(fileName != null){
-                String realPath = configurationDao.getImageUploadPath() + "/questionnaire/"+ questionnaire.getId()+"/"+ questionnaire.getLogo();
-                questionnaireDTO.setLogoBase64(StringUtilities.convertImageToBase64String(realPath, fileName));
-            }
-        } catch (IOException e) {
-        }
 
-        List<QuestionDTO> questionDTOs = new ArrayList<>();
-        Iterator<Question> questionIterator = questionnaire.getQuestions()
-            .iterator();
-        while (questionIterator.hasNext()) {
-            QuestionDTO questionDTO = questionService.toQuestionDTO(questionIterator.next());
-            questionDTOs.add(questionDTO);
-        }
 
-        questionnaireDTO.setQuestionDTOs(questionDTOs);
-        questionnaireDTO.setLogo(questionnaire.getLogo());
 
-        return questionnaireDTO;
-    }
 
     public void processLocalizedText(QuestionnaireDTO questionnaireDTO) {
         questionnaireDTO.setLocalizedWelcomeText(
