@@ -16,6 +16,7 @@ import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.helper.controller.ClinicService;
 import de.imi.mopat.helper.controller.ReviewService;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -38,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -87,6 +89,8 @@ public class BundleController {
     private ClinicService clinicService;
     @Autowired
     private ReviewService reviewService;
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
     /**
      * @param id for bundle
@@ -122,36 +126,19 @@ public class BundleController {
      */
     private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long id) {
         BundleDTO bundleDTO = getBundleDTO(id);
-
-        List<QuestionnaireDTO> questionnaireDTOs = new ArrayList<>();
-
-        // Add questionnaires not already assigned to this bundle
-        outerLoop:
-        for (Questionnaire questionnaire : questionnaireDao.getAllElements()) {
-            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = bundleDTO.getBundleQuestionnaireDTOs();
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleQuestionnaireDTOs) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                          .equals(questionnaireService.toQuestionnaireDTO(questionnaire))) {
-                    continue outerLoop;
-                }
-            }
-            // Add questionnaires, which have at least one question attached
-            if (!questionnaire.getQuestions()
-                              .isEmpty()) {
-                QuestionnaireDTO questionnaireDTO =
-                        questionnaireService.toQuestionnaireDTO(questionnaire);
-                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
-                questionnaireDTOs.add(questionnaireDTO);
-            }
-        }
-
-        // Sort by name
-        questionnaireDTOs.sort(new Comparator<QuestionnaireDTO>() {
-            @Override
-            public int compare(final QuestionnaireDTO o1, final QuestionnaireDTO o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
+        List<QuestionnaireDTO> questionnaireDTOs = questionnaireDao.getAllElements().stream()
+                .filter(questionnaire -> {
+                    boolean isAssigned = bundleDTO.getBundleQuestionnaireDTOs().stream()
+                            .anyMatch(bqDTO -> bqDTO.getQuestionnaireDTO().equals(questionnaireDTOMapper.apply(questionnaire)));
+                    return !isAssigned && !questionnaire.getQuestions().isEmpty();
+                })
+                .map(questionnaire -> {
+                    QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
+                    questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
+                    return questionnaireDTO;
+                })
+                .sorted(Comparator.comparing(QuestionnaireDTO::getName, String::compareToIgnoreCase))
+                .collect(Collectors.toCollection(ArrayList::new));
         return questionnaireDTOs;
     }
 
