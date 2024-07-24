@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Set;
@@ -219,5 +221,20 @@ public class QuestionService {
             newQuestion.setQuestionnaire(questionnaire);
         }
         return copiedQuestions;
+    }
+
+    Map<Question, Question> duplicateQuestionsToNewQuestionnaire(Set<Question> originalQuestions, Questionnaire newQuestionnaire) {
+        Map<Question, Question> questionMap = new HashMap<>();
+        Set<Question> copiedQuestions = new HashSet<>();
+
+        for (Question originalQuestion : originalQuestions) {
+            Question newQuestion = originalQuestion.cloneWithAnswersAndReferenceToQuestionnaire(newQuestionnaire);
+            newQuestion.setQuestionnaire(newQuestionnaire);
+            questionMap.put(originalQuestion, newQuestion);
+            copiedQuestions.add(newQuestion);
+        }
+
+        newQuestionnaire.setQuestions(copiedQuestions);
+        return questionMap;
     }
 }
