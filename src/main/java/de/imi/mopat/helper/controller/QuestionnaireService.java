@@ -222,8 +222,8 @@ public class QuestionnaireService {
                 Boolean.TRUE
         );
 
-        setCommonAttributes(newQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(newQuestionnaire);
+        copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         return newQuestionnaire;
     }
@@ -235,8 +235,8 @@ public class QuestionnaireService {
         existingQuestionnaire.setName(questionnaireDTO.getName());
         existingQuestionnaire.setChangedBy(userId);
 
-        setCommonAttributes(existingQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(existingQuestionnaire);
+        copyLocalizedTextsToQuestionnaire(existingQuestionnaire, questionnaireDTO);
         handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
         return existingQuestionnaire;
     }
@@ -257,8 +257,8 @@ public class QuestionnaireService {
         Set<Question> newQuestions = questionService.copyQuestionsToQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
         newQuestionnaire.setQuestions(newQuestions);
 
-        setCommonAttributes(newQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(newQuestionnaire);
+        copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         return newQuestionnaire;
     }
@@ -270,10 +270,20 @@ public class QuestionnaireService {
         questionnaireVersionDao.merge(version);
     }
 
-    private void setCommonAttributes(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO) {
-        questionnaire.setLocalizedDisplayName(questionnaireDTO.getLocalizedDisplayName());
-        questionnaire.setLocalizedWelcomeText(questionnaireDTO.getLocalizedWelcomeText());
-        questionnaire.setLocalizedFinalText(questionnaireDTO.getLocalizedFinalText());
+    /**
+     * Copies the localized text fields from the {@link QuestionnaireDTO} to the {@link Questionnaire}
+     *
+     * @param questionnaire      The target {@link Questionnaire} to copy text to
+     * @param questionnaireDTO   The source {@link QuestionnaireDTO} containing the text
+     */
+    private void copyLocalizedTextsToQuestionnaire(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO) {
+        if (questionnaire == null || questionnaireDTO == null) {
+            throw new IllegalArgumentException("Questionnaire and QuestionnaireDTO must not be null");
+        }
+
+        questionnaire.setLocalizedDisplayName(new TreeMap<>(questionnaireDTO.getLocalizedDisplayName()));
+        questionnaire.setLocalizedWelcomeText(new TreeMap<>(questionnaireDTO.getLocalizedWelcomeText()));
+        questionnaire.setLocalizedFinalText(new TreeMap<>(questionnaireDTO.getLocalizedFinalText()));
     }
 
 

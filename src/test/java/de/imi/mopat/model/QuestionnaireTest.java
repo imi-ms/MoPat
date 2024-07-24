@@ -13,6 +13,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
@@ -54,6 +55,8 @@ public class QuestionnaireTest {
     private Questionnaire testQuestionnaire;
     @Autowired
     private QuestionnaireService questionnairService;
+    @Autowired
+    QuestionnaireDTOMapper questionnaireDTOMapper;
 
     public QuestionnaireTest() {
     }
