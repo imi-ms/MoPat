@@ -249,13 +249,13 @@ public class QuestionnaireService {
     }
 
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
-        Questionnaire newQuestionnaire = new Questionnaire(
+        Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 questionnaireDTO.getName(),
                 questionnaireDTO.getDescription(),
                 userId,
+                userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setCreatedBy(userId);
 
         setCommonAttributes(newQuestionnaire, questionnaireDTO);
         questionnaireDao.merge(newQuestionnaire);
@@ -278,13 +278,13 @@ public class QuestionnaireService {
 
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-        Questionnaire newQuestionnaire = new Questionnaire(
-                questionnaireDTO.getName(),
+        Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
+                existingQuestionnaire.getName(),
                 questionnaireDTO.getDescription(),
+                userId,
                 userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setCreatedBy(userId);
 
         newQuestionnaire.setVersion(existingQuestionnaire.getVersion() + 1);
         saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
