@@ -643,18 +643,4 @@ public class QuestionnaireService {
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
     }
-
-    /**
-     * Removes duplicate versions of a questionnaire.
-     *
-     * @param questionnaire The {@link Questionnaire} to remove duplicates for.
-     */
-    public void removeDuplicateVersions(Questionnaire questionnaire) {
-        List<QuestionnaireVersion> versionsToDelete = questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
-                .toList();
-        for (QuestionnaireVersion version : versionsToDelete) {
-            questionnaireVersionDao.remove(version);
-        }
-    }
 }
