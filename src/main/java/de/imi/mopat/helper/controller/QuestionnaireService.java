@@ -51,7 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class QuestionnaireService {
 
     private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+        org.slf4j.LoggerFactory.getLogger(QuestionnaireService.class);
 
     @Autowired
     private LogoValidator logoValidator;
