@@ -40,12 +40,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,44 +54,37 @@ public class QuestionnaireService {
         org.slf4j.LoggerFactory.getLogger(Question.class);
 
     @Autowired
-    LogoValidator logoValidator;
-    @Autowired
-    QuestionnaireFactory questionnaireFactory;
-    @Autowired
-    QuestionnaireDTOMapper questionnaireDTOMapper;
-
-    @Autowired
-    @Qualifier("MoPat")
-    private PlatformTransactionManager transactionManager;
-
-    @Autowired
-    private ConfigurationDao configurationDao;
+    private LogoValidator logoValidator;
 
     @Autowired
     private AuthService authService;
 
     @Autowired
-    private QuestionService questionService;
-
-    @Autowired
     private BundleService bundleService;
 
     @Autowired
-    private ClinicService clinicService;
+    private ConfigurationDao configurationDao;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Autowired
     private QuestionnaireDao questionnaireDao;
 
     @Autowired
-    private QuestionnaireVersionDao questionnaireVersionDao;
-
-    @Autowired
     private QuestionnaireDTOValidator questionnaireDTOValidator;
 
     @Autowired
-    private MessageSource messageSource;
+    private QuestionnaireVersionDao questionnaireVersionDao;
 
+    @Autowired
+    private QuestionService questionService;
 
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
+
+    @Autowired
+    private QuestionnaireFactory questionnaireFactory;
 
 
     /**
