@@ -239,8 +239,8 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
-
         questionnaireDao.merge(newQuestionnaire);
+
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         questionnaireDao.merge(newQuestionnaire);
@@ -263,7 +263,6 @@ public class QuestionnaireService {
         existingQuestionnaire.setName(questionnaireDTO.getName());
         existingQuestionnaire.setChangedBy(userId);
 
-        questionnaireDao.merge(existingQuestionnaire);
         copyLocalizedTextsToQuestionnaire(existingQuestionnaire, questionnaireDTO);
         handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
         questionnaireDao.merge(existingQuestionnaire);
@@ -315,21 +314,22 @@ public class QuestionnaireService {
      * @return The unique name for the new questionnaire version.
      */
     private String generateUniqueName(QuestionnaireDTO questionnaireDTO, Questionnaire existingQuestionnaire) {
-        // If the names are different, use the name from questionnaireDTO directly.
-        if (!questionnaireDTO.getName().equals(existingQuestionnaire.getName())) {
-            return questionnaireDTO.getName();
+        String newName = questionnaireDTO.getName();
+
+        // Check if the name from questionnaireDTO is unique
+        if (!questionnaireDao.isQuestionnaireNameUsed(newName)) {
+            return newName;
         }
 
-        // Get the original questionnaire name.
-        String originalQuestionnaireName = findOriginalQuestionnaire(existingQuestionnaire).getName();
+        // Get the base name from the existing questionnaire
+        String baseName = getBaseNameWithoutVersion(existingQuestionnaire.getName());
 
-        // Determine the next available version number.
-        int nextVersion = determineNextAvailableVersion(findOriginalQuestionnaire(existingQuestionnaire));
+        // Determine the next available version number
+        int nextVersion = determineNextAvailableVersion(existingQuestionnaire);
 
-        // Generate a new name with the version number.
-        String newName;
+        // Generate a new name with the version number
         do {
-            newName = originalQuestionnaireName + " v" + nextVersion;
+            newName = baseName + " v" + nextVersion;
             nextVersion++;
         } while (questionnaireDao.isQuestionnaireNameUsed(newName));
 
@@ -343,13 +343,13 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        // Find the original questionnaire if the existing one is a duplicate
-        Questionnaire originalQuestionnaire = findOriginalQuestionnaire(existingQuestionnaire);
-
-        // Find the max version for duplicates of the original questionnaire
-        int maxVersion = getMaxVersionForOriginal(originalQuestionnaire);
-
-        return maxVersion + 1;
+        if (existingQuestionnaire.isOriginal()) {
+            // If the existing questionnaire is an original, find the max version for its duplicates
+            return getMaxVersionForOriginal(existingQuestionnaire) + 1;
+        } else {
+            // If the existing questionnaire is a duplicate, find the max version within its version group
+            return getMaxVersionForVersionGroup(existingQuestionnaire) + 1;
+        }
     }
 
     /**
@@ -360,12 +360,10 @@ public class QuestionnaireService {
      */
     private Questionnaire findOriginalQuestionnaire(Questionnaire questionnaire) {
         Optional<QuestionnaireVersion> originalVersion = questionnaireVersionDao.getAllElements().stream()
-                .filter(history -> history.getDuplicateQuestionnaireId().equals(questionnaire.getId()))
+                .filter(version -> version.getDuplicateQuestionnaireId().equals(questionnaire.getId()))
                 .findFirst();
 
-
-
-        return originalVersion.map(history -> questionnaireDao.getElementById(history.getOriginalQuestionnaireId())).orElse(questionnaire);
+        return originalVersion.map(version -> questionnaireDao.getElementById(version.getOriginalQuestionnaireId())).orElse(questionnaire);
     }
 
     /**
@@ -380,6 +378,22 @@ public class QuestionnaireService {
                 .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
                 .max(Integer::compare)
                 .orElse(originalQuestionnaire.getVersion());
+    }
+
+    /**
+     * Gets the maximum version number for the version group of a given duplicate questionnaire.
+     *
+     * @param duplicateQuestionnaire The duplicate {@link Questionnaire}.
+     * @return The maximum version number within the version group.
+     */
+    private int getMaxVersionForVersionGroup(Questionnaire duplicateQuestionnaire) {
+        Long versionGroupId = findVersionGroupIdForDuplicate(duplicateQuestionnaire);
+
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getVersionGroupId().equals(versionGroupId))
+                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
+                .max(Integer::compare)
+                .orElse(duplicateQuestionnaire.getVersion());
     }
 
     /**
@@ -426,7 +440,6 @@ public class QuestionnaireService {
             return findVersionGroupIdForDuplicate(existingQuestionnaire);
         }
     }
-
 
     /**
      * Finds the version group ID for a given duplicate questionnaire.
@@ -682,5 +695,20 @@ public class QuestionnaireService {
         }
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
+    }
+
+    /**
+     * Gets the base name of a questionnaire by removing the version suffix (e.g., " v1" or "v1").
+     *
+     * @param name The original name of the questionnaire.
+     * @return The base name without the version suffix.
+     */
+    public String getBaseNameWithoutVersion(String name) {
+        if (name.matches(".* v\\d+$")) {
+            return name.replaceAll(" v\\d+$", "");
+        } else if (name.matches(".*v\\d+$")) {
+            return name.replaceAll("v\\d+$", "");
+        }
+        return name;
     }
 }
