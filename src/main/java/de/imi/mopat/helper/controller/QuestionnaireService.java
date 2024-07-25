@@ -394,12 +394,52 @@ public class QuestionnaireService {
         version.setDuplicateQuestionnaire(newQuestionnaire);
         version.setOriginalQuestionnaire(existingQuestionnaire);
 
+        Long versionGroupId = determineVersionGroupId(existingQuestionnaire);
+
         // Ensure the new version has been persisted
         if (newQuestionnaire.getId() == null) {
             throw new IllegalStateException("The new questionnaire must be persisted before saving versioning information.");
         }
 
+        // Ensure the versionGroupId is not null
+        if (versionGroupId == null) {
+            throw new IllegalStateException("Version group ID could not be determined for questionnaire ID: " + existingQuestionnaire.getId());
+        }
+
+        version.setVersionGroupId(versionGroupId);
+
         questionnaireVersionDao.merge(version);
+    }
+
+    /**
+     * Determines the version group ID for a given questionnaire.
+     *
+     * @param existingQuestionnaire The existing {@link Questionnaire}.
+     * @return The version group ID.
+     */
+    private Long determineVersionGroupId(Questionnaire existingQuestionnaire) {
+        if (existingQuestionnaire.getVersion() == 1) {
+            // If the existing questionnaire is the original, use its ID as the version group ID
+            return existingQuestionnaire.getId();
+        } else {
+            // Otherwise, find the version group ID from the existing questionnaire
+            return findVersionGroupIdForDuplicate(existingQuestionnaire);
+        }
+    }
+
+
+    /**
+     * Finds the version group ID for a given duplicate questionnaire.
+     *
+     * @param questionnaire The {@link Questionnaire} for which the version group ID is to be found.
+     * @return The version group ID if it exists, otherwise null.
+     */
+    public Long findVersionGroupIdForDuplicate(Questionnaire questionnaire) {
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
+                .map(QuestionnaireVersion::getVersionGroupId)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
