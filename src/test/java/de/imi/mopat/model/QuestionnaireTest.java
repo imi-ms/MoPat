@@ -286,8 +286,7 @@ public class QuestionnaireTest {
         spyQuestionnaire.setLocalizedDisplayName(stringMap);
         spyQuestionnaire.setLocalizedFinalText(stringMap);
         spyQuestionnaire.setLocalizedWelcomeText(stringMap);
-        QuestionnaireDTO questionnaireDTO = questionnairService.toQuestionnaireDTO(
-            spyQuestionnaire);
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(spyQuestionnaire);
         assertNotNull(
             "Converting the questionnaire to DTO failed. The returned value was null although a not-null value was expected.",
             questionnaireDTO);

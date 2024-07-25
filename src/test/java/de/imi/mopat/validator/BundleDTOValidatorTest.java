@@ -10,6 +10,7 @@ import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.BundleQuestionnaireTest;
@@ -58,6 +59,9 @@ public class BundleDTOValidatorTest {
 
     @Autowired
     private QuestionnaireService questionnaireService;
+
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
     /**
      * Test of {@link BundleDTOValidator#supports(java.lang.Class)} Valid input:
@@ -184,7 +188,8 @@ public class BundleDTOValidatorTest {
         bundleQuestionnaire.getQuestionnaire().setLocalizedWelcomeText(new TreeMap<>());
         bundleQuestionnaireDTO = bundleQuestionnaire.toBundleQuestionnaireDTO();
         questionnaireDTO = Mockito.spy(
-            questionnaireService.toQuestionnaireDTO(bundleQuestionnaire.getQuestionnaire()));
+                questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire())
+        );
         Mockito.when(questionnaireDTO.getId()).thenReturn(Math.abs(random.nextLong()));
         bundleQuestionnaireDTO.setQuestionnaireDTO(questionnaireDTO);
         bundleQuestionnaireDTO.setIsEnabled(false);
