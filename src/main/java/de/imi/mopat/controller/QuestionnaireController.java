@@ -348,7 +348,6 @@ public class QuestionnaireController {
                     bundleDao.merge(bundle);
                 }
                 questionnaire.removeAllBundleQuestionnaires();
-                questionnaireService.removeDuplicateVersions(questionnaire);
                 questionnaireDao.remove(questionnaire);
                 model.addAttribute("messageSuccess",
                     messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
