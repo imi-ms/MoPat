@@ -479,9 +479,9 @@ public class QuestionnaireServiceTest {
         // Assert
         QuestionnaireVersion savedVersion = captor.getValue();
         Assert.assertEquals("Previous questionnaire should match the existing questionnaire",
-                existingQuestionnaire, savedVersion.getPreviousQuestionnaire());
+                existingQuestionnaire.getId(), savedVersion.getOriginalQuestionnaireId());
         Assert.assertEquals("Current questionnaire should match the copied questionnaire",
-                copiedQuestionnaire, savedVersion.getCurrentQuestionnaire());
+                copiedQuestionnaire.getId(), savedVersion.getDuplicateQuestionnaireId());
     }
 
     /**

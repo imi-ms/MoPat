@@ -360,12 +360,12 @@ public class QuestionnaireService {
      */
     private Questionnaire findOriginalQuestionnaire(Questionnaire questionnaire) {
         Optional<QuestionnaireVersion> originalVersion = questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
+                .filter(history -> history.getDuplicateQuestionnaireId().equals(questionnaire.getId()))
                 .findFirst();
 
 
 
-        return originalVersion.map(QuestionnaireVersion::getPreviousQuestionnaire).orElse(questionnaire);
+        return originalVersion.map(history -> questionnaireDao.getElementById(history.getOriginalQuestionnaireId())).orElse(questionnaire);
     }
 
     /**
@@ -376,8 +376,8 @@ public class QuestionnaireService {
      */
     private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
         return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getPreviousQuestionnaire().equals(originalQuestionnaire))
-                .map(version -> version.getCurrentQuestionnaire().getVersion())
+                .filter(version -> version.getOriginalQuestionnaireId().equals(originalQuestionnaire.getId()))
+                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
                 .max(Integer::compare)
                 .orElse(originalQuestionnaire.getVersion());
     }
@@ -391,8 +391,8 @@ public class QuestionnaireService {
      */
     private void saveVersioningInformation(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
         QuestionnaireVersion version = new QuestionnaireVersion();
-        version.setCurrentQuestionnaire(newQuestionnaire);
-        version.setPreviousQuestionnaire(existingQuestionnaire);
+        version.setDuplicateQuestionnaire(newQuestionnaire);
+        version.setOriginalQuestionnaire(existingQuestionnaire);
 
         // Ensure the new version has been persisted
         if (newQuestionnaire.getId() == null) {
@@ -651,7 +651,7 @@ public class QuestionnaireService {
      */
     public void removeDuplicateVersions(Questionnaire questionnaire) {
         List<QuestionnaireVersion> versionsToDelete = questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
+                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
                 .toList();
         for (QuestionnaireVersion version : versionsToDelete) {
             questionnaireVersionDao.remove(version);

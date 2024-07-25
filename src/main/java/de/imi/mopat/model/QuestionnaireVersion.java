@@ -11,14 +11,24 @@ public class QuestionnaireVersion {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "current_questionnaire_id", nullable = false)
-    private Questionnaire currentQuestionnaire;
+    @JoinColumn(name = "original_questionnaire_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_original_questionnaire"))
+    private Questionnaire originalQuestionnaire;
 
     @ManyToOne
-    @JoinColumn(name = "previous_questionnaire_id")
-    private Questionnaire previousQuestionnaire;
+    @JoinColumn(name = "duplicate_questionnaire_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_duplicate_questionnaire"))
+    private Questionnaire duplicateQuestionnaire;
 
-    // Getter und Setter
+    @Column(name = "version_group_id", nullable = false)
+    private Long versionGroupId;
+
+    public Long getVersionGroupId() {
+        return versionGroupId;
+    }
+
+    public void setVersionGroupId(Long versionGroupId) {
+        this.versionGroupId = versionGroupId;
+    }
+
     public Long getId() {
         return id;
     }
@@ -27,20 +37,27 @@ public class QuestionnaireVersion {
         this.id = id;
     }
 
-    public Questionnaire getCurrentQuestionnaire() {
-        return currentQuestionnaire;
+    public Questionnaire getOriginalQuestionnaire() {
+        return originalQuestionnaire;
     }
 
-    public void setCurrentQuestionnaire(Questionnaire currentQuestionnaire) {
-        this.currentQuestionnaire = currentQuestionnaire;
+    public void setOriginalQuestionnaire(Questionnaire originalQuestionnaire) {
+        this.originalQuestionnaire = originalQuestionnaire;
     }
 
-    public Questionnaire getPreviousQuestionnaire() {
-        return previousQuestionnaire;
+    public Questionnaire getDuplicateQuestionnaire() {
+        return duplicateQuestionnaire;
     }
 
-    public void setPreviousQuestionnaire(Questionnaire previousQuestionnaire) {
-        this.previousQuestionnaire = previousQuestionnaire;
+    public void setDuplicateQuestionnaire(Questionnaire duplicateQuestionnaire) {
+        this.duplicateQuestionnaire = duplicateQuestionnaire;
+    }
+
+    public Long getOriginalQuestionnaireId() {
+        return originalQuestionnaire.getId();
+    }
+
+    public Long getDuplicateQuestionnaireId() {
+        return duplicateQuestionnaire.getId();
     }
 }
-
