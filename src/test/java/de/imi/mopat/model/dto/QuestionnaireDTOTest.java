@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.ExportTemplateTest;
+import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.utils.Helper;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,6 +27,56 @@ public class QuestionnaireDTOTest {
 
     private static final Random random = new Random();
     private QuestionnaireDTO testQuestionnaireDTO;
+
+
+    public static QuestionnaireDTO getNewValidQuestionnaireDTO() {
+        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
+        long id = Math.abs(random.nextLong());
+        questionnaireDTO.setId(id);
+
+        String name = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
+        questionnaireDTO.setName(name);
+
+        String description = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
+        questionnaireDTO.setDescription(description);
+
+        SortedMap<String, String> localizedWelcomeText = new TreeMap<>();
+        int welcomeTextCount = Math.abs(random.nextInt(5)) + 1;
+        for (int i = 0; i < welcomeTextCount; i++) {
+            localizedWelcomeText.put(Helper.getRandomLocale(), Helper.getRandomString(random.nextInt(50) + 3));
+        }
+        questionnaireDTO.setLocalizedWelcomeText(localizedWelcomeText);
+
+        SortedMap<String, String> localizedFinalText = new TreeMap<>();
+        int finalTextCount = Math.abs(random.nextInt(5)) + 1;
+        for (int i = 0; i < finalTextCount; i++) {
+            localizedFinalText.put(Helper.getRandomLocale(), Helper.getRandomString(random.nextInt(50) + 3));
+        }
+        questionnaireDTO.setLocalizedFinalText(localizedFinalText);
+
+        SortedMap<String, String> localizedDisplayName = new TreeMap<>();
+        int displayNameCount = Math.abs(random.nextInt(5)) + 1;
+        for (int i = 0; i < displayNameCount; i++) {
+            localizedDisplayName.put(Helper.getRandomLocale(), Helper.getRandomString(random.nextInt(50) + 3));
+        }
+        questionnaireDTO.setLocalizedDisplayName(localizedDisplayName);
+
+        // Adding a sample list of random question DTOs
+        List<QuestionDTO> questionDTOs = new ArrayList<>();
+        int questionCount = Math.abs(random.nextInt(10)) + 1;
+        for (int i = 0; i < questionCount; i++) {
+            QuestionDTO questionDTO = new QuestionDTO();
+            SortedMap<String, String> localizedQuestionText = new TreeMap<>();
+            localizedQuestionText.put(Helper.getRandomLocale(), Helper.getRandomString(random.nextInt(50) + 3));
+            questionDTO.setLocalizedQuestionText(localizedQuestionText);
+            questionDTO.setQuestionType(Helper.getRandomEnum(QuestionType.class));
+            questionDTOs.add(questionDTO);
+        }
+        questionnaireDTO.setQuestionDTOs(questionDTOs);
+
+        return questionnaireDTO;
+    }
+
 
     public QuestionnaireDTOTest() {
     }
