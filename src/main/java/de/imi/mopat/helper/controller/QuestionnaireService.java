@@ -96,7 +96,12 @@ public class QuestionnaireService {
 
 
 
-
+    /**
+     * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
+     * It removes unnecessary HTML tags such as "<p><br></p>", "<br>".
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing localized texts to be processed.
+     */
     public void processLocalizedText(QuestionnaireDTO questionnaireDTO) {
         questionnaireDTO.setLocalizedWelcomeText(
                 processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
@@ -105,10 +110,10 @@ public class QuestionnaireService {
     }
 
     /**
-     * Helper method to process the localized text map by removing unnecessary HTML tags
+     * Helper method to process the localized text map by removing unnecessary HTML tags.
      *
-     * @param localizedTextMap The map containing localized texts to be processed
-     * @return A processed map with unnecessary HTML tags removed
+     * @param localizedTextMap The map containing localized texts to be processed.
+     * @return A processed map with unnecessary HTML tags removed.
      */
     private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
         return localizedTextMap.entrySet().stream()
@@ -125,15 +130,39 @@ public class QuestionnaireService {
                 ));
     }
 
+    /**
+     * Validates the questionnaire and logo file.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to validate.
+     * @param logo             The {@link MultipartFile} containing the logo.
+     * @param result           The {@link BindingResult} to record validation errors.
+     */
     public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, BindingResult result) {
         validateQuestionnaireDTO(questionnaireDTO, result);
         logoValidator.validateLogo(logo, result);
     }
 
+    /**
+     * Validates the given {@link QuestionnaireDTO}.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to be validated.
+     * @param result           The {@link BindingResult} to hold validation errors.
+     */
     private void validateQuestionnaireDTO(QuestionnaireDTO questionnaireDTO, BindingResult result) {
         questionnaireDTOValidator.validate(questionnaireDTO, result);
     }
 
+    /**
+     * Saves or updates a {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
+     * If the questionnaire ID is null, a new questionnaire is created.
+     * If the questionnaire ID is not null and editing is allowed, the existing questionnaire is updated.
+     * If the questionnaire ID is not null and editing is not allowed, a copy of the questionnaire is created.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
+     * @param logo             The logo file associated with the questionnaire.
+     * @param userId           The ID of the user performing the action.
+     * @return The saved or updated {@link Questionnaire}.
+     */
     @Transactional(transactionManager = "MoPat")
     public Questionnaire saveOrUpdateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
 
@@ -150,10 +179,24 @@ public class QuestionnaireService {
         // Default: Create new questionnaire if ID is null
         return createNewQuestionnaire(questionnaireDTO, logo, userId);
     }
+
+    /**
+     * Helper method to retrieve a localized message with a default message.
+     *
+     * @param messageKey The key of the message to retrieve.
+     * @return The localized message or the default message if the key is not found.
+     */
     private String getLocalizedMessage(String messageKey) {
         String defaultMessage = "The questionnaire cannot be edited. You can duplicate it instead.";
         return messageSource.getMessage(messageKey, new Object[]{}, defaultMessage, LocaleContextHolder.getLocale());
     }
+
+    /**
+     * Determines if editing the given {@link QuestionnaireDTO} is allowed.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
+     * @return True if editing is allowed, otherwise false.
+     */
     public boolean editingQuestionnaireAllowed(QuestionnaireDTO questionnaireDTO) {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
@@ -162,7 +205,7 @@ public class QuestionnaireService {
             return questionnaire.isModifiable();
         }
 
-        // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has no encounters
+        // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
         if (authService.hasExactRole("ROLE_EDITOR")) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
@@ -171,7 +214,12 @@ public class QuestionnaireService {
         return false;
     }
 
-
+    /**
+     * Checks if the given {@link Questionnaire} is part of any enabled bundle.
+     *
+     * @param questionnaire The {@link Questionnaire} to check.
+     * @return True if the questionnaire is part of an enabled bundle, otherwise false.
+     */
     private boolean isQuestionnairePartOfEnabledBundle(Questionnaire questionnaire) {
         List<BundleQuestionnaire> bundleQuestionnaires = bundleService.findByQuestionnaire(questionnaire.getId());
         for (BundleQuestionnaire bundleQuestionnaire : bundleQuestionnaires) {
@@ -182,6 +230,15 @@ public class QuestionnaireService {
         return false;
     }
 
+    /**
+     * Creates a new {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
+     * This includes setting the initial details and handling logo upload.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
+     * @param logo             The logo file associated with the questionnaire.
+     * @param userId           The ID of the user performing the action.
+     * @return The newly created {@link Questionnaire}.
+     */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 questionnaireDTO.getName(),
@@ -198,6 +255,15 @@ public class QuestionnaireService {
         return newQuestionnaire;
     }
 
+    /**
+     * Updates an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
+     * This includes setting the updated details and handling logo upload.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
+     * @param logo             The logo file associated with the questionnaire.
+     * @param userId           The ID of the user performing the action.
+     * @return The updated {@link Questionnaire}.
+     */
     private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
@@ -212,6 +278,15 @@ public class QuestionnaireService {
         return existingQuestionnaire;
     }
 
+    /**
+     * Creates a copy of an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
+     * This includes setting the new version, copying questions, and handling logo upload.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
+     * @param logo             The logo file associated with the questionnaire.
+     * @param userId           The ID of the user performing the action.
+     * @return The newly created copy of the {@link Questionnaire}.
+     */
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
@@ -240,6 +315,13 @@ public class QuestionnaireService {
         return newQuestionnaire;
     }
 
+    /**
+     * Generates a unique name for the new questionnaire version.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the new name.
+     * @param existingQuestionnaire The existing {@link Questionnaire} to be copied.
+     * @return The unique name for the new questionnaire version.
+     */
     private String generateUniqueName(QuestionnaireDTO questionnaireDTO, Questionnaire existingQuestionnaire) {
         // If the names are different, use the name from questionnaireDTO directly.
         if (!questionnaireDTO.getName().equals(existingQuestionnaire.getName())) {
@@ -262,6 +344,12 @@ public class QuestionnaireService {
         return newName;
     }
 
+    /**
+     * Determines the next available version number for a questionnaire.
+     *
+     * @param existingQuestionnaire The existing {@link Questionnaire}.
+     * @return The next available version number.
+     */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
         // Find the original questionnaire if the existing one is a duplicate
         Questionnaire originalQuestionnaire = findOriginalQuestionnaire(existingQuestionnaire);
@@ -272,6 +360,12 @@ public class QuestionnaireService {
         return maxVersion + 1;
     }
 
+    /**
+     * Finds the original questionnaire from which the given questionnaire was copied.
+     *
+     * @param questionnaire The {@link Questionnaire} to find the original for.
+     * @return The original {@link Questionnaire}.
+     */
     private Questionnaire findOriginalQuestionnaire(Questionnaire questionnaire) {
         Optional<QuestionnaireVersion> originalVersion = questionnaireVersionDao.getAllElements().stream()
                 .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
@@ -282,6 +376,12 @@ public class QuestionnaireService {
         return originalVersion.map(QuestionnaireVersion::getPreviousQuestionnaire).orElse(questionnaire);
     }
 
+    /**
+     * Gets the maximum version number for the original questionnaire.
+     *
+     * @param originalQuestionnaire The original {@link Questionnaire}.
+     * @return The maximum version number.
+     */
     private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
         return questionnaireVersionDao.getAllElements().stream()
                 .filter(version -> version.getPreviousQuestionnaire().equals(originalQuestionnaire))
@@ -290,6 +390,13 @@ public class QuestionnaireService {
                 .orElse(originalQuestionnaire.getVersion());
     }
 
+    /**
+     * Saves the versioning information by creating a new {@link QuestionnaireVersion}.
+     * linking the current and previous versions of the {@link Questionnaire}.
+     *
+     * @param newQuestionnaire      The new version of the {@link Questionnaire}.
+     * @param existingQuestionnaire The previous version of the {@link Questionnaire}
+     */
     private void saveVersioningInformation(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
         QuestionnaireVersion version = new QuestionnaireVersion();
         version.setCurrentQuestionnaire(newQuestionnaire);
@@ -304,10 +411,10 @@ public class QuestionnaireService {
     }
 
     /**
-     * Copies the localized text fields from the {@link QuestionnaireDTO} to the {@link Questionnaire}
+     * Copies the localized text fields from the {@link QuestionnaireDTO} to the {@link Questionnaire}.
      *
-     * @param questionnaire      The target {@link Questionnaire} to copy text to
-     * @param questionnaireDTO   The source {@link QuestionnaireDTO} containing the text
+     * @param questionnaire      The target {@link Questionnaire} to copy text to.
+     * @param questionnaireDTO   The source {@link QuestionnaireDTO} containing the text.
      */
     private void copyLocalizedTextsToQuestionnaire(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO) {
         if (questionnaire == null || questionnaireDTO == null) {
@@ -319,7 +426,13 @@ public class QuestionnaireService {
         questionnaire.setLocalizedFinalText(new TreeMap<>(questionnaireDTO.getLocalizedFinalText()));
     }
 
-
+    /**
+     * Handles the upload and deletion of the questionnaire's logo.
+     *
+     * @param questionnaire      The {@link Questionnaire} entity to update.
+     * @param questionnaireDTO   The {@link QuestionnaireDTO} containing the logo information.
+     * @param logo               The {@link MultipartFile} containing the new logo file.
+     */
     private void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
 
@@ -333,11 +446,11 @@ public class QuestionnaireService {
     }
 
     /**
-     * Uploads a new logo for the questionnaire
+     * Uploads a new logo for the questionnaire.
      *
-     * @param questionnaire The {@link Questionnaire} entity
-     * @param logo          The {@link MultipartFile} containing the new logo file
-     * @param imagePath     The path to the image directory
+     * @param questionnaire The {@link Questionnaire} entity.
+     * @param logo          The {@link MultipartFile} containing the new logo file.
+     * @param imagePath     The path to the image directory.
      */
     private void uploadNewLogo(Questionnaire questionnaire, MultipartFile logo, String imagePath) {
         String logoExtension = FilenameUtils.getExtension(logo.getOriginalFilename());
@@ -360,10 +473,10 @@ public class QuestionnaireService {
     }
 
     /**
-     * Deletes the existing logo of the questionnaire if it exists
+     * Deletes the existing logo of the questionnaire if it exists.
      *
-     * @param questionnaire The {@link Questionnaire} entity
-     * @param imagePath     The path to the image directory
+     * @param questionnaire The {@link Questionnaire} entity.
+     * @param imagePath     The path to the image directory.
      */
     private void deleteExistingLogo(Questionnaire questionnaire, String imagePath) {
         if (questionnaire.getLogo() != null) {
@@ -375,10 +488,10 @@ public class QuestionnaireService {
         }
     }
     /**
-     * Retrieves a {@link QuestionnaireDTO} by its ID
+     * Retrieves a {@link QuestionnaireDTO} by its ID.
      *
-     * @param questionnaireId The ID of the {@link Questionnaire} to retrieve
-     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise
+     * @param questionnaireId The ID of the {@link Questionnaire} to retrieve.
+     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise.
      */
     public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
         if (questionnaireId == null || questionnaireId <= 0) {
@@ -393,7 +506,7 @@ public class QuestionnaireService {
      * Provides specific reasons if editing is not allowed.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
-     * @return A {@link Pair} containing a boolean indicating if editing is allowed
+     * @return A {@link Pair} containing a boolean indicating if editing is allowed.
      *         and a message explaining why editing is not allowed (if applicable).
      */
     public Pair<Boolean, String> canEditQuestionnaireWithReason(QuestionnaireDTO questionnaireDTO) {
@@ -426,13 +539,13 @@ public class QuestionnaireService {
     }
 
     /**
-     * Copies scores from the original questionnaire to the new questionnaire
-     * This method should handle the copying in memory and return a set of copied scores
+     * Copies scores from the original questionnaire to the new questionnaire.
+     * This method should handle the copying in memory and return a set of copied scores.
      *
-     * @param originalScores  The set of original scores to copy
-     * @param newQuestionnaire The new questionnaire to which scores are being copied
-     * @param questionMap      A map of original questions to copied questions
-     * @return A set of copied scores
+     * @param originalScores  The set of original scores to copy.
+     * @param newQuestionnaire The new questionnaire to which scores are being copied.
+     * @param questionMap      A map of original questions to copied questions.
+     * @return A set of copied scores.
      */
     private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
         Set<Score> copiedScores = new HashSet<>();
@@ -456,13 +569,13 @@ public class QuestionnaireService {
     }
 
     /**
-     * Copies the given {@link Expression} object based on its type
+     * Copies the given {@link Expression} object based on its type.
      *
-     * @param originalExpression The original {@link Expression} to copy
-     * @param questionMap        The map of original to copied {@link Question} objects
-     * @param scoreMap           The map of original to copied {@link Score} objects
+     * @param originalExpression The original {@link Expression} to copy.
+     * @param questionMap        The map of original to copied {@link Question} objects.
+     * @param scoreMap           The map of original to copied {@link Score} objects.
      *
-     * @return The copied {@link Expression}
+     * @return The copied {@link Expression}.
      */
     private Expression copyExpression(Expression originalExpression, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         if (originalExpression instanceof UnaryExpression unary) {
@@ -477,12 +590,12 @@ public class QuestionnaireService {
     }
 
     /**
-     * Copies a {@link UnaryExpression}
+     * Copies a {@link UnaryExpression}.
      *
-     * @param originalUnary The original {@link UnaryExpression} to copy
-     * @param questionMap   The map of original to copied {@link Question} objects
-     * @param scoreMap      The map of original to copied {@link Score} objects
-     * @return The copied {@link UnaryExpression}
+     * @param originalUnary The original {@link UnaryExpression} to copy.
+     * @param questionMap   The map of original to copied {@link Question} objects.
+     * @param scoreMap      The map of original to copied {@link Score} objects.
+     * @return The copied {@link UnaryExpression}.
      */
     private UnaryExpression copyUnaryExpression(UnaryExpression originalUnary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         UnaryExpression copyUnary = new UnaryExpression();
@@ -500,10 +613,10 @@ public class QuestionnaireService {
     /**
      * Copies a {@link BinaryExpression}.
      *
-     * @param originalBinary The original {@link BinaryExpression} to copy
-     * @param questionMap    The map of original to copied {@link Question} objects
-     * @param scoreMap       The map of original to copied {@link Score} objects
-     * @return The copied {@link BinaryExpression}
+     * @param originalBinary The original {@link BinaryExpression} to copy.
+     * @param questionMap    The map of original to copied {@link Question} objects.
+     * @param scoreMap       The map of original to copied {@link Score} objects.
+     * @return The copied {@link BinaryExpression}.
      */
     private BinaryExpression copyBinaryExpression(BinaryExpression originalBinary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         BinaryExpression copyBinary = new BinaryExpression();
@@ -521,10 +634,10 @@ public class QuestionnaireService {
     /**
      * Copies a {@link MultiExpression}.
      *
-     * @param originalMulti The original {@link MultiExpression} to copy
-     * @param questionMap   The map of original to copied {@link Question} objects
-     * @param scoreMap      The map of original to copied {@link Score} objects
-     * @return The copied {@link MultiExpression}
+     * @param originalMulti The original {@link MultiExpression} to copy.
+     * @param questionMap   The map of original to copied {@link Question} objects.
+     * @param scoreMap      The map of original to copied {@link Score} objects.
+     * @return The copied {@link MultiExpression}.
      */
     private MultiExpression copyMultiExpression(MultiExpression originalMulti, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         MultiExpression copyMulti = new MultiExpression();
@@ -539,6 +652,11 @@ public class QuestionnaireService {
         return copyMulti;
     }
 
+    /**
+     * Removes duplicate versions of a questionnaire.
+     *
+     * @param questionnaire The {@link Questionnaire} to remove duplicates for.
+     */
     public void removeDuplicateVersions(Questionnaire questionnaire) {
         List<QuestionnaireVersion> versionsToDelete = questionnaireVersionDao.getAllElements().stream()
                 .filter(version -> version.getCurrentQuestionnaire().equals(questionnaire))
