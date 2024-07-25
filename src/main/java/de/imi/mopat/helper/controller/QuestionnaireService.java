@@ -102,27 +102,6 @@ public class QuestionnaireService {
     }
 
     /**
-     * Helper method to process the localized text map by removing unnecessary HTML tags.
-     *
-     * @param localizedTextMap The map containing localized texts to be processed.
-     * @return A processed map with unnecessary HTML tags removed.
-     */
-    private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
-        return localizedTextMap.entrySet().stream()
-                .peek(entry -> {
-                    if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
-                        entry.setValue("");
-                    }
-                })
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        TreeMap::new
-                ));
-    }
-
-    /**
      * Validates the questionnaire and logo file.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} to validate.
@@ -132,16 +111,6 @@ public class QuestionnaireService {
     public void validateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, BindingResult result) {
         validateQuestionnaireDTO(questionnaireDTO, result);
         logoValidator.validateLogo(logo, result);
-    }
-
-    /**
-     * Validates the given {@link QuestionnaireDTO}.
-     *
-     * @param questionnaireDTO The {@link QuestionnaireDTO} to be validated.
-     * @param result           The {@link BindingResult} to hold validation errors.
-     */
-    private void validateQuestionnaireDTO(QuestionnaireDTO questionnaireDTO, BindingResult result) {
-        questionnaireDTOValidator.validate(questionnaireDTO, result);
     }
 
     /**
@@ -173,14 +142,17 @@ public class QuestionnaireService {
     }
 
     /**
-     * Helper method to retrieve a localized message with a default message.
+     * Retrieves a {@link QuestionnaireDTO} by its ID.
      *
-     * @param messageKey The key of the message to retrieve.
-     * @return The localized message or the default message if the key is not found.
+     * @param questionnaireId The ID of the {@link Questionnaire} to retrieve.
+     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise.
      */
-    private String getLocalizedMessage(String messageKey) {
-        String defaultMessage = "The questionnaire cannot be edited. You can duplicate it instead.";
-        return messageSource.getMessage(messageKey, new Object[]{}, defaultMessage, LocaleContextHolder.getLocale());
+    public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
+        if (questionnaireId == null || questionnaireId <= 0) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
+                .map(questionnaireDTOMapper);
     }
 
     /**
@@ -204,6 +176,74 @@ public class QuestionnaireService {
 
         // By default, editing is not allowed
         return false;
+    }
+
+    /**
+     * Determines if editing the given {@link QuestionnaireDTO} is allowed.
+     * Provides specific reasons if editing is not allowed.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
+     * @return A {@link Pair} containing a boolean indicating if editing is allowed.
+     *         and a message explaining why editing is not allowed (if applicable).
+     */
+    public Pair<Boolean, String> canEditQuestionnaireWithReason(QuestionnaireDTO questionnaireDTO) {
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+
+        if (questionnaire == null) {
+            return Pair.of(true, null);
+        }
+
+        boolean isModifiable = questionnaire.isModifiable();
+        boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
+
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR) && !isModifiable) {
+            return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
+        }
+
+        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
+            if (!isModifiable && partOfEnabledBundle) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
+            }
+            if (!isModifiable) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
+            }
+            if (partOfEnabledBundle) {
+                return Pair.of(false, getLocalizedMessage("questionnaire.message.enabledBundle"));
+            }
+        }
+
+        return Pair.of(true, null);
+    }
+
+    /**
+     * Helper method to process the localized text map by removing unnecessary HTML tags.
+     *
+     * @param localizedTextMap The map containing localized texts to be processed.
+     * @return A processed map with unnecessary HTML tags removed.
+     */
+    private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
+        return localizedTextMap.entrySet().stream()
+                .peek(entry -> {
+                    if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
+                        entry.setValue("");
+                    }
+                })
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        TreeMap::new
+                ));
+    }
+
+    /**
+     * Validates the given {@link QuestionnaireDTO}.
+     *
+     * @param questionnaireDTO The {@link QuestionnaireDTO} to be validated.
+     * @param result           The {@link BindingResult} to hold validation errors.
+     */
+    private void validateQuestionnaireDTO(QuestionnaireDTO questionnaireDTO, BindingResult result) {
+        questionnaireDTOValidator.validate(questionnaireDTO, result);
     }
 
     /**
@@ -307,96 +347,6 @@ public class QuestionnaireService {
     }
 
     /**
-     * Generates a unique name for the new questionnaire version.
-     *
-     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the new name.
-     * @param existingQuestionnaire The existing {@link Questionnaire} to be copied.
-     * @return The unique name for the new questionnaire version.
-     */
-    private String generateUniqueName(QuestionnaireDTO questionnaireDTO, Questionnaire existingQuestionnaire) {
-        String newName = questionnaireDTO.getName();
-
-        // Check if the name from questionnaireDTO is unique
-        if (!questionnaireDao.isQuestionnaireNameUsed(newName)) {
-            return newName;
-        }
-
-        // Get the base name from the existing questionnaire
-        String baseName = getBaseNameWithoutVersion(existingQuestionnaire.getName());
-
-        // Determine the next available version number
-        int nextVersion = determineNextAvailableVersion(existingQuestionnaire);
-
-        // Generate a new name with the version number
-        do {
-            newName = baseName + " v" + nextVersion;
-            nextVersion++;
-        } while (questionnaireDao.isQuestionnaireNameUsed(newName));
-
-        return newName;
-    }
-
-    /**
-     * Determines the next available version number for a questionnaire.
-     *
-     * @param existingQuestionnaire The existing {@link Questionnaire}.
-     * @return The next available version number.
-     */
-    private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        if (existingQuestionnaire.isOriginal()) {
-            // If the existing questionnaire is an original, find the max version for its duplicates
-            return getMaxVersionForOriginal(existingQuestionnaire) + 1;
-        } else {
-            // If the existing questionnaire is a duplicate, find the max version within its version group
-            return getMaxVersionForVersionGroup(existingQuestionnaire) + 1;
-        }
-    }
-
-    /**
-     * Finds the original questionnaire from which the given questionnaire was copied.
-     *
-     * @param questionnaire The {@link Questionnaire} to find the original for.
-     * @return The original {@link Questionnaire}.
-     */
-    private Questionnaire findOriginalQuestionnaire(Questionnaire questionnaire) {
-        Optional<QuestionnaireVersion> originalVersion = questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getDuplicateQuestionnaireId().equals(questionnaire.getId()))
-                .findFirst();
-
-        return originalVersion.map(version -> questionnaireDao.getElementById(version.getOriginalQuestionnaireId())).orElse(questionnaire);
-    }
-
-    /**
-     * Gets the maximum version number for the original questionnaire.
-     *
-     * @param originalQuestionnaire The original {@link Questionnaire}.
-     * @return The maximum version number.
-     */
-    private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getOriginalQuestionnaireId().equals(originalQuestionnaire.getId()))
-                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
-                .max(Integer::compare)
-                .orElse(originalQuestionnaire.getVersion());
-    }
-
-    /**
-     * Gets the maximum version number for the version group of a given duplicate questionnaire.
-     *
-     * @param duplicateQuestionnaire The duplicate {@link Questionnaire}.
-     * @return The maximum version number within the version group.
-     */
-    private int getMaxVersionForVersionGroup(Questionnaire duplicateQuestionnaire) {
-        Long versionGroupId = findVersionGroupIdForDuplicate(duplicateQuestionnaire);
-
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getVersionGroupId().equals(versionGroupId))
-                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
-                .max(Integer::compare)
-                .orElse(duplicateQuestionnaire.getVersion());
-    }
-
-    /**
      * Saves the versioning information by creating a new {@link QuestionnaireVersion}.
      * linking the current and previous versions of the {@link Questionnaire}.
      *
@@ -426,33 +376,33 @@ public class QuestionnaireService {
     }
 
     /**
-     * Determines the version group ID for a given questionnaire.
+     * Copies scores from the original questionnaire to the new questionnaire.
+     * This method should handle the copying in memory and return a set of copied scores.
      *
-     * @param existingQuestionnaire The existing {@link Questionnaire}.
-     * @return The version group ID.
+     * @param originalScores  The set of original scores to copy.
+     * @param newQuestionnaire The new questionnaire to which scores are being copied.
+     * @param questionMap      A map of original questions to copied questions.
+     * @return A set of copied scores.
      */
-    private Long determineVersionGroupId(Questionnaire existingQuestionnaire) {
-        if (existingQuestionnaire.getVersion() == 1) {
-            // If the existing questionnaire is the original, use its ID as the version group ID
-            return existingQuestionnaire.getId();
-        } else {
-            // Otherwise, find the version group ID from the existing questionnaire
-            return findVersionGroupIdForDuplicate(existingQuestionnaire);
-        }
-    }
+    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
+        Set<Score> copiedScores = new HashSet<>();
+        Map<Score, Score> scoreMap = new HashMap<>();
 
-    /**
-     * Finds the version group ID for a given duplicate questionnaire.
-     *
-     * @param questionnaire The {@link Questionnaire} for which the version group ID is to be found.
-     * @return The version group ID if it exists, otherwise null.
-     */
-    public Long findVersionGroupIdForDuplicate(Questionnaire questionnaire) {
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
-                .map(QuestionnaireVersion::getVersionGroupId)
-                .findFirst()
-                .orElse(null);
+        for (Score originalScore : originalScores) {
+            Score copiedScore = new Score();
+            copiedScore.setName(originalScore.getName());
+            copiedScore.setQuestionnaire(newQuestionnaire);
+
+            // Copy expression using the modified copyExpression method
+            Expression copiedExpression = copyExpression(originalScore.getExpression(), questionMap, scoreMap);
+            copiedScore.setExpression(copiedExpression);
+
+            copiedScores.add(copiedScore);
+            scoreMap.put(originalScore, copiedScore);
+        }
+
+        newQuestionnaire.setScores(copiedScores);
+        return copiedScores;
     }
 
     /**
@@ -532,85 +482,137 @@ public class QuestionnaireService {
             questionnaire.setLogo(null);
         }
     }
+
     /**
-     * Retrieves a {@link QuestionnaireDTO} by its ID.
+     * Generates a unique name for the new questionnaire version.
      *
-     * @param questionnaireId The ID of the {@link Questionnaire} to retrieve.
-     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise.
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the new name.
+     * @param existingQuestionnaire The existing {@link Questionnaire} to be copied.
+     * @return The unique name for the new questionnaire version.
      */
-    public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
-        if (questionnaireId == null || questionnaireId <= 0) {
-            return Optional.empty();
+    private String generateUniqueName(QuestionnaireDTO questionnaireDTO, Questionnaire existingQuestionnaire) {
+        String newName = questionnaireDTO.getName();
+
+        // Check if the name from questionnaireDTO is unique
+        if (!questionnaireDao.isQuestionnaireNameUsed(newName)) {
+            return newName;
         }
-        return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
-                .map(questionnaireDTOMapper);
+
+        // Get the base name from the existing questionnaire
+        String baseName = getBaseNameWithoutVersion(existingQuestionnaire.getName());
+
+        // Determine the next available version number
+        int nextVersion = determineNextAvailableVersion(existingQuestionnaire);
+
+        // Generate a new name with the version number
+        do {
+            newName = baseName + " v" + nextVersion;
+            nextVersion++;
+        } while (questionnaireDao.isQuestionnaireNameUsed(newName));
+
+        return newName;
     }
 
     /**
-     * Determines if editing the given {@link QuestionnaireDTO} is allowed.
-     * Provides specific reasons if editing is not allowed.
+     * Determines the next available version number for a questionnaire.
      *
-     * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
-     * @return A {@link Pair} containing a boolean indicating if editing is allowed.
-     *         and a message explaining why editing is not allowed (if applicable).
+     * @param existingQuestionnaire The existing {@link Questionnaire}.
+     * @return The next available version number.
      */
-    public Pair<Boolean, String> canEditQuestionnaireWithReason(QuestionnaireDTO questionnaireDTO) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-
-        if (questionnaire == null) {
-            return Pair.of(true, null);
+    private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
+        if (existingQuestionnaire.isOriginal()) {
+            // If the existing questionnaire is an original, find the max version for its duplicates
+            return getMaxVersionForOriginal(existingQuestionnaire) + 1;
+        } else {
+            // If the existing questionnaire is a duplicate, find the max version within its version group
+            return getMaxVersionForVersionGroup(existingQuestionnaire) + 1;
         }
-
-        boolean isModifiable = questionnaire.isModifiable();
-        boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
-
-        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR) && !isModifiable) {
-            return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
-        }
-
-        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
-            if (!isModifiable && partOfEnabledBundle) {
-                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
-            }
-            if (!isModifiable) {
-                return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
-            }
-            if (partOfEnabledBundle) {
-                return Pair.of(false, getLocalizedMessage("questionnaire.message.enabledBundle"));
-            }
-        }
-
-        return Pair.of(true, null);
     }
 
     /**
-     * Copies scores from the original questionnaire to the new questionnaire.
-     * This method should handle the copying in memory and return a set of copied scores.
+     * Gets the maximum version number for the original questionnaire.
      *
-     * @param originalScores  The set of original scores to copy.
-     * @param newQuestionnaire The new questionnaire to which scores are being copied.
-     * @param questionMap      A map of original questions to copied questions.
-     * @return A set of copied scores.
+     * @param originalQuestionnaire The original {@link Questionnaire}.
+     * @return The maximum version number.
      */
-    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
-        Set<Score> copiedScores = new HashSet<>();
-        Map<Score, Score> scoreMap = new HashMap<>();
+    private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getOriginalQuestionnaireId().equals(originalQuestionnaire.getId()))
+                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
+                .max(Integer::compare)
+                .orElse(originalQuestionnaire.getVersion());
+    }
 
-        for (Score originalScore : originalScores) {
-            Score copiedScore = new Score();
-            copiedScore.setName(originalScore.getName());
-            copiedScore.setQuestionnaire(newQuestionnaire);
+    /**
+     * Gets the maximum version number for the version group of a given duplicate questionnaire.
+     *
+     * @param duplicateQuestionnaire The duplicate {@link Questionnaire}.
+     * @return The maximum version number within the version group.
+     */
+    private int getMaxVersionForVersionGroup(Questionnaire duplicateQuestionnaire) {
+        Long versionGroupId = findVersionGroupIdForDuplicate(duplicateQuestionnaire);
 
-            // Copy expression using the modified copyExpression method
-            Expression copiedExpression = copyExpression(originalScore.getExpression(), questionMap, scoreMap);
-            copiedScore.setExpression(copiedExpression);
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getVersionGroupId().equals(versionGroupId))
+                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
+                .max(Integer::compare)
+                .orElse(duplicateQuestionnaire.getVersion());
+    }
 
-            copiedScores.add(copiedScore);
-            scoreMap.put(originalScore, copiedScore);
+    /**
+     * Determines the version group ID for a given questionnaire.
+     *
+     * @param existingQuestionnaire The existing {@link Questionnaire}.
+     * @return The version group ID.
+     */
+    private Long determineVersionGroupId(Questionnaire existingQuestionnaire) {
+        if (existingQuestionnaire.isOriginal()) {
+            // If the existing questionnaire is the original, use its ID as the version group ID
+            return existingQuestionnaire.getId();
+        } else {
+            // Otherwise, find the version group ID from the existing questionnaire
+            return findVersionGroupIdForDuplicate(existingQuestionnaire);
         }
+    }
 
-        newQuestionnaire.setScores(copiedScores);
-        return copiedScores;
+    /**
+     * Finds the version group ID for a given duplicate questionnaire.
+     *
+     * @param questionnaire The {@link Questionnaire} for which the version group ID is to be found.
+     * @return The version group ID if it exists, otherwise null.
+     */
+    public Long findVersionGroupIdForDuplicate(Questionnaire questionnaire) {
+        return questionnaireVersionDao.getAllElements().stream()
+                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
+                .map(QuestionnaireVersion::getVersionGroupId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Gets the base name of a questionnaire by removing the version suffix (e.g., " v1" or "v1").
+     *
+     * @param name The original name of the questionnaire.
+     * @return The base name without the version suffix.
+     */
+    public String getBaseNameWithoutVersion(String name) {
+        if (name.matches(".* v\\d+$")) {
+            return name.replaceAll(" v\\d+$", "");
+        } else if (name.matches(".*v\\d+$")) {
+            return name.replaceAll("v\\d+$", "");
+        }
+        return name;
+    }
+
+    /**
+     * Helper method to retrieve a localized message with a default message.
+     *
+     * @param messageKey The key of the message to retrieve.
+     * @return The localized message or the default message if the key is not found.
+     */
+    private String getLocalizedMessage(String messageKey) {
+        String defaultMessage = "The questionnaire cannot be edited. You can duplicate it instead.";
+        return messageSource.getMessage(messageKey, new Object[]{}, defaultMessage, LocaleContextHolder.getLocale());
     }
 
     /**
@@ -695,20 +697,5 @@ public class QuestionnaireService {
         }
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
-    }
-
-    /**
-     * Gets the base name of a questionnaire by removing the version suffix (e.g., " v1" or "v1").
-     *
-     * @param name The original name of the questionnaire.
-     * @return The base name without the version suffix.
-     */
-    public String getBaseNameWithoutVersion(String name) {
-        if (name.matches(".* v\\d+$")) {
-            return name.replaceAll(" v\\d+$", "");
-        } else if (name.matches(".*v\\d+$")) {
-            return name.replaceAll("v\\d+$", "");
-        }
-        return name;
     }
 }
