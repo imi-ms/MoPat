@@ -9,6 +9,7 @@ import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTOTest;
 import de.imi.mopat.model.score.*;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import org.junit.Assert;
@@ -308,7 +309,7 @@ public class QuestionnaireServiceTest {
 
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
-        when(authService.hasRoleOrAbove("ROLE_MODERATOR")).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(modifiableQuestionnaire);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
 
@@ -335,7 +336,7 @@ public class QuestionnaireServiceTest {
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
-        when(authService.hasRoleOrAbove("ROLE_MODERATOR")).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(newQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
@@ -363,7 +364,7 @@ public class QuestionnaireServiceTest {
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
-        when(authService.hasExactRole("ROLE_EDITOR")).thenReturn(true);
+        when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
@@ -397,7 +398,7 @@ public class QuestionnaireServiceTest {
 
         when(bundleService.findByQuestionnaire(any())).thenReturn(bundleQuestionnaireList);
 
-        when(authService.hasExactRole("ROLE_EDITOR")).thenReturn(true);
+        when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
@@ -433,7 +434,7 @@ public class QuestionnaireServiceTest {
         // Simulating all bundles are not enabled
         when(bundleService.findByQuestionnaire(any())).thenReturn(bundleQuestionnaireList);
 
-        when(authService.hasExactRole("ROLE_EDITOR")).thenReturn(true);
+        when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();

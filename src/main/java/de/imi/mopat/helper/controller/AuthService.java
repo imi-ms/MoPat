@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.model.user.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.core.Authentication;
@@ -31,28 +32,29 @@ public class AuthService {
         return user.getId();
     }
 
-    public boolean hasExactRole(String role) {
+    public boolean hasExactRole(UserRole userRole) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return false;
         }
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().equals(role)) {
+            if (authority.getAuthority().equals(userRole.getTextValue())) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean hasRoleOrAbove(String role) {
+    public boolean hasRoleOrAbove(UserRole userRole) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return false;
         }
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().equals(role) || roleHierarchy.getReachableGrantedAuthorities(authorities).stream().anyMatch(a -> a.getAuthority().equals(role))) {
+            if (authority.getAuthority().equals(userRole.getTextValue()) ||
+                    roleHierarchy.getReachableGrantedAuthorities(authorities).stream().anyMatch(a -> a.getAuthority().equals(userRole.getTextValue()))) {
                 return true;
             }
         }

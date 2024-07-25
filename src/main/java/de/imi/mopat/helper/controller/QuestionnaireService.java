@@ -18,6 +18,7 @@ import de.imi.mopat.model.score.MultiOperator;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.score.UnaryOperator;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
 
@@ -192,12 +193,12 @@ public class QuestionnaireService {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
         // Admins and moderators can edit if there are no encounters
-        if (authService.hasRoleOrAbove("ROLE_MODERATOR")) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             return questionnaire.isModifiable();
         }
 
         // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
-        if (authService.hasExactRole("ROLE_EDITOR")) {
+        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
 
@@ -510,11 +511,11 @@ public class QuestionnaireService {
         boolean isModifiable = questionnaire.isModifiable();
         boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
 
-        if (authService.hasRoleOrAbove("ROLE_MODERATOR") && !isModifiable) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR) && !isModifiable) {
             return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
         }
 
-        if (authService.hasExactRole("ROLE_EDITOR")) {
+        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             if (!isModifiable && partOfEnabledBundle) {
                 return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
             }

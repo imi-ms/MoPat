@@ -10,6 +10,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
@@ -91,6 +92,8 @@ public class BundleController {
     private ReviewService reviewService;
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
+    @Autowired
+    private AuthService authService;
 
     /**
      * @param id for bundle
@@ -179,7 +182,7 @@ public class BundleController {
     }
 
     private List<UserDTO> getAvailableReviewers() {
-        String username = userService.getUsername();
+        String username = authService.getAuthenticatedUser().getUsername();
         if (username == null) {
             return Collections.emptyList();
         }
@@ -285,8 +288,7 @@ public class BundleController {
         }
 
         // Set property of the Bundle to current user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User principal = (User) authentication.getPrincipal();
+        User principal = authService.getAuthenticatedUser();
 
         Bundle bundle;
         if (bundleDTO.getId() != null) {
@@ -311,8 +313,7 @@ public class BundleController {
             // end persist (not merge)
             bundleDao.merge(bundle);
             // Get the current user, which is the owner of the bundle
-            User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
+            User currentUser = authService.getAuthenticatedUser();
             // Create a new ACLObjectIdentity for the bundle and save it
             AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
                 Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,

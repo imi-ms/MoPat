@@ -124,35 +124,8 @@ public class UserService {
         return clinicModeratorsAndAdmins;
     }
 
-
-    public String getUsername() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated()) {
-                LOGGER.warn("No authentication found or user is not authenticated");
-                return null;
-            }
-
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof UserDetails) {
-                return ((UserDetails) principal).getUsername();
-            } else if (principal instanceof String) {
-                return (String) principal;
-            } else {
-                throw new UsernameNotFoundException("Unknown principal type: " + principal.getClass().getName());
-            }
-        } catch (Exception e) {
-            LOGGER.error("Error while getting the authenticated username", e);
-            return null;
-        }
-    }
-
     public UserDTO getUserByUsername(String username) {
         return userDao.loadUserByUsername(username).toUserDTO();
-    }
-
-    public User getUserByUsername2(String username) {
-        return userDao.loadUserByUsername(username);
     }
 
     public void updateUserRole(User user, UserRole role) {
