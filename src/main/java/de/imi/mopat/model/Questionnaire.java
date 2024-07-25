@@ -848,4 +848,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
         }
         return true;
     }
+
+    public boolean isOriginal() {
+        return version == 1;
+    }
 }
