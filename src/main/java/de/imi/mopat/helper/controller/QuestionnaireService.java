@@ -2,14 +2,12 @@ package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.QuestionnaireVersionDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireVersion;
 import de.imi.mopat.model.score.BinaryExpression;
 import de.imi.mopat.model.score.BinaryOperator;
 import de.imi.mopat.model.score.Expression;
@@ -76,9 +74,6 @@ public class QuestionnaireService {
     private QuestionnaireDTOValidator questionnaireDTOValidator;
 
     @Autowired
-    private QuestionnaireVersionDao questionnaireVersionDao;
-
-    @Autowired
     private QuestionService questionService;
 
     @Autowired
@@ -86,6 +81,9 @@ public class QuestionnaireService {
 
     @Autowired
     private QuestionnaireFactory questionnaireFactory;
+
+    @Autowired
+    private QuestionnaireGroupService questionnaireGroupService;
 
 
     /**
@@ -330,9 +328,11 @@ public class QuestionnaireService {
         );
         questionnaireDao.merge(newQuestionnaire);
 
-        int version = determineNextAvailableVersion(existingQuestionnaire);
-        newQuestionnaire.setVersion(version);
-        saveVersioningInformation(newQuestionnaire, existingQuestionnaire);
+        // Save group information
+        questionnaireGroupService.saveGroupInformation(newQuestionnaire, existingQuestionnaire);
+
+        // Set version in Questionnaire
+        setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
 
         // Copy questions and create a mapping copyQuestionsToQuestionnaire
         Map<Question, Question> questionMap = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
@@ -346,34 +346,41 @@ public class QuestionnaireService {
         return newQuestionnaire;
     }
 
+
     /**
-     * Saves the versioning information by creating a new {@link QuestionnaireVersion}.
-     * linking the current and previous versions of the {@link Questionnaire}.
+     * Sets the version for the new {@link Questionnaire} based on the existing {@link Questionnaire}.
+     * If the existing questionnaire is part of a group, the new version will be incremented based on the maximum version in the group.
+     * If not, the new version will be incremented based on the version of the existing questionnaire.
      *
-     * @param newQuestionnaire      The new version of the {@link Questionnaire}.
-     * @param existingQuestionnaire The previous version of the {@link Questionnaire}
+     * @param newQuestionnaire      The new {@link Questionnaire} to set the version for.
+     * @param existingQuestionnaire The existing {@link Questionnaire} used as a reference for the version.
+     * @throws IllegalStateException    if the new questionnaire has not been persisted (i.e., its ID is null).
+     * @throws IllegalArgumentException if the existing questionnaire is null or has not been persisted (i.e., its ID is null).
      */
-    private void saveVersioningInformation(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
-        QuestionnaireVersion version = new QuestionnaireVersion();
-        version.setDuplicateQuestionnaire(newQuestionnaire);
-        version.setOriginalQuestionnaire(existingQuestionnaire);
-
-        Long versionGroupId = determineVersionGroupId(existingQuestionnaire);
-
-        // Ensure the new version has been persisted
+    private void setVersionForNewQuestionnaire(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
+        // Ensure the new questionnaire is persisted
         if (newQuestionnaire.getId() == null) {
             throw new IllegalStateException("The new questionnaire must be persisted before saving versioning information.");
         }
 
-        // Ensure the versionGroupId is not null
-        if (versionGroupId == null) {
-            throw new IllegalStateException("Version group ID could not be determined for questionnaire ID: " + existingQuestionnaire.getId());
+        // Ensure the existing questionnaire is not null and is persisted
+        if (existingQuestionnaire == null || existingQuestionnaire.getId() == null) {
+            throw new IllegalArgumentException("The existing questionnaire must not be null and must be persisted.");
         }
 
-        version.setVersionGroupId(versionGroupId);
+        int version;
+        Optional<Long> groupIdForQuestionnaire = questionnaireGroupService.getGroupIdForQuestionnaire(existingQuestionnaire);
 
-        questionnaireVersionDao.merge(version);
+        if (groupIdForQuestionnaire.isPresent()) {
+            int maxVersionInGroup = questionnaireGroupService.findMaxVersionInGroup(groupIdForQuestionnaire.get());
+            version = maxVersionInGroup + 1;
+        } else {
+            version = existingQuestionnaire.getVersion() + 1;
+        }
+
+        newQuestionnaire.setVersion(version);
     }
+
 
     /**
      * Copies scores from the original questionnaire to the new questionnaire.
@@ -520,73 +527,13 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        if (existingQuestionnaire.isOriginal()) {
-            // If the existing questionnaire is an original, find the max version for its duplicates
-            return getMaxVersionForOriginal(existingQuestionnaire) + 1;
+        Optional<Long> groupIdOpt = questionnaireGroupService.getGroupIdForQuestionnaire(existingQuestionnaire);
+        if (groupIdOpt.isPresent()) {
+            Long groupId = groupIdOpt.get();
+            return questionnaireGroupService.findMaxVersionInGroup(groupId) + 1;
         } else {
-            // If the existing questionnaire is a duplicate, find the max version within its version group
-            return getMaxVersionForVersionGroup(existingQuestionnaire) + 1;
+            return existingQuestionnaire.getVersion() + 1;
         }
-    }
-
-    /**
-     * Gets the maximum version number for the original questionnaire.
-     *
-     * @param originalQuestionnaire The original {@link Questionnaire}.
-     * @return The maximum version number.
-     */
-    private int getMaxVersionForOriginal(Questionnaire originalQuestionnaire) {
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getOriginalQuestionnaireId().equals(originalQuestionnaire.getId()))
-                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
-                .max(Integer::compare)
-                .orElse(originalQuestionnaire.getVersion());
-    }
-
-    /**
-     * Gets the maximum version number for the version group of a given duplicate questionnaire.
-     *
-     * @param duplicateQuestionnaire The duplicate {@link Questionnaire}.
-     * @return The maximum version number within the version group.
-     */
-    private int getMaxVersionForVersionGroup(Questionnaire duplicateQuestionnaire) {
-        Long versionGroupId = findVersionGroupIdForDuplicate(duplicateQuestionnaire);
-
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getVersionGroupId().equals(versionGroupId))
-                .map(version -> questionnaireDao.getElementById(version.getDuplicateQuestionnaireId()).getVersion())
-                .max(Integer::compare)
-                .orElse(duplicateQuestionnaire.getVersion());
-    }
-
-    /**
-     * Determines the version group ID for a given questionnaire.
-     *
-     * @param existingQuestionnaire The existing {@link Questionnaire}.
-     * @return The version group ID.
-     */
-    private Long determineVersionGroupId(Questionnaire existingQuestionnaire) {
-        if (existingQuestionnaire.isOriginal()) {
-            // If the existing questionnaire is the original, use its ID as the version group ID
-            return existingQuestionnaire.getId();
-        } else {
-            // Otherwise, find the version group ID from the existing questionnaire
-            return findVersionGroupIdForDuplicate(existingQuestionnaire);
-        }
-    }
-
-    /**
-     * Finds the version group ID for a given duplicate questionnaire.
-     *
-     * @param questionnaire The {@link Questionnaire} for which the version group ID is to be found.
-     * @return The version group ID if it exists, otherwise null.
-     */
-    public Long findVersionGroupIdForDuplicate(Questionnaire questionnaire) {
-        return questionnaireVersionDao.getAllElements().stream()
-                .filter(version -> version.getDuplicateQuestionnaire().equals(questionnaire))
-                .map(QuestionnaireVersion::getVersionGroupId)
-                .findFirst()
-                .orElse(null);
     }
 
     /**

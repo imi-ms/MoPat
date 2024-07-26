@@ -2,7 +2,6 @@ package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.QuestionnaireVersionDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.*;
@@ -12,13 +11,18 @@ import de.imi.mopat.model.score.*;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +35,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class QuestionnaireServiceTest {
+
+    public static final int ORIGINAL_QUESTIONNAIRE_VERSION = 1;
+    public static final int DEFAULT_QUESTIONNAIRE_VERSION = 1;
 
     public static final String VALID_LOGO_FILENAME = "test.png";
     public static final String VALID_LOGO_CONTENT_TYPE = "image/png";
@@ -47,6 +54,9 @@ public class QuestionnaireServiceTest {
     private Random random;
 
     @Mock
+    private MessageSource messageSource;
+
+    @Mock
     private ConfigurationDao configurationDao;
 
     @Mock
@@ -54,9 +64,6 @@ public class QuestionnaireServiceTest {
 
     @Mock
     private QuestionService questionService;
-
-    @Mock
-    private QuestionnaireVersionDao questionnaireVersionDao;
 
     @Mock
     private QuestionnaireDTOMapper questionnaireDTOMapper;
@@ -78,6 +85,12 @@ public class QuestionnaireServiceTest {
 
     @Mock
     private LogoValidator logoValidator;
+
+    @Mock
+    private QuestionnaireGroupService questionnaireGroupService;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     // Helper method to generate a positive random long ID
     private Long getPositiveId(){
@@ -302,23 +315,24 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and admin can edit the questionnaire without executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() {
+    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Long validUserId = getPositiveId();
-
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+
 
         when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(modifiableQuestionnaire);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
+        doReturn(getPositiveId()).when(modifiableQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
-        verify(questionnaireDao, times(2)).merge(modifiableQuestionnaire); // Ensure the existing questionnaire is merged
+        verify(questionnaireDao, times(1)).merge(modifiableQuestionnaire); // Ensure the existing questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, it's an update
         verify(modifiableQuestionnaire, never()).setCreatedBy(anyLong()); // Ensure setCreatedBy is not called, which is specific to new questionnaires
     }
@@ -340,6 +354,7 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(newQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
+        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, EMPTY_LOGO, userId);
@@ -356,7 +371,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor cannot edit the questionnaire if it has executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_EditorCannotEditWithExecutedSurveys() {
+    public void testSaveOrUpdateQuestionnaire_EditorCannotEditWithExecutedSurveys() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Long validUserId = getPositiveId();
@@ -368,6 +383,7 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
+        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
@@ -384,7 +400,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor cannot edit the questionnaire if it belongs to a bundle that is enabled
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_EditorCannotEditIfPartOfEnabledBundle() {
+    public void testSaveOrUpdateQuestionnaire_EditorCannotEditIfPartOfEnabledBundle() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Long validUserId = getPositiveId();
@@ -397,11 +413,11 @@ public class QuestionnaireServiceTest {
         List<BundleQuestionnaire> bundleQuestionnaireList = List.of(enabledBundleQuestionnaire);
 
         when(bundleService.findByQuestionnaire(any())).thenReturn(bundleQuestionnaireList);
-
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
+        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
@@ -418,7 +434,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor can edit the questionnaire if it does not belong to a bundle that is enabled
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_EditorCanEditIfNotPartOfEnabledBundle() {
+    public void testSaveOrUpdateQuestionnaire_EditorCanEditIfNotPartOfEnabledBundle() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Long validUserId = getPositiveId();
@@ -438,50 +454,37 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
+        doReturn(1L).when(existingQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
-        verify(questionnaireDao, times(2)).merge(any(Questionnaire.class)); // Ensure the existing questionnaire is merged
+        verify(questionnaireDao, times(1)).merge(any(Questionnaire.class)); // Ensure the existing questionnaire is merged
         verify(questionnaireDao, never()).merge(copiedQuestionnaire); // Ensure no new questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, implying it's an update
         verify(existingQuestionnaire, never()).setCreatedBy(anyLong()); // Ensure setCreatedBy is not called, which is specific to new questionnaires
     }
 
-    /**
-     * Test of {@link QuestionnaireService#saveOrUpdateQuestionnaire}<br>
-     * Valid input: valid {@link QuestionnaireDTO} that triggers versioning information to be saved
-     */
     @Test
-    public void testSaveVersioningInformation() {
+    public void testSaveOrUpdateQuestionnaire_NewQuestionnaireIdNull() {
         // Arrange
+        Long userId = getPositiveId();
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Questionnaire existingQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        existingQuestionnaire.setVersion(1);
+        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire newQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
-        Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        copiedQuestionnaire.setVersion(2);
-
-        Long validUserId = getPositiveId();
-
-        when(questionnaireDao.getElementById(anyLong())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean())).thenReturn(copiedQuestionnaire);
-
-        // Act
-        questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, EMPTY_LOGO, validUserId);
-
-        // Capture the QuestionnaireVersion object passed to the merge method
-        ArgumentCaptor<QuestionnaireVersion> captor = ArgumentCaptor.forClass(QuestionnaireVersion.class);
-        verify(questionnaireVersionDao, times(1)).merge(captor.capture());
+        doReturn(existingQuestionnaire).when(questionnaireDao).getElementById(anyLong());
+        doReturn(null).when(newQuestionnaire).getId();
+        doReturn(newQuestionnaire).when(questionnaireFactory).createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean());
 
         // Assert
-        QuestionnaireVersion savedVersion = captor.getValue();
-        Assert.assertEquals("Previous questionnaire should match the existing questionnaire",
-                existingQuestionnaire.getId(), savedVersion.getOriginalQuestionnaireId());
-        Assert.assertEquals("Current questionnaire should match the copied questionnaire",
-                copiedQuestionnaire.getId(), savedVersion.getDuplicateQuestionnaireId());
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("The new questionnaire must be persisted before saving versioning information.");
+
+        // Act
+        questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, EMPTY_LOGO, userId);
     }
 
     /**
@@ -583,7 +586,7 @@ public class QuestionnaireServiceTest {
     @Test
     public void testUploadNewLogo() {
         // Arrange
-        Questionnaire existingQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Long userId = getPositiveId();
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
@@ -597,6 +600,7 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(newQuestionnaire);
+        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logoFile, userId);
@@ -615,7 +619,7 @@ public class QuestionnaireServiceTest {
     @Test
     public void testDeleteExistingLogo(){
         // Arrange
-        Questionnaire existingQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         questionnaireDTO.setDeleteLogo(true);
         Long userId = getPositiveId();
@@ -625,6 +629,8 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(anyLong())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(existingQuestionnaire);
+        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(true).when(existingQuestionnaire).isOriginal();
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logoFile, userId);
