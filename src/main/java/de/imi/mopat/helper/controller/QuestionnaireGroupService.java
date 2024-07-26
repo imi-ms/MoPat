@@ -109,6 +109,12 @@ public class QuestionnaireGroupService {
                 .findFirst();
     }
 
+    /**
+     * Finds the maximum version number among the questionnaires in the specified group.
+     *
+     * @param groupId The ID of the group for which to find the maximum version number.
+     * @return The maximum version number in the group. If the group is empty, returns 0.
+     */
     public int findMaxVersionInGroup(Long groupId) {
         return questionnaireGroupDao.getAllElements().stream()
                 .filter(group -> group.getGroupId().equals(groupId))
