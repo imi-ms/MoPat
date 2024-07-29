@@ -10,6 +10,7 @@ import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.CacheService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.UserService;
@@ -92,6 +93,8 @@ public class UserController {
     private CacheService cacheService;
     @Autowired
     private MoPatActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider;
+    @Autowired
+    private AuthService authService;
 
     /**
      * @param id (<i>optional</i>) Id of the {@link User User} object
@@ -576,7 +579,7 @@ public class UserController {
         model.addAttribute("availableClinics", availableClinics);
         model.addAttribute("assignedClinics", assignedClinics);
         model.addAttribute("roleList", new ArrayList<>(Arrays.asList(UserRole.values())));
-        model.addAttribute("userRole", user.getRole());
+        model.addAttribute("userRole", userService.getHighestRole(user));
         return "user/clinicrights";
     }
 
