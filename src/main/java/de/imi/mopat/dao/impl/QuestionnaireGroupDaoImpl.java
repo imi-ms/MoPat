@@ -12,7 +12,7 @@ public class QuestionnaireGroupDaoImpl extends MoPatDaoImpl<QuestionnaireGroup> 
     @Override
     @Transactional("MoPat")
     public Long getNextGroupId() {
-        Query query = moPatEntityManager.createNativeQuery("SELECT nextval('group_id_sequence')");
+        Query query = moPatEntityManager.createNativeQuery("SELECT moPat.nextGroupId()");
         return ((Number) query.getSingleResult()).longValue();
     }
 }
