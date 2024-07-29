@@ -9,21 +9,19 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTOTest;
 import de.imi.mopat.model.score.*;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.utils.Helper;
+import de.imi.mopat.utils.MultipartFileUtils;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,20 +34,6 @@ import static org.mockito.Mockito.*;
 
 public class QuestionnaireServiceTest {
 
-    public static final int ORIGINAL_QUESTIONNAIRE_VERSION = 1;
-    public static final int DEFAULT_QUESTIONNAIRE_VERSION = 1;
-
-    public static final String VALID_LOGO_FILENAME = "test.png";
-    public static final String VALID_LOGO_CONTENT_TYPE = "image/png";
-    public static final String INVALID_LOGO_FILENAME = "test.fail";
-    public static final String INVALID_LOGO_CONTENT_TYPE = "image/fail";
-    public static final String LOGO_FIELD_NAME = "logo";
-
-    public static final byte[] VALID_LOGO_CONTENT = new byte[] {(byte)137, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
-    public static final byte[] INVALID_LOGO_CONTENT = "Invalid content".getBytes();
-    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
-
-    public static final MultipartFile EMPTY_LOGO = new MockMultipartFile(LOGO_FIELD_NAME, EMPTY_BYTE_ARRAY);
 
     private Random random;
 
@@ -74,9 +58,6 @@ public class QuestionnaireServiceTest {
     @Mock
     private AuthService authService;
 
-    @InjectMocks
-    private QuestionnaireService questionnaireService;
-
     @Mock
     private BundleService bundleService;
 
@@ -89,13 +70,11 @@ public class QuestionnaireServiceTest {
     @Mock
     private QuestionnaireGroupService questionnaireGroupService;
 
+    @InjectMocks
+    private QuestionnaireService questionnaireService;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    // Helper method to generate a positive random long ID
-    private Long getPositiveId(){
-        return random.nextLong() & Long.MAX_VALUE;
-    }
 
     // Helper method to create a Score object with a BinaryExpression
     private Score createValidScoreWithBinaryExpression(Questionnaire questionnaire) {
@@ -193,15 +172,14 @@ public class QuestionnaireServiceTest {
     public void testValidateQuestionnaireWithValidLogo() {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        MultipartFile validLogoFile = new MockMultipartFile(
-                LOGO_FIELD_NAME,
-                VALID_LOGO_FILENAME,
-                VALID_LOGO_CONTENT_TYPE,
-                VALID_LOGO_CONTENT);
         BindingResult bindingResultMock = mock(BindingResult.class);
 
         // Act
-        questionnaireService.validateQuestionnaire(validQuestionnaireDTO, validLogoFile, bindingResultMock);
+        questionnaireService.validateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getValidLogoFile(),
+                bindingResultMock
+        );
 
         // Assert
         verify(questionnaireDTOValidator).validate(validQuestionnaireDTO, bindingResultMock);
@@ -217,27 +195,26 @@ public class QuestionnaireServiceTest {
     public void testValidateQuestionnaireWithInvalidLogo() {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        MultipartFile invalidLogoFile = new MockMultipartFile(
-                LOGO_FIELD_NAME,
-                INVALID_LOGO_FILENAME,
-                INVALID_LOGO_CONTENT_TYPE,
-                INVALID_LOGO_CONTENT);
         BindingResult bindingResultMock = mock(BindingResult.class);
 
         // Simulate the behavior of the LogoValidator to trigger rejectValue
         doAnswer(invocation -> {
             BindingResult bindingResult = invocation.getArgument(1);
-            bindingResult.rejectValue(LOGO_FIELD_NAME, "error.wrongImageType");
+            bindingResult.rejectValue(MultipartFileUtils.LOGO_FIELD_NAME, "error.wrongImageType");
             return null;
         }).when(logoValidator).validateLogo(any(MultipartFile.class), any(BindingResult.class));
 
         // Act
-        questionnaireService.validateQuestionnaire(validQuestionnaireDTO, invalidLogoFile, bindingResultMock);
+        questionnaireService.validateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getInvalidLogoFile(),
+                bindingResultMock
+        );
 
         // Assert
         verify(questionnaireDTOValidator).validate(validQuestionnaireDTO, bindingResultMock);
         // Since the logo is invalid, the rejectValue method should be called
-        verify(bindingResultMock, atLeastOnce()).rejectValue(eq(LOGO_FIELD_NAME), eq("error.wrongImageType"));
+        verify(bindingResultMock, atLeastOnce()).rejectValue(eq(MultipartFileUtils.LOGO_FIELD_NAME), eq("error.wrongImageType"));
     }
 
     /**
@@ -248,11 +225,14 @@ public class QuestionnaireServiceTest {
     public void testValidateQuestionnaireWithNoLogo() {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        MultipartFile noLogoFile = new MockMultipartFile(LOGO_FIELD_NAME, EMPTY_BYTE_ARRAY);
         BindingResult bindingResultMock = mock(BindingResult.class);
 
         // Act
-        questionnaireService.validateQuestionnaire(validQuestionnaireDTO, noLogoFile, bindingResultMock);
+        questionnaireService.validateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                bindingResultMock
+        );
 
         // Assert
         verify(questionnaireDTOValidator).validate(validQuestionnaireDTO, bindingResultMock);
@@ -290,7 +270,7 @@ public class QuestionnaireServiceTest {
         QuestionnaireDTO newQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         newQuestionnaireDTO.setId(null);
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        Long validUserId = getPositiveId();
+        Long validUserId = Helper.generatePositiveNonZeroLong();
 
         when(questionnaireDao.getElementById(anyLong())).thenReturn(null);
         when(questionnaireFactory.createQuestionnaire(
@@ -302,7 +282,11 @@ public class QuestionnaireServiceTest {
         ).thenReturn(newQuestionnaire);
 
         // Act
-        Questionnaire createdQuestionnaire = questionnaireService.saveOrUpdateQuestionnaire(newQuestionnaireDTO, EMPTY_LOGO, validUserId);
+        Questionnaire createdQuestionnaire = questionnaireService.saveOrUpdateQuestionnaire(
+                newQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
 
         // Assert
         verify(questionnaireDao, times(2)).merge(newQuestionnaire);
@@ -318,17 +302,21 @@ public class QuestionnaireServiceTest {
     public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long validUserId = getPositiveId();
+        Long validUserId = Helper.generatePositiveNonZeroLong();
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
 
         when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(modifiableQuestionnaire);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
-        doReturn(getPositiveId()).when(modifiableQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(modifiableQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
@@ -345,7 +333,7 @@ public class QuestionnaireServiceTest {
     public void testSaveOrUpdateQuestionnaire_AdminModeratorCantEditQuestionnaireWithExecutedSurvey() {
         // Arrange
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long userId = getPositiveId();
+        Long userId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
@@ -354,10 +342,14 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(newQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
-        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, EMPTY_LOGO, userId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                questionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                userId
+        );
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
@@ -374,7 +366,7 @@ public class QuestionnaireServiceTest {
     public void testSaveOrUpdateQuestionnaire_EditorCannotEditWithExecutedSurveys() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long validUserId = getPositiveId();
+        Long validUserId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
@@ -383,10 +375,14 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
-        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
@@ -403,7 +399,7 @@ public class QuestionnaireServiceTest {
     public void testSaveOrUpdateQuestionnaire_EditorCannotEditIfPartOfEnabledBundle() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long validUserId = getPositiveId();
+        Long validUserId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
@@ -417,10 +413,14 @@ public class QuestionnaireServiceTest {
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
-        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
@@ -437,7 +437,7 @@ public class QuestionnaireServiceTest {
     public void testSaveOrUpdateQuestionnaire_EditorCanEditIfNotPartOfEnabledBundle() throws Exception {
         // Arrange
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long validUserId = getPositiveId();
+        Long validUserId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
@@ -457,7 +457,11 @@ public class QuestionnaireServiceTest {
         doReturn(1L).when(existingQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(validQuestionnaireDTO, EMPTY_LOGO, validUserId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
@@ -470,7 +474,7 @@ public class QuestionnaireServiceTest {
     @Test
     public void testSaveOrUpdateQuestionnaire_NewQuestionnaireIdNull() {
         // Arrange
-        Long userId = getPositiveId();
+        Long userId = Helper.generatePositiveNonZeroLong();
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         Questionnaire newQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
@@ -484,7 +488,11 @@ public class QuestionnaireServiceTest {
         thrown.expectMessage("The new questionnaire must be persisted before saving versioning information.");
 
         // Act
-        questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, EMPTY_LOGO, userId);
+        questionnaireService.saveOrUpdateQuestionnaire(
+                questionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                userId
+        );
     }
 
     /**
@@ -528,7 +536,7 @@ public class QuestionnaireServiceTest {
      */
     @Test
     public void testGetQuestionnaireDTOById_Found() {
-        long validQuestionnaireId = getPositiveId();
+        long validQuestionnaireId = Helper.generatePositiveNonZeroLong();
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
         QuestionnaireDTO expectedQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
 
@@ -588,22 +596,20 @@ public class QuestionnaireServiceTest {
         // Arrange
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long userId = getPositiveId();
+        Long userId = Helper.generatePositiveNonZeroLong();
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        MultipartFile logoFile = new MockMultipartFile(
-                LOGO_FIELD_NAME,
-                VALID_LOGO_FILENAME,
-                VALID_LOGO_CONTENT_TYPE,
-                VALID_LOGO_CONTENT
-        );
 
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(newQuestionnaire);
-        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logoFile, userId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                questionnaireDTO,
+                MultipartFileUtils.getValidLogoFile(),
+                userId
+        );
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
@@ -622,24 +628,32 @@ public class QuestionnaireServiceTest {
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         questionnaireDTO.setDeleteLogo(true);
-        Long userId = getPositiveId();
-        existingQuestionnaire.setLogo(VALID_LOGO_FILENAME);
-        MultipartFile logoFile = new MockMultipartFile(LOGO_FIELD_NAME, EMPTY_BYTE_ARRAY);
+        Long userId = Helper.generatePositiveNonZeroLong();
+        existingQuestionnaire.setLogo(MultipartFileUtils.VALID_LOGO_FILENAME);
 
         when(questionnaireDao.getElementById(anyLong())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(existingQuestionnaire);
-        doReturn(getPositiveId()).when(existingQuestionnaire).getId();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
         doReturn(true).when(existingQuestionnaire).isOriginal();
 
         // Act
-        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logoFile, userId);
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                questionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                userId
+        );
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
         Assert.assertNull("The logo should be null after deletion", result.getLogo());
 
-        File deletedFile = new File(configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + existingQuestionnaire.getId() + VALID_LOGO_FILENAME);
+        File deletedFile = new File(configurationDao.getImageUploadPath() +
+                "/" +
+                Constants.IMAGE_QUESTIONNAIRE + "/" +
+                existingQuestionnaire.getId() +
+                MultipartFileUtils.VALID_LOGO_FILENAME
+        );
         Assert.assertFalse("The old logo file should be deleted", deletedFile.exists());
     }
 }
