@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "questionnaire_group")
@@ -49,5 +50,29 @@ public class QuestionnaireGroup implements Serializable {
 
     public void setQuestionnaire(Questionnaire questionnaire) {
         this.questionnaire = questionnaire;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QuestionnaireGroup that = (QuestionnaireGroup) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(groupId, that.groupId) &&
+                Objects.equals(questionnaire, that.questionnaire);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, groupId, questionnaire);
+    }
+
+    @Override
+    public String toString() {
+        return "QuestionnaireGroup{" +
+                "id=" + id +
+                ", groupId=" + groupId +
+                ", questionnaire=" + questionnaire.getId() +
+                '}';
     }
 }
