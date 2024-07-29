@@ -49,6 +49,8 @@ public class QuestionnaireDTO {
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
 
+    private int version;
+
     @JsonIgnore
     private Set<ExportTemplate> exportTemplates = new HashSet<>();
 
@@ -163,5 +165,13 @@ public class QuestionnaireDTO {
         QuestionnaireDTO questionnaireDTO = (QuestionnaireDTO) obj;
 
         return Objects.equals(this.getId(), questionnaireDTO.getId());
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }

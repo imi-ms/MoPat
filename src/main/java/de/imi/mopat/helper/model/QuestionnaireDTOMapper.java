@@ -42,6 +42,7 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         questionnaireDTO.setId(questionnaire.getId());
         questionnaireDTO.setName(questionnaire.getName());
         questionnaireDTO.setDescription(questionnaire.getDescription());
+        questionnaireDTO.setVersion(questionnaire.getVersion());
         questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(questionnaire.getLocalizedWelcomeText()));
         questionnaireDTO.setLocalizedFinalText(new TreeMap<>(questionnaire.getLocalizedFinalText()));
         questionnaireDTO.setLocalizedDisplayName(new TreeMap<>(questionnaire.getLocalizedDisplayName()));
