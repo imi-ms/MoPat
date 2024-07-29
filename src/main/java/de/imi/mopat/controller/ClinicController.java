@@ -113,8 +113,8 @@ public class ClinicController {
 
         // Sort by name
         return bundleDTOs.stream()
-                .sorted((o1, o2) ->
-                        o1.getName().compareToIgnoreCase(o2.getName()))
+                .sorted((bundleDTO1, bundleDTO2) ->
+                        bundleDTO1.getName().compareToIgnoreCase(bundleDTO2.getName()))
                 .toList();
 
 

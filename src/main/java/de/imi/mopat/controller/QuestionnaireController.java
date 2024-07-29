@@ -266,7 +266,8 @@ public class QuestionnaireController {
 
     private String handleValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
         if (questionnaireDTO.getId() != null) {
-            questionnaireDTO.setLogo(questionnaireDao.getElementById(questionnaireDTO.getId()).getLogo());
+            questionnaireDTO.setLogo(
+                    questionnaireDao.getElementById(questionnaireDTO.getId()).getLogo());
         }
         model.addAttribute("questionnaireDTO", questionnaireDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
