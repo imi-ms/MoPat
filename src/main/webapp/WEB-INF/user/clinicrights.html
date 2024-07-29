@@ -62,8 +62,12 @@
 
 				<div class="form-group">
 					<label for="role" th:text="${messages.get(#locale, 'user.label.role', 'Role')}"></label>
-					<select class="form-control" id="role" th:field="*{role}">
-						<option th:each="role : ${roleList}" th:value="${role}" th:text="${role}">Role</option>
+					<select class="form-control" id="role" name="role">
+						<option th:each="role : ${roleList}"
+								th:value="${role}"
+								th:text="${role}"
+								th:selected="${role} == ${userRole}">
+						</option>
 					</select>
 				</div>
 				<div class="container-fluid doubleList">
