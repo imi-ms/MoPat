@@ -66,6 +66,10 @@ public class UserDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserDTO userDTO = (UserDTO) o;
-        return Objects.equals(id, userDTO.id) && Objects.equals(username, userDTO.username) && Objects.equals(firstname, userDTO.firstname) && Objects.equals(lastname, userDTO.lastname) && Objects.equals(email, userDTO.email);
+        return Objects.equals(id, userDTO.id) &&
+                Objects.equals(username, userDTO.username) &&
+                Objects.equals(firstname, userDTO.firstname) &&
+                Objects.equals(lastname, userDTO.lastname) &&
+                Objects.equals(email, userDTO.email);
     }
 }
