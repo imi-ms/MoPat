@@ -1,7 +1,6 @@
 package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ClinicDao;
-import de.imi.mopat.dao.MoPatDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.Clinic;
@@ -15,17 +14,14 @@ import de.imi.mopat.model.user.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -41,6 +37,9 @@ public class UserService {
 
     @Autowired
     private ClinicDao clinicDao;
+
+    @Autowired
+    private RoleHierarchyImpl roleHierarchy;
 
 
     public List<UserDTO> getAllUser(){
@@ -112,7 +111,7 @@ public class UserService {
         List<UserDTO> usersInSameClinics = getUsersInSameClinicsAsUser(clinics, user);
 
         // Schritt 2: Filtere Moderatoren und Administratoren
-        List<UserDTO> clinicModeratorsAndAdmins = usersInSameClinics.stream()
+        return usersInSameClinics.stream()
                 .map(userDTO -> userDao.loadUserByUsername(userDTO.getUsername()))
                 .filter(user1 -> user1.getAuthorities().stream()
                         .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR") ||
@@ -120,8 +119,6 @@ public class UserService {
                 .map(User::toUserDTO)
                 .distinct() // Entfernt doppelte UserDTOs
                 .toList();
-
-        return clinicModeratorsAndAdmins;
     }
 
     public UserDTO getUserByUsername(String username) {
@@ -129,7 +126,7 @@ public class UserService {
     }
 
     public void updateUserRole(User user, UserRole role) {
-        user.setRole(role);
+        user.addRole(role);
         userDao.merge(user);
     }
 
@@ -154,5 +151,18 @@ public class UserService {
                 clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
             }
         }
+    }
+
+    public UserRole getHighestRole(User user) {
+        if (user == null) {
+            return null;
+        }
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+
+        GrantedAuthority highestAuthority = authorities.stream()
+                .max(Comparator.comparingInt(authority -> roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
+                .orElse(null);
+
+        return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
 }
