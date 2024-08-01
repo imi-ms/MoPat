@@ -9,10 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class QuestionnaireGroupDaoImpl extends MoPatDaoImpl<QuestionnaireGroup> implements QuestionnaireGroupDao {
 
-    @Override
-    @Transactional("MoPat")
-    public Long getNextGroupId() {
-        Query query = moPatEntityManager.createNativeQuery("SELECT moPat.nextGroupId()");
-        return ((Number) query.getSingleResult()).longValue();
-    }
+
 }
