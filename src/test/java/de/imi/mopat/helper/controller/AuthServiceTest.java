@@ -5,20 +5,17 @@ import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.model.user.UserTest;
 import de.imi.mopat.utils.Helper;
-import de.imi.mopat.utils.TestConfig;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,8 +25,6 @@ import java.util.Set;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
 public class AuthServiceTest {
 
     @Mock
@@ -281,14 +276,17 @@ public class AuthServiceTest {
     @Test
     public void testGetHighestRole_SingleRole() {
         // Arrange
-        GrantedAuthority authority = UserRole.ROLE_USER::getTextValue;
+        GrantedAuthority authority = new SimpleGrantedAuthority(UserRole.ROLE_USER.getTextValue());
         Collection<GrantedAuthority> authorities = List.of(authority);
         User user = mock(User.class);
-        when(user.getAuthority()).thenReturn(Set.of(new Authority(user, UserRole.ROLE_USER)));
+        when(user.getAuthorities()).thenReturn(authorities);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(user);
         when(authentication.getAuthorities()).thenReturn((Collection) authorities);
+
+        // Mock role hierarchy to return the same authority as reachable
+        when(roleHierarchy.getReachableGrantedAuthorities(anyCollection())).thenReturn(authorities);
 
         // Act
         UserRole highestRole = authService.getHighestRole();
@@ -300,18 +298,23 @@ public class AuthServiceTest {
     @Test
     public void testGetHighestRole_MultipleRoles() {
         // Arrange
-        GrantedAuthority userAuthority = UserRole.ROLE_USER::getTextValue;
-        GrantedAuthority moderatorAuthority = UserRole.ROLE_MODERATOR::getTextValue;
+        GrantedAuthority userAuthority = new SimpleGrantedAuthority(UserRole.ROLE_USER.getTextValue());
+        GrantedAuthority moderatorAuthority = new SimpleGrantedAuthority(UserRole.ROLE_MODERATOR.getTextValue());
         Collection<GrantedAuthority> authorities = List.of(userAuthority, moderatorAuthority);
         User user = mock(User.class);
-        when(user.getAuthority()).thenReturn(Set.of(new Authority(user, UserRole.ROLE_USER), new Authority(user, UserRole.ROLE_MODERATOR)));
+        when(user.getAuthorities()).thenReturn(authorities);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(user);
         when(authentication.getAuthorities()).thenReturn((Collection) authorities);
+
+        // Mock role hierarchy to return both roles as reachable
         when(roleHierarchy.getReachableGrantedAuthorities(anyList())).thenAnswer(invocation -> {
             Collection<GrantedAuthority> auths = invocation.getArgument(0);
-            return Set.copyOf(auths);
+            if (auths.contains(moderatorAuthority)) {
+                return Set.of(userAuthority, moderatorAuthority);
+            }
+            return auths;
         });
 
         // Act
