@@ -5,6 +5,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.QuestionnaireGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -369,10 +370,10 @@ public class QuestionnaireService {
         }
 
         int version;
-        Optional<Long> groupIdForQuestionnaire = questionnaireGroupService.getGroupIdForQuestionnaire(existingQuestionnaire);
+        Optional<QuestionnaireGroup> groupForQuestionnaire = questionnaireGroupService.findGroupForQuestionnaire(existingQuestionnaire);
 
-        if (groupIdForQuestionnaire.isPresent()) {
-            int maxVersionInGroup = questionnaireGroupService.findMaxVersionInGroup(groupIdForQuestionnaire.get());
+        if (groupForQuestionnaire.isPresent()) {
+            int maxVersionInGroup = questionnaireGroupService.findMaxVersionInGroup(groupForQuestionnaire.get());
             version = maxVersionInGroup + 1;
         } else {
             version = existingQuestionnaire.getVersion() + 1;
@@ -527,10 +528,9 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        Optional<Long> groupIdOpt = questionnaireGroupService.getGroupIdForQuestionnaire(existingQuestionnaire);
-        if (groupIdOpt.isPresent()) {
-            Long groupId = groupIdOpt.get();
-            return questionnaireGroupService.findMaxVersionInGroup(groupId) + 1;
+        Optional<QuestionnaireGroup> group = questionnaireGroupService.findGroupForQuestionnaire(existingQuestionnaire);
+        if (group.isPresent()) {
+            return questionnaireGroupService.findMaxVersionInGroup(group.get()) + 1;
         } else {
             return existingQuestionnaire.getVersion() + 1;
         }
