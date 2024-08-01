@@ -1,16 +1,18 @@
 package de.imi.mopat.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
+
 
 @Entity
 @Table(name = "questionnaire_group")
@@ -21,58 +23,48 @@ public class QuestionnaireGroup implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    @Column(name = "name")
+    private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "questionnaire_id", nullable = false)
-    private Questionnaire questionnaire;
+    @OneToMany(mappedBy = "questionnaireGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<QuestionnaireGroupMember> questionnaireGroupMembers = new HashSet<>();
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Set<QuestionnaireGroupMember> getQuestionnaireGroupMembers() {
+        return questionnaireGroupMembers;
+    }
+    public void setQuestionnaireGroupMembers(Set<QuestionnaireGroupMember> questionnaireGroupMembers) {
+        this.questionnaireGroupMembers = questionnaireGroupMembers;
     }
 
-    public Long getGroupId() {
-        return groupId;
+    public boolean hasMembers() {
+        return !questionnaireGroupMembers.isEmpty();
     }
 
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
+    public void addMember(QuestionnaireGroupMember questionnaireGroupMember) {
+        questionnaireGroupMembers.add(questionnaireGroupMember);
     }
 
-    public Questionnaire getQuestionnaire() {
-        return questionnaire;
+    public String getName() {
+        return name;
     }
 
-    public void setQuestionnaire(Questionnaire questionnaire) {
-        this.questionnaire = questionnaire;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        QuestionnaireGroup that = (QuestionnaireGroup) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(groupId, that.groupId) &&
-                Objects.equals(questionnaire, that.questionnaire);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, groupId, questionnaire);
-    }
 
     @Override
     public String toString() {
         return "QuestionnaireGroup{" +
                 "id=" + id +
-                ", groupId=" + groupId +
-                ", questionnaire=" + questionnaire.getId() +
+                ", name='" + name + '\'' +
+                ", questionnaireGroupMembers=" + questionnaireGroupMembers +
                 '}';
     }
 }
+
+
