@@ -252,7 +252,7 @@ public class QuestionnaireService {
      * @return True if the questionnaire is part of an enabled bundle, otherwise false.
      */
     private boolean isQuestionnairePartOfEnabledBundle(Questionnaire questionnaire) {
-        List<BundleQuestionnaire> bundleQuestionnaires = bundleService.findByQuestionnaire(questionnaire.getId());
+        List<BundleQuestionnaire> bundleQuestionnaires = bundleService.findByQuestionnaireId(questionnaire.getId());
         for (BundleQuestionnaire bundleQuestionnaire : bundleQuestionnaires) {
             if(bundleQuestionnaire.getIsEnabled()){
                 return true;

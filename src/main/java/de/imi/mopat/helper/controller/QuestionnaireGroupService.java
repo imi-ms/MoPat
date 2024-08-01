@@ -207,4 +207,8 @@ public class QuestionnaireGroupService {
         newMember.setQuestionnaire(questionnaire);
         return newMember;
     }
+
+    public List<QuestionnaireGroup> getAllQuestionnaireGroups() {
+        return questionnaireGroupDao.getAllElements();
+    }
 }

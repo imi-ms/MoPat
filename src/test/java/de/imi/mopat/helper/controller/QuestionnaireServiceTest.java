@@ -408,7 +408,7 @@ public class QuestionnaireServiceTest {
         enabledBundleQuestionnaire.setIsEnabled(true);
         List<BundleQuestionnaire> bundleQuestionnaireList = List.of(enabledBundleQuestionnaire);
 
-        when(bundleService.findByQuestionnaire(any())).thenReturn(bundleQuestionnaireList);
+        when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
@@ -448,7 +448,7 @@ public class QuestionnaireServiceTest {
         List<BundleQuestionnaire> bundleQuestionnaireList = List.of(newValidBundleQuestionnaire);
 
         // Simulating all bundles are not enabled
-        when(bundleService.findByQuestionnaire(any())).thenReturn(bundleQuestionnaireList);
+        when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
 
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
