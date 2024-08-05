@@ -22,24 +22,24 @@ public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireGroup,
 
     @Override
     public QuestionnaireGroupDTO apply(QuestionnaireGroup questionnaireGroup) {
-
-        if (questionnaireGroup == null){
+        if (questionnaireGroup == null) {
             throw new IllegalArgumentException("QuestionnaireGroup must not be null");
         }
-        if (!questionnaireGroup.hasMembers()){
+        if (!questionnaireGroup.hasQuestionnaires()) {
             QuestionnaireGroupDTO noMemberQuestionnaireGroupDTO = new QuestionnaireGroupDTO();
             noMemberQuestionnaireGroupDTO.setGroupId(questionnaireGroup.getId());
             return noMemberQuestionnaireGroupDTO;
         }
 
         // Sort the questionnaires by version number
-        List<QuestionnaireDTO> questionnaireDTOs = questionnaireGroup.getQuestionnaireGroupMembers().stream()
-                .map(questionnaireGroupMember -> questionnaireDTOMapper.apply(questionnaireGroupMember.getQuestionnaire()))
+        List<QuestionnaireDTO> questionnaireDTOs = questionnaireGroup.getQuestionnaires().stream()
+                .map(questionnaireDTOMapper::applyWithoutGroup)
                 .sorted(Comparator.comparing(QuestionnaireDTO::getVersion))
                 .toList();
 
         // Use the name of the questionnaire with the smallest version number as the group name
         String groupName = questionnaireDTOs.get(0).getName();
+//        String groupName = questionnaireGroup.getName();
 
         // Get the group ID (assuming all items in groupList have the same group ID)
         Long groupId = questionnaireGroup.getId();
