@@ -117,6 +117,8 @@ public abstract class Condition implements Serializable {
         }
     }
 
+    public abstract Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target);
+
     /**
      * Takes care that the given {@link ConditionTrigger} refers to this, as well.
      *
