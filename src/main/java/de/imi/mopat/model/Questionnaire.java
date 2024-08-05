@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
-import de.imi.mopat.model.dto.QuestionDTO;
-import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
 
@@ -16,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +31,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -137,6 +135,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
+    private QuestionnaireGroup questionnaireGroup;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -851,5 +853,13 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     public boolean isOriginal() {
         return version == 1;
+    }
+
+    public QuestionnaireGroup getGroup() {
+        return questionnaireGroup;
+    }
+
+    public void setGroup(QuestionnaireGroup questionnaireGroup) {
+        this.questionnaireGroup = questionnaireGroup;
     }
 }

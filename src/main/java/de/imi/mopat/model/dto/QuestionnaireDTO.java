@@ -56,6 +56,8 @@ public class QuestionnaireDTO {
 
     private List<QuestionDTO> questionDTOs;
 
+    private QuestionnaireGroupDTO questionnaireGroupDTO;
+
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
     }
@@ -173,5 +175,21 @@ public class QuestionnaireDTO {
 
     public int getVersion() {
         return version;
+    }
+
+    public Long getGroupId() {
+        return questionnaireGroupDTO.getGroupId();
+    }
+
+    public String getGroupName() {
+        return questionnaireGroupDTO.getGroupName();
+    }
+
+    public QuestionnaireGroupDTO getQuestionnaireGroupDTO() {
+        return questionnaireGroupDTO;
+    }
+
+    public void setQuestionnaireGroupDTO(QuestionnaireGroupDTO questionnaireGroupDTO) {
+        this.questionnaireGroupDTO = questionnaireGroupDTO;
     }
 }
