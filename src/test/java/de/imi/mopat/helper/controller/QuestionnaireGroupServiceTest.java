@@ -7,6 +7,7 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireGroup;
 import de.imi.mopat.model.QuestionnaireTest;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -69,6 +70,8 @@ public class QuestionnaireGroupServiceTest {
         // Arrange
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
         questionnaireDTO.setName("New Questionnaire");
+        QuestionnaireGroupDTO questionnaireGroupDTO = new QuestionnaireGroupDTO();
+        questionnaireDTO.setQuestionnaireGroupDTO(questionnaireGroupDTO);
 
         // Act
         QuestionnaireGroup group = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
@@ -81,9 +84,12 @@ public class QuestionnaireGroupServiceTest {
     @Test
     public void testCreateOrFindQuestionnaireGroup_ExistingGroup() {
         // Arrange
+        QuestionnaireGroupDTO existingGroupDTO = spy(new QuestionnaireGroupDTO());
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
         questionnaireDTO.setName("Existing Questionnaire");
+        questionnaireDTO.setQuestionnaireGroupDTO(existingGroupDTO);
 
+        doReturn(1L).when(existingGroupDTO).getGroupId();
         QuestionnaireGroup existingGroup = spy(new QuestionnaireGroup());
         doReturn(1L).when(existingGroup).getId();
         existingGroup.setName("Existing Group");
