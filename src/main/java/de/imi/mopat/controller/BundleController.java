@@ -175,9 +175,10 @@ public class BundleController {
     public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         final Model model) {
         BundleDTO bundleDTO = getBundleDTO(bundleId);
+        List<QuestionnaireDTO> availableQuestionnaires = bundleService.getAvailableQuestionnaires(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        model.addAttribute("availableQuestionnaireDTOs", getAvailableQuestionnaires(bundleId));
+        model.addAttribute("availableQuestionnaireDTOs", availableQuestionnaires);
         return "bundle/edit";
     }
 

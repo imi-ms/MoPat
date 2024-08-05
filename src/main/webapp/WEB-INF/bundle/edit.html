@@ -492,9 +492,14 @@
 											th:name="|bundleQuestionnaires[0].position|"
 										/>
 									</div>
-									<div class="col-5">
+									<div class="col-3">
 										<th:block
 											th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+										/>
+									</div>
+									<div class="col-2">
+										<th:block
+												th:text="${messages.get(#locale, 'bundle.table.versionName', 'Version')}"
 										/>
 									</div>
 								</div>
@@ -542,9 +547,14 @@
 													th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
 												/>
 											</div>
-											<div class="col-5">
+											<div class="col-3">
 												<th:block
 													th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+												/>
+											</div>
+											<div class="col-2">
+												<th:block
+														th:text="${messages.get(#locale, 'bundle.table.versionName', 'Version', 'Name')}"
 												/>
 											</div>
 										</div>
@@ -595,6 +605,15 @@
 														th:value="${availableQuestionnaireDTO.name}"
 														class="filterName"
 													/>
+												</div>
+												<div class="col-2">
+													<select th:if="${availableQuestionnaireDTO.questionnaireGroupDTO != null && availableQuestionnaireDTO.questionnaireGroupDTO.questionnaireDTOS.size() > 1}" th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.selectedQuestionnaireId|">
+														<option th:each="questionnaireDTO : ${availableQuestionnaireDTO.questionnaireGroupDTO.questionnaireDTOS}" th:value="${questionnaireDTO.id}" th:text="${questionnaireDTO.name}"></option>
+													</select>
+													<input th:if="${availableQuestionnaireDTO.questionnaireGroupDTO != null && availableQuestionnaireDTO.questionnaireGroupDTO.questionnaireDTOS.size() == 1}"
+														   type="hidden"
+														   th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.selectedQuestionnaireId|"
+														   th:value="${availableQuestionnaireDTO.questionnaireGroupDTO.questionnaireDTOS.get(0).id}" />
 												</div>
 												<div
 													class="col-2 scores"
