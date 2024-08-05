@@ -98,4 +98,9 @@ public class SliderAnswerThresholdCondition extends Condition implements Seriali
         assert thresholdComparisonType != null : "The ThresholdComparisonType given was null";
         this.thresholdComparisonType = thresholdComparisonType;
     }
+
+    @Override
+    public Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target){
+        return null;
+    }
 }
