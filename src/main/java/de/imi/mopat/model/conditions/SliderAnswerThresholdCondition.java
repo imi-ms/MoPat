@@ -101,6 +101,6 @@ public class SliderAnswerThresholdCondition extends Condition implements Seriali
 
     @Override
     public Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target){
-        return null;
+        return new SliderAnswerThresholdCondition(trigger,target, this.getAction(), this.getBundle(), this.getThresholdComparisonType(), this.getThreshold());
     }
 }
