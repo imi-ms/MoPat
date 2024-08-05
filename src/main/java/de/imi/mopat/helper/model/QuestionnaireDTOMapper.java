@@ -4,9 +4,11 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 
@@ -27,6 +29,29 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
 
     @Override
     public QuestionnaireDTO apply(Questionnaire questionnaire) {
+        return applyWithGroup(questionnaire, true);
+    }
+
+    public QuestionnaireDTO applyWithoutGroup(Questionnaire questionnaire) {
+        return applyWithGroup(questionnaire, false);
+    }
+
+    private QuestionnaireDTO applyWithGroup(Questionnaire questionnaire, boolean includeGroup) {
+        QuestionnaireDTO questionnaireDTO = basicApply(questionnaire);
+        if (includeGroup && questionnaire.getGroup() != null) {
+            QuestionnaireGroupDTO groupDTO = new QuestionnaireGroupDTO();
+            groupDTO.setGroupId(questionnaire.getGroup().getId());
+            groupDTO.setGroupName(questionnaire.getGroup().getName());
+            Set<Questionnaire> questionnaires = questionnaire.getGroup().getQuestionnaires();
+            groupDTO.setQuestionnaireDTOS(questionnaires.stream()
+                    .map(q -> applyWithGroup(q, false)) // Include false to avoid infinite recursion
+                    .toList());
+            questionnaireDTO.setQuestionnaireGroupDTO(groupDTO);
+        }
+        return questionnaireDTO;
+    }
+
+    public QuestionnaireDTO basicApply(Questionnaire questionnaire) {
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
         String logoBase64 = null;
         if (questionnaire.getLogo() != null) {
