@@ -8,7 +8,6 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireGroupDao;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireGroup;
-import de.imi.mopat.model.QuestionnaireGroupMember;
 import de.imi.mopat.model.QuestionnaireTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,12 +56,9 @@ public class QuestionnaireGroupDaoImplTest {
         assertEquals("Expected one questionnaire", 1, allElements.size());
 
         QuestionnaireGroup questionnaireGroup = new QuestionnaireGroup();
-        QuestionnaireGroupMember questionnaireGroupMember = new QuestionnaireGroupMember();
-        questionnaireGroupMember.setQuestionnaire(questionnaire);
-        questionnaireGroupMember.setQuestionnaireGroup(questionnaireGroup);
 
         questionnaireGroup.setName(questionnaire.getName());
-        questionnaireGroup.addMember(questionnaireGroupMember);
+        questionnaireGroup.addQuestionnaire(questionnaire);
 
         // Act
         questionnaireGroupDao.merge(questionnaireGroup);

@@ -5,9 +5,8 @@ import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireGroup;
-import de.imi.mopat.model.QuestionnaireGroupMember;
 import de.imi.mopat.model.QuestionnaireTest;
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import de.imi.mopat.model.dto.QuestionnaireDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -17,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,77 +55,72 @@ public class QuestionnaireGroupServiceTest {
     }
 
     @Test
-    public void testSaveGroupInformation_NewOriginal() {
-        // Arrange
-        Questionnaire original = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        doReturn(1).when(original).getVersion(); // Original questionnaire
-        Questionnaire duplicate = spy(QuestionnaireTest.getNewValidQuestionnaire());
-
+    public void testCreateQuestionnaireGroup() {
         // Act
-        questionnaireGroupService.saveGroupInformation(duplicate, original);
+        QuestionnaireGroup createdGroup = questionnaireGroupService.createQuestionnaireGroup("Test Group");
 
         // Assert
-        verify(mockQuestionnaireGroupDao, times(2)).merge(any(QuestionnaireGroup.class));
-        assertEquals("Expected one group to be created", 1, questionnaireGroups.size());
-        assertEquals("Expected two questionnaires in the group", 2, questionnaireGroups.get(0).getQuestionnaireGroupMembers().size());
+        assertEquals("Test Group", createdGroup.getName());
+        verify(mockQuestionnaireGroupDao, times(1)).merge(createdGroup);
     }
 
     @Test
-    public void testSaveGroupInformation_ExistingOriginalWithDuplicates() {
+    public void testCreateOrFindQuestionnaireGroup_NewGroup() {
         // Arrange
-        Questionnaire original = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        doReturn(1).when(original).getVersion(); // Original questionnaire
-        Questionnaire duplicate1 = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        Questionnaire duplicate2 = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
+        questionnaireDTO.setName("New Questionnaire");
 
-        QuestionnaireGroup group = new QuestionnaireGroup();
-        group.setName(original.getName());
-        QuestionnaireGroupMember member = new QuestionnaireGroupMember();
-        member.setQuestionnaire(original);
-        group.addMember(member);
-        questionnaireGroups.add(group);
+        // Act
+        QuestionnaireGroup group = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+
+        // Assert
+        assertEquals("New Questionnaire", group.getName());
+        verify(mockQuestionnaireGroupDao, times(1)).merge(group);
+    }
+
+    @Test
+    public void testCreateOrFindQuestionnaireGroup_ExistingGroup() {
+        // Arrange
+        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
+        questionnaireDTO.setName("Existing Questionnaire");
+
+        QuestionnaireGroup existingGroup = spy(new QuestionnaireGroup());
+        doReturn(1L).when(existingGroup).getId();
+        existingGroup.setName("Existing Group");
+        questionnaireGroups.add(existingGroup);
 
         when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
 
         // Act
-        questionnaireGroupService.saveGroupInformation(duplicate1, original);
-        questionnaireGroupService.saveGroupInformation(duplicate2, original);
+        QuestionnaireGroup group = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
 
         // Assert
-        verify(mockQuestionnaireGroupDao, times(2)).merge(any(QuestionnaireGroup.class));
-        assertEquals("Expected one group", 1, questionnaireGroups.size());
-        assertEquals("Expected three questionnaires in the group", 3, questionnaireGroups.get(0).getQuestionnaireGroupMembers().size());
+        assertEquals(existingGroup.getId(), group.getId());
+        verify(mockQuestionnaireGroupDao, times(0)).merge(any(QuestionnaireGroup.class));
     }
 
     @Test
-    public void testIsQuestionnaireInGroup() {
+    public void testGetQuestionnaireGroupById() {
         // Arrange
-        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        QuestionnaireGroup group = spy(new QuestionnaireGroup());
+        doReturn(1L).when(group).getId();
 
-        QuestionnaireGroup group = new QuestionnaireGroup();
-        QuestionnaireGroupMember member = new QuestionnaireGroupMember();
-        member.setQuestionnaire(questionnaire);
-        group.addMember(member);
         questionnaireGroups.add(group);
 
-        when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
-
         // Act
-        boolean result = questionnaireGroupService.isQuestionnaireInGroup(questionnaire);
+        Optional<QuestionnaireGroup> result = questionnaireGroupService.getQuestionnaireGroupById(1L);
 
         // Assert
-        assertTrue("Expected questionnaire to be in the group", result);
+        assertTrue(result.isPresent());
+        assertEquals(group.getId(), result.get().getId());
     }
 
     @Test
     public void testFindGroupForQuestionnaire() {
         // Arrange
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-
         QuestionnaireGroup group = new QuestionnaireGroup();
-        QuestionnaireGroupMember member = new QuestionnaireGroupMember();
-        member.setQuestionnaire(questionnaire);
-        group.addMember(member);
+        group.getQuestionnaires().add(questionnaire);
         questionnaireGroups.add(group);
 
         when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
@@ -136,8 +129,8 @@ public class QuestionnaireGroupServiceTest {
         Optional<QuestionnaireGroup> result = questionnaireGroupService.findGroupForQuestionnaire(questionnaire);
 
         // Assert
-        assertTrue("Expected to find a group for the questionnaire", result.isPresent());
-        assertEquals("Expected group ID to match", group.getId(), result.get().getId());
+        assertTrue(result.isPresent());
+        assertEquals(group.getId(), result.get().getId());
     }
 
     @Test
@@ -146,16 +139,12 @@ public class QuestionnaireGroupServiceTest {
         Questionnaire questionnaire1 = QuestionnaireTest.getNewValidQuestionnaire();
         questionnaire1.setVersion(1);
 
-        Questionnaire questionnaire2 = new Questionnaire();
+        Questionnaire questionnaire2 = QuestionnaireTest.getNewValidQuestionnaire();
         questionnaire2.setVersion(2);
 
         QuestionnaireGroup group = new QuestionnaireGroup();
-        QuestionnaireGroupMember member1 = new QuestionnaireGroupMember();
-        member1.setQuestionnaire(questionnaire1);
-        QuestionnaireGroupMember member2 = new QuestionnaireGroupMember();
-        member2.setQuestionnaire(questionnaire2);
-        group.addMember(member1);
-        group.addMember(member2);
+        group.getQuestionnaires().add(questionnaire1);
+        group.getQuestionnaires().add(questionnaire2);
         questionnaireGroups.add(group);
 
         // Act

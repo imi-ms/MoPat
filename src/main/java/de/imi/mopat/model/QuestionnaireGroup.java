@@ -10,7 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -26,26 +30,26 @@ public class QuestionnaireGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "questionnaireGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<QuestionnaireGroupMember> questionnaireGroupMembers = new HashSet<>();
+    @OneToMany(mappedBy = "questionnaireGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
 
     public Long getId() {
         return id;
     }
 
-    public Set<QuestionnaireGroupMember> getQuestionnaireGroupMembers() {
-        return questionnaireGroupMembers;
+    public Set<Questionnaire> getQuestionnaires() {
+        return questionnaires;
     }
-    public void setQuestionnaireGroupMembers(Set<QuestionnaireGroupMember> questionnaireGroupMembers) {
-        this.questionnaireGroupMembers = questionnaireGroupMembers;
-    }
-
-    public boolean hasMembers() {
-        return !questionnaireGroupMembers.isEmpty();
+    public void setQuestionnaires(Set<Questionnaire> questionnaires) {
+        this.questionnaires = questionnaires;
     }
 
-    public void addMember(QuestionnaireGroupMember questionnaireGroupMember) {
-        questionnaireGroupMembers.add(questionnaireGroupMember);
+    public boolean hasQuestionnaires() {
+        return !questionnaires.isEmpty();
+    }
+
+    public void addQuestionnaire(Questionnaire questionnaire) {
+        questionnaires.add(questionnaire);
     }
 
     public String getName() {
@@ -56,14 +60,14 @@ public class QuestionnaireGroup implements Serializable {
         this.name = name;
     }
 
+    public void sortQuestionnairesByVersion() {
+        List<Questionnaire> sortedQuestionnaires = new ArrayList<>(questionnaires);
+        sortedQuestionnaires.sort(Comparator.comparingInt(Questionnaire::getVersion));
+        this.questionnaires = new LinkedHashSet<>(sortedQuestionnaires);
+    }
 
-    @Override
-    public String toString() {
-        return "QuestionnaireGroup{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", questionnaireGroupMembers=" + questionnaireGroupMembers +
-                '}';
+    public void addQuestionnaires(List<Questionnaire> questionnaires) {
+        this.questionnaires.addAll(questionnaires);
     }
 }
 

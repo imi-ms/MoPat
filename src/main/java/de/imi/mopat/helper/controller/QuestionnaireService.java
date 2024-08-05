@@ -101,6 +101,17 @@ public class QuestionnaireService {
     }
 
     /**
+     * Retrieves all questionnaires from the data source and maps them to {@link QuestionnaireDTO} objects.
+     *
+     * @return A list of all {@link QuestionnaireDTO} objects.
+     */
+    public List<QuestionnaireDTO> getAllQuestionnaireDTOs() {
+        return questionnaireDao.getAllElements().stream()
+                .map(questionnaireDTOMapper)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Validates the questionnaire and logo file.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} to validate.
@@ -271,6 +282,7 @@ public class QuestionnaireService {
      * @return The newly created {@link Questionnaire}.
      */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+        QuestionnaireGroup questionnaireGroup = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 questionnaireDTO.getName(),
                 questionnaireDTO.getDescription(),
@@ -278,6 +290,7 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
+        newQuestionnaire.setGroup(questionnaireGroup);
         questionnaireDao.merge(newQuestionnaire);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
@@ -320,6 +333,7 @@ public class QuestionnaireService {
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
+        QuestionnaireGroup existingGroup = existingQuestionnaire.getGroup();
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 newName,
                 questionnaireDTO.getDescription(),
@@ -327,10 +341,8 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
+        newQuestionnaire.setGroup(existingGroup);
         questionnaireDao.merge(newQuestionnaire);
-
-        // Save group information
-        questionnaireGroupService.saveGroupInformation(newQuestionnaire, existingQuestionnaire);
 
         // Set version in Questionnaire
         setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
