@@ -3,26 +3,23 @@ package de.imi.mopat.helper.controller;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.QuestionnaireGroupDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
-import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireGroup;
-import de.imi.mopat.model.QuestionnaireGroupMember;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,27 +31,18 @@ public class BundleService {
 
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
-
-    @Autowired
-    private BundleQuestionnaireDao bundleQuestionnaireDao;
-
     @Autowired
     private BundleDao bundleDao;
-
-    @Autowired
-    private ScoreDao scoreDao;
-
     @Autowired
     private QuestionnaireDao questionnaireDao;
-
     @Autowired
-    private QuestionnaireGroupDao questionnaireGroupDao;
-
+    private ScoreDao scoreDao;
     @Autowired
-    QuestionnaireGroupService questionnaireGroupService;
-
+    private QuestionnaireGroupService questionnaireGroupService;
     @Autowired
-    QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
+    private BundleQuestionnaireDao bundleQuestionnaireDao;
+    @Autowired
+    private QuestionnaireService questionnaireService;
 
     /**
      * Converts this {@link Bundle} object to an {@link BundleDTO} object.
@@ -94,59 +82,81 @@ public class BundleService {
         return bundleDTO;
     }
 
+    /**
+     * Retrieves available questionnaires for a specific bundle, sorted by name
+     * If the bundle is not found, returns all questionnaires
+     *
+     * @param bundleId The ID of the bundle to retrieve available questionnaires for
+     * @return A list of {@link QuestionnaireDTO} objects representing the available questionnaires
+     */
+    public List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
+        Optional<Bundle> bundle = findBundleById(bundleId);
 
-    public List<QuestionnaireGroupDTO> getNonAssignedQuestionnaireGroups(final Long bundleId) {
+        if (bundle.isEmpty()) {
+            return questionnaireService.getAllQuestionnaireDTOs();
+        }
 
+        Set<Long> unassignedGroupIds = getUnassignedGroupIds(bundle.get());
+        List<QuestionnaireGroup> unassignedQuestionnaireGroups = questionnaireGroupService.getQuestionnaireGroups(unassignedGroupIds);
 
-        // Step 1: Get all non-assigned questionnaires
-        List<Questionnaire> nonAssignedQuestionnaires = getNonAssignedQuestionnaires(bundleId);
+        // Flatten the sorted QuestionnaireGroups into a list of QuestionnaireDTOs
+        return unassignedQuestionnaireGroups.stream()
+                .map(group -> group.getQuestionnaires().stream()
+                        .min(Comparator.comparingInt(Questionnaire::getVersion)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::toQuestionnaireDTO)
+                .sorted(Comparator.comparing(QuestionnaireDTO::getName))
+                .collect(Collectors.toList());
+    }
 
-        // Step 2: Create a set of non-assigned questionnaire IDs
-        Set<Long> nonAssignedQuestionnaireIds = nonAssignedQuestionnaires.stream()
-                .map(Questionnaire::getId)
+    /**
+     * Finds a {@link Bundle} by its ID
+     *
+     * @param bundleId The ID of the bundle to find
+     * @return An {@link Optional} containing the found bundle, or empty if not found.
+     */
+    private Optional<Bundle> findBundleById(Long bundleId) {
+        return bundleDao.getAllElements().stream()
+                .filter(b1 -> b1.getId().equals(bundleId))
+                .findFirst();
+    }
+
+    /**
+     * Retrieves the set of group IDs that are not assigned to any questionnaire in the given bundle
+     *
+     * @param bundle The bundle to check for assigned group IDs
+     * @return A set of unassigned group IDs
+     */
+    private Set<Long> getUnassignedGroupIds(Bundle bundle) {
+        Set<Long> assignedGroupIds = bundle.getBundleQuestionnaires().stream()
+                .map(bq -> bq.getQuestionnaire().getGroup().getId())
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        // Step 3: Get all questionnaire groups and filter them
-        List<QuestionnaireGroupDTO> allQuestionnaireGroupDTOs = questionnaireGroupService.getAllQuestionnaireGroups().stream()
-                .map(questionnaireGroupDTOMapper)
-                .filter(groupDTO -> groupDTO.getQuestionnaireDTOS().stream()
-                        .map(QuestionnaireDTO::getId)
-                        .anyMatch(nonAssignedQuestionnaireIds::contains))
-                .collect(Collectors.toList());
+        Set<Long> allGroupIds = questionnaireGroupService.getAllGroupIds();
+        allGroupIds.removeAll(assignedGroupIds);
 
-        // Step 4: Add non-assigned questionnaires that are not part of any group
-        nonAssignedQuestionnaires.stream()
-                .filter(questionnaire -> !isInQuestionnaireGroupList(questionnaire, allQuestionnaireGroupDTOs))
-                .forEach(questionnaire -> {
-                    QuestionnaireGroupDTO groupDTO = new QuestionnaireGroupDTO();
-                    groupDTO.setGroupName(questionnaire.getName());
-                    groupDTO.setQuestionnaireDTOS(List.of(questionnaireDTOMapper.apply(questionnaire)));
-                    allQuestionnaireGroupDTOs.add(groupDTO);
-                });
-
-        // Step 5: Sort the final list by group name
-        return allQuestionnaireGroupDTOs.stream()
-                .sorted(Comparator.comparing(QuestionnaireGroupDTO::getGroupName))
-                .collect(Collectors.toList());
+        return allGroupIds;
     }
 
-    private boolean isInQuestionnaireGroupList(Questionnaire questionnaire, List<QuestionnaireGroupDTO> groupDTOs) {
-        return groupDTOs.stream()
-                .flatMap(groupDTO -> groupDTO.getQuestionnaireDTOS().stream())
-                .anyMatch(dto -> dto.getId().equals(questionnaire.getId()));
+    /**
+     * Converts a {@link Questionnaire} to a {@link QuestionnaireDTO}.
+     *
+     * @param questionnaire The questionnaire to convert.
+     * @return A {@link QuestionnaireDTO} object.
+     */
+    private QuestionnaireDTO toQuestionnaireDTO(Questionnaire questionnaire) {
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
+        questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
+        return questionnaireDTO;
     }
 
-    private List<Questionnaire> getNonAssignedQuestionnaires(final Long bundleId) {
-        return questionnaireDao.getAllElements().stream()
-                .filter(questionnaire -> !isQuestionnairePartOfBundle(questionnaire.getId(), bundleId))
-                .collect(Collectors.toList());
-    }
-
-    private boolean isQuestionnairePartOfBundle(Long questionnaireId, Long bundleId) {
-        return findByQuestionnaireId(questionnaireId).stream()
-                .anyMatch(bundleQuestionnaire -> bundleQuestionnaire.getBundle().getId().equals(bundleId));
-    }
-
+    /** Finds {@link BundleQuestionnaire} objects by the ID of the questionnaire.
+     *
+     * @param questionnaireID The ID of the questionnaire to find bundle questionnaires for.
+     * @return A list of {@link BundleQuestionnaire} objects.
+     */
     public List<BundleQuestionnaire> findByQuestionnaireId(Long questionnaireID) {
         return bundleQuestionnaireDao.findByQuestionnaire(questionnaireID);
     }

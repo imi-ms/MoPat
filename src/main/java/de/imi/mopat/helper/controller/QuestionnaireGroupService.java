@@ -22,10 +22,78 @@ public class QuestionnaireGroupService {
 
     private final QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
+    private final QuestionnaireDao questionnaireDao;
+
     @Autowired
-    public QuestionnaireGroupService(QuestionnaireGroupDao questionnaireGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper) {
+    public QuestionnaireGroupService(QuestionnaireGroupDao questionnaireGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper, QuestionnaireDao questionnaireDao) {
         this.questionnaireGroupDao = questionnaireGroupDao;
         this.questionnaireGroupDTOMapper = questionnaireGroupDTOMapper;
+        this.questionnaireDao = questionnaireDao;
+    }
+
+    public QuestionnaireGroup createQuestionnaireGroup(String name) {
+        QuestionnaireGroup questionnaireGroup = new QuestionnaireGroup();
+        questionnaireGroup.setName(name);
+        questionnaireGroupDao.merge(questionnaireGroup);
+        return questionnaireGroup;
+    }
+
+    public QuestionnaireGroup createOrFindQuestionnaireGroup(QuestionnaireDTO questionnaireDTO) {
+        if (questionnaireDTO.getGroupId() != null) {
+            return getQuestionnaireGroupById(questionnaireDTO.getGroupId()).orElseGet(() -> {
+                QuestionnaireGroup newGroup = new QuestionnaireGroup();
+                newGroup.setName(questionnaireDTO.getName());
+                questionnaireGroupDao.merge(newGroup);
+                return newGroup;
+            });
+        } else {
+            QuestionnaireGroup newGroup = new QuestionnaireGroup();
+            newGroup.setName(questionnaireDTO.getName());
+            questionnaireGroupDao.merge(newGroup);
+            return newGroup;
+        }
+    }
+
+    /**
+     * Retrieves the group by its ID.
+     *
+     * @param groupId the ID of the group to retrieve
+     * @return an Optional containing the group if it exists, or an empty Optional
+     */
+    public Optional<QuestionnaireGroup> getQuestionnaireGroupById(Long groupId) {
+        return questionnaireGroupDao.getAllElements().stream()
+                .filter(group -> group.getId().equals(groupId))
+                .findFirst();
+    }
+
+    public Optional<QuestionnaireGroup> findGroupForQuestionnaire(Questionnaire questionnaire) {
+        validateQuestionnaires(questionnaire);
+        return questionnaireGroupDao.getAllElements().stream()
+                .filter(group -> group.getQuestionnaires().stream()
+                        .anyMatch(member -> member.equals(questionnaire)))
+                .findFirst();
+    }
+
+    public int findMaxVersionInGroup(QuestionnaireGroup questionnaireGroup) {
+        return questionnaireGroup.getQuestionnaires().stream()
+                .map(Questionnaire::getVersion)
+                .max(Integer::compareTo)
+                .orElse(1);
+    }
+
+    public Set<Long> getAllGroupIds() {
+        return questionnaireGroupDao.getAllElements().stream()
+                .map(QuestionnaireGroup::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public List<QuestionnaireGroup> getQuestionnaireGroups(Set<Long> groupIds) {
+        return groupIds.stream()
+                .map(this::getQuestionnaireGroupById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .peek(QuestionnaireGroup::sortQuestionnairesByVersion)
+                .collect(Collectors.toList());
     }
 
     /**
