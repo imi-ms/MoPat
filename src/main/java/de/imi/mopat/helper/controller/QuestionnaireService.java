@@ -1,11 +1,14 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
+import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -86,6 +89,8 @@ public class QuestionnaireService {
     @Autowired
     private QuestionnaireGroupService questionnaireGroupService;
 
+    @Autowired
+    private ConditionDao conditionDao;
 
     /**
      * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
@@ -346,9 +351,11 @@ public class QuestionnaireService {
 
         // Set version in Questionnaire
         setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
+        MapHolder questionCopyMaps = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
+        Map<Question, Question> questionMap = questionCopyMaps.questionMap();
+        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
 
-        // Copy questions and create a mapping copyQuestionsToQuestionnaire
-        Map<Question, Question> questionMap = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
+        Set<Condition> clonedConditions = questionService.cloneConditions(oldQuestionToNewAnswerMap, questionMap);
 
         // Copy scores
         copyScores(existingQuestionnaire.getScores(), newQuestionnaire, questionMap);
@@ -356,6 +363,10 @@ public class QuestionnaireService {
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
         questionnaireDao.merge(newQuestionnaire);
+
+        for(Condition condition : clonedConditions)
+            conditionDao.merge(condition);
+
         return newQuestionnaire;
     }
 
@@ -441,6 +452,16 @@ public class QuestionnaireService {
         questionnaire.setLocalizedFinalText(new TreeMap<>(questionnaireDTO.getLocalizedFinalText()));
     }
 
+    public Boolean hasQuestionnaireConditions(Questionnaire questionnaire){
+        for (Question originalQuestion : questionnaire.getQuestions()) {
+            for (Answer answer : originalQuestion.getAnswers()) {
+                for (Condition condition : answer.getConditions()) {
+                    return condition.getTarget().getClass() == Questionnaire.class;
+                }
+            }
+        }
+        return false;
+    }
     /**
      * Handles the upload and deletion of the questionnaire's logo.
      *
@@ -450,6 +471,7 @@ public class QuestionnaireService {
      */
     private void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
+        Condition newCondition = null;
 
         if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
             deleteExistingLogo(questionnaire, imagePath);
