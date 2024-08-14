@@ -458,7 +458,7 @@ public class QuestionnaireService {
      * @param newQuestionnaire the {@link Questionnaire} to associate with the copied export templates.
      * @return a {@link Set} of {@link ExportTemplate} that contains the cloned copies of the provided export templates.
      */
-    private Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire){
+    public Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire){
         Set<ExportTemplate> copiedExportTemplates = new HashSet<>();
         for(ExportTemplate exportTemplate : exportTemplates){
             String name = exportTemplate.getName();
@@ -474,8 +474,9 @@ public class QuestionnaireService {
             newExportTemplate.setName(name);
             newExportTemplate.setExportTemplateType(exportTemplateType);
             newExportTemplate.setConfigurationGroup(configurationGroup);
-            newExportTemplate.setOriginalFilename(exportTemplate.getOriginalFilename());
-
+            if(exportTemplate.getOriginalFilename() != null){
+                newExportTemplate.setOriginalFilename(exportTemplate.getOriginalFilename());
+            }
             exportTemplateDao.merge(newExportTemplate);
 
             String newFileName = newExportTemplate.getId() + "_" + fileName.split("_")[1] + "_" + fileName.split("_")[2];
