@@ -2,16 +2,20 @@ package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.ConfigurationGroup;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.QuestionnaireGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.BinaryExpression;
 import de.imi.mopat.model.score.BinaryOperator;
 import de.imi.mopat.model.score.Expression;
@@ -27,6 +31,10 @@ import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,6 +99,9 @@ public class QuestionnaireService {
 
     @Autowired
     private ConditionDao conditionDao;
+
+    @Autowired
+    private ExportTemplateDao exportTemplateDao;
 
     /**
      * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
@@ -367,6 +378,7 @@ public class QuestionnaireService {
         for(Condition condition : clonedConditions)
             conditionDao.merge(condition);
 
+        copyExportTemplates(existingQuestionnaire.getExportTemplates(), newQuestionnaire);
         return newQuestionnaire;
     }
 
@@ -434,6 +446,54 @@ public class QuestionnaireService {
 
         newQuestionnaire.setScores(copiedScores);
         return copiedScores;
+    }
+
+    /**
+     * Copies a set of {@link ExportTemplate} objects from the source to a new destination while modifying
+     * the filenames to include the new {@link Questionnaire} ID. Each copied export template's data is cloned
+     * from the existing templates, but associated with a new {@link Questionnaire} and stored under a newly generated filename.
+     * The method also copies the file data from the old storage path to a new path with the new filename.
+     *
+     * @param exportTemplates the set of {@link ExportTemplate} to be copied.
+     * @param newQuestionnaire the {@link Questionnaire} to associate with the copied export templates.
+     * @return a {@link Set} of {@link ExportTemplate} that contains the cloned copies of the provided export templates.
+     */
+    private Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire){
+        Set<ExportTemplate> copiedExportTemplates = new HashSet<>();
+        for(ExportTemplate exportTemplate : exportTemplates){
+            String name = exportTemplate.getName();
+            String fileName = exportTemplate.getFilename();
+            ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
+            ConfigurationGroup configurationGroup = exportTemplate.getConfigurationGroup();
+
+            String objectStoragePath = configurationDao.getObjectStoragePath();
+            String contextPath = objectStoragePath
+                + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+            Path path = Paths.get(contextPath + '/' + fileName);
+            ExportTemplate newExportTemplate = new ExportTemplate();
+            newExportTemplate.setName(name);
+            newExportTemplate.setExportTemplateType(exportTemplateType);
+            newExportTemplate.setConfigurationGroup(configurationGroup);
+            newExportTemplate.setOriginalFilename(exportTemplate.getOriginalFilename());
+
+            exportTemplateDao.merge(newExportTemplate);
+
+            String newFileName = newExportTemplate.getId() + "_" + fileName.split("_")[1] + "_" + fileName.split("_")[2];
+            Path targetPath = Paths.get(contextPath+"/"+newFileName);
+            try {
+                // Copy the file
+                Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("File cloned successfully to: " + targetPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("Failed to clone the file.");
+            }
+            newExportTemplate.setFilename(newFileName);
+            newExportTemplate.setQuestionnaire(newQuestionnaire);
+            exportTemplateDao.merge(newExportTemplate);
+            copiedExportTemplates.add(newExportTemplate);
+        }
+        return copiedExportTemplates;
     }
 
     /**
