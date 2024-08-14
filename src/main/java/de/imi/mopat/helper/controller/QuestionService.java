@@ -266,7 +266,9 @@ public class QuestionService {
                             oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
                             oldQuestionToNewAnswerMap.get(taq).get((Answer) condition.getTarget()));
                     }
-                    newConditions.add(newCondition);
+                    if (newCondition != null) {
+                        newConditions.add(newCondition);
+                    }
                 }
             }
         }
