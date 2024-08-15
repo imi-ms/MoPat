@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
@@ -72,6 +73,9 @@ public class QuestionnaireServiceTest {
 
     @InjectMocks
     private QuestionnaireService questionnaireService;
+
+    @Mock
+    private ExportTemplateDao exportTemplateDao;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -162,6 +166,16 @@ public class QuestionnaireServiceTest {
             }
             return null;
         }).when(questionnaireDao).merge(any(Questionnaire.class));
+
+        doAnswer(invocation -> {
+            ExportTemplate exportTemplate = invocation.getArgument(0);
+            if (exportTemplate.getId() == null) {
+                Field idField = ExportTemplate.class.getDeclaredField("id");
+                idField.setAccessible(true);
+                idField.set(exportTemplate, random.nextLong());
+            }
+            return null;
+        }).when(exportTemplateDao).merge(any(ExportTemplate.class));
     }
 
     /**
@@ -655,5 +669,33 @@ public class QuestionnaireServiceTest {
                 MultipartFileUtils.VALID_LOGO_FILENAME
         );
         Assert.assertFalse("The old logo file should be deleted", deletedFile.exists());
+    }
+
+    @Test
+    public void testCopyExportTemplates(){
+        // Arrange
+        Set<ExportTemplate> exportTemplates = new HashSet<>();
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        ExportTemplate newExportTemplate1 = ExportTemplateTest.getNewValidExportTemplate();
+        ExportTemplate newExportTemplate2 = ExportTemplateTest.getNewValidExportTemplate();
+        ExportTemplate newExportTemplate3 = ExportTemplateTest.getNewValidExportTemplate();
+        newExportTemplate1.setFilename("test_test_test1");
+        newExportTemplate2.setFilename("test_test_test2");
+        newExportTemplate3.setFilename("test_test_test3");
+        exportTemplates.add(newExportTemplate1);
+        exportTemplates.add(newExportTemplate2);
+        exportTemplates.add(newExportTemplate3);
+
+        // Act
+
+        Set<ExportTemplate> copiedExportTemplates = questionnaireService.copyExportTemplates(exportTemplates, newQuestionnaire);
+
+        // Assert
+        Assert.assertEquals("The size for the original and the copied export templates fail to match", copiedExportTemplates.size(), exportTemplates.size());
+
+        for(ExportTemplate exportTemplate : copiedExportTemplates){
+            Assert.assertEquals("Export templates are not equal",exportTemplate.getQuestionnaire(), newQuestionnaire);
+        }
+
     }
 }

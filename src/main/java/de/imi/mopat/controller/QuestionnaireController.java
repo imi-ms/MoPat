@@ -89,6 +89,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.tags.shaded.org.apache.xpath.operations.Bool;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -242,7 +243,7 @@ public class QuestionnaireController {
     public String edit(@RequestParam final String action,
         @RequestParam(value = "logoFile", required = false) final MultipartFile logo,
         @ModelAttribute("questionnaireDTO") @Valid final QuestionnaireDTO questionnaireDTO,
-        final BindingResult result, final Model model, final HttpServletRequest request) {
+        final BindingResult result, final Model model, final HttpServletRequest request, RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/questionnaire/list";
         }
@@ -256,7 +257,8 @@ public class QuestionnaireController {
 
         Long principalId = authService.getAuthenticatedUserId();
         Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logo, principalId);
-
+        Boolean hasQuestionnaireConditions = questionnaireService.hasQuestionnaireConditions(questionnaireDao.getElementById(questionnaireDTO.getId()));
+        redirectAttributes.addFlashAttribute("hasQuestionnaireConditions", hasQuestionnaireConditions);
         if (action.equals("saveEditButton")) {
             return "redirect:/question/list?id=" + questionnaire.getId();
         } else {
