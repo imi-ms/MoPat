@@ -1,6 +1,5 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Questionnaire;
@@ -23,13 +22,10 @@ public class QuestionnaireGroupService {
 
     private final QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
-    private final QuestionnaireDao questionnaireDao;
-
     @Autowired
-    public QuestionnaireGroupService(QuestionnaireGroupDao questionnaireGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper, QuestionnaireDao questionnaireDao) {
+    public QuestionnaireGroupService(QuestionnaireGroupDao questionnaireGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper) {
         this.questionnaireGroupDao = questionnaireGroupDao;
         this.questionnaireGroupDTOMapper = questionnaireGroupDTOMapper;
-        this.questionnaireDao = questionnaireDao;
     }
 
     public QuestionnaireGroup createQuestionnaireGroup(String name) {
@@ -93,7 +89,6 @@ public class QuestionnaireGroupService {
                 .map(this::getQuestionnaireGroupById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .peek(QuestionnaireGroup::sortQuestionnairesByVersion)
                 .collect(Collectors.toList());
     }
 
