@@ -56,6 +56,7 @@ public class QuestionnaireDTO {
 
     private List<QuestionDTO> questionDTOs;
 
+    @JsonIgnore
     private QuestionnaireGroupDTO questionnaireGroupDTO;
 
     public List<QuestionDTO> getQuestionDTOs() {
