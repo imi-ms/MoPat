@@ -106,23 +106,6 @@ public class User implements Serializable, UserDetails {
         setPassword(password);
     }
 
-    /*
-     * Converts this {@link User} object to an {@link UserDTO} object.
-     *
-     * @return An {@link UserDTO} object based on this {@link Clinic}
-     * object.
-     */
-    public UserDTO toUserDTO() {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(this.id);
-        userDTO.setUsername(this.username);
-        userDTO.setFirstname(this.firstname);
-        userDTO.setLastname(this.lastname);
-        userDTO.setEmail(this.email);
-
-        return userDTO;
-    }
-
     /**
      * Returns the id of the current user object.
      *

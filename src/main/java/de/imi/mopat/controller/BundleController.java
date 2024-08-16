@@ -17,6 +17,7 @@ import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.helper.controller.ClinicService;
 import de.imi.mopat.helper.controller.ReviewService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
@@ -81,8 +82,6 @@ public class BundleController {
     @Autowired
     private MessageSource messageSource;
     @Autowired
-    private QuestionnaireService questionnaireService;
-    @Autowired
     private BundleService bundleService;
     @Autowired
     private UserService userService;
@@ -92,6 +91,8 @@ public class BundleController {
     private ReviewService reviewService;
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
+    @Autowired
+    private BundleDTOMapper bundleDTOMapper;
     @Autowired
     private AuthService authService;
 
@@ -109,7 +110,7 @@ public class BundleController {
             if (bundle == null) {
                 result = new BundleDTO();
             } else {
-                bundleDTO = bundleService.toBundleDTO(true,bundle);
+                bundleDTO = bundleDTOMapper.apply(true,bundle);
                 for (BundleQuestionnaireDTO bundleQuestionnaireDTO
                         : bundleDTO.getBundleQuestionnaireDTOs()) {
                     bundleQuestionnaireDTO.getQuestionnaireDTO()

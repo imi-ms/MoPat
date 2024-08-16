@@ -8,6 +8,9 @@ import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import de.imi.mopat.model.conditions.Condition;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -16,12 +19,14 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Component
 public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
 
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(AnswerDTOMapper.class);
     private final ConfigurationDao configurationDao;
 
+    @Autowired
     public AnswerDTOMapper(ConfigurationDao configurationDao) {
         this.configurationDao = configurationDao;
     }

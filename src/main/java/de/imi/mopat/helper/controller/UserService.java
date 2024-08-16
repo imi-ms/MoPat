@@ -3,8 +3,8 @@ package de.imi.mopat.helper.controller;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
+import de.imi.mopat.helper.model.UserDTOMapper;
 import de.imi.mopat.model.Clinic;
-import de.imi.mopat.model.Question;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.UserDTO;
 import de.imi.mopat.model.enumeration.PermissionType;
@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(Question.class);
+            LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private UserDao userDao;
@@ -41,10 +43,13 @@ public class UserService {
     @Autowired
     private RoleHierarchyImpl roleHierarchy;
 
+    @Autowired
+    private UserDTOMapper userDTOMapper;
+
 
     public List<UserDTO> getAllUser(){
         return userDao.getAllElements().stream()
-                .map(User::toUserDTO)
+                .map(userDTOMapper)
                 .toList();
     }
 
@@ -69,11 +74,11 @@ public class UserService {
                     }
                 }
                 if (!assigned) {
-                    availableUserDTOs.add(user.toUserDTO());
+                    availableUserDTOs.add(userDTOMapper.apply(user));
                 }
                 assigned = false;
             } else {
-                availableUserDTOs.add(user.toUserDTO());
+                availableUserDTOs.add(userDTOMapper.apply(user));
             }
         }
 
@@ -82,17 +87,14 @@ public class UserService {
 
     public List<UserDTO> getAssignedUserDTOs(final Long clinicId) {
         List<UserDTO> availableUserDTOs = getAvailableUserDTOs(clinicId);
-        List<UserDTO> assignedUserDTOs = new ArrayList<>();
-        for (User user : userDao.getAllElements()) {
-            UserDTO assignedUserDTO = user.toUserDTO();
-            assignedUserDTOs.add(assignedUserDTO);
-            for (UserDTO userDTO : availableUserDTOs) {
-                if (assignedUserDTO.getId().equals(userDTO.getId())) {
-                    assignedUserDTOs.remove(assignedUserDTO);
-                }
-            }
-        }
-        return assignedUserDTOs;
+        Set<Long> availableUserIds = availableUserDTOs.stream()
+                .map(UserDTO::getId)
+                .collect(Collectors.toSet());
+
+        return userDao.getAllElements().stream()
+                .map(userDTOMapper)
+                .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
+                .collect(Collectors.toList());
     }
 
     private List<UserDTO> getUsersInSameClinicsAsUser(List<ClinicDTO> clinics, UserDTO user) {
@@ -116,13 +118,14 @@ public class UserService {
                 .filter(user1 -> user1.getAuthorities().stream()
                         .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR") ||
                                 authority.getAuthority().equals("ROLE_ADMIN")))
-                .map(User::toUserDTO)
+                .map(userDTOMapper)
                 .distinct() // Entfernt doppelte UserDTOs
                 .toList();
     }
 
     public UserDTO getUserByUsername(String username) {
-        return userDao.loadUserByUsername(username).toUserDTO();
+        User user = userDao.loadUserByUsername(username);
+        return userDTOMapper.apply(user);
     }
 
     public void updateUserRole(User user, UserRole role) {
@@ -164,5 +167,10 @@ public class UserService {
                 .orElse(null);
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
+    }
+
+    public UserDTO getUserDTOById(Long userId) {
+        User user = userDao.getElementById(userId);
+        return userDTOMapper.apply(user);
     }
 }

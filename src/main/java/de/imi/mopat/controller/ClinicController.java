@@ -7,8 +7,8 @@ import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.CacheService;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -25,8 +25,6 @@ import de.imi.mopat.validator.BundleDTOValidator;
 import de.imi.mopat.validator.ClinicDTOValidator;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +72,9 @@ public class ClinicController {
     @Autowired
     private MessageSource messageSource;
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
     @Autowired
     private UserService userService;
 
@@ -107,7 +105,7 @@ public class ClinicController {
             // and have at least one questionnaire attached
             if (bundle.getIsPublished() && !bundle.getBundleQuestionnaires()
                                                   .isEmpty()) {
-                bundleDTOs.add(bundleService.toBundleDTO(true,bundle));
+                bundleDTOs.add(bundleDTOMapper.apply(true,bundle));
             }
         }
 
@@ -149,7 +147,7 @@ public class ClinicController {
         ClinicDTO clinicDTO = new ClinicDTO();
         Clinic clinic = clinicDao.getElementById(clinicId);
         if (clinic != null) {
-            clinicDTO = clinicService.toClinicDTO(clinic);
+            clinicDTO = clinicDTOMapper.apply(clinic);
         }
         List<UserDTO> availableUserDTOs = userService.getAvailableUserDTOs(clinicId);
         List<UserDTO> assignedUserDTOs = userService.getAssignedUserDTOs(clinicId);
@@ -227,7 +225,7 @@ public class ClinicController {
                         //userDTO only contains id,
                         //so we need to get new userDTO from userDao that
                         // contains username etc.
-                        assignedUserDTOs.add(userDao.getElementById(userDTO.getId()).toUserDTO());
+                        assignedUserDTOs.add(userService.getUserDTOById(userDTO.getId()));
                     }
                 }
             }

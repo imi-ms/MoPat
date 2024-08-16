@@ -5,6 +5,7 @@ import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -18,10 +19,17 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
     private static final int FRONT_BACK = 2;
     private final AnswerDTOMapper answerDTOMapper;
 
+    @Autowired
     public QuestionDTOMapper(ConfigurationDao configurationDao) {
         this.answerDTOMapper = new AnswerDTOMapper(configurationDao);
     }
 
+    /**
+     * Converts this {@link Question} object to an {@link QuestionDTO} object.
+     *
+     * @return An {@link QuestionDTO} object based on this {@link Question}
+     * object.
+     */
     @Override
     public QuestionDTO apply(Question question) {
         List<String> images = new ArrayList<>();
@@ -63,6 +71,6 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
         } else if (images.contains(Constants.BODY_BACK)) {
             return Constants.BODY_PART_IMAGE_TYPES[BACK];
         }
-        return null;
+        return Constants.BODY_PART_IMAGE_TYPES[FRONT]; // Is set as default in QuestionDTO
     }
 }

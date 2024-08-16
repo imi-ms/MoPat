@@ -5,6 +5,7 @@ import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
 
     private final QuestionDTOMapper questionDTOMapper;
 
+    @Autowired
     public QuestionnaireDTOMapper(ConfigurationDao configurationDao, QuestionDTOMapper questionDTOMapper) {
         this.configurationDao = configurationDao;
         this.questionDTOMapper = questionDTOMapper;
