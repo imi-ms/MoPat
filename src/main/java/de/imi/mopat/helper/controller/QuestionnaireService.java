@@ -111,6 +111,10 @@ public class QuestionnaireService {
                 .collect(Collectors.toList());
     }
 
+    public List<Questionnaire> getAllQuestionnaires() {
+        return questionnaireDao.getAllElements();
+    }
+
     /**
      * Validates the questionnaire and logo file.
      *
