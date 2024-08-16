@@ -859,6 +859,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return questionnaireGroup;
     }
 
+    public Long getGroupId() {
+        return (questionnaireGroup != null) ? questionnaireGroup.getId() : null;
+    }
+
     public void setGroup(QuestionnaireGroup questionnaireGroup) {
         this.questionnaireGroup = questionnaireGroup;
     }

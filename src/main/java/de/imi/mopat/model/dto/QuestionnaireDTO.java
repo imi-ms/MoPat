@@ -6,6 +6,7 @@ import de.imi.mopat.model.ExportTemplate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import jakarta.validation.constraints.NotNull;
@@ -179,11 +180,11 @@ public class QuestionnaireDTO {
     }
 
     public Long getGroupId() {
-        return questionnaireGroupDTO.getGroupId();
+        return (questionnaireGroupDTO != null) ? questionnaireGroupDTO.getGroupId() : null;
     }
 
     public String getGroupName() {
-        return questionnaireGroupDTO.getGroupName();
+        return  (questionnaireGroupDTO != null) ? questionnaireGroupDTO.getGroupName() : null;
     }
 
     public QuestionnaireGroupDTO getQuestionnaireGroupDTO() {
