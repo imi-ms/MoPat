@@ -46,7 +46,11 @@ public class UserService {
     @Autowired
     private UserDTOMapper userDTOMapper;
 
-
+    /**
+     * Retrieves all users as UserDTO objects.
+     *
+     * @return List of UserDTO objects representing all users.
+     */
     public List<UserDTO> getAllUser(){
         return userDao.getAllElements().stream()
                 .map(userDTOMapper)
@@ -54,40 +58,35 @@ public class UserService {
     }
 
     /**
-     * @param clinicID The Id of the {@link Clinic} object.
-     * @return Returns all {@link User Users} that are available to be assigned to the
-     * {@link Clinic} object.
+     * Retrieves all users that are available to be assigned to a specified clinic.
+     *
+     * @param clinicID The ID of the clinic.
+     * @return List of UserDTOs representing users that are not assigned to the clinic.
      */
     public List<UserDTO> getAvailableUserDTOs(final Long clinicID) {
-
-        List<UserDTO> availableUserDTOs = new ArrayList<>();
-
-        // Add all users that are available
-        boolean assigned = false;
-        for (User user : userDao.getAllElements()) {
-            if (clinicID != null) {
-                for (AclEntry aclEntry : aclEntryDao.getAllElements()) {
-                    if (aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID)
-                            && aclEntry.getUser().getId().equals(user.getId())) {
-                        assigned = true;
-                        break;
-                    }
-                }
-                if (!assigned) {
-                    availableUserDTOs.add(userDTOMapper.apply(user));
-                }
-                assigned = false;
-            } else {
-                availableUserDTOs.add(userDTOMapper.apply(user));
-            }
+        if (clinicID == null) {
+            return getAllUser(); // Return all users if no clinic ID is specified
         }
 
-        return availableUserDTOs;
+        Set<Long> assignedUserIds = aclEntryDao.getAllElements().stream()
+                .filter(aclEntry -> aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID))
+                .map(aclEntry -> aclEntry.getUser().getId())
+                .collect(Collectors.toSet());
+
+        return userDao.getAllElements().stream()
+                .filter(user -> !assignedUserIds.contains(user.getId()))
+                .map(userDTOMapper)
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all users that are assigned to a specified clinic.
+     *
+     * @param clinicId The ID of the clinic.
+     * @return List of UserDTOs representing users that are assigned to the clinic.
+     */
     public List<UserDTO> getAssignedUserDTOs(final Long clinicId) {
-        List<UserDTO> availableUserDTOs = getAvailableUserDTOs(clinicId);
-        Set<Long> availableUserIds = availableUserDTOs.stream()
+        Set<Long> availableUserIds = getAvailableUserDTOs(clinicId).stream()
                 .map(UserDTO::getId)
                 .collect(Collectors.toSet());
 
@@ -97,32 +96,61 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves users in the same clinics as the specified user.
+     *
+     * @param clinics List of clinics to check.
+     * @param user The user to compare.
+     * @return List of UserDTOs representing users in the same clinics.
+     */
     private List<UserDTO> getUsersInSameClinicsAsUser(List<ClinicDTO> clinics, UserDTO user) {
         return clinics.stream()
                 .filter(clinicDTO -> {
                     List<UserDTO> assignedUserDTOs = getAssignedUserDTOs(clinicDTO.getId());
-                    return assignedUserDTOs != null && assignedUserDTOs.stream().anyMatch(u -> u.equals(user));
+                    return assignedUserDTOs != null && assignedUserDTOs.contains(user);
                 })
                 .flatMap(clinic -> clinic.getAssignedUserDTOs().stream())
-                .distinct() // Entfernt doppelte UserDTOs
-                .toList();
+                .distinct() // Remove duplicate UserDTOs
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all moderators and admins within the same clinics as the specified user.
+     *
+     * @param clinics List of clinics to check.
+     * @param user The user to compare.
+     * @return List of UserDTOs representing moderators and admins in the same clinics.
+     */
     public List<UserDTO> getClinicModeratorsAndAdmins(List<ClinicDTO> clinics, UserDTO user) {
-        // Schritt 1: Sammle alle Benutzer, die den gleichen Kliniken wie der gegebene Benutzer zugewiesen sind
         List<UserDTO> usersInSameClinics = getUsersInSameClinicsAsUser(clinics, user);
 
-        // Schritt 2: Filtere Moderatoren und Administratoren
         return usersInSameClinics.stream()
                 .map(userDTO -> userDao.loadUserByUsername(userDTO.getUsername()))
                 .filter(user1 -> user1.getAuthorities().stream()
                         .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR") ||
                                 authority.getAuthority().equals("ROLE_ADMIN")))
                 .map(userDTOMapper)
-                .distinct() // Entfernt doppelte UserDTOs
-                .toList();
+                .distinct() // Remove duplicate UserDTOs
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param userId The ID of the user.
+     * @return UserDTO object representing the user.
+     */
+    public UserDTO getUserDTOById(Long userId) {
+        User user = userDao.getElementById(userId);
+        return userDTOMapper.apply(user);
+    }
+
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username The username of the user.
+     * @return UserDTO object representing the user.
+     */
     public UserDTO getUserByUsername(String username) {
         User user = userDao.loadUserByUsername(username);
         return userDTOMapper.apply(user);
@@ -133,6 +161,12 @@ public class UserService {
         userDao.merge(user);
     }
 
+    /**
+     * Updates the clinic rights for a user. Assigns or revokes permissions based on the provided clinic IDs.
+     *
+     * @param user The user to update.
+     * @param clinicIDs The list of clinic IDs to assign rights to.
+     */
     public void updateUserClinicRights(User user, List<Long> clinicIDs) {
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
                 aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
@@ -156,6 +190,12 @@ public class UserService {
         }
     }
 
+    /**
+     * Retrieves the highest role assigned to a user based on the role hierarchy.
+     *
+     * @param user The user to evaluate.
+     * @return The highest UserRole assigned to the user, or null if none are found.
+     */
     public UserRole getHighestRole(User user) {
         if (user == null) {
             return null;
@@ -163,14 +203,10 @@ public class UserService {
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 
         GrantedAuthority highestAuthority = authorities.stream()
-                .max(Comparator.comparingInt(authority -> roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
+                .max(Comparator.comparingInt(authority ->
+                        roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
                 .orElse(null);
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
-    }
-
-    public UserDTO getUserDTOById(Long userId) {
-        User user = userDao.getElementById(userId);
-        return userDTOMapper.apply(user);
     }
 }
