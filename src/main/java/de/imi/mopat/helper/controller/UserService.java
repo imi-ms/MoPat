@@ -156,8 +156,8 @@ public class UserService {
         return userDTOMapper.apply(user);
     }
 
-    public void updateUserRole(User user, UserRole role) {
-        user.addRole(role);
+    public void replaceUserRoles(User user, UserRole newRole) {
+        user.replaceRolesWith(newRole);
         userDao.merge(user);
     }
 

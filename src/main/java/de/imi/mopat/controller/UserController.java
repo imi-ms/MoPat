@@ -605,7 +605,7 @@ public class UserController {
             @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
         if (action.equalsIgnoreCase("save")) {
             userService.updateUserClinicRights(user, clinicIDs);
-            userService.updateUserRole(user, role);
+            userService.replaceUserRoles(user, role);
         }
         //Delete ACL caches to make changes directly visible
         cacheService.evictAllCaches();
