@@ -34,8 +34,6 @@ public class BundleService {
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
-    private QuestionnaireGroupService questionnaireGroupService;
-    @Autowired
     private BundleQuestionnaireDao bundleQuestionnaireDao;
     @Autowired
     private QuestionnaireService questionnaireService;
