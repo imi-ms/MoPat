@@ -1,6 +1,6 @@
-package de.imi.mopat.model.dto;
+package de.imi.mopat.model;
 
-public record GitPropertiesDTO(
+public record GitProperties(
         String buildVersion,
         String branch,
         String commitId,
