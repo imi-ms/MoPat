@@ -165,51 +165,94 @@
 					</div>
 				</div>
 
-				<div
-					class="row mb-3 align-content-center"
-					data-role="fieldcontain"
-				>
-					<div class="col-lg-3 col-md-12">
-						<label
-							class="col-form-label"
-							for="usePin"
-							id="usePinLabel"
-						>
-							<b
-								th:text="${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin:')}"
-							></b>
-						</label>
-					</div>
 
-					<div class="col-lg-5 col-md-12">
-						<div class="d-flex align-items-center">
-							<div class="form-check form-switch">
+				<div th:if="${configurationDao.isGlobalPinAuthEnabled}">
+					<div
+						class="row mb-3 align-content-center"
+						data-role="fieldcontain"
+					>
+						<div class="col-lg-3 col-md-12">
+							<label
+								class="col-form-label"
+								for="usePin"
+								id="usePinLabel"
+							>
+								<b
+									th:text="${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin:')}"
+								></b>
+							</label>
+						</div>
+
+						<div class="col-lg-5 col-md-12">
+							<div class="d-flex align-items-center">
+								<div class="form-check form-switch">
+									<input
+										class="form-check-input form-control me-3"
+										id="usePin"
+										th:field="*{usePin}"
+										onchange="switchPinInput(this)"
+										role="switch"
+										type="checkbox"
+									/>
+								</div>
+
 								<input
-									class="form-check-input form-control me-3"
-									id="usePin"
-									th:field="*{usePin}"
-									onchange="switchPinInput(this)"
-									role="switch"
-									type="checkbox"
+									class="form-control"
+									id="pin"
+									th:field="*{pin}"
+									type="password"
+									oninput="checkPin(this)"
 								/>
 							</div>
+						</div>
 
-							<input
-								class="form-control"
-								id="pin"
-								th:field="*{pin}"
-								type="password"
+						<div class="col-lg-4 col-md-12">
+							<error
+								layout:replace="~{fragments/forms :: errorField(path='usePin')}"
+							/>
+							<error
+								layout:replace="~{fragments/forms :: errorField(path='pin')}"
 							/>
 						</div>
 					</div>
-
-					<div class="col-lg-4 col-md-12">
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='usePin')}"
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='pin')}"
-						/>
+					<div
+						class="row mb-3 align-content-center"
+						data-role="fieldcontain"
+					>
+						<div class="col-8">
+							<i>
+								<th:block
+									th:text="${messages.get(#locale, 'user.label.pin.moreInfo', 'This feature allows users to quickly log back into MoPat, by only providing a short pin, instead of requiring a complete re-login to start a new survey.')}"
+								></th:block>
+								
+								<div id="pin-requirements" class="d-none">
+									<th:block
+										th:text="${messages.get(#locale, 'user.label.pin.requirements', 'Bitte stellen Sie sicher, dass Ihr Pin die folgenden Anforderungen erfüllt:')}"
+									></th:block>
+									
+									<ul>
+										<li id="pin-length">
+											<th:block
+												th:text="${messages.get(#locale, 'user.label.pin.requirements.length', 'The pin has to be at least 6 digits long')}"
+											></th:block>
+											
+										</li>
+										<li id="pin-uniqueness">
+											<th:block
+												th:text="${messages.get(#locale, 'user.label.pin.requirements.uniqueness', 'The pin must consist of different digits')}"
+											></th:block>
+											
+										</li>
+										<li id="pin-sequence">
+											<th:block
+												th:text="${messages.get(#locale, 'user.label.pin.requirements.sequence', 'A numerical sequence (123456) is not allowed')}"
+											></th:block>
+											
+										</li>
+									</ul>
+								</div>
+							</i>
+						</div>
 					</div>
 				</div>
 
@@ -362,10 +405,60 @@
 			if (isPinActive) {
 				// Activate input
 				$("#pin").removeAttr("disabled");
+				$("#pin-requirements").removeClass("d-none");
 			} else {
 				// Deactivate input
 				$("#pin").attr("disabled", "disabled");
+				$("#pin-requirements").addClass("d-none");
 			}
+		}
+
+		function checkPin(element) {
+			var pin = $(element).val(); 
+			if (pin.length <= 0 ) {
+				$("#pin-length").removeClass("text-success")
+				$("#pin-length").addClass("text-danger"); 
+				$("#pin-uniqueness").removeClass("text-success")
+				$("#pin-uniqueness").addClass("text-danger"); 
+				$("#pin-sequence").removeClass("text-success")
+				$("#pin-sequence").addClass("text-danger"); 
+			} else {
+				if (pin.length < 6) {
+					$("#pin-length").removeClass("text-success")
+					$("#pin-length").addClass("text-danger"); 
+				} else {
+					$("#pin-length").removeClass("text-danger")
+					$("#pin-length").addClass("text-success");
+				}
+
+				if (pin.match("\\b(\\d)\\1+\\b")) {
+					$("#pin-uniqueness").removeClass("text-success")
+					$("#pin-uniqueness").addClass("text-danger"); 
+				} else {
+					$("#pin-uniqueness").removeClass("text-danger")
+					$("#pin-uniqueness").addClass("text-success");
+				}
+
+				if (isConsecutiveSequence(pin)) {
+					$("#pin-sequence").removeClass("text-success")
+					$("#pin-sequence").addClass("text-danger"); 
+				} else {
+					$("#pin-sequence").removeClass("text-danger")
+					$("#pin-sequence").addClass("text-success");
+				}
+			}
+		}
+
+		function isConsecutiveSequence(pin) {
+			for (let i = 0; i <= pin.length - 2; i++) {
+				let first = parseInt(pin.charAt(i), 10);
+				let second = parseInt(pin.charAt(i + 1), 10);
+
+				if (first + 1 !== second && first - 1 !== second) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		$("#isLdap").val(/*[[${#strings.toString(isLdap)}]]*/ 'true').trigger("change");
