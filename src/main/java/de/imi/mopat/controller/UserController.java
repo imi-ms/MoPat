@@ -555,16 +555,16 @@ public class UserController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/user/clinicrights</i>. Shows the page
+     * Controls the HTTP GET requests for the URL <i>/user/rights</i>. Shows the page
      * containing the form fields for granting or revoking rights for clinics to a
      * {@link User User}.
      *
      * @param model The model, which holds the information for the view.
      * @return The <i>user/edit</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/rights", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String editClinicRights(final Model model) {
+    public String editUserRights(final Model model) {
 
         if (model.asMap().get("user") == null) {
             model.addAttribute("user", null);
@@ -580,11 +580,11 @@ public class UserController {
         model.addAttribute("assignedClinics", assignedClinics);
         model.addAttribute("roleList", new ArrayList<>(Arrays.asList(UserRole.values())));
         model.addAttribute("userRole", userService.getHighestRole(user));
-        return "user/clinicrights";
+        return "user/rights";
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/user/clinicrights</i>. Provides the ability
+     * Controls the HTTP POST requests for the URL <i>/user/rights</i>. Provides the ability
      * to grant or revoke rights for clinics to a {@link User User}.
      *
      * @param clinicIDs The {@link Clinic clinic} object IDs, which are assigned to the
@@ -594,11 +594,11 @@ public class UserController {
      *                  edited.
      * @param result    The result for validation of the bundle object.
      * @param model     The model, which holds the information for the view.
-     * @return The <i>/user/clinicrights</i> website.
+     * @return The <i>/user/rights</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.POST)
+    @RequestMapping(value = "/user/rights", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String updateUserClinicRightsAndRole(
+    public String updateUserRights(
             @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
             @RequestParam(value = "action", required = true) final String action,
             @RequestParam(value = "role") final UserRole role,

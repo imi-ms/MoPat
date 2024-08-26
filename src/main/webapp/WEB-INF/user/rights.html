@@ -3,7 +3,7 @@
 */-->
 <th:block
 	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'user.heading.clinicRights', 'Edit clinic rights')}"
+	th:with="title=${messages.get(#locale, 'user.heading.rights', 'Edit user rights')}"
 >
 	<th:block layout:fragment="content">
 		<div class="panel-body">
@@ -11,7 +11,7 @@
 				th:object="${user}"
 				enctype="application/x-www-form-urlencoded"
 				method="POST"
-				action="clinicrights"
+				action="rights"
 			>
 				<input
 					id="userId"
@@ -372,7 +372,7 @@
 		}
 
 		$(".sortable").sortable({
-			group: "clinicrights",
+			group: "rights",
 			sort: true, 
 			animation:150,
 			easing: "cubic-bezier(1, 0, 0, 1)",
