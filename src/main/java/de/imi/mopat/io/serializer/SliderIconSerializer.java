@@ -13,8 +13,8 @@ public class SliderIconSerializer extends JsonSerializer<SliderIcon> {
         SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField("id", String.valueOf(sliderIcon.getId()));
-        jsonGenerator.writeStringField("position", String.valueOf(sliderIcon.getPosition()));
-        jsonGenerator.writeStringField("icon", sliderIcon.getIcon());
+        jsonGenerator.writeStringField("iconPosition", String.valueOf(sliderIcon.getPosition()));
+        jsonGenerator.writeStringField("iconName", sliderIcon.getIcon().getIconName());
         jsonGenerator.writeEndObject();
     }
 }

@@ -12,10 +12,13 @@ import de.imi.mopat.model.SelectAnswer;
 import de.imi.mopat.model.SliderAnswer;
 import de.imi.mopat.model.SliderFreetextAnswer;
 import de.imi.mopat.model.SliderIcon;
+import de.imi.mopat.model.SliderIconDetail;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.ConditionDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
+import de.imi.mopat.model.dto.SliderIconConfigDTO;
+import de.imi.mopat.model.dto.SliderIconDetailDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import java.io.IOException;
@@ -35,8 +38,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class QuestionService {
 
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+        Question.class);
     @Autowired
     private ConfigurationDao configurationDao;
 
@@ -44,8 +47,7 @@ public class QuestionService {
     /**
      * Converts this {@link Question} object to an {@link QuestionDTO} object.
      *
-     * @return An {@link QuestionDTO} object based on this {@link Question}
-     * object.
+     * @return An {@link QuestionDTO} object based on this {@link Question} object.
      */
     @JsonIgnore
     public QuestionDTO toQuestionDTO(Question question) {
@@ -59,8 +61,7 @@ public class QuestionService {
         questionDTO.setMaxNumberAnswers(question.getMaxNumberAnswers());
         questionDTO.setCodedValueType(question.getCodedValueType());
         questionDTO.setPosition(question.getPosition());
-        questionDTO.setQuestionnaireId(question.getQuestionnaire()
-            .getId());
+        questionDTO.setQuestionnaireId(question.getQuestionnaire().getId());
         SortedMap<Long, AnswerDTO> answerDTOs = new TreeMap<>();
 
         List<String> images = new ArrayList<>();
@@ -69,10 +70,10 @@ public class QuestionService {
             answerDTO.setId(answer.getId());
             answerDTO.setIsEnabled(answer.getIsEnabled());
             if (answer instanceof SelectAnswer) {
-                answerDTO.setLocalizedLabel(new TreeMap<>(((SelectAnswer) answer).getLocalizedLabel()));
+                answerDTO.setLocalizedLabel(
+                    new TreeMap<>(((SelectAnswer) answer).getLocalizedLabel()));
 
-                if (((SelectAnswer) answer).getValue()
-                    != null) {
+                if (((SelectAnswer) answer).getValue() != null) {
                     answerDTO.setValue(((SelectAnswer) answer).getValue());
                 }
                 answerDTO.setIsOther(((SelectAnswer) answer).getIsOther());
@@ -83,83 +84,101 @@ public class QuestionService {
                 answerDTO.setVertical(((SliderFreetextAnswer) answer).getVertical());
 
                 // Format the stepsize
-                DecimalFormat decimalFormat = new DecimalFormat(
-                    "0",
+                DecimalFormat decimalFormat = new DecimalFormat("0",
                     DecimalFormatSymbols.getInstance(Locale.ENGLISH));
                 decimalFormat.setMaximumFractionDigits(340); //340 =
                 // DecimalFormat.DOUBLE_FRACTION_DIGITS
-                String formattedStepsize =
-                    decimalFormat.format(((SliderAnswer) answer).getStepsize());
+                String formattedStepsize = decimalFormat.format(
+                    ((SliderAnswer) answer).getStepsize());
                 answerDTO.setStepsize(formattedStepsize);
 
-                answerDTO.setLocalizedMinimumText(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMinimumText()));
-                answerDTO.setLocalizedMaximumText(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMaximumText()));
-                answerDTO.setLocalizedFreetextLabel(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedFreetextLabel()));
+                answerDTO.setLocalizedMinimumText(
+                    new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMinimumText()));
+                answerDTO.setLocalizedMaximumText(
+                    new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMaximumText()));
+                answerDTO.setLocalizedFreetextLabel(
+                    new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedFreetextLabel()));
             } else if (answer instanceof SliderAnswer) {
                 answerDTO.setMinValue(((SliderAnswer) answer).getMinValue());
                 answerDTO.setMaxValue(((SliderAnswer) answer).getMaxValue());
                 answerDTO.setVertical(((SliderAnswer) answer).getVertical());
                 // Format the stepsize
-                DecimalFormat decimalFormat = new DecimalFormat(
-                    "0",
+                DecimalFormat decimalFormat = new DecimalFormat("0",
                     DecimalFormatSymbols.getInstance(Locale.ENGLISH));
                 decimalFormat.setMaximumFractionDigits(340); //340 =
                 // DecimalFormat.DOUBLE_FRACTION_DIGITS
-                String formattedStepsize =
-                    decimalFormat.format(((SliderAnswer) answer).getStepsize());
+                String formattedStepsize = decimalFormat.format(
+                    ((SliderAnswer) answer).getStepsize());
                 answerDTO.setStepsize(formattedStepsize);
 
-                answerDTO.setLocalizedMinimumText(new TreeMap<>(((SliderAnswer) answer).getLocalizedMinimumText()));
-                answerDTO.setLocalizedMaximumText(new TreeMap<>(((SliderAnswer) answer).getLocalizedMaximumText()));
+                answerDTO.setLocalizedMinimumText(
+                    new TreeMap<>(((SliderAnswer) answer).getLocalizedMinimumText()));
+                answerDTO.setLocalizedMaximumText(
+                    new TreeMap<>(((SliderAnswer) answer).getLocalizedMaximumText()));
                 answerDTO.setShowValueOnButton(((SliderAnswer) answer).getShowValueOnButton());
 
                 answerDTO.setShowIcons(((SliderAnswer) answer).getShowIcons());
+                if(((SliderAnswer) answer).getSliderIconConfig() != null){
+                    SliderIconConfigDTO sliderIconConfigDTO = new SliderIconConfigDTO(
+                        ((SliderAnswer) answer).getSliderIconConfig().getId(),
+                        ((SliderAnswer) answer).getSliderIconConfig().getNumberOfIcons(),
+                        ((SliderAnswer) answer).getSliderIconConfig().getConfigName());
+                    List<SliderIconDetailDTO> sliderIconDetailDTOS = new ArrayList<>();
+                    for(SliderIconDetail sliderIcon : ((SliderAnswer) answer).getSliderIconConfig().getIcons()){
+                        sliderIconDetailDTOS.add(new SliderIconDetailDTO(
+                            sliderIcon.getPredefinedSliderIcon().getId(),
+                            sliderIcon.getIconPosition(),
+                            sliderIcon.getSliderIconConfig().getId(),
+                            sliderIcon.getPredefinedSliderIcon().getIconName()
+                        ));
+                    }
+                    sliderIconConfigDTO.setSliderIconDetailDTOS(sliderIconDetailDTOS);
+                    answerDTO.setSliderIconConfigDTO(sliderIconConfigDTO);
 
-                List<SliderIconDTO> iconList = new ArrayList<>();
-                for (SliderIcon icon : ((SliderAnswer) answer).getIcons()) {
-                    SliderIconDTO newSliderIconDTO = new SliderIconDTO();
-                    newSliderIconDTO.setIcon(icon.getIcon());
-                    newSliderIconDTO.setPosition(icon.getPosition());
-                    newSliderIconDTO.setAnswerId(answer.getId());
-                    iconList.add(newSliderIconDTO);
+                }
+                else{
+                    List < SliderIconDTO > iconList = new ArrayList<>();
+                    for (SliderIcon icon : ((SliderAnswer) answer).getIcons()) {
+                        SliderIconDTO newSliderIconDTO = new SliderIconDTO();
+                        newSliderIconDTO.setPredefinedSliderIcon(icon.getIcon().getIconName());
+                        newSliderIconDTO.setIconPosition(icon.getPosition());
+                        newSliderIconDTO.setAnswerId(answer.getId());
+                        iconList.add(newSliderIconDTO);
+                    }
+                    answerDTO.setIcons(iconList);
                 }
 
-                answerDTO.setIcons(iconList);
 
             } else if (answer instanceof DateAnswer) {
                 Date startDate = ((DateAnswer) answer).getStartDate();
                 Date endDate = ((DateAnswer) answer).getEndDate();
                 SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
-                if (startDate
-                    != null) {
+                if (startDate != null) {
                     answerDTO.setStartDate(dateFormat.format(startDate));
                 }
-                if (endDate
-                    != null) {
+                if (endDate != null) {
                     answerDTO.setEndDate(dateFormat.format(endDate));
                 }
             } else if (answer instanceof NumberInputAnswer) {
                 answerDTO.setMinValue(((NumberInputAnswer) answer).getMinValue());
                 answerDTO.setMaxValue(((NumberInputAnswer) answer).getMaxValue());
-                if (((NumberInputAnswer) answer).getStepsize()
-                    != null) {
-                    answerDTO.setStepsize(((NumberInputAnswer) answer).getStepsize()
-                        .toString());
+                if (((NumberInputAnswer) answer).getStepsize() != null) {
+                    answerDTO.setStepsize(((NumberInputAnswer) answer).getStepsize().toString());
                 }
             } else if (answer instanceof ImageAnswer) {
                 ImageAnswer imageAnswer = (ImageAnswer) answer;
-                answerDTO.setImagePath(configurationDao.getImageUploadPath() + "/question/"+ imageAnswer.getImagePath());
+                answerDTO.setImagePath(configurationDao.getImageUploadPath() + "/question/"
+                    + imageAnswer.getImagePath());
                 try {
                     //Navigate out of classpath root and WEB-INF
                     String realPath = answerDTO.getImagePath();
-                    String fileName = answerDTO.getImagePath().substring(answerDTO.getImagePath().lastIndexOf("/"));
-                    answerDTO.setImageBase64(StringUtilities.convertImageToBase64String(realPath, fileName));
+                    String fileName = answerDTO.getImagePath()
+                        .substring(answerDTO.getImagePath().lastIndexOf("/"));
+                    answerDTO.setImageBase64(
+                        StringUtilities.convertImageToBase64String(realPath, fileName));
                 } catch (IOException e) {
-                    LOGGER.error("Image of answer with id "
-                        + imageAnswer.getId()
-                        + " and path "
-                        + imageAnswer.getImagePath()
-                        + " was not readable!");
+                    LOGGER.error("Image of answer with id " + imageAnswer.getId() + " and path "
+                        + imageAnswer.getImagePath() + " was not readable!");
                 }
             } else if (answer instanceof BodyPartAnswer) {
                 BodyPartAnswer bodyPartAnswer = (BodyPartAnswer) answer;
@@ -170,38 +189,30 @@ public class QuestionService {
                 if (!images.contains(bodyPart.getImagePath())) {
                     images.add(bodyPart.getImagePath());
                 }
-            }
-            questionDTO.setBodyPartImages(images);
+            } questionDTO.setBodyPartImages(images);
 
-            if (images.contains(Constants.BODY_FRONT)
-                && !images.contains(Constants.BODY_BACK)) {
+            if (images.contains(Constants.BODY_FRONT) && !images.contains(Constants.BODY_BACK)) {
                 questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[0]);
-            } else if (!images.contains(Constants.BODY_FRONT)
-                && images.contains(Constants.BODY_BACK)) {
+            } else if (!images.contains(Constants.BODY_FRONT) && images.contains(
+                Constants.BODY_BACK)) {
                 questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[1]);
-            } else if (images.contains(Constants.BODY_FRONT)
-                && images.contains(Constants.BODY_BACK)) {
+            } else if (images.contains(Constants.BODY_FRONT) && images.contains(
+                Constants.BODY_BACK)) {
                 questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[2]);
             }
 
-            answerDTO.setHasResponse(!answer.getResponses()
-                .isEmpty());
-            answerDTO.setHasConditionsAsTrigger(!answer.getConditions()
-                .isEmpty());
+            answerDTO.setHasResponse(!answer.getResponses().isEmpty());
+            answerDTO.setHasConditionsAsTrigger(!answer.getConditions().isEmpty());
             List<ConditionDTO> conditionDTOs = new ArrayList<>();
-            if (!answer.getConditions()
-                .isEmpty()) {
+            if (!answer.getConditions().isEmpty()) {
                 for (Condition condition : answer.getConditions()) {
                     conditionDTOs.add(condition.toConditionDTO());
                 }
             }
             answerDTO.setConditions(conditionDTOs);
 
-            answerDTO.setHasExportRule(!answer.getExportRules()
-                .isEmpty());
-            answerDTOs.put(
-                Long.valueOf(answerDTOs.size()),
-                answerDTO);
+            answerDTO.setHasExportRule(!answer.getExportRules().isEmpty());
+            answerDTOs.put(Long.valueOf(answerDTOs.size()), answerDTO);
         }
 
         questionDTO.setAnswers(answerDTOs);

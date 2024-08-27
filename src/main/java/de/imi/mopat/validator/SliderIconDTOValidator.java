@@ -38,8 +38,8 @@ public class SliderIconDTOValidator implements Validator {
         SliderIconDTO sliderIconDTO = (SliderIconDTO) target;
 
         try {
-            String icon = sliderIconDTO.getIcon();
-            Integer position = sliderIconDTO.getPosition();
+            String icon = sliderIconDTO.getPredefinedSliderIcon();
+            Integer position = sliderIconDTO.getIconPosition();
 
             if (icon == null) {
                 rejectValue(errors, "sliderIcon.validator.missingIconValue", "icon");
@@ -60,8 +60,8 @@ public class SliderIconDTOValidator implements Validator {
         SliderIconDTO sliderIconDTO = (SliderIconDTO) target;
 
         try {
-            String icon = sliderIconDTO.getIcon();
-            Integer position = sliderIconDTO.getPosition();
+            String icon = sliderIconDTO.getPredefinedSliderIcon();
+            Integer position = sliderIconDTO.getIconPosition();
 
             if (icon == null || icon.isEmpty()) {
                 rejectValue(errors, "sliderIcon.validator.missingIconValue", "icon");
@@ -75,7 +75,7 @@ public class SliderIconDTOValidator implements Validator {
             remainingSliderIconDTOs.remove(sliderIconDTO);
 
             for (SliderIconDTO sliderIconDTOInList : remainingSliderIconDTOs) {
-                if (sliderIconDTOInList.getPosition() == position) {
+                if (sliderIconDTOInList.getIconPosition() == position) {
                     rejectValue(errors, "sliderIcon.validator.positionAlreadyInUse", "position");
                 }
             }

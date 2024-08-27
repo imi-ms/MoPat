@@ -643,27 +643,132 @@
 												>
 											</select>
 										</div> -->
-										<div class="col-12">
-											<label
-												for="numberOfIcons"
-												th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
-                                                    'Number of icons')}"
-											>
-											</label>
 
-											<select
-												id="numberOfIcons"
-												onchange="showIconElements(this);"
-												class="form-control form-select"
-											>
-												<option
-													value="2"
-													selected="selected"
-													>2</option
+										<div class="d-flex align-items-center" id="sliderConfig">
+											<div class="me-3">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="noIconConfig" value="noConfig">
+												<label class="form-check-label" for="noIconConfig">
+													No Config
+												</label>
+											</div>
+											<div class="me-3">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="oldIconConfig" value="oldConfig">
+												<label class="form-check-label" for="oldIconConfig">
+													Use Old Config
+												</label>
+											</div>
+											<div class="">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="newIconConfig" value="newConfig">
+												<label class="form-check-label" for="newIconConfig">
+													Create New Config
+												</label>
+											</div>
+										</div>
+
+										<div id="noConfig">
+
+											<div class="noConfigIconsCount">
+												<label
+													for="numberOfIcons"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+														'Number of icons')}"
 												>
-												<option value="3">3</option>
-												<option value="5">5</option>
+												</label>
+
+												<select
+													id="numberOfIcons"
+													onchange="showIconElements(this);"
+													class="form-control form-select"
+												>
+												<option
+														value="0"
+														>Select Number Of Icons</option
+													>
+													<option
+														value="2"
+
+														>2</option
+													>
+													<option value="3">3</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+										</div>
+										<div id="oldConfig">
+											<label for="oldConfigSelect">Select Config</label>
+
+											<select id="oldConfigSelect" onchange="onSliderConfigChange();" class="form-control form-select" th:field="*{answers[0].sliderIconConfigDTO.id}">
+												<option th:each="config : ${savedConfigs}" th:value="${config.getId()}" th:text="${config.getConfigName()}">
+												</option>
 											</select>
+
+										</div>
+
+										<div id="newConfig">
+											<div class="newConfigName col-12">
+												<label
+													for="configName"
+												>
+												Config Name
+												</label>
+												<input
+												id="configName"
+												class="form-control"
+												type="text"
+												th:field="*{answers[0].sliderIconConfigDTO.configName}"
+												onblur="checkSlider(false)"
+												/>
+											</div>
+
+								</div>
+										</div>
+
+										<div id="configDetail">
+											<div class="newConfigIconsCount">
+												<label
+													for="numberOfIconsNewConfig"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+														'Number of icons')}"
+												>
+												</label>
+
+												<select
+													id="numberOfIconsNewConfig"
+													onchange="showIconElements(this);"
+													th:field="*{answers[0].sliderIconConfigDTO.numberOfIcons}"
+													class="form-control form-select"
+												>
+												<option
+														value="0"
+														>Select Number Of Icons</option
+													>
+													<option
+														value="2"
+														>2</option
+													>
+													<option value="3">3</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+											<div class="newConfigType col-12">
+												<label
+													for="typeOfNewConfig"
+												>
+												Config Type
+												</label>
+												<select
+												id="typeOfNewConfig"
+												onchange=""
+												class="form-control form-select"
+												>
+												<option
+													value="icon"
+													selected="selected"
+													>Icon</option
+												>
+												<option value="image">Image</option>
+											</select>
+										</div>
 										</div>
 
 										<div class="col-12 py-4">
@@ -723,8 +828,8 @@
 											<addVar
 												layout:replace="~{helper/var :: add(
                                                 key='errorSliderIconPosition__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].position')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].iconPosition')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].iconPosition')
                                                         : ''})}"
 											>
 											</addVar>
@@ -733,8 +838,8 @@
 											<addVar
 												layout:replace="~{helper/var :: add(
                                                 key='errorSliderIconIcon__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].icon')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].predefinedSliderIcon')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].predefinedSliderIcon')
                                                         : ''})}"
 											>
 											</addVar>
@@ -1297,9 +1402,13 @@
 
 		var sliderIconValueErrors = [];
 		var sliderIconPositionErrors = [];
-
+		var icons_pre = /*[[${icons}]]*/ null;
 		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
+		var currentConfigIconDTOs = /*[[${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}]]*/ null;
 		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
+
+		var sliderConfigExists = /*[[${questionDTO.answers[0].sliderIconConfigDTO.id}]]*/ null !== null;
+		var iconConfigs = /*[[${savedConfigs}]]*/ null;
 		/*[- Add the error messages from the model to the javascript arrays -]*/
 		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].icons}"]*/
 
@@ -1330,8 +1439,6 @@
 				"bi-hand-thumbs-up"
 			);
 
-			/*[- Check if current DTO already has sliderIcons enabled and trigger the dom manipulation -]*/
-			toggleIconPicker(document.querySelector("#showIcons"), currentIconDTOs);
 			/*[- Check if there are errors in the dom -]*/
 			checkIconErrorsInModel();
 
@@ -1558,6 +1665,9 @@
 			} else {
 				$("#sliderErrors").hide();
 			}
+
+			$("#configError").show();
+
 		}
 
 		function addAnswerDiv() {
@@ -1772,6 +1882,46 @@
 			}
 		});
 
+		$(document).ready(function() {
+
+			if(sliderConfigExists){
+				$('#oldConfig').show();
+				$('#configDetail').show();
+				document.getElementById('oldIconConfig').checked = true;
+				toggleIconPicker(document.querySelector("#showIcons"), currentConfigIconDTOs);
+				oldConfigChecked();
+			}
+			else {
+				document.getElementById('noIconConfig').checked = true;
+				/*[- Check if current DTO already has sliderIcons enabled and trigger the dom manipulation -]*/
+				toggleIconPicker(document.querySelector("#showIcons"), currentIconDTOs);
+			}
+
+			// Listen for changes to any radio button in the group
+			$('input[name="answers[0].sliderIconConfigDTO.configType"]').change(function() {
+				clearIconFields();
+				// Hide all div elements first
+				$('#newConfig').hide();
+				$('#oldConfig').hide();
+				$('#noConfig').hide();
+				$('#configDetail').show();
+
+				// Determine which radio button is checked and show the corresponding div
+				if ($('#noIconConfig').is(':checked')) {
+					$('#noConfig').show();
+					$('#configDetail').hide();
+					noConfigChecked();
+				} else if ($('#oldIconConfig').is(':checked')) {
+					$('#oldConfig').show();
+					oldConfigChecked();
+				} else if ($('#newIconConfig').is(':checked')) {
+					$('#newConfig').show();
+					newConfigChecked();
+				}
+
+			});
+		});
+
 		function handleQuestionTypes(onload) {
 			/*[- Disable all elements -]*/
 			$("#multipleChoice").children().attr("disabled", "disabled");
@@ -1857,9 +2007,12 @@
 					$("#iconField").show();
 					$("#showIconsContainer").show();
 					$("#numberOfIconsWrapper").addClass("d-none");
-					$("#icon-select").addClass("d-none");
 					$("#slider").children().removeAttr("disabled");
 					$("#sliderField").children("legend").siblings().show();
+					$('#newConfig').hide();
+					$('#oldConfig').hide();
+					$('#noConfig').hide();
+					$('#configDetail').hide();
 					break;
 				case "NUMBER_CHECKBOX":
 					/*[- Enable the wysiwyg editor -]*/
@@ -2232,12 +2385,44 @@
 			if (checkbox.checked) {
 				$("#numberOfIconsWrapper").removeClass("d-none");
 				/*[- Toggle the change function of the select element -]*/
-				showIconElements(document.querySelector("#numberOfIcons"), iconArray);
+				if ($('#noIconConfig').is(':checked')) {
+					showIconElements(document.querySelector("#numberOfIcons"), iconArray);
+				}
+				else {
+					showIconElements(document.querySelector("#numberOfIconsNewConfig"), iconArray);
+				}
 			} else {
 				$("#numberOfIconsWrapper").addClass("d-none");
 				clearIconFields();
 			}
 		}
+
+		function oldConfigChecked(){
+			$('#numberOfIconsNewConfig').attr('disabled', 'disabled');
+			$('#typeOfNewConfig').attr('disabled', 'disabled');
+		}
+
+		function newConfigChecked(){
+			showIconElements(document.querySelector("#numberOfIconsNewConfig"));
+			$('#numberOfIconsNewConfig').prop('disabled', false);
+			$('#typeOfNewConfig').prop('disabled', false);
+		}
+
+		function noConfigChecked(){
+			showIconElements(document.querySelector("#numberOfIcons"));
+
+		}
+
+
+		function onSliderConfigChange() {
+        const selectedId = parseInt(document.getElementById('oldConfigSelect').value, 10);
+        const selectedConfig = iconConfigs.find(config => config.id === selectedId);
+
+        if (selectedConfig) {
+            $("#numberOfIconsNewConfig").val(selectedConfig.numberOfIcons);
+			toggleIconPicker(document.querySelector("#showIcons"), selectedConfig.sliderIconDetailDTOS)
+        }
+    	}
 
 		function divideIntoPartitions(number, partitions) {
 			if (partitions <= 1) {
@@ -2263,12 +2448,11 @@
 		function showIconElements(selectElement, iconArray = null) {
 			/*[- Clear currently added input fields from DOM -]*/
 			clearIconFields();
-
 			// Sort icons according to positions
 			if(iconArray != null){
 				iconArray.sort((a, b) => {
-				const posA = a.position;
-				const posB = b.position;
+				const posA = a.iconPosition;
+				const posB = b.iconPosition;
 				if (posA < posB) {
 					return -1;
 				}
@@ -2279,7 +2463,6 @@
 				});
 			}
 			var numberOfIcons = iconArray!= null ? iconArray.length : Number(selectElement.value);
-
 			if (numberOfIcons > 0) {
 				for (let i = 0; i < numberOfIcons; i++) {
 					/*[- Clone the elements from dom -]*/
@@ -2289,17 +2472,17 @@
 					if (iconArray !== null && iconArray.length > 0) {
 						try {
 							/*[- Set the position and store the icon value in a variable -]*/
-							newIconDiv.find("#iconPosition").val(iconArray[i].position);
+							newIconDiv.find("#iconPosition").val(iconArray[i].iconPosition);
 							var startIconValue =
-								iconArray[i].icon !== "" &&
-								iconArray[i].icon !== null &&
-								iconArray[i].icon !== undefined
-									? iconArray[i].icon
+								iconArray[i].predefinedSliderIcon !== "" &&
+								iconArray[i].predefinedSliderIcon !== null &&
+								iconArray[i].predefinedSliderIcon !== undefined
+									? iconArray[i].predefinedSliderIcon
 									: "bi-hand-thumbs-up";
 						} catch (error) {}
 					} else {
 						/*[- Set default icon value -]*/
-						var startIconValue = "bi-hand-thumbs-up";
+						var startIconValue = icons_pre[0];
 						var positions = divideIntoPartitions(100, numberOfIcons);
 						newIconDiv.find("#iconPosition").val(positions[i]);
 					}
@@ -2333,20 +2516,39 @@
 			/*[- Change properties of cloned input fields to match different DTO attributes -]*/
 			var newIconValueInput = newIconDiv.find("#icon");
 			var newIconPositionInput = newIconDiv.find("#iconPosition");
-
 			newIconValueInput.removeAttr("disabled");
-			newIconValueInput.attr("name", "answers[0].icons[" + index + "].icon");
 			newIconPositionInput.removeAttr("disabled");
-			newIconPositionInput.attr(
-				"name",
-				"answers[0].icons[" + index + "].position"
-			);
-			fillIconSteps(newIconPositionInput, numberOfIcons);
 
-			newIconDiv.removeAttr("id");
-			newIconDiv.attr("id", "iconRow_" + index);
+			if(!$('#oldIconConfig').is(':checked') && !$('#newIconConfig').is(':checked')){
+			newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconPositionInput.removeAttr("disabled");
+				newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconPositionInput.removeAttr("disabled");
+				newIconPositionInput.attr(
+					"name",
+					"answers[0].icons[" + index + "].iconPosition"
+				);
+				fillIconSteps(newIconPositionInput, numberOfIcons);
 
-			return newIconDiv;
+				newIconDiv.removeAttr("id");
+				newIconDiv.attr("id", "iconRow_" + index);
+
+				return newIconDiv;
+			}
+			else {
+				newIconValueInput.attr("name", "answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].predefinedSliderIcon");
+				newIconPositionInput.attr(
+					"name",
+					"answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].iconPosition"
+				);
+				fillIconSteps(newIconPositionInput, numberOfIcons);
+
+				newIconDiv.removeAttr("id");
+				newIconDiv.attr("id", "iconRow_" + index);
+
+				return newIconDiv;
+			}
 		}
 
 		/*[-
@@ -2442,11 +2644,11 @@
         -]*/
 		async function toggleIconpickerElements(parentElement, startValue) {
 			//Init iconpicker for slider
-			const response = await fetch("/js/iconsets/bootstrap_subset.json");
-			const result = await response.json();
+			// const response = await fetch("/js/iconsets/bootstrap_subset.json");
+			// const result = await response.json();
 			const element = parentElement.find(".iconpicker").get(0);
 			const iconpicker = new Iconpicker(element, {
-				icons: result,
+				icons: icons_pre,
 				showSelectedIn: $(parentElement).find(".selected-icon").get(0),
 				defaultValue: startValue,
 			});
@@ -2507,7 +2709,7 @@
 			sliderIconRow.find("div[id*='sliderIconError']").remove();
 
 			var positionInputVal = sliderIconRow
-				.find("input[name^='answers[0].icons'][name$='.position']")
+				.find("input[name^='answers[0].icons'][name$='.iconPosition']")
 				.val();
 
 			var currentIconPosition =
@@ -2516,7 +2718,7 @@
 			/*[- Handle onblur events by validating current dom elements; Validation is the same as the Spring bean -]*/
 			if (currentIconPosition !== undefined) {
 				let positionValues = [];
-				$("select[name^='answers[0].icons'][name$='.position']").each(function (
+				$("select[name^='answers[0].icons'][name$='.iconPosition']").each(function (
 					i,
 					position
 				) {
@@ -2726,7 +2928,7 @@
 		$(element).find('ul').each(function(ulIndex, ulElement) {
 			var absoluteDivRect = ulElement.getBoundingClientRect();
 			var $ulElement = $(ulElement);
-			
+
 			if (absoluteDivRect.right > viewportWidth) {
 				$ulElement.css('left', 'auto')
 				$ulElement.css('right', '0')
@@ -2738,10 +2940,10 @@
 		});
 		});
 
-		
-		
 
-		
-		});		
+
+
+
+		});
 	</script>
 </th:block>

@@ -27,8 +27,9 @@ public class SliderIcon {
     private Long id;
     @Column(name = "position")
     private Integer position = null;
-    @Column(name = "icon")
-    private String icon = null;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "icon_id", referencedColumnName = "id")
+    private PredefinedSliderIcon predefinedSliderIcon;
     @NotNull(message = "{response.answer.notNull}")
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
@@ -40,7 +41,7 @@ public class SliderIcon {
         // JUnit tests
     }
 
-    public SliderIcon(final Integer position, final String icon, final SliderAnswer answer) {
+    public SliderIcon(final Integer position, final PredefinedSliderIcon icon, final SliderAnswer answer) {
         setPosition(position);
         setIcon(icon);
         setAnswer(answer);
@@ -71,15 +72,15 @@ public class SliderIcon {
     /**
      * @return string for icon
      */
-    public String getIcon() {
-        return icon;
+    public PredefinedSliderIcon getIcon() {
+        return predefinedSliderIcon;
     }
 
     /**
      * @param icon string for icon
      */
-    public void setIcon(final String icon) {
-        this.icon = icon;
+    public void setIcon(final PredefinedSliderIcon icon) {
+        this.predefinedSliderIcon = icon;
     }
 
     /**
