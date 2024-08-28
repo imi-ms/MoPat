@@ -1,7 +1,7 @@
 name: Mirror and run GitLab CI
 
 env:
-    GITLAB_USERNAME: ${{ GITLAB_USER }}
+    GITLAB_USERNAME: ${{ secrets.GITLAB_USER }}
     #https://imigitlab.uni-muenster.de/<namespace>/<repository>/edit
     GITLAB_PROJECT_ID: "587"
     NAMESPACE: "mopat2"
