@@ -820,7 +820,7 @@
                 <configuration>
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
                     <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                    <verbose>false</verbose>
+                    <verbose>true</verbose>
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.build.version$</includeOnlyProperty>
                         <includeOnlyProperty>git.branch</includeOnlyProperty>
