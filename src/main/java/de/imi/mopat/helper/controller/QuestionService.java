@@ -43,6 +43,9 @@ public class QuestionService {
     @Autowired
     private ConfigurationDao configurationDao;
 
+    @Autowired
+    private SliderIconConfigService sliderIconConfigService;
+
 
     /**
      * Converts this {@link Question} object to an {@link QuestionDTO} object.
@@ -118,23 +121,11 @@ public class QuestionService {
                 answerDTO.setShowValueOnButton(((SliderAnswer) answer).getShowValueOnButton());
 
                 answerDTO.setShowIcons(((SliderAnswer) answer).getShowIcons());
-                if(((SliderAnswer) answer).getSliderIconConfig() != null){
-                    SliderIconConfigDTO sliderIconConfigDTO = new SliderIconConfigDTO(
-                        ((SliderAnswer) answer).getSliderIconConfig().getId(),
-                        ((SliderAnswer) answer).getSliderIconConfig().getNumberOfIcons(),
-                        ((SliderAnswer) answer).getSliderIconConfig().getConfigName());
-                    List<SliderIconDetailDTO> sliderIconDetailDTOS = new ArrayList<>();
-                    for(SliderIconDetail sliderIcon : ((SliderAnswer) answer).getSliderIconConfig().getIcons()){
-                        sliderIconDetailDTOS.add(new SliderIconDetailDTO(
-                            sliderIcon.getPredefinedSliderIcon().getId(),
-                            sliderIcon.getIconPosition(),
-                            sliderIcon.getSliderIconConfig().getId(),
-                            sliderIcon.getPredefinedSliderIcon().getIconName()
-                        ));
-                    }
-                    sliderIconConfigDTO.setSliderIconDetailDTOS(sliderIconDetailDTOS);
-                    answerDTO.setSliderIconConfigDTO(sliderIconConfigDTO);
 
+                if(((SliderAnswer) answer).getSliderIconConfig() != null){
+                    SliderIconConfigDTO sliderIconConfigDTO = sliderIconConfigService.toSliderIconConfigDTO(((SliderAnswer) answer).getSliderIconConfig());
+                    List<SliderIconDetailDTO> sliderIconDetailDTOS = new ArrayList<>();
+                    answerDTO.setSliderIconConfigDTO(sliderIconConfigDTO);
                 }
                 else{
                     List < SliderIconDTO > iconList = new ArrayList<>();

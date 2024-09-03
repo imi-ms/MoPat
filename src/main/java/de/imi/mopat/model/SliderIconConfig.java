@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +36,7 @@ public class SliderIconConfig {
     @Column(name = "config_name", unique = true)
     private String configName;
 
-    @OneToMany(mappedBy = "sliderIconConfig", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(mappedBy = "sliderIconConfig", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<SliderIconDetail> icons = new ArrayList<>();
 
     public SliderIconConfig() {

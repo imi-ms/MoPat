@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Map.Entry;
 import javax.imageio.ImageIO;
 import java.util.regex.Pattern;
 
@@ -44,9 +45,12 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 /**
  *
@@ -280,7 +284,9 @@ public class QuestionController {
      */
     @PostMapping(value = "/question/edit")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String editQuestion(@RequestParam final String action,
+    public String editQuestion(
+        MultipartHttpServletRequest multipartHttpServletRequest,
+        @RequestParam final String action,
         @ModelAttribute("questionDTO") final QuestionDTO questionDTO, final BindingResult result,
         final Model model, final HttpServletRequest request) {
         if (action.equalsIgnoreCase("cancel")) {
@@ -348,6 +354,13 @@ public class QuestionController {
             } else {
                 questionDTO.setHasScores(false);
             }
+            List<SliderIconConfig> sliderIconConfigs = sliderIconConfigDao.getAllElements();
+            List<SliderIconConfigDTO> sliderIconConfigDTOS = new ArrayList<>();
+            for(SliderIconConfig sliderIconConfig: sliderIconConfigs){
+                sliderIconConfigDTOS.add(sliderIconConfigService.toSliderIconConfigDTO(sliderIconConfig));
+            }
+            model.addAttribute("savedConfigs",sliderIconConfigDTOS);
+            model.addAttribute("icons", predefinedSliderIconDao.getAllIcons());
             model.addAttribute("questionnaireId", questionDTO.getQuestionnaireId());
             model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
             model.addAttribute("imagePathBodyPartMap", BodyPart.getImagePathBodyPartMap());
@@ -717,7 +730,6 @@ public class QuestionController {
                 }
 
                 SliderIconConfig sliderIconConfig;
-                //update case
                 if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "oldConfig")){
                     if(answerDTO.getSliderIconConfigDTO().getId() != null){
                         sliderIconConfig = sliderIconConfigDao.getElementById(answerDTO.getSliderIconConfigDTO().getId());
@@ -725,19 +737,7 @@ public class QuestionController {
                     }
                 }
                 else if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "newConfig")){
-                    if(!Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigName(), "")) {
-                        sliderIconConfig = new SliderIconConfig(answerDTO.getSliderIconConfigDTO().getNumberOfIcons(),
-                            answerDTO.getSliderIconConfigDTO().getConfigName());
-                        List<SliderIconDetail> sliderIconDetails = new ArrayList<>();
-                        for(SliderIconDetailDTO sliderIconDetailDTO: answerDTO.getSliderIconConfigDTO().getSliderIconDetailDTOS()){
-                            SliderIconDetail sliderIconDetail = new SliderIconDetail(sliderIconDetailDTO.getIconPosition());
-                            sliderIconDetail.setPredefinedSliderIcon(predefinedSliderIconDao.getIconByName(sliderIconDetailDTO.getPredefinedSliderIcon()));
-                            sliderIconDetail.setSliderIconConfig(sliderIconConfig);
-                            sliderIconDetails.add(sliderIconDetail);
-                        }
-                        sliderIconConfig.setIcons(sliderIconDetails);
-                        sliderAnswer.setSliderIconConfig(sliderIconConfig);
-                    }
+                    sliderAnswer.setSliderIconConfig(sliderIconConfigService.newSliderIconConfig(answerDTO.getSliderIconConfigDTO(), questionDTO, question));
                 }
                 else if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "noConfig")){
                     Set<SliderIcon> iconSet = new HashSet<>();

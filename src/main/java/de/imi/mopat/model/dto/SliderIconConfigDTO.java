@@ -13,6 +13,8 @@ public class SliderIconConfigDTO {
     private List<SliderIconDetailDTO> sliderIconDetailDTOS; // Simplified to IDs for ease and data size concerns
     private String configType;
 
+    private String iconType;
+
     public SliderIconConfigDTO() {
     }
 
@@ -63,5 +65,13 @@ public class SliderIconConfigDTO {
 
     public void setConfigType(String configType) {
         this.configType = configType;
+    }
+
+    public String getIconType() {
+        return iconType;
+    }
+
+    public void setIconType(String iconType) {
+        this.iconType = iconType;
     }
 }

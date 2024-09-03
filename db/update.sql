@@ -80,13 +80,15 @@ DEFAULT CHARSET=utf8mb3
 COLLATE=utf8mb3_general_ci;
 
 
+-- mopat.slider_icon_config definition
+
 CREATE TABLE `slider_icon_config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `number_of_icons` int(11) DEFAULT NULL,
-  `config_name` varchar(255) DEFAULT NULL,
+  `config_name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slider_icon_config_name_unique` (`config_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3057 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 
 CREATE TABLE mopat.slider_icon_detail (

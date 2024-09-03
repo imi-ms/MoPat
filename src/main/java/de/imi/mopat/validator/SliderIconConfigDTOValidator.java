@@ -40,6 +40,12 @@ public class SliderIconConfigDTOValidator implements Validator {
                     messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotNull",
                         new Object[]{}, LocaleContextHolder.getLocale()));
             }
+
+            if(sliderIconConfigDao.getElementByName(sliderIconConfigDTO.getConfigName())!= null){
+                errors.rejectValue("configName", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotUnique",
+                        new Object[]{}, LocaleContextHolder.getLocale()));
+            }
         } catch (Exception ex) {
 
         }

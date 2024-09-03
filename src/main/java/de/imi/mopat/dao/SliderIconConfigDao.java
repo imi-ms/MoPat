@@ -7,4 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public interface SliderIconConfigDao extends MoPatDao<SliderIconConfig> {
 
+    public SliderIconConfig getElementByName(String name);
+
 }

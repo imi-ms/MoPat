@@ -1,12 +1,17 @@
 package de.imi.mopat.model.dto;
 
+import java.awt.Image;
+import org.springframework.web.multipart.MultipartFile;
+
 public class SliderIconDetailDTO {
 
     private Long id;
     private Integer iconPosition;
     private Long sliderIconConfigId;
     private String predefinedSliderIcon;
-    private String userIcon;
+    private MultipartFile userIcon;
+
+    private String userIconBase64;
 
     public SliderIconDetailDTO() {
     }
@@ -19,7 +24,11 @@ public class SliderIconDetailDTO {
         this.predefinedSliderIcon=predefinedSliderIcon;
     }
 
-
+    public SliderIconDetailDTO(Long id, Integer iconPosition, Long sliderIconConfigId) {
+        this.id = id;
+        this.iconPosition = iconPosition;
+        this.sliderIconConfigId = sliderIconConfigId;
+    }
 
     // Getters and setters
     public Long getId() {
@@ -54,11 +63,20 @@ public class SliderIconDetailDTO {
         this.predefinedSliderIcon = predefinedSliderIcon;
     }
 
-    public String getUserSliderIcon() {
+    public MultipartFile getUserIcon() {
         return userIcon;
     }
 
-    public void setUserSliderIcon(String userSliderIcon) {
-        this.userIcon = userSliderIcon;
+    public void setUserIcon(MultipartFile userIcon) {
+        this.userIcon = userIcon;
+    }
+
+
+    public String getUserIconBase64() {
+        return userIconBase64;
+    }
+
+    public void setUserIconBase64(String userIconBase64) {
+        this.userIconBase64 = userIconBase64;
     }
 }

@@ -108,8 +108,10 @@ public class SliderAnswerDTOValidator implements Validator {
             if (Objects.equals(sliderAnswer.getSliderIconConfigDTO().getConfigType(), "newConfig")
                 || Objects.equals(sliderAnswer.getSliderIconConfigDTO().getConfigType(),
                 "oldConfig")) {
-
+                errors.pushNestedPath("sliderIconConfigDTO");
                 sliderIconConfigDTOValidator.validate(sliderAnswer.getSliderIconConfigDTO(), errors);
+                errors.popNestedPath();
+
 
             } else if (sliderAnswer.getShowIcons() != null && sliderAnswer.getShowIcons()) {
                 for (int i = 0; i < sliderAnswer.getIcons().size(); i++) {

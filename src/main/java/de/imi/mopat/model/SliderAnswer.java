@@ -63,7 +63,7 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
     @OneToMany(mappedBy = "answer", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private Set<SliderIcon> icons = new HashSet<>();
 
-    @ManyToOne(cascade = { CascadeType.MERGE })
+    @ManyToOne
     @JoinColumn(name = "slider_icon_config_id", referencedColumnName = "id")
     private SliderIconConfig sliderIconConfig;
 

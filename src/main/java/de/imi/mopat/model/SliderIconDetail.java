@@ -36,7 +36,7 @@ public class SliderIconDetail {
     @JoinColumn(name = "predefined_slider_icon_id", referencedColumnName = "id")
     private PredefinedSliderIcon predefinedSliderIcon;
 
-    @ManyToOne
+    @ManyToOne(cascade = { CascadeType.ALL })
     @JoinColumn(name = "user_slider_icon_id", referencedColumnName = "id")
     private UserSliderIcon userSliderIcon;
 
