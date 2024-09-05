@@ -1,6 +1,6 @@
 # Mobile Patient Survey (MoPat)
 MoPat is a web-based platform designed to transform conventional paper-based questionnaires into a digital format. The application is universally usable across a range of devices, including desktop computers, tablets, and smartphones. Thanks to its full compatibility with all major operating systems such as Windows, MacOS, Linux, iOS, and Android via the web browser, MoPat offers users the flexibility to access the questionnaire service on any device with network access. By automatically exporting the questionnaire results into different systems, MoPat can integrate with other systems. <br />
-**DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes only.** 
+**DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes.** 
 
 Currently MoPat supports the automatic export to the following data formats or systems: 
 
@@ -30,9 +30,9 @@ You can override the standard MoPat configuration by creating a file named `conf
 ```conf
 de.imi.mopat.datasource.user=
 de.imi.mopat.datasource.password=
-de.imi.mopat.datasource.mopatDataSource.jdbc-url=<jdbc:mysql://<SQL-URL>/moPat?>autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
-de.imi.mopat.datasource.mopat_userDataSource.jdbc-url=jdbc:mysql://<SQL-URL>/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
-de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url=jdbc:mysql://<SQL-URL>/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+de.imi.mopat.datasource.mopatDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+de.imi.mopat.datasource.mopat_userDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
 ```
 It is also possible to change the path of the properties file. However this is only possible by modifying the `mopat.properties` in the repository and building the application yourself. 
 
@@ -40,12 +40,17 @@ It is also possible to change the path of the properties file. However this is o
 We provide scripts to ease the initialization of the database. To use them, navigate to the db folder in the project directory.<br/>
 Run the script installationInit to set up your database schema:
 ```bash
-mysql -u mopat -p > installationInit.sql
+mysql -u root -p < installationInit.sql
 ``` 
 Run the script installationInitTest to populate a test database with initial test data. Unit tests rely on this database:
 
 ```bash
-mysql -u mopat -p > installationInitTest.sql
+mysql -u root -p < installationInitTest.sql
+```
+
+Since `<` is a reserverd symbol for powershell, if you want to run the scripts on Windows you could instead use the following command: 
+```powershell
+Get-Content path/to/installationInit.sql | mysql -u root -p
 ```
 
 #### Java
@@ -145,14 +150,15 @@ MoPat makes use of several awesome open source projects:
 - [DataTables](https://github.com/DataTables/DataTables)
 
 ## Credits
-MoPat was developed by the Institute of Medical Informatics, University of Münster<br/>
+MoPat was developed by the Medical Data Integration Center (MeDIC), Institute of Medical Informatics, University of Münster
+
+Medical Data Integration Center (MeDIC)<br/>
+Institute of Medical Informatics<br/>
+University of Münster<br/>
 Albert-Schweitzer-Campus 1, Gebäude A11<br/>
 48149 Münster<br/>
-Tel.: +49 251 83 55262<br/>
-Fax: +49 251 83 52259<br/>
-imi@uni-muenster.de<br/>
-
-
+medic@uni-muenster.de<br/>
+0251 / 83 – 5 57 22
 
 ## Contact
 **E-Mail**: mopat@uni-muenster.de <br/>
