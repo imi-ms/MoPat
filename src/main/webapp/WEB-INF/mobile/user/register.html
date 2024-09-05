@@ -222,7 +222,8 @@
 						<div class="col-8">
 							<i>
 								<th:block
-									th:text="${messages.get(#locale, 'user.label.pin.moreInfo', 'This feature allows users to quickly log back into MoPat, by only providing a short pin, instead of requiring a complete re-login to start a new survey.')}"
+									th:with="message=${messages.get(#locale, 'user.label.pin.moreInfo', 'This function allows you to quickly log back in to MoPat. After activating the pin, you can quickly start a new survey. It is not necessary to log in again. <br /> <b>Security note</b>: If the pin is entered incorrectly three times, an account is automatically logged out. Otherwise, this function remains active until midnight unless you log out manually.')}"
+									th:utext="${message}"
 								></th:block>
 								
 								<div id="pin-requirements" class="d-none">
