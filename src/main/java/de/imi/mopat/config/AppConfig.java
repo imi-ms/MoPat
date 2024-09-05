@@ -172,12 +172,21 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/css/**").addResourceLocations("/css/").setCachePeriod(604800);
-        registry.addResourceHandler("/js/**").addResourceLocations("/js/").setCachePeriod(604800);
-        registry.addResourceHandler("/images/**").addResourceLocations("/images/")
+        registry.addResourceHandler("/css/**")
+            .addResourceLocations("/css/")
             .setCachePeriod(604800);
-        registry.addResourceHandler("/configuration/**").addResourceLocations("/configuration/")
+        registry.addResourceHandler("/js/**")
+            .addResourceLocations("/js/")
+            .setCachePeriod(604800);
+        registry.addResourceHandler("/images/**")
+            .addResourceLocations("/images/")
+            .setCachePeriod(604800);
+        registry.addResourceHandler("/configuration/**")
+            .addResourceLocations("/configuration/")
             .setCachePeriod(0);
+        registry.addResourceHandler("/conf/**")
+            .addResourceLocations("/conf/")
+            .setCachePeriod(604800);
 
     }
 
