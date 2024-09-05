@@ -1,6 +1,7 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.helper.controller.GitRepositoryMetadataHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,9 @@ public class AdminController {
     private ConfigurationDao configurationDao;
 
 
+    @Autowired
+    private GitRepositoryMetadataHandler gitRepositoryMetadataHandler;
+
     /**
      * @param model The model, which holds the information for the view.
      * @return The <i>/admin/index</i> website.
@@ -30,6 +34,7 @@ public class AdminController {
     public String showAdmin(final Model model) {
         //Get the default language of the application from the configuration
         model.addAttribute("defaultLanguage", configurationDao.getDefaultLocale());
+        model.addAttribute("gitRepositoryMetadata", gitRepositoryMetadataHandler.getGitRepositoryMetadata());
         return "admin/index";
     }
 }
