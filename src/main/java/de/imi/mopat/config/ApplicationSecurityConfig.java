@@ -1,7 +1,17 @@
 package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import de.imi.mopat.auth.*;
+import de.imi.mopat.helper.controller.NoOpAclCache;
+import de.imi.mopat.auth.CustomAuthenticationFailureHandler;
+import de.imi.mopat.auth.CustomPostAuthenticationChecks;
+import de.imi.mopat.auth.CustomPreAuthenticationChecks;
+import de.imi.mopat.auth.LDAPUserDetailsService;
+import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
+import de.imi.mopat.auth.MoPatUserDetailService;
+import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
+import de.imi.mopat.auth.RoleBasedAuthenticationSuccessHandler;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
 import org.apache.groovy.util.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -14,7 +24,6 @@ import org.springframework.security.acls.AclPermissionEvaluator;
 import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
 import org.springframework.security.acls.domain.ConsoleAuditLogger;
 import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
-import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
 import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.acls.model.AclCache;
@@ -29,9 +38,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import java.beans.PropertyVetoException;
-import java.util.Properties;
 
 /**
  * Configuration for the Spring security settings of the Servlet application
@@ -140,8 +146,7 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public AclCache aclCache() {
-        return new SpringCacheBasedAclCache(cacheManager.getCache("aclCache"),
-            permissionGrantingStrategy(), aclAuthorizationStrategy());
+        return new NoOpAclCache("aclCache");
     }
 
     /**
@@ -300,31 +305,42 @@ public class ApplicationSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(
-                authz -> authz.requestMatchers(new AntPathRequestMatcher("/js/**"),
-                        new AntPathRequestMatcher("/css/**"), new AntPathRequestMatcher("/images/**"))
-                    .permitAll().requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
-                    .requestMatchers(new AntPathRequestMatcher("/mobile/user/password"),
-                        new AntPathRequestMatcher("/mobile/user/passwordreset"),
-                        new AntPathRequestMatcher("/mobile/user/register"),
-                        new AntPathRequestMatcher("/mobile/survey/test"),
-                        new AntPathRequestMatcher("/mobile/survey/questionnairetest/**"),
-                        new AntPathRequestMatcher("/mobile/survey/encounter"),
-                        new AntPathRequestMatcher("/mobile/survey/schedule"),
-                        new AntPathRequestMatcher("mobile/survey/questionnaireScheduled"),
-                        new AntPathRequestMatcher("/mobile/survey/scores"),
-                        new AntPathRequestMatcher("/mobile/survey/finishQuestionnaire"),
-                        new AntPathRequestMatcher("/mobile/survey/pseudonym"),
-                        new AntPathRequestMatcher("/error/maintenance"),
-                        new AntPathRequestMatcher("/mobile/user/login"),
-                        new AntPathRequestMatcher("/login")).permitAll().anyRequest().authenticated())
-            .formLogin(form -> form.loginPage("/mobile/user/login")
-                .loginProcessingUrl("/mobile/user/login")
-                .failureHandler(customAuthenticationFailureHandler())
-                .successHandler(redirectRoleStrategy())).logout(
+                authz -> authz.requestMatchers(
+                    new AntPathRequestMatcher("/js/**"),
+                    new AntPathRequestMatcher("/css/**"),
+                    new AntPathRequestMatcher("/images/**"),
+                    new AntPathRequestMatcher("/conf/**")
+                ).permitAll().requestMatchers(
+                    new AntPathRequestMatcher("/favicon.ico")
+                ).permitAll()
+                .requestMatchers(
+                    new AntPathRequestMatcher("/mobile/user/password"),
+                    new AntPathRequestMatcher("/mobile/user/passwordreset"),
+                    new AntPathRequestMatcher("/mobile/user/register"),
+                    new AntPathRequestMatcher("/mobile/survey/test"),
+                    new AntPathRequestMatcher("/mobile/survey/questionnairetest/**"),
+                    new AntPathRequestMatcher("/mobile/survey/encounter"),
+                    new AntPathRequestMatcher("/mobile/survey/schedule"),
+                    new AntPathRequestMatcher("/mobile/survey/questionnaireScheduled"),
+                    new AntPathRequestMatcher("/mobile/survey/scores"),
+                    new AntPathRequestMatcher("/mobile/survey/finishQuestionnaire"),
+                    new AntPathRequestMatcher("/mobile/survey/pseudonym"),
+                    new AntPathRequestMatcher("/error/maintenance"),
+                    new AntPathRequestMatcher("/mobile/user/login"),
+                    new AntPathRequestMatcher("/login")
+                ).permitAll().anyRequest().authenticated())
+            .formLogin(
+                form -> form.loginPage("/mobile/user/login")
+                    .loginProcessingUrl("/mobile/user/login")
+                    .failureHandler(customAuthenticationFailureHandler())
+                    .successHandler(redirectRoleStrategy())
+            ).logout(
                 logout -> logout.logoutUrl("/j_spring_security_logout")
-                    .logoutSuccessUrl("/mobile/user/login")).exceptionHandling(
-                exceptionHandler -> exceptionHandler.accessDeniedPage("/error/accessdenied"))
-            .authenticationManager(authenticationManager(http)).csrf(authz -> authz.disable());
+                    .logoutSuccessUrl("/mobile/user/login")
+            ).exceptionHandling(
+                exceptionHandler -> exceptionHandler.accessDeniedPage("/error/accessdenied")
+            ).authenticationManager(authenticationManager(http))
+            .csrf(authz -> authz.disable());
         return http.build();
     }
 
