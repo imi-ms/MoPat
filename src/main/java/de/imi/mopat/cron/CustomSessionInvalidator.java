@@ -55,8 +55,6 @@ public class CustomSessionInvalidator {
                  * between 25 - 30 minutes
                  */
                 if (diffInMinutes >= 25) {
-                    LOGGER.info("Session {} has been idle for {} minutes. Handling invalidation.",
-                        session.getSessionId(), diffInMinutes);
                     handleInvalidation(principal);
                 }
             }
@@ -75,11 +73,13 @@ public class CustomSessionInvalidator {
             User dbUser = userDao.loadUserByUsername(principalUser.getUsername());
             if (dbUser.getUsePin()) {
                 if (!pinAuthorizationDao.isPinAuthActivatedForUser(dbUser)) {
-                    LOGGER.info("Pin Auth was activated, therefore the flag was set");
+                    LOGGER.info("Session has been idle for too long. Pin Auth was activated for user {}, but not active, therefore the flag was set",
+                        dbUser.getUsername());
                     pinAuthorizationService.resetPinAuthForUser(dbUser);
                 }
             } else {
-                LOGGER.info("Pin Auth was not activated, therefore the session was invalidated");
+                LOGGER.info("Session has been idle for too long. Pin Auth was not activated for user {}, therefore the session was invalidated",
+                    dbUser.getUsername());
                 for (SessionInformation session : sessionRegistry.getAllSessions(principal,
                     false)) {
                     session.expireNow();
