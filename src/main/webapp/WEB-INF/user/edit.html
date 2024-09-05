@@ -53,6 +53,33 @@
 
 					/>
 				</div>
+				<div class="form-group">
+					<label 
+						layout:replace="~{fragments/forms :: label(
+							for='pin', required='false', 
+							text=${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin')})}"
+					></label>
+					<div class="d-flex justify-content-between align-content-center">
+						<div class="form-check form-switch d-flex align-items-center">
+							<input
+								class="form-check-input form-control me-3"
+								th:field="*{usePin}"
+								id="usePin"
+								onchange="switchPinInput(this);"
+								role="switch"
+								type="checkbox"
+							/>
+						</div>
+						<input
+							layout:replace="~{fragments/forms :: plainInput(
+							name='pin', clazz='form-control', type='password',
+							id='pin', showErrors=true)}"
+						/>
+					</div>
+					<error 
+						layout:replace="~{fragments/forms :: errorField(path='pin')}"
+					/>
+				</div>
 				<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
 					<div class="form-group">
 						<input
@@ -103,5 +130,24 @@
 				</button>
 			</form>
 		</div>
+	</th:block>
+	<th:block layout:fragment="scriptContainer">
+		<script>
+			$(document).ready(function () {
+				switchPinInput($("#usePin"));
+			});
+
+			function switchPinInput(element) {
+			var isPinActive = $(element).get(0).checked;
+
+			if (isPinActive) {
+				// Activate input
+				$("#pin").removeAttr("disabled");
+			} else {
+				// Deactivate input
+				$("#pin").attr("disabled", "disabled");
+			}
+		}
+		</script>
 	</th:block>
 </th:block>

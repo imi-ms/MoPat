@@ -3,6 +3,7 @@ package de.imi.mopat.model.user;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
@@ -369,6 +370,32 @@ public class UserTest {
     @Test
     public void testIsCredentialsNonExpired() {
         assertTrue("isCredentialsNonExpired was not true", testUser.isCredentialsNonExpired());
+    }
+
+    @Test
+    public void testGetAndSetPin() {
+        String testPin = null;
+        testUser.setPin(testPin);
+
+        assertNull("It was not possible to set null as the pin", testUser.getPin());
+
+        int number = random.nextInt(999999);
+
+        testPin = String.format("%06d", number);
+        testUser.setPin(testPin);
+        assertEquals("The getting Password was not the expected one", testPin,
+            testUser.getPin());
+    }
+
+    @Test
+    public void testAndGetPinFlag() {
+        testUser.setUsePin(false);
+
+        assertFalse("The pin was not false", testUser.getUsePin());
+
+        testUser.setUsePin(true);
+
+        assertTrue("The pin was not true", testUser.getUsePin());
     }
 
     /**
