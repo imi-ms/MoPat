@@ -59,25 +59,6 @@
                         </div>
                         <div class="modal-body">
                             <table>
-                                <tr>
-                                    <td class="w-25">
-										[[${messages.get(#locale, 'admin.information.cache',
-                                        'Timestamp of last cache reset')}]]:
-									</td>
-                                    <td class="w-25">[[${cacheTimestamp}]]</td>
-                                    <td class="w-25">
-                                        <form
-                                            method="POST"
-                                            action="clearCache"
-                                        >
-                                            <button
-                                                class="btn btn-primary"
-                                                type="submit"
-                                                th:text="${messages.get(#locale, 'admin.information.cache.action', 'Clear cache')}"
-                                            ></button>
-                                        </form>
-                                    </td>
-                                </tr>
                             </table>
                         </div>
                     </div>
