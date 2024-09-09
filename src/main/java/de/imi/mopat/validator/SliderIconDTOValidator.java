@@ -42,11 +42,11 @@ public class SliderIconDTOValidator implements Validator {
             Integer position = sliderIconDTO.getIconPosition();
 
             if (icon == null) {
-                rejectValue(errors, "sliderIcon.validator.missingIconValue", "icon");
+                rejectValue(errors, "sliderIcon.validator.missingIconValue", "predefinedSliderIcon");
             }
 
             if (position == null) {
-                rejectValue(errors, "sliderIcon.validator.missingPosition", "position");
+                rejectValue(errors, "sliderIcon.validator.missingPosition", "iconPosition");
             }
         } catch (Exception ex) {
 

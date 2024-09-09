@@ -324,27 +324,61 @@ function Question() {
                  * Creates 101 div elements with the same size as the slider thumb
                  * As all divs are inside a flexbox the ones without content will shrink in size
                  */
-                
-                for (let i = 0; i < 101; i++) {
-                    let iconContainer = $("<div/>", {
-                        "class": "d-flex justify-content-center align-items-center iconContainer"
-                    }); 
-
-                    // Checks all icon elements and if the position matches the index of the current div appends the icon
-                    this.answers[0].icons.forEach((icon) => {
-
-                        if (icon.position === i) {
-                            let iconContent = $("<i/>", {
-                                "class": "bi"
-                            })
-                            iconContent.addClass(icon.icon); 
-
-                            iconContainer.append(iconContent); 
-                        }
-                    }); 
-
-                    iconDiv.append(iconContainer); 
+                if(this.answers[0].sliderIconConfigDTO != null){
+                    for (let i = 0; i < 101; i++) {
+                        let iconContainer = $("<div/>", {
+                            "class": "d-flex justify-content-center align-items-center iconContainer"
+                        }); 
+    
+                        // Checks all icon elements and if the position matches the index of the current div appends the icon
+                        this.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS.forEach((icon) => {
+                            if(icon.predefinedSliderIcon != null){
+                                if (icon.iconPosition === i) {
+                                    let iconContent = $("<i/>", {
+                                        "class": "bi"
+                                    })
+                                    iconContent.addClass(icon.predefinedSliderIcon); 
+        
+                                    iconContainer.append(iconContent); 
+                                }
+                            } else {
+                                if (icon.iconPosition === i) {
+                                    let iconContent = $("<img/>", {
+                                        "src": icon.userIconBase64
+                                    })
+                                    iconContent.addClass(icon.predefinedSliderIcon); 
+        
+                                    iconContainer.append(iconContent); 
+                                }
+                            }
+                        }); 
+    
+                        iconDiv.append(iconContainer); 
+                    }
                 }
+                else{
+                    for (let i = 0; i < 101; i++) {
+                        let iconContainer = $("<div/>", {
+                            "class": "d-flex justify-content-center align-items-center iconContainer"
+                        }); 
+    
+                        // Checks all icon elements and if the position matches the index of the current div appends the icon
+                        this.answers[0].icons.forEach((icon) => {
+                            if (icon.iconPosition === i) {
+                                let iconContent = $("<i/>", {
+                                    "class": "bi"
+                                })
+                                iconContent.addClass(icon.predefinedSliderIcon); 
+    
+                                iconContainer.append(iconContent); 
+                            }
+                        }); 
+    
+                        iconDiv.append(iconContainer); 
+                    }
+                }
+                
+                
 
                 //Spacer between the icon row and the input slider; To have space for the value div
                 var spacerDiv = $("<div/>", {

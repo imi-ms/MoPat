@@ -774,6 +774,10 @@
 									<!--/* This will never be shown. Instead it is cloned by Javascript and inserted into "iconSelectionWrapper" */-->
 									<div class="d-none">
 										<div
+										id="sliderIconError"
+										class="alert alert-danger"
+										></div>
+										<div
 											class="row"
 											id="iconSelectionCloningWrapper"
 										>
@@ -802,10 +806,6 @@
 												</div>
 											</div>
 										</div>
-										<div
-											id="sliderIconError"
-											class="alert alert-danger"
-										></div>
 										<!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
 										<th:block
 											th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].icons}"
@@ -873,6 +873,20 @@
 												</div>
 											</div>
 										</div>
+										<!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
+										<th:block
+											th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}"
+										>
+
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='errorSliderIconUserIcon__${iconDTOIndex.index}__',
+                                                value=${#fields.hasErrors('answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[__${iconDTOIndex.index}__].userIcon')
+                                                        ? #fields.errors('answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[__${iconDTOIndex.index}__].userIcon')
+                                                        : ''})}"
+											>
+											</addVar>
+										</th:block>
 									</div>
 
 									<!--/* Filled by JS depending on the value of the "numberOfIcons" select */-->
@@ -1424,11 +1438,11 @@
 		var deletedAnswerWithExportRule = false;
 		/*[- Get the current used language -]*/
 		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
-		debugger;
 		var errorStepsize = /*[[${vars['errorStepsize']}]]*/ "";
 		var errorMinValue = /*[[${vars['errorMinValue']}]]*/ "";
 		var errorMaxValue = /*[[${vars['errorMaxValue']}]]*/ "";
 		var configName = /*[[${vars['configName']}]]*/ "";
+		var numberOfIconsInConfig = /*[[${questionDTO.answers[0].sliderIconConfigDTO.numberOfIcons}]]*/ null;
 
 
 		var sliderIconValueErrors = [];
@@ -1437,7 +1451,7 @@
 		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
 		var currentConfigIconDTOs = /*[[${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}]]*/ null;
 		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
-
+		
 		var sliderConfigExists = /*[[${questionDTO.answers[0].sliderIconConfigDTO.id}]]*/ null !== null;
 		var sliderConfigType = /*[[${questionDTO.answers[0].sliderIconConfigDTO.iconType}]]*/ null;
 		var iconConfigs = /*[[${savedConfigs}]]*/ null;
@@ -1446,6 +1460,19 @@
 
 		sliderIconValueErrors.push(
 			"[(${vars['errorSliderIconIcon__${iconDTOIndex.index}__']})]"
+		);
+		sliderIconPositionErrors.push(
+			"[(${vars['errorSliderIconPosition__${iconDTOIndex.index}__']})]"
+		);
+
+		/*[/]*/
+
+		/*[- Add the error messages from the model to the javascript arrays -]*/
+		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}"]*/
+		debugger;
+
+		sliderIconValueErrors.push(
+			"[(${vars['errorSliderIconUserIcon__${iconDTOIndex.index}__']})]"
 		);
 		sliderIconPositionErrors.push(
 			"[(${vars['errorSliderIconPosition__${iconDTOIndex.index}__']})]"
@@ -2439,9 +2466,9 @@
 		}
 
 		function newConfigChecked(){
-			showIconElements(document.querySelector("#numberOfIconsNewConfig"));
 			$('#typeOfNewConfig').val('icon');
 			$('#numberOfIconsNewConfig').val('2');
+			showIconElements(document.querySelector("#numberOfIconsNewConfig"));
 			$('#numberOfIconsNewConfig').prop('disabled', false);
 			$('#typeOfNewConfig').prop('disabled', false);
 		}
@@ -2848,7 +2875,8 @@
         * to Javascript via thymeleaf
         -]*/
 		function checkIconErrorsInModel() {
-			var numberOfIcons = getNumberOfSliderIconsInDOM();
+		debugger;
+			var numberOfIcons = numberOfIconsInConfig ? numberOfIconsInConfig : getNumberOfSliderIconsInDOM();
 
 			for (let i = 0; i < numberOfIcons; i++) {
 				/*[- If there is an position error for the current icon in model -]*/
@@ -2857,7 +2885,7 @@
 					sliderIconPositionErrors[i] !== ""
 				) {
 					appendErrorAfterSliderElement(
-						$("#iconRow_" + i),
+						$("#iconField"),
 						splitErrorArrayString(sliderIconPositionErrors[i])
 					);
 				}
@@ -2868,7 +2896,7 @@
 					sliderIconValueErrors[i] !== ""
 				) {
 					appendErrorAfterSliderElement(
-						$("#iconRow_" + i),
+						$("#iconField"),
 						splitErrorArrayString(sliderIconValueErrors[i])
 					);
 				}
@@ -2980,6 +3008,7 @@
         * @param {type} message - message string that should be displayed in the error div
         -]*/
 		function appendErrorAfterSliderElement(element, message, isLast = false) {
+			debugger;
 			var clonedErrorDiv = $("#sliderIconError").clone();
 			if (isLast === true) {
 				clonedErrorDiv.attr("id", "sliderIconError_duplicate");

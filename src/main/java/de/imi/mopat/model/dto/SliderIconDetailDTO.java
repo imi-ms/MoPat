@@ -1,14 +1,20 @@
 package de.imi.mopat.model.dto;
 
 import java.awt.Image;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.web.multipart.MultipartFile;
 
 public class SliderIconDetailDTO {
 
     private Long id;
+
     private Integer iconPosition;
+
     private Long sliderIconConfigId;
+
     private String predefinedSliderIcon;
+
+    @JsonIgnore
     private MultipartFile userIcon;
 
     private String userIconBase64;

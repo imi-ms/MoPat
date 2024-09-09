@@ -7,7 +7,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb3
 COLLATE=utf8mb3_general_ci;
 
-INSERT INTO predefined_slider_icons (icon_name) VALUES
+INSERT INTO predefined_slider_icon (icon_name) VALUES
 ('bi-emoji-angry'),
 ('bi-emoji-angry-fill'),
 ('bi-emoji-dizzy'),
