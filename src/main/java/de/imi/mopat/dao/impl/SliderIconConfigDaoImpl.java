@@ -20,7 +20,7 @@ public class SliderIconConfigDaoImpl extends MoPatDaoImpl<SliderIconConfig> impl
 
         try {
             Query query = moPatEntityManager.createQuery(
-                "SELECT c FROM SliderIconConfig c WHERE c.config_name = :name", Long.class);
+                "SELECT c FROM SliderIconConfig c WHERE c.configName = :name", Long.class);
             query.setParameter("name", name);
             sliderIconConfig = (SliderIconConfig) query.getSingleResult();
         } catch (Exception e) {

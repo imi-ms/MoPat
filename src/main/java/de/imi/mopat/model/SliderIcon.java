@@ -1,6 +1,7 @@
 package de.imi.mopat.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,11 +26,14 @@ public class SliderIcon {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @Column(name = "position")
-    private Integer position = null;
+    private Integer iconPosition = null;
+
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "icon_id", referencedColumnName = "id")
     private PredefinedSliderIcon predefinedSliderIcon;
+
     @NotNull(message = "{response.answer.notNull}")
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
@@ -41,9 +45,9 @@ public class SliderIcon {
         // JUnit tests
     }
 
-    public SliderIcon(final Integer position, final PredefinedSliderIcon icon, final SliderAnswer answer) {
-        setPosition(position);
-        setIcon(icon);
+    public SliderIcon(final Integer iconPosition, final PredefinedSliderIcon predefinedSliderIcon, final SliderAnswer answer) {
+        setIconPosition(iconPosition);
+        setPredefinedSliderIcon(predefinedSliderIcon);
         setAnswer(answer);
     }
 
@@ -56,30 +60,30 @@ public class SliderIcon {
     }
 
     /**
-     * @return position of slider icon
+     * @return iconPosition of slider icon
      */
-    public Integer getPosition() {
-        return position;
+    public Integer getIconPosition() {
+        return iconPosition;
     }
 
     /**
-     * @param position of slider icon
+     * @param iconPosition of slider icon
      */
-    public void setPosition(final Integer position) {
-        this.position = position;
+    public void setIconPosition(final Integer iconPosition) {
+        this.iconPosition = iconPosition;
     }
 
     /**
      * @return string for icon
      */
-    public PredefinedSliderIcon getIcon() {
+    public PredefinedSliderIcon getPredefinedSliderIcon() {
         return predefinedSliderIcon;
     }
 
     /**
      * @param icon string for icon
      */
-    public void setIcon(final PredefinedSliderIcon icon) {
+    public void setPredefinedSliderIcon(final PredefinedSliderIcon icon) {
         this.predefinedSliderIcon = icon;
     }
 

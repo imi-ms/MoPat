@@ -92,7 +92,7 @@ public class SliderIconConfigService {
 
                 sliderIconDetails.add(
                     sliderIconDetailService.toSliderIconDetailPersistImage(sliderIconDetailDTO,
-                        sliderIconConfig, questionDTO, question));
+                        sliderIconConfig));
             }
             sliderIconConfig.setIcons(sliderIconDetails);
         }

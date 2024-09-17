@@ -2,19 +2,13 @@ package de.imi.mopat.helper.model;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.SliderIconConfigService;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
 import de.imi.mopat.helper.controller.StringUtilities;
-import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.Configuration;
-import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.ImageAnswer;
-import de.imi.mopat.model.NumberInputAnswer;
-import de.imi.mopat.model.Question;
-import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.SelectAnswer;
-import de.imi.mopat.model.SliderAnswer;
-import de.imi.mopat.model.SliderFreetextAnswer;
+import de.imi.mopat.model.*;
 import de.imi.mopat.model.conditions.Condition;
+import de.imi.mopat.model.dto.SliderIconConfigDTO;
+import de.imi.mopat.model.dto.SliderIconDetailDTO;
 import de.imi.mopat.model.dto.export.JsonAnswerDTO;
 import de.imi.mopat.model.dto.export.JsonConditionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionDTO;
@@ -25,6 +19,9 @@ import jakarta.servlet.ServletContext;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +30,11 @@ public class JSONHelper{
 
     private final ConfigurationDao configurationDao;
 
-    public JSONHelper(final ConfigurationDao configurationDao){
+    private final SliderIconDetailService sliderIconDetailService;
+
+    public JSONHelper(final ConfigurationDao configurationDao, SliderIconDetailService sliderIconDetailService){
         this.configurationDao=configurationDao;
+        this.sliderIconDetailService=sliderIconDetailService;
     }
 
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO, final Questionnaire questionnaire){
@@ -130,6 +130,18 @@ public class JSONHelper{
             jsonAnswerDTO.setShowValueOnButton(sliderAnswer.getShowValueOnButton());
             jsonAnswerDTO.setShowIcons(sliderAnswer.getShowIcons());
             jsonAnswerDTO.setIcons(sliderAnswer.getIcons());
+            if(sliderAnswer.getSliderIconConfig() != null){
+                SliderIconConfig sliderIconConfig = sliderAnswer.getSliderIconConfig();
+                SliderIconConfigDTO sliderIconConfigDTO = new SliderIconConfigDTO(sliderIconConfig.getNumberOfIcons(), sliderIconConfig.getConfigName());
+                List<SliderIconDetailDTO> sliderIconDetailDTOS = new ArrayList<>();
+                for (SliderIconDetail sliderIconDetail : sliderIconConfig.getIcons()) {
+                    SliderIconDetailDTO sliderIconDetailDTO = sliderIconDetailService.toSliderIconDetailDTO(
+                            sliderIconDetail);
+                    sliderIconDetailDTOS.add(sliderIconDetailDTO);
+                }
+                sliderIconConfigDTO.setSliderIconDetailDTOS(sliderIconDetailDTOS);
+                jsonAnswerDTO.setSliderIconConfigDTO(sliderIconConfigDTO);
+            }
 
         }
         if (answer instanceof NumberInputAnswer) {

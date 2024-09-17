@@ -6,6 +6,7 @@ import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Questionnaire;
 import jakarta.servlet.ServletContext;
@@ -35,14 +36,14 @@ public class MetadataExporterPDF implements MetadataExporter {
 
     @Override
     public byte[] export(final Questionnaire questionnaire, final MessageSource messageSource,
-        final ConfigurationDao configurationDao, final ConfigurationGroupDao configurationGroupDao,
-        final ExportTemplateDao exportTemplateDao, final QuestionnaireDao questionnaireDao,
-        final QuestionDao questionDao, final ScoreDao scoreDao) {
+                         final ConfigurationDao configurationDao, final ConfigurationGroupDao configurationGroupDao,
+                         final ExportTemplateDao exportTemplateDao, final QuestionnaireDao questionnaireDao,
+                         final QuestionDao questionDao, final ScoreDao scoreDao, SliderIconDetailService sliderIconDetailService) {
 
         // Get the ODM metadata representation
         MetadataExporterODM odmExporter = new MetadataExporterODM();
         byte[] odmByteArray = odmExporter.export(questionnaire, messageSource, configurationDao,
-            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
+            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao, sliderIconDetailService);
 
         // Send this representation to the ODMToPDF converter and return the
         // received byte array

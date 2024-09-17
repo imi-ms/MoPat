@@ -6,6 +6,7 @@ import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.enumeration.QuestionType;
 import org.springframework.context.MessageSource;
@@ -35,7 +36,7 @@ public interface MetadataExporter {
      * @return A byte array representation of the given {@link Questionnaire}
      */
     byte[] export(Questionnaire questionnaire, MessageSource messageSource,
-        ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
-        ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
-        QuestionDao questionDao, ScoreDao scoreDao);
+                  ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
+                  ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
+                  QuestionDao questionDao, ScoreDao scoreDao, SliderIconDetailService sliderIconDetailService);
 }

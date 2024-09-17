@@ -12,7 +12,6 @@ import de.imi.mopat.model.SelectAnswer;
 import de.imi.mopat.model.SliderAnswer;
 import de.imi.mopat.model.SliderFreetextAnswer;
 import de.imi.mopat.model.SliderIcon;
-import de.imi.mopat.model.SliderIconDetail;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.ConditionDTO;
@@ -22,7 +21,6 @@ import de.imi.mopat.model.dto.SliderIconDetailDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import java.io.IOException;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -131,8 +129,8 @@ public class QuestionService {
                     List < SliderIconDTO > iconList = new ArrayList<>();
                     for (SliderIcon icon : ((SliderAnswer) answer).getIcons()) {
                         SliderIconDTO newSliderIconDTO = new SliderIconDTO();
-                        newSliderIconDTO.setPredefinedSliderIcon(icon.getIcon().getIconName());
-                        newSliderIconDTO.setIconPosition(icon.getPosition());
+                        newSliderIconDTO.setPredefinedSliderIcon(icon.getPredefinedSliderIcon().getIconName());
+                        newSliderIconDTO.setIconPosition(icon.getIconPosition());
                         newSliderIconDTO.setAnswerId(answer.getId());
                         iconList.add(newSliderIconDTO);
                     }

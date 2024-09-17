@@ -95,12 +95,12 @@ public class SliderIconDetailService {
      */
     @JsonIgnore
     public SliderIconDetail toSliderIconDetailPersistImage(SliderIconDetailDTO sliderIconDetailDTO,
-        SliderIconConfig sliderIconConfig, QuestionDTO questionDTO, Question question) {
+        SliderIconConfig sliderIconConfig){
         SliderIconDetail sliderIconDetail = new SliderIconDetail(
             sliderIconDetailDTO.getIconPosition());
 
         String storagePath;
-        if (!sliderIconDetailDTO.getUserIcon().isEmpty()) {
+        if (sliderIconDetailDTO.getUserIcon()!=null && !sliderIconDetailDTO.getUserIcon().isEmpty()) {
             String imageExtension = FilenameUtils.getExtension(
                 sliderIconDetailDTO.getUserIcon().getOriginalFilename());
             String imagePath = (configurationDao.getImageUploadPath() + "/sliderIconConfig/"
@@ -121,14 +121,29 @@ public class SliderIconDetailService {
                     sliderIconDetailDTO.getUserIcon().getInputStream());
                 ImageIO.write(uploadImage, imageExtension, uploadFile);
             } catch (IOException ex) {
-                if (questionDTO.getId() == null) {
-                    questionDao.remove(question);
-                }
             }
             // Store the full storage path with name and extension
             storagePath = sliderIconConfig.getId() + "/config" + sliderIconConfig.getId() + "_"
                 + sliderIconDetailDTO.getIconPosition() + "." + imageExtension;
-        } else {
+        }
+        else if(sliderIconDetailDTO.getUserIconBase64() != null){
+            String imageBase64=sliderIconDetailDTO.getUserIconBase64();
+            String extension = "png";
+            String imagePath = (configurationDao.getImageUploadPath() + "/sliderIconConfig/"
+                    + sliderIconConfig.getId());
+            String[] parts = imageBase64.split(";");
+            if (parts[0].contains("/")) {
+                extension = parts[0].substring(parts[0].indexOf("/") + 1);
+            }
+            try {
+                StringUtilities.convertAndWriteBase64StringToImage(sliderIconDetailDTO.getUserIconBase64(),imagePath,"config" + sliderIconConfig.getId() + "_" + sliderIconDetailDTO.getIconPosition()+'.'+extension);
+            } catch (IOException ex) {
+            }
+
+            storagePath = sliderIconConfig.getId() + "/config" + sliderIconConfig.getId() + "_"
+                    + sliderIconDetailDTO.getIconPosition()+'.'+extension;
+        }
+        else {
             // If the image has not changed use the old image path
             storagePath = null;
         }

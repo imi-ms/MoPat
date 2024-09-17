@@ -10,6 +10,7 @@ import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.ServletContextInfo;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.DateAnswer;
@@ -81,7 +82,8 @@ public class MetadataExporterFHIR implements MetadataExporter {
             final ExportTemplateDao exportTemplateDao,
             final QuestionnaireDao questionnaireDao,
             final QuestionDao questionDao,
-            final ScoreDao scoreDao) {
+            final ScoreDao scoreDao,
+            final SliderIconDetailService sliderIconDetailService) {
 
         org.hl7.fhir.dstu3.model.Questionnaire fhirQuestionnaire =
                 new org.hl7.fhir.dstu3.model.Questionnaire();
