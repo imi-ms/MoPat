@@ -77,6 +77,11 @@ function Question() {
         return null;
     };
 
+    this.calculatePositionBasedOnIndex = function(index, min, max) {
+        // This needs to be adjusted depending on how you want the icons to scale with the slider values
+        return min + (max - min) * index / 100;
+    };
+
     /**
      * Appends the HTML representation of the current question given its
      * questiontype to the questioncontent object.
@@ -329,6 +334,7 @@ function Question() {
                         let iconContainer = $("<div/>", {
                             "class": "d-flex justify-content-center align-items-center iconContainer"
                         }); 
+                        let calculatedSliderPosition = this.calculatePositionBasedOnIndex(i, this.answers[0].minValue, this.answers[0].maxValue);
     
                         // Checks all icon elements and if the position matches the index of the current div appends the icon
                         this.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS.forEach((icon) => {
@@ -338,7 +344,9 @@ function Question() {
                                         "class": "bi"
                                     })
                                     iconContent.addClass(icon.predefinedSliderIcon); 
-        
+                                    iconContent.on('click', () => {
+                                        $("#range").val(calculatedSliderPosition).trigger('change');
+                                    });
                                     iconContainer.append(iconContent); 
                                 }
                             } else {
@@ -347,7 +355,9 @@ function Question() {
                                         "src": icon.userIconBase64
                                     })
                                     iconContent.addClass(icon.predefinedSliderIcon); 
-        
+                                    iconContent.on('click', () => {
+                                        $("#range").val(calculatedSliderPosition).trigger('change');
+                                    });
                                     iconContainer.append(iconContent); 
                                 }
                             }
@@ -369,7 +379,9 @@ function Question() {
                                     "class": "bi"
                                 })
                                 iconContent.addClass(icon.predefinedSliderIcon); 
-    
+                                iconContent.on('click', () => {
+                                    $("#range").val(calculatedSliderPosition).trigger('change');
+                                });
                                 iconContainer.append(iconContent); 
                             }
                         }); 
@@ -451,6 +463,7 @@ function Question() {
                 //Add event listeners to input div
                 inputElement.on("input", question.setSliderValue);
                 inputElement.on("input", setChanged);
+                inputElement.on("change", checkMouseDown);
 
                 inputElement.on("mousedown", checkMouseDown);
                 inputElement.on("touchstart", checkMouseDown);
