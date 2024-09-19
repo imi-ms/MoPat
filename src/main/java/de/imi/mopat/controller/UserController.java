@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * The Controller servlet communicates with the front end of the model and loads the
@@ -58,9 +59,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("hideProfile")
 public class UserController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserController.class);
     public static final String LAST_USERNAME_KEY = "LAST_USERNAME";
-
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserController.class);
     @Autowired
     private AclEntryDao aclEntryDao;
     @Autowired
@@ -131,7 +131,10 @@ public class UserController {
      */
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String showUsers(final Model model) {
+    public String showUsers(
+        @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError,
+        final Model model
+    ) {
         model.addAttribute("allUsers", userDao.getAllElements());
         return "user/list";
     }
@@ -491,13 +494,25 @@ public class UserController {
      */
     @RequestMapping(value = "/user/toggleenabled")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String removeUser(@RequestParam(value = "id", required = true) final Long id) {
-        User user = userDao.getElementById(id);
-        if (user != null) {
-            // enable / disable the user
-            user.setIsEnabled(!user.getIsEnabled());
-            userDao.merge(user);
+    public String removeUser(
+        @RequestParam(value = "id", required = true) final Long id,
+        RedirectAttributes redirectAttributes
+    ) {
+        User currentUser = getCurrentUser();
+        User userToDelete = userDao.getElementById(id);
+
+        if (userToDelete != null && userToDelete.getId().equals(currentUser.getId())) {
+            // If the user want to delete himself, redirect with error
+            redirectAttributes.addFlashAttribute("userDeleteError", true);
+            return "redirect:/user/list";
         }
+
+        if (userToDelete != null) {
+            // enable / disable the user
+            userToDelete.setIsEnabled(!userToDelete.getIsEnabled());
+            userDao.merge(userToDelete);
+        }
+
         return "redirect:/user/list";
     }
 

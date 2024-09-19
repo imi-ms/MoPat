@@ -6,6 +6,22 @@
 	th:with="title=${messages.get(#locale, 'user.heading.userList', 'All users')}"
 >
 	<th:block layout:fragment="content">
+
+		<div th:if="${#bools.isTrue(userDeleteError)}">
+			<div class="alert alert-danger">
+				<th:block
+					th:text="${
+						messages.get(
+							#locale, 
+							'user.list.userDeleteError', 
+							'You tried to deactivate your own account. This is not allowed. 
+							If you want to deactivate this account, 
+							please log in to another admin account and try again.'
+						)}"
+				></th:block>
+			</div>
+		</div>
+
 		<div class="table-responsive">
 			<table
 				class="table table-hover pagedTable responsive"
