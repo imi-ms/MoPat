@@ -21,8 +21,16 @@
 				data-ajax="false"
 			>
 				<div class="d-grid gap-2">
+
+					<th:block
+						th:with="msg=${messages.get(#locale, 'login.demo.infoText', 'This is a demo website!')}"
+					>
+						<div>[(${msg})]</div>
+					</th:block>
+					
+
 					<input
-						class="form-control"
+						class="form-control disabled"
 						index="1"
 						name="username"
 						id="username"
@@ -30,14 +38,15 @@
 						autocorrect="off"
 						autocapitalize="off"
 						spellcheck="false"
+						value="admin"
+						readonly="true"
 						data-inline="true"
 						type="text"
 						th:placeholder="#{user.label.username}"
-						th:value="${sessionScope?.LAST_USERNAME}"
 					/>
 
 					<input
-						class="form-control"
+						class="form-control disabled"
 						index="2"
 						name="password"
 						id="password"
@@ -45,6 +54,8 @@
 						th:placeholder="#{user.label.password}"
 						autocomplete="off"
 						autocorrect="off"
+						value="admin123"
+						readonly="true"
 						autocapitalize="off"
 						spellcheck="false"
 					/>
