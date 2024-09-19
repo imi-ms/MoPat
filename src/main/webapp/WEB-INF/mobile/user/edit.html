@@ -52,6 +52,7 @@
 				/>
 			</div>
 			<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
+<!--/*
 				<div class="form-group">
 					<input
 						layout:replace="~{fragments/forms :: plainInputWithLabel(
@@ -85,6 +86,7 @@
 						layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
 					/>
 				</div>
+*/-->
 			</th:block>
 			<div class="form-group">
 				<button
