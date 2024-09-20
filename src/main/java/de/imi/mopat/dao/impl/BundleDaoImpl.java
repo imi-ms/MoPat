@@ -2,8 +2,10 @@ package de.imi.mopat.dao.impl;
 
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.model.Bundle;
+import de.imi.mopat.model.Questionnaire;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,6 +26,16 @@ public class BundleDaoImpl extends MoPatDaoImpl<Bundle> implements BundleDao {
         } catch (NoResultException e) {
             return true;
         }
+    }
+
+    @Override
+    public List<Questionnaire> getAvailableQuestionnairesForBundle(Long bundleId) {
+        return moPatEntityManager.createQuery(
+                "SELECT q FROM Questionnaire q WHERE q NOT IN (" +
+                    "SELECT bq.questionnaire FROM BundleQuestionnaire bq WHERE bq.bundle.id = :bundleId)",
+                Questionnaire.class)
+            .setParameter("bundleId", bundleId)
+            .getResultList();
     }
 
 
