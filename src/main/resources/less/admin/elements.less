@@ -298,3 +298,15 @@ legend {
 .boxShadowMaterialXxl {
     box-shadow: @box-shadow-material-xxl !important;
 }
+
+#loadingSpinner {
+    @media only screen and (max-width: @element-breakpoint) {
+        width: 150px; 
+        height: 150px; 
+    }
+    @media only screen and (min-width: @element-breakpoint) {
+        width: 250px; 
+        height: 250px;
+    }
+    
+}
