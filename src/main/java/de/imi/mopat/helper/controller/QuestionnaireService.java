@@ -1,35 +1,16 @@
 package de.imi.mopat.helper.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.ImageAnswer;
-import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.SelectAnswer;
-import de.imi.mopat.model.SliderAnswer;
-import de.imi.mopat.model.SliderFreetextAnswer;
-import de.imi.mopat.model.SliderIcon;
-import de.imi.mopat.model.conditions.Condition;
-import de.imi.mopat.model.dto.AnswerDTO;
-import de.imi.mopat.model.dto.ConditionDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.export.SliderIconDTO;
-import de.imi.mopat.model.enumeration.BodyPart;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.Set;
 import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,6 +64,20 @@ public class QuestionnaireService {
         questionnaireDTO.setLogo(questionnaire.getLogo());
 
         return questionnaireDTO;
+    }
+
+    /**
+     * Returns a set of unique {@link Questionnaire}-IDs for a list of {@link Questionnaire}
+     * instances
+     * @param questionnaires to get ids for
+     * @return {@link Set} with Ids
+     */
+    public Set<Long> getUniqueQuestionnaireIds(List<Questionnaire> questionnaires) {
+        Set<Long> resultSet = new HashSet<>();
+        for (Questionnaire questionnaire: questionnaires) {
+            resultSet.add(questionnaire.getId());
+        }
+        return resultSet;
     }
 
 }

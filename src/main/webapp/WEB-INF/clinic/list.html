@@ -14,10 +14,23 @@
 				<th:block th:text="${messageSuccess}"></th:block>
 			</div>
 		</th:block>
+		<div 
+			id="loadingContainer" 
+			class="d-flex flex-column align-items-center justify-content-center vh-50"
+		>
+			<div 
+				class="spinner-border" 
+				id="loadingSpinner" 
+				role="status" 
+			>
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
 		<div class="table-responsive">
 			<table
-				class="table table-hover pagedTable responsive"
-				style="width: 100%"
+				class="table table-hover responsive"
+				id="clinicTable"
+				style="width: 100%; display:none"
 			>
 				<thead>
 					<tr>
@@ -116,4 +129,24 @@
 			</div>
 		</div>
 	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		$(document).ready(function() {
+			$('#clinicTable').DataTable({
+				"deferRender": true,
+				"paging": true,
+				"ordering": false,
+				"initComplete": function(settings, json) {
+					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
+					$('#loadingContainer').addClass("d-none")
+					$('#clinicTable').fadeIn(); // Show the table
+				}
+			});
+		});
+	</script>
 </th:block>

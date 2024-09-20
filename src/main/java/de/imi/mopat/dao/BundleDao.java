@@ -1,6 +1,8 @@
 package de.imi.mopat.dao;
 
 import de.imi.mopat.model.Bundle;
+import de.imi.mopat.model.Questionnaire;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,5 +19,13 @@ public interface BundleDao extends MoPatDao<Bundle> {
      * @return true if the name is free for usage and false otherwise
      */
     boolean isBundleNameUnused(String name, Long id);
+
+    /**
+     * Method to fetch available {@link Questionnaire} instances for a {@link Bundle} ID.
+     * Available means all questionnaires that are not already assigned to the bundle.
+     * @param bundleId to find questionnaires for
+     * @return {@link List} of {@link Questionnaire} objects
+     */
+    List<Questionnaire> getAvailableQuestionnairesForBundle(Long bundleId);
 
 }

@@ -79,6 +79,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
@@ -178,10 +179,19 @@ public class QuestionnaireController {
         // map, which
         // contains the question texts grouped by the country and languages.
         Map<Long, SortedMap<String, Map<String, String>>> localizedDisplayNamesForQuestionnaire = new HashMap<>();
+
+        Set<Long> questionnaireIds = questionnaireService.getUniqueQuestionnaireIds(allQuestionnaires);
+        Set<Long> questionnaireTargetIds =
+            conditionDao.findConditionTargetIds(
+                questionnaireIds.stream().toList(),
+                "Questionnaire"
+            );
+
         for (Questionnaire questionnaire : allQuestionnaires) {
             // Get the question texts grouped by country from the current
             // question
-            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry = questionnaire.getLocalizedDisplayNamesGroupedByCountry();
+            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry =
+                questionnaire.getLocalizedDisplayNamesGroupedByCountry();
             // And add the grouped-by-country-map to the map for all questions
             // of the current questionnaire
             localizedDisplayNamesForQuestionnaire.put(questionnaire.getId(),
@@ -189,8 +199,9 @@ public class QuestionnaireController {
             availableLanguagesInQuestionForQuestionnaires.put(questionnaire.getId(),
                 questionnaire.getAvailableQuestionLanguages());
             // Check if the questionnaire has any conditions and set the boolean
-            questionnaire.setHasConditions(conditionDao.isConditionTarget(questionnaire));
+            questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
+
         model.addAttribute("allQuestionnaires", allQuestionnaires);
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);

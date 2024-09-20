@@ -1,17 +1,14 @@
 package de.imi.mopat.helper.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Question;
-import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionDTO;
-import de.imi.mopat.model.dto.QuestionnaireDTO;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,6 +66,20 @@ public class BundleService {
             bundleDTO.setBundleQuestionnaireDTOs(bundleQuestionnaireDTOs);
         }
         return bundleDTO;
+    }
+
+    /**
+     * Returns a set of unique {@link Bundle}-IDs for a list of {@link Bundle}
+     * instances
+     * @param bundles to get ids for
+     * @return {@link Set} with Ids
+     */
+    public Set<Long> getUniqueQuestionnaireIds(List<Bundle> bundles) {
+        Set<Long> resultSet = new HashSet<>();
+        for (Bundle bundle: bundles) {
+            resultSet.add(bundle.getId());
+        }
+        return resultSet;
     }
 
 
