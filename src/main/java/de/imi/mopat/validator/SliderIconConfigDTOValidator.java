@@ -42,16 +42,19 @@ public class SliderIconConfigDTOValidator implements Validator {
         SliderIconConfigDTO sliderIconConfigDTO = (SliderIconConfigDTO) target;
 
         try {
-            if (Objects.equals(sliderIconConfigDTO.getConfigType(), "newConfig") && Objects.equals(sliderIconConfigDTO.getConfigName(), "")) {
-                errors.rejectValue("configName", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotNull",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
-            }
+            if(Objects.equals(sliderIconConfigDTO.getConfigType(), "newConfig")) {
+                if (Objects.equals(sliderIconConfigDTO.getConfigName(), "")) {
+                    errors.rejectValue("configName", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotNull",
+                                    new Object[]{}, LocaleContextHolder.getLocale()));
+                }
 
-            if (sliderIconConfigDao.getElementByName(sliderIconConfigDTO.getConfigName()) != null) {
-                errors.rejectValue("configName", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotUnique",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                if (sliderIconConfigDao.getElementByName(sliderIconConfigDTO.getConfigName()) != null) {
+                    errors.rejectValue("configName", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage("sliderIconConfig.validator" + ".configNameNotUnique",
+                                    new Object[]{}, LocaleContextHolder.getLocale()));
+                }
+
             }
 
             for (int i = 0; i < sliderIconConfigDTO.getNumberOfIcons(); i++) {

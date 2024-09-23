@@ -632,20 +632,23 @@
 										<div class="d-flex align-items-center" id="sliderConfig">
 											<div class="me-3">
 												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="noIconConfig" value="noConfig">
-												<label class="form-check-label" for="noIconConfig">
-													No Config
+												<label class="form-check-label" for="noIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.noConfigLabel',
+														'No config')}">
 												</label>
 											</div>
 											<div class="me-3">
 												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="oldIconConfig" value="oldConfig">
-												<label class="form-check-label" for="oldIconConfig">
-													Use Old Config
+												<label class="form-check-label" for="oldIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.oldConfigLabel',
+														'Use old config')}">
 												</label>
 											</div>
 											<div class="">
 												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="newIconConfig" value="newConfig">
-												<label class="form-check-label" for="newIconConfig">
-													Create New Config
+												<label class="form-check-label" for="newIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.newConfigLabel',
+														'Create new config')}">
 												</label>
 											</div>
 										</div>
@@ -680,7 +683,10 @@
 											</div>
 										</div>
 										<div id="oldConfig">
-											<label for="oldConfigSelect">Select Config</label>
+											<label for="oldConfigSelect"
+											th:text="${messages.get(#locale, 'question.label.sliderIcon.selectConfig',
+														'Select Config')}"
+											></label>
 
 											<select id="oldConfigSelect" placeholder="select config" onchange="onSliderConfigChange();" class="form-control form-select" th:field="*{answers[0].sliderIconConfigDTO.id}">
 												<option th:each="config : ${savedConfigs}" th:value="${config.getId()}" th:text="${config.getConfigName()}">
@@ -693,8 +699,10 @@
 											<div class="newConfigName col-12">
 												<label
 													for="configName"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.configName',
+														'Config Name')}"
 												>
-												Config Name
+												
 												</label>
 												<input
 												id="configName"
