@@ -1,4 +1,7 @@
-CREATE TABLE mopat.predefined_slider_icon (
+USE `moPat`;
+
+
+CREATE TABLE predefined_slider_icon (
 	id BIGINT auto_increment NOT NULL,
 	icon_name VARCHAR(255) NOT NULL,
 	CONSTRAINT predefined_slider_icon_pk PRIMARY KEY (id)
@@ -70,7 +73,7 @@ INSERT INTO predefined_slider_icon (icon_name) VALUES
 ('bi-8-square'),
 ('bi-9-square');
 
-CREATE TABLE mopat.user_slider_icon (
+CREATE TABLE user_slider_icon (
 	id BIGINT auto_increment NOT NULL,
 	icon_path VARCHAR(255) NOT NULL,
 	CONSTRAINT user_slider_icon_pk PRIMARY KEY (id)
@@ -91,7 +94,7 @@ CREATE TABLE `slider_icon_config` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 
-CREATE TABLE mopat.slider_icon_detail (
+CREATE TABLE slider_icon_detail (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     icon_position INTEGER,
     slider_icon_config_id BIGINT,
@@ -102,7 +105,7 @@ CREATE TABLE mopat.slider_icon_detail (
     FOREIGN KEY (user_slider_icon_id) REFERENCES user_slider_icon(id)
 );
 
-ALTER TABLE mopat.slider_icons CHANGE icon icon_id BIGINT DEFAULT NULL NULL;
+ALTER TABLE slider_icons CHANGE icon icon_id BIGINT DEFAULT NULL NULL;
 
 ALTER TABLE answer
 ADD COLUMN slider_icon_config_id BIGINT;
