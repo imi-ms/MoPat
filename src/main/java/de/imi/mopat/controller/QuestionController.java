@@ -5,8 +5,11 @@ import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionService;
 import de.imi.mopat.helper.controller.ServletContextInfo;
+import de.imi.mopat.helper.controller.SliderIconConfigService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
+import de.imi.mopat.model.dto.SliderIconConfigDTO;
+import de.imi.mopat.model.dto.SliderIconDetailDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.conditions.Condition;
@@ -29,6 +32,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Map.Entry;
 import javax.imageio.ImageIO;
 import java.util.regex.Pattern;
 
@@ -41,9 +45,12 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 /**
  *
@@ -78,6 +85,16 @@ public class QuestionController {
 
     @Autowired
     private QuestionService questionService;
+
+    @Autowired
+    private PredefinedSliderIconDao predefinedSliderIconDao;
+
+    @Autowired
+    private SliderIconConfigDao sliderIconConfigDao;
+
+    @Autowired
+    private SliderIconConfigService sliderIconConfigService;
+
     /**
      * @param id (<i>optional</i>) Id of the {@link Question} object
      * @return Returns a new {@link Question} object to the attribute
@@ -185,13 +202,20 @@ public class QuestionController {
                 }
             }
         }
-
+        List<SliderIconConfig> sliderIconConfigs = sliderIconConfigDao.getAllElements();
+        List<SliderIconConfigDTO> sliderIconConfigDTOS = new ArrayList<>();
+        for(SliderIconConfig sliderIconConfig: sliderIconConfigs){
+            sliderIconConfigDTOS.add(sliderIconConfigService.toSliderIconConfigDTO(sliderIconConfig));
+        }
+        model.addAttribute("savedConfigs",sliderIconConfigDTOS);
+        model.addAttribute("icons", predefinedSliderIconDao.getAllIcons());
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("questionDTO", questionDTO);
         model.addAttribute("questionnaireId", questionnaireId);
         model.addAttribute("imagePathBodyPartMap", BodyPart.getImagePathBodyPartMap());
         model.addAttribute("imageTypes", Constants.BODY_PART_IMAGE_TYPES);
         model.addAttribute("codedValueTypes", CodedValueType.values());
+
         return "question/edit";
     }
 
@@ -235,15 +259,9 @@ public class QuestionController {
         }
 
         // override old question in model with the new one
-        model.addAttribute(
-            "question",
-            newQuestion);
-        model.addAttribute(
-            "questionDTO",
-            questionService.toQuestionDTO(newQuestion));
-        model.addAttribute(
-            "questionnaireId",
-            questionnaireId);
+        model.addAttribute("question", newQuestion);
+        model.addAttribute("questionDTO", questionService.toQuestionDTO(newQuestion));
+        model.addAttribute("questionnaireId", questionnaireId);
         // Let the jsp know, that this is a duplicated question
         model.addAttribute("duplicate", true);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
@@ -266,7 +284,9 @@ public class QuestionController {
      */
     @PostMapping(value = "/question/edit")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String editQuestion(@RequestParam final String action,
+    public String editQuestion(
+        MultipartHttpServletRequest multipartHttpServletRequest,
+        @RequestParam final String action,
         @ModelAttribute("questionDTO") final QuestionDTO questionDTO, final BindingResult result,
         final Model model, final HttpServletRequest request) {
         if (action.equalsIgnoreCase("cancel")) {
@@ -282,20 +302,16 @@ public class QuestionController {
         // edit page
         if (questionDTO.getId() != null) {
             question = questionDao.getElementById(questionDTO.getId());
-            if (questionDTO.getQuestionType()
-                           .equals(QuestionType.IMAGE) && question.getQuestionType()
-                                                                  .equals(QuestionType.IMAGE)) {
-                questionDTO.getAnswers()
-                           .get(0L)
-                           .setImagePath(((ImageAnswer) question.getAnswers()
-                                                                .get(0)).getImagePath());
+            if (questionDTO.getQuestionType().equals(QuestionType.IMAGE)
+                && question.getQuestionType().equals(QuestionType.IMAGE)) {
+                questionDTO.getAnswers().get(0L)
+                    .setImagePath(((ImageAnswer) question.getAnswers().get(0)).getImagePath());
                 try {
-                    String realPath = configurationDao.getImageUploadPath() + "/question/"+ ((ImageAnswer) question.getAnswers().get(0)).getImagePath();
+                    String realPath = configurationDao.getImageUploadPath() + "/question/"
+                        + ((ImageAnswer) question.getAnswers().get(0)).getImagePath();
                     String fileName = realPath.substring(realPath.lastIndexOf("/"));
-                    questionDTO.getAnswers()
-                        .get(0L)
-                        .setImageBase64(
-                            StringUtilities.convertImageToBase64String(realPath, fileName));
+                    questionDTO.getAnswers().get(0L).setImageBase64(
+                        StringUtilities.convertImageToBase64String(realPath, fileName));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -338,6 +354,13 @@ public class QuestionController {
             } else {
                 questionDTO.setHasScores(false);
             }
+            List<SliderIconConfig> sliderIconConfigs = sliderIconConfigDao.getAllElements();
+            List<SliderIconConfigDTO> sliderIconConfigDTOS = new ArrayList<>();
+            for(SliderIconConfig sliderIconConfig: sliderIconConfigs){
+                sliderIconConfigDTOS.add(sliderIconConfigService.toSliderIconConfigDTO(sliderIconConfig));
+            }
+            model.addAttribute("savedConfigs",sliderIconConfigDTOS);
+            model.addAttribute("icons", predefinedSliderIconDao.getAllIcons());
             model.addAttribute("questionnaireId", questionDTO.getQuestionnaireId());
             model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
             model.addAttribute("imagePathBodyPartMap", BodyPart.getImagePathBodyPartMap());
@@ -668,26 +691,11 @@ public class QuestionController {
                     sliderAnswer.setVertical(vertical);
                     sliderAnswer.setIsEnabled(isEnabled);
                     sliderAnswer.setShowIcons(showIcons);
-                    //
-                    Set<SliderIcon> iconSet = new HashSet<>();
-                    for (SliderIconDTO icon : answerDTO.getIcons()) {
-                        SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                            sliderAnswer);
-                        iconSet.add(newIcon);
-                    }
-                    sliderAnswer.setIcons(iconSet);
                 } else {
                     // Create new answer
                     sliderAnswer = new SliderAnswer(question, isEnabled, minValue, maxValue,
                         stepsize, vertical);
                     sliderAnswer.setShowIcons(showIcons);
-                    Set<SliderIcon> iconSet = new HashSet<>();
-                    for (SliderIconDTO icon : answerDTO.getIcons()) {
-                        SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                            sliderAnswer);
-                        iconSet.add(newIcon);
-                    }
-                    sliderAnswer.setIcons(iconSet);
                 }
                 if (answerDTO.getLocalizedMinimumText() != null) {
                     for (Map.Entry<String, String> entry : answerDTO.getLocalizedMinimumText()
@@ -720,7 +728,29 @@ public class QuestionController {
                 } else {
                     sliderAnswer.setShowValueOnButton(false);
                 }
-                break;
+
+                SliderIconConfig sliderIconConfig;
+                if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "oldConfig")){
+                    if(answerDTO.getSliderIconConfigDTO().getId() != null){
+                        sliderIconConfig = sliderIconConfigDao.getElementById(answerDTO.getSliderIconConfigDTO().getId());
+                        sliderAnswer.setSliderIconConfig(sliderIconConfig);
+                    }
+                }
+                else if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "newConfig")){
+                    sliderAnswer.setSliderIconConfig(sliderIconConfigService.newSliderIconConfig(answerDTO.getSliderIconConfigDTO(), questionDTO, question));
+                }
+                else if(Objects.equals(answerDTO.getSliderIconConfigDTO().getConfigType(), "noConfig")){
+                    Set<SliderIcon> iconSet = new HashSet<>();
+                    for (SliderIconDTO icon : answerDTO.getIcons()) {
+                        SliderIcon newIcon = new SliderIcon(icon.getIconPosition(),
+                            predefinedSliderIconDao.getIconByName(icon.getPredefinedSliderIcon()), sliderAnswer);
+                        iconSet.add(newIcon);
+                    }
+                    sliderAnswer.setIcons(iconSet);
+                    sliderAnswer.setSliderIconConfig(null);
+                }
+
+                 break;
             }
             case NUMBER_CHECKBOX_TEXT: {
                 AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
@@ -868,12 +898,10 @@ public class QuestionController {
                 if (!answerDTO.getImageFile().isEmpty()) {
                     // Store the extension of the image and the path with the
                     // questionnaire ID
-                    String imageExtension =
-                        FilenameUtils.getExtension(answerDTO.getImageFile()
-                                                            .getOriginalFilename());
-                    String imagePath =
-                        (configurationDao.getImageUploadPath()
-                            + "/question/" + questionnaire.getId());
+                    String imageExtension = FilenameUtils.getExtension(
+                        answerDTO.getImageFile().getOriginalFilename());
+                    String imagePath = (configurationDao.getImageUploadPath() + "/question/"
+                        + questionnaire.getId());
 
                     // Check if the upload dir exists. If not, create it
                     File uploadDir = new File(imagePath);
@@ -901,10 +929,8 @@ public class QuestionController {
                         }
                     }
                     // Store the full storage path with name and extension
-                    storagePath =
-                        questionnaire.getId()
-                            + "/question" + question.getId()
-                            + "." + imageExtension;
+                    storagePath = questionnaire.getId() + "/question" + question.getId() + "."
+                        + imageExtension;
                 } else {
                     // If the image has not changed use the old image path
                     storagePath = answerDTO.getImagePath();
@@ -927,7 +953,6 @@ public class QuestionController {
 
         // Validate the question
         questionValidator.validate(question, result);
-
         if (result.hasErrors()) {
             model.addAttribute("questionnaireId", questionDTO.getQuestionnaireId());
             model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());

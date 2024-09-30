@@ -39,6 +39,7 @@ public class AnswerDTO {
 
     private Boolean showIcons = null;
     private List<SliderIconDTO> icons = new ArrayList<>();
+    private SliderIconConfigDTO sliderIconConfigDTO = null;
     private Boolean vertical = null;
     private Boolean showValueOnButton = null;
     private Boolean isEnabled = Boolean.TRUE;
@@ -613,5 +614,22 @@ public class AnswerDTO {
      */
     public void setIcons(final List<SliderIconDTO> icons) {
         this.icons = icons;
+    }
+    /**
+     * Gets the icon config for Answer.
+     *
+     * @return sliderIconConfigDTO
+     */
+    public SliderIconConfigDTO getSliderIconConfigDTO() {
+        return sliderIconConfigDTO;
+    }
+
+    /**
+     * set slider icon config dto
+     *
+     * @param sliderIconConfigDTO slider icon config
+     */
+    public void setSliderIconConfigDTO(final SliderIconConfigDTO sliderIconConfigDTO) {
+        this.sliderIconConfigDTO = sliderIconConfigDTO;
     }
 }

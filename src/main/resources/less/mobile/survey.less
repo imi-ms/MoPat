@@ -740,6 +740,16 @@ textarea {
         }
     }
 
+    img {
+        @media only screen and (max-width: @element-breakpoint) {
+            width: @sliderThumbWidthSM;
+            
+        }
+        @media only screen and (min-width: @element-breakpoint) {
+            width: @sliderThumbWidth;
+        }
+    }
+
     .iconContainer {
         @media only screen and (max-width: @element-breakpoint) {
             height: @sliderThumbHeightSM;

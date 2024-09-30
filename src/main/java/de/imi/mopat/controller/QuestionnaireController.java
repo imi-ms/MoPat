@@ -6,27 +6,8 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.exceptions.FhirClientConnectionException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.imi.mopat.dao.AnswerDao;
-import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.dao.EncounterDao;
-import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.dao.OperatorDao;
-import de.imi.mopat.dao.QuestionDao;
-import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.FHIRHelper;
-import de.imi.mopat.helper.controller.FHIRToMoPatConverter;
-import de.imi.mopat.helper.controller.GraphicsUtilities;
-import de.imi.mopat.helper.controller.ImportQuestionnaireResult;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.ODMProcessingBean;
-import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
-import de.imi.mopat.helper.controller.QuestionnaireService;
-import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.dao.*;
+import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.model.Answer;
@@ -153,7 +134,12 @@ public class QuestionnaireController {
     private LocaleHelper localeHelper;
     @Autowired
     private QuestionnaireService questionnaireService;
-
+    @Autowired
+    private SliderIconDetailService sliderIconDetailService;
+    @Autowired
+    private PredefinedSliderIconDao predefinedSliderIconDao;
+    @Autowired
+    private SliderIconConfigDao sliderIconConfigDao;
 
     @Autowired
     private ODMProcessingBean odmReader;
@@ -485,7 +471,7 @@ public class QuestionnaireController {
             question.setHasConditionsAsTarget(conditionDao.isConditionTarget(question));
         }
         byte[] data = exporter.export(questionnaire, messageSource, configurationDao,
-            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
+            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao, sliderIconDetailService);
 
         // Create a windows compliant path/filename and return the download
         Path path = Paths.get(
@@ -619,7 +605,7 @@ public class QuestionnaireController {
                             if (jsonAnswerDTO.getLocalizedLabel() != null
                                 && !jsonAnswerDTO.getLocalizedLabel().isEmpty()) {
                                 // Add this direclty to the list of answers
-                                answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
+                                answers.put(answerId, jsonAnswerDTO.convertToAnswer(question, sliderIconConfigDao,predefinedSliderIconDao, sliderIconDetailService));
                             } else {
                                 // Otherwise it is a freetext answer and we
                                 // have to save the answer Id
@@ -631,7 +617,7 @@ public class QuestionnaireController {
                         if (freetextAnswerId != null) {
                             JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers()
                                 .get(freetextAnswerId);
-                            answers.put(freetextAnswerId, jsonAnswerDTO.convertToAnswer(question));
+                            answers.put(freetextAnswerId, jsonAnswerDTO.convertToAnswer(question, sliderIconConfigDao, predefinedSliderIconDao, sliderIconDetailService));
                         }
                     } else {
                         // For all other questiontypes just convert the
@@ -639,7 +625,7 @@ public class QuestionnaireController {
                         for (Long answerId : jsonQuestionDTO.getAnswers().keySet()) {
                             JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers()
                                 .get(answerId);
-                            answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
+                            answers.put(answerId, jsonAnswerDTO.convertToAnswer(question, sliderIconConfigDao, predefinedSliderIconDao, sliderIconDetailService));
                         }
                     }
 

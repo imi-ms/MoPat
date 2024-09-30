@@ -576,7 +576,12 @@
                                         value=${#fields.hasErrors('answers[0].stepsize') ? #fields.errors('answers[0].stepsize')?.get(0) : ''})}"
 									>
 									</addVar>
-
+									<addVar
+										layout:replace="~{helper/var :: add(
+                                        key='configName',
+                                        value=${#fields.hasErrors('answers[0].sliderIconConfigDTO.configName') ? #fields.errors('answers[0].sliderIconConfigDTO.configName')?.get(0) : ''})}"
+									>
+									</addVar>
 									<div
 										id="sliderErrors"
 										class="alert alert-danger"
@@ -591,6 +596,10 @@
 
 										<error
 											layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize')}"
+										/>
+										
+										<error
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].sliderIconConfigDTO.configName')}"
 										/>
 									</div>
 								</div>
@@ -619,51 +628,141 @@
 										id="numberOfIconsWrapper"
 										class="col-12 d-none"
 									>
-										<!-- <div class="col-12">
-											<label for="iconTemplateSelector">
-												Vorlagen für Symbolkonfigurationen
-											</label>
-											<select
-												id="iconTemplateSelector"
-												onchange="setIconTemplates(this);"
-												class="form-control form-select"
-											>
-												<option
-													value=""
-													disabled
-													selected
-													>Wählen Sie eine Vorlage für die Symbolanzeige
-													aus...</option
-												>
-												<option value="EMOJI_ICONS"
-													>Gefühlsskala visualisiert durch Emojis</option
-												>
-												<option value="THUMBS"
-													>Positiv / Negativ visualisiert durch Emojis</option
-												>
-											</select>
-										</div> -->
-										<div class="col-12">
-											<label
-												for="numberOfIcons"
-												th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
-                                                    'Number of icons')}"
-											>
-											</label>
 
-											<select
-												id="numberOfIcons"
-												onchange="showIconElements(this);"
-												class="form-control form-select"
-											>
-												<option
-													value="2"
-													selected="selected"
-													>2</option
+										<div class="d-flex align-items-center" id="sliderConfig">
+											<div class="me-3">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="noIconConfig" value="noConfig">
+												<label class="form-check-label" for="noIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.noConfigLabel',
+														'No config')}">
+												</label>
+											</div>
+											<div class="me-3">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="oldIconConfig" value="oldConfig">
+												<label class="form-check-label" for="oldIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.oldConfigLabel',
+														'Use old config')}">
+												</label>
+											</div>
+											<div class="">
+												<input class="form-check-input" th:field="*{answers[0].sliderIconConfigDTO.configType}" type="radio" name="iconConfig" id="newIconConfig" value="newConfig">
+												<label class="form-check-label" for="newIconConfig"
+												th:text="${messages.get(#locale, 'question.label.sliderIcon.newConfigLabel',
+														'Create new config')}">
+												</label>
+											</div>
+										</div>
+
+										<div id="noConfig">
+
+											<div class="noConfigIconsCount">
+												<label
+													for="numberOfIcons"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+														'Number of icons')}"
 												>
-												<option value="3">3</option>
-												<option value="5">5</option>
+												</label>
+
+												<select
+													id="numberOfIcons"
+													onchange="showIconElements(this);"
+													class="form-control form-select"
+												>
+												<option
+														value="0"
+														>Select Number Of Icons</option
+													>
+													<option
+														value="2"
+
+														>2</option
+													>
+													<option value="3">3</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+										</div>
+										<div id="oldConfig">
+											<label for="oldConfigSelect"
+											th:text="${messages.get(#locale, 'question.label.sliderIcon.selectConfig',
+														'Select Config')}"
+											></label>
+
+											<select id="oldConfigSelect" placeholder="select config" onchange="onSliderConfigChange();" class="form-control form-select" th:field="*{answers[0].sliderIconConfigDTO.id}">
+												<option th:each="config : ${savedConfigs}" th:value="${config.getId()}" th:text="${config.getConfigName()}">
+												</option>
 											</select>
+
+										</div>
+
+										<div id="newConfig">
+											<div class="newConfigName col-12">
+												<label
+													for="configName"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.configName',
+														'Config Name')}"
+												>
+												
+												</label>
+												<input
+												id="configName"
+												class="form-control"
+												type="text"
+												th:field="*{answers[0].sliderIconConfigDTO.configName}"
+												onblur="checkSlider(false)"
+												/>
+								</div>
+
+								</div>
+										</div>
+
+										<div id="configDetail">
+											<div class="newConfigIconsCount">
+												<label
+													for="numberOfIconsNewConfig"
+													th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+														'Number of icons')}"
+												>
+												</label>
+
+												<select
+													id="numberOfIconsNewConfig"
+													onchange="displayIconElements()"
+													th:field="*{answers[0].sliderIconConfigDTO.numberOfIcons}"
+													class="form-control form-select"
+												>
+												<option
+														value="0"
+														>Select Number Of Icons</option
+													>
+													<option
+														value="2"
+														>2</option
+													>
+													<option value="3">3</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+											<div class="newConfigType col-12">
+												<label
+													for="typeOfNewConfig"
+												>
+												Config Type
+												</label>
+												<select
+												id="typeOfNewConfig"
+												onchange="displayIconElements()"
+												class="form-control form-select"
+												name="answers[0].sliderIconConfigDTO.iconType"
+												>
+												<option
+													value="icon"
+													selected="selected"
+													>Icon</option
+												>
+												<option value="image">Image</option>
+											</select>
+										</div>
 										</div>
 
 										<div class="col-12 py-4">
@@ -682,6 +781,10 @@
 
 									<!--/* This will never be shown. Instead it is cloned by Javascript and inserted into "iconSelectionWrapper" */-->
 									<div class="d-none">
+										<div
+										id="sliderIconError"
+										class="alert alert-danger"
+										></div>
 										<div
 											class="row"
 											id="iconSelectionCloningWrapper"
@@ -711,10 +814,6 @@
 												</div>
 											</div>
 										</div>
-										<div
-											id="sliderIconError"
-											class="alert alert-danger"
-										></div>
 										<!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
 										<th:block
 											th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].icons}"
@@ -723,8 +822,8 @@
 											<addVar
 												layout:replace="~{helper/var :: add(
                                                 key='errorSliderIconPosition__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].position')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].iconPosition')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].iconPosition')
                                                         : ''})}"
 											>
 											</addVar>
@@ -733,8 +832,65 @@
 											<addVar
 												layout:replace="~{helper/var :: add(
                                                 key='errorSliderIconIcon__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].icon')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].predefinedSliderIcon')
+                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].predefinedSliderIcon')
+                                                        : ''})}"
+											>
+											</addVar>
+										</th:block>
+									</div>
+
+									<div class="d-none">
+										<div
+											class="row"
+											id="imageUploadCloningWrapper"
+										>
+											<div class="col-lg-10 col-md-7 col-12">
+												<div class="input-group mb-3">
+													<div>
+														<div class="d-flex justify-content-center mb-4">
+															<img id="selectedAvatar" src="https://mdbootstrap.com/img/Photos/Others/placeholder-avatar.jpg"
+															class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" alt="example placeholder" />
+														</div>
+														<div id="imageInputDiv" class="d-flex justify-content-center">
+															<div data-mdb-ripple-init class="btn btn-primary btn-rounded">
+																<label id="chooseFileLabel" class="form-label text-white m-1" for="customFile2">Choose file</label>
+															</div>
+
+														</div>
+													</div>
+													<input
+														disabled="disabled"
+														id="customFile2"
+														type="file"
+														class="form-control"
+														hidden="true"
+														accept=".png, .jpeg, .jpg"
+														onchange="displaySelectedImage(event, this);"
+													/>
+													<!-- <input class="form-control" accept=".png,.jpeg,.jpg"
+															type="file" id="customFile2" hidden="true" /> -->
+													<select
+														disabled="disabled"
+														onchange=""
+														class="form-control form-select"
+														id="imagePosition"
+														hidden="true"
+													>
+													</select>
+												</div>
+											</div>
+										</div>
+										<!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
+										<th:block
+											th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}"
+										>
+
+											<addVar
+												layout:replace="~{helper/var :: add(
+                                                key='errorSliderIconUserIcon__${iconDTOIndex.index}__',
+                                                value=${#fields.hasErrors('answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[__${iconDTOIndex.index}__].userIcon')
+                                                        ? #fields.errors('answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[__${iconDTOIndex.index}__].userIcon')
                                                         : ''})}"
 											>
 											</addVar>
@@ -1290,21 +1446,41 @@
 		var deletedAnswerWithExportRule = false;
 		/*[- Get the current used language -]*/
 		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
-
 		var errorStepsize = /*[[${vars['errorStepsize']}]]*/ "";
 		var errorMinValue = /*[[${vars['errorMinValue']}]]*/ "";
 		var errorMaxValue = /*[[${vars['errorMaxValue']}]]*/ "";
+		var configName = /*[[${vars['configName']}]]*/ "";
+		var numberOfIconsInConfig = /*[[${questionDTO.answers[0].sliderIconConfigDTO.numberOfIcons}]]*/ null;
+
 
 		var sliderIconValueErrors = [];
 		var sliderIconPositionErrors = [];
-
+		var icons_pre = /*[[${icons}]]*/ null;
 		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
+		var currentConfigIconDTOs = /*[[${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}]]*/ null;
 		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
+		
+		var sliderConfigExists = /*[[${questionDTO.answers[0].sliderIconConfigDTO.id}]]*/ null !== null;
+		var sliderConfigType = /*[[${questionDTO.answers[0].sliderIconConfigDTO.iconType}]]*/ null;
+		var iconConfigs = /*[[${savedConfigs}]]*/ null;
 		/*[- Add the error messages from the model to the javascript arrays -]*/
 		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].icons}"]*/
 
 		sliderIconValueErrors.push(
 			"[(${vars['errorSliderIconIcon__${iconDTOIndex.index}__']})]"
+		);
+		sliderIconPositionErrors.push(
+			"[(${vars['errorSliderIconPosition__${iconDTOIndex.index}__']})]"
+		);
+
+		/*[/]*/
+
+		/*[- Add the error messages from the model to the javascript arrays -]*/
+		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].sliderIconConfigDTO.sliderIconDetailDTOS}"]*/
+		debugger;
+
+		sliderIconValueErrors.push(
+			"[(${vars['errorSliderIconUserIcon__${iconDTOIndex.index}__']})]"
 		);
 		sliderIconPositionErrors.push(
 			"[(${vars['errorSliderIconPosition__${iconDTOIndex.index}__']})]"
@@ -1330,8 +1506,6 @@
 				"bi-hand-thumbs-up"
 			);
 
-			/*[- Check if current DTO already has sliderIcons enabled and trigger the dom manipulation -]*/
-			toggleIconPicker(document.querySelector("#showIcons"), currentIconDTOs);
 			/*[- Check if there are errors in the dom -]*/
 			checkIconErrorsInModel();
 
@@ -1526,7 +1700,7 @@
 			/*[- At first call server error messages are displayed -]*/
 			if (
 				first === true &&
-				(errorStepsize !== "" || errorMinValue !== "" || errorMaxValue !== "")
+				(errorStepsize !== "" || errorMinValue !== "" || errorMaxValue !== "" || configName !== "")
 			) {
 				$("#sliderErrors").show();
 			} else if (max !== "" && min !== "" && stepsize !== "") {
@@ -1772,6 +1946,52 @@
 			}
 		});
 
+		$(document).ready(function() {
+			if(sliderConfigExists && sliderConfigType){
+				$('#oldConfig').show();
+				$("#numberOfIconsWrapper").removeClass("d-none");
+				$('#configDetail').show();
+				document.getElementById('oldIconConfig').checked = true;
+
+				if(sliderConfigType=='icon'){
+					toggleIconPicker(document.querySelector("#showIcons"), currentConfigIconDTOs);
+				}
+				else if(sliderConfigType == 'image'){
+					showImageElements(document.querySelector("#numberOfIconsNewConfig"), currentConfigIconDTOs, false);
+				}
+				oldConfigChecked();
+			}
+			else {
+				document.getElementById('noIconConfig').checked = true;
+				$('#noConfig').show();
+				toggleIconPicker(document.querySelector("#showIcons"), currentIconDTOs);
+			}
+
+			// Listen for changes to any radio button in the group
+			$('input[name="answers[0].sliderIconConfigDTO.configType"]').change(function() {
+				clearIconFields();
+				// Hide all div elements first
+				$('#newConfig').hide();
+				$('#oldConfig').hide();
+				$('#noConfig').hide();
+				$('#configDetail').show();
+
+				// Determine which radio button is checked and show the corresponding div
+				if ($('#noIconConfig').is(':checked')) {
+					$('#noConfig').show();
+					$('#configDetail').hide();
+					noConfigChecked();
+				} else if ($('#oldIconConfig').is(':checked')) {
+					$('#oldConfig').show();
+					oldConfigChecked();
+				} else if ($('#newIconConfig').is(':checked')) {
+					$('#newConfig').show();
+					newConfigChecked();
+				}
+
+			});
+		});
+
 		function handleQuestionTypes(onload) {
 			/*[- Disable all elements -]*/
 			$("#multipleChoice").children().attr("disabled", "disabled");
@@ -1857,9 +2077,12 @@
 					$("#iconField").show();
 					$("#showIconsContainer").show();
 					$("#numberOfIconsWrapper").addClass("d-none");
-					$("#icon-select").addClass("d-none");
 					$("#slider").children().removeAttr("disabled");
 					$("#sliderField").children("legend").siblings().show();
+					$('#newConfig').hide();
+					$('#oldConfig').hide();
+					$('#noConfig').hide();
+					$('#configDetail').hide();
 					break;
 				case "NUMBER_CHECKBOX":
 					/*[- Enable the wysiwyg editor -]*/
@@ -2232,12 +2455,53 @@
 			if (checkbox.checked) {
 				$("#numberOfIconsWrapper").removeClass("d-none");
 				/*[- Toggle the change function of the select element -]*/
-				showIconElements(document.querySelector("#numberOfIcons"), iconArray);
+				if ($('#noIconConfig').is(':checked')) {
+					showIconElements(document.querySelector("#numberOfIcons"), iconArray);
+				}
+				else {
+					showIconElements(document.querySelector("#numberOfIconsNewConfig"), iconArray);
+				}
 			} else {
 				$("#numberOfIconsWrapper").addClass("d-none");
 				clearIconFields();
 			}
 		}
+
+		function oldConfigChecked(){
+			$('#numberOfIconsNewConfig').attr('disabled', 'disabled');
+			$('#typeOfNewConfig').attr('disabled', 'disabled');
+			onSliderConfigChange();
+		}
+
+		function newConfigChecked(){
+			$('#typeOfNewConfig').val('icon');
+			$('#numberOfIconsNewConfig').val('2');
+			showIconElements(document.querySelector("#numberOfIconsNewConfig"));
+			$('#numberOfIconsNewConfig').prop('disabled', false);
+			$('#typeOfNewConfig').prop('disabled', false);
+		}
+
+		function noConfigChecked(){
+			showIconElements(document.querySelector("#numberOfIcons"));
+
+		}
+
+
+		function onSliderConfigChange() {
+        const selectedId = parseInt(document.getElementById('oldConfigSelect').value, 10);
+        const selectedConfig = iconConfigs.find(config => config.id === selectedId);
+		$("#numberOfIconsNewConfig").val(selectedConfig.numberOfIcons);
+		$("#typeOfNewConfig").val(selectedConfig.iconType);
+		clearIconFields();
+		clearImageFields();
+        if (selectedConfig.iconType=='icon') {
+			toggleIconPicker(document.querySelector("#showIcons"), selectedConfig.sliderIconDetailDTOS)
+        } else {
+			if (selectedConfig.iconType=='image') {
+			showImageElements(document.querySelector("#numberOfIconsNewConfig"), selectedConfig.sliderIconDetailDTOS, false)
+        }
+		}
+    	}
 
 		function divideIntoPartitions(number, partitions) {
 			if (partitions <= 1) {
@@ -2253,6 +2517,22 @@
 			return result;
 		}
 
+		function sortIconArray(iconArray){
+			if(iconArray != null){
+				iconArray.sort((a, b) => {
+				const posA = a.iconPosition;
+				const posB = b.iconPosition;
+				if (posA < posB) {
+					return -1;
+				}
+				if (posA > posB) {
+					return 1;
+				}
+				return 0;
+				});
+			}
+			return iconArray;
+		}
 		/*[-
         *
         * Function to show a fixed number of form elements for the icon settings
@@ -2263,23 +2543,8 @@
 		function showIconElements(selectElement, iconArray = null) {
 			/*[- Clear currently added input fields from DOM -]*/
 			clearIconFields();
-
-			// Sort icons according to positions
-			if(iconArray != null){
-				iconArray.sort((a, b) => {
-				const posA = a.position;
-				const posB = b.position;
-				if (posA < posB) {
-					return -1;
-				}
-				if (posA > posB) {
-					return 1;
-				}
-				return 0;
-				});
-			}
+			iconArray=sortIconArray(iconArray);
 			var numberOfIcons = iconArray!= null ? iconArray.length : Number(selectElement.value);
-
 			if (numberOfIcons > 0) {
 				for (let i = 0; i < numberOfIcons; i++) {
 					/*[- Clone the elements from dom -]*/
@@ -2289,17 +2554,17 @@
 					if (iconArray !== null && iconArray.length > 0) {
 						try {
 							/*[- Set the position and store the icon value in a variable -]*/
-							newIconDiv.find("#iconPosition").val(iconArray[i].position);
+							newIconDiv.find("#iconPosition").val(iconArray[i].iconPosition);
 							var startIconValue =
-								iconArray[i].icon !== "" &&
-								iconArray[i].icon !== null &&
-								iconArray[i].icon !== undefined
-									? iconArray[i].icon
+								iconArray[i].predefinedSliderIcon !== "" &&
+								iconArray[i].predefinedSliderIcon !== null &&
+								iconArray[i].predefinedSliderIcon !== undefined
+									? iconArray[i].predefinedSliderIcon
 									: "bi-hand-thumbs-up";
 						} catch (error) {}
 					} else {
 						/*[- Set default icon value -]*/
-						var startIconValue = "bi-hand-thumbs-up";
+						var startIconValue = icons_pre[0];
 						var positions = divideIntoPartitions(100, numberOfIcons);
 						newIconDiv.find("#iconPosition").val(positions[i]);
 					}
@@ -2333,20 +2598,165 @@
 			/*[- Change properties of cloned input fields to match different DTO attributes -]*/
 			var newIconValueInput = newIconDiv.find("#icon");
 			var newIconPositionInput = newIconDiv.find("#iconPosition");
-
 			newIconValueInput.removeAttr("disabled");
-			newIconValueInput.attr("name", "answers[0].icons[" + index + "].icon");
 			newIconPositionInput.removeAttr("disabled");
+
+			if(!$('#oldIconConfig').is(':checked') && !$('#newIconConfig').is(':checked')){
+			newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconPositionInput.removeAttr("disabled");
+				newIconValueInput.attr("name", "answers[0].icons[" + index + "].predefinedSliderIcon");
+			newIconPositionInput.removeAttr("disabled");
+				newIconPositionInput.attr(
+					"name",
+					"answers[0].icons[" + index + "].iconPosition"
+				);
+				fillIconSteps(newIconPositionInput, numberOfIcons);
+
+				newIconDiv.removeAttr("id");
+				newIconDiv.attr("id", "iconRow_" + index);
+
+				return newIconDiv;
+			}
+			else {
+				newIconValueInput.attr("name", "answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].predefinedSliderIcon");
+				newIconPositionInput.attr(
+					"name",
+					"answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].iconPosition"
+				);
+				fillIconSteps(newIconPositionInput, numberOfIcons);
+
+				newIconDiv.removeAttr("id");
+				newIconDiv.attr("id", "iconRow_" + index);
+
+				return newIconDiv;
+			}
+		}
+
+		/*[-
+        *
+        * Function to show a fixed number of form elements for the icon settings
+        * Number of icons will be decided by the selectElement parameter of type <select>
+        *
+        * @param {type} selectElement <select> element from the dom to choose the number of icons
+        -]*/
+		function showImageElements(selectElement, iconArray = null, newConfig=true) {
+			/*[- Clear currently added input fields from DOM -]*/
+			clearImageFields();
+			// Sort icons according to positions
+			iconArray=sortIconArray(iconArray);
+			var numberOfIcons = iconArray!= null ? iconArray.length : Number(selectElement.value);
+			if (numberOfIcons > 0) {
+				for (let i = 0; i < numberOfIcons; i++) {
+					/*[- Clone the elements from dom -]*/
+					var newIconDiv = newConfig ? cloneImageUploadInputs(i, numberOfIcons, null) : cloneImageUploadInputs(i, numberOfIcons, iconArray[i].userIconBase64);
+
+					/*[- Check if the method has been called with already set icon arrays e.g. from model -]*/
+					if (iconArray !== null && iconArray.length > 0) {
+						try {
+							/*[- Set the position and store the icon value in a variable -]*/
+							newIconDiv.find("#imagePosition").val(iconArray[i].iconPosition);
+						} catch (error) {}
+					} else {
+						/*[- Set default icon value -]*/
+						var positions = divideIntoPartitions(100, numberOfIcons);
+						newIconDiv.find("#imagePosition").val(positions[i]);
+					}
+
+					/*[- Add new div to dom -]*/
+					$("#icon-select").append(newIconDiv);
+				}
+
+				/*[- Show iconWrapper after adding elements to it -]*/
+				$("#icon-select").removeClass("d-none");
+			}
+		}
+
+		/*[-
+        *
+        * Function that clones the icon inputs from the DOM and adjusts the attributes
+        * to fit to a certain model attribute depicted by the given index
+        *
+        * @param index - Integer depicting a certain index in the answers[0].icons array from the model
+        * @param numberOfIcon - Integer depicting the number of icons to add to the dom
+        *
+        * @return - JQuery object for the new dom element
+        *
+        -]*/
+		function cloneImageUploadInputs(index, numberOfIcons, imageBase64=null) {
+			/*[- Clone the form elements from DOM -]*/
+			var newIconDiv = $("#imageUploadCloningWrapper").clone(true, true);
+			/*[- Change properties of cloned input fields to match different DTO attributes -]*/
+			var newIconPositionInput = newIconDiv.find("#imagePosition");
+			var newIconImageElement = newIconDiv.find("#selectedAvatar");
+			var newIconInputElement = newIconDiv.find("#customFile2");
+			var newIconLabel = newIconDiv.find("#chooseFileLabel");
+
+			newIconPositionInput.removeAttr("disabled");
+			newIconInputElement.removeAttr("disabled");
+			newIconImageElement.removeAttr("id");
+			newIconInputElement.removeAttr("id");
+			newIconLabel.removeAttr("for");
+
+			newIconImageElement.attr("id", "selectedImageIcon-" + index);
+			newIconImageElement.attr("data-index", index);
+			newIconInputElement.attr("id", "selectedImageIconInput-" + index)
+			newIconLabel.attr("for", "selectedImageIconInput-" + index);
+			newIconInputElement.attr("name", "answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].userIcon");
 			newIconPositionInput.attr(
 				"name",
-				"answers[0].icons[" + index + "].position"
+				"answers[0].sliderIconConfigDTO.sliderIconDetailDTOS[" + index + "].iconPosition"
 			);
+
+			if(imageBase64!=null){
+				newIconImageElement.attr("src",imageBase64);
+				$("#imageInputDiv").removeClass("d-flex");
+				$("#imageInputDiv").addClass("d-none");
+			}
+			else{
+				$("#imageInputDiv").removeClass("d-none");
+				$("#imageInputDiv").addClass("d-flex");
+
+
+			}
 			fillIconSteps(newIconPositionInput, numberOfIcons);
 
 			newIconDiv.removeAttr("id");
 			newIconDiv.attr("id", "iconRow_" + index);
 
 			return newIconDiv;
+		}
+
+		function displaySelectedImage(event, inputElement) {
+			const id=inputElement.id;
+			const selectedImage = document.getElementById("selectedImageIcon-"+id.split("-")[1]);
+			const fileInput = event.target;
+
+			if (fileInput.files && fileInput.files[0]) {
+				const reader = new FileReader();
+
+				reader.onload = function(e) {
+					selectedImage.src = e.target.result;
+				};
+
+				reader.readAsDataURL(fileInput.files[0]);
+			}
+		}
+
+
+		function displayIconElements(){
+			clearIconFields();
+			clearImageFields();
+			if($("#newIconConfig").is(':checked')){
+				var configType = $("#typeOfNewConfig").val()
+
+				if(configType == 'icon'){
+					showIconElements(document.querySelector("#numberOfIconsNewConfig"))
+				} else {
+					showImageElements(document.querySelector("#numberOfIconsNewConfig"))
+
+				}	
+			}
 		}
 
 		/*[-
@@ -2436,17 +2846,28 @@
 
 		/*[-
         *
+        * FUnction to remove all current icon elements from the dom
+        * and hides the element by adding class "d-none"
+        *
+        -]*/
+		function clearImageFields() {
+			/*[- Remove child elements -]*/
+			$("#image-select").empty();
+			/*[- Hide the wrapper from DOM -]*/
+			$("#image-select").addClass("d-none");
+		}
+
+		/*[-
+        *
         * Function to activate the functionality of the iconpicker input fields
         * with the help of iconpicker.js
         *
         -]*/
 		async function toggleIconpickerElements(parentElement, startValue) {
 			//Init iconpicker for slider
-			const response = await fetch("/js/iconsets/bootstrap_subset.json");
-			const result = await response.json();
 			const element = parentElement.find(".iconpicker").get(0);
 			const iconpicker = new Iconpicker(element, {
-				icons: result,
+				icons: icons_pre,
 				showSelectedIn: $(parentElement).find(".selected-icon").get(0),
 				defaultValue: startValue,
 			});
@@ -2462,7 +2883,8 @@
         * to Javascript via thymeleaf
         -]*/
 		function checkIconErrorsInModel() {
-			var numberOfIcons = getNumberOfSliderIconsInDOM();
+		debugger;
+			var numberOfIcons = numberOfIconsInConfig ? numberOfIconsInConfig : getNumberOfSliderIconsInDOM();
 
 			for (let i = 0; i < numberOfIcons; i++) {
 				/*[- If there is an position error for the current icon in model -]*/
@@ -2471,7 +2893,7 @@
 					sliderIconPositionErrors[i] !== ""
 				) {
 					appendErrorAfterSliderElement(
-						$("#iconRow_" + i),
+						$("#iconField"),
 						splitErrorArrayString(sliderIconPositionErrors[i])
 					);
 				}
@@ -2482,7 +2904,7 @@
 					sliderIconValueErrors[i] !== ""
 				) {
 					appendErrorAfterSliderElement(
-						$("#iconRow_" + i),
+						$("#iconField"),
 						splitErrorArrayString(sliderIconValueErrors[i])
 					);
 				}
@@ -2507,7 +2929,7 @@
 			sliderIconRow.find("div[id*='sliderIconError']").remove();
 
 			var positionInputVal = sliderIconRow
-				.find("input[name^='answers[0].icons'][name$='.position']")
+				.find("input[name^='answers[0].icons'][name$='.iconPosition']")
 				.val();
 
 			var currentIconPosition =
@@ -2516,7 +2938,7 @@
 			/*[- Handle onblur events by validating current dom elements; Validation is the same as the Spring bean -]*/
 			if (currentIconPosition !== undefined) {
 				let positionValues = [];
-				$("select[name^='answers[0].icons'][name$='.position']").each(function (
+				$("select[name^='answers[0].icons'][name$='.iconPosition']").each(function (
 					i,
 					position
 				) {
@@ -2594,6 +3016,7 @@
         * @param {type} message - message string that should be displayed in the error div
         -]*/
 		function appendErrorAfterSliderElement(element, message, isLast = false) {
+			debugger;
 			var clonedErrorDiv = $("#sliderIconError").clone();
 			if (isLast === true) {
 				clonedErrorDiv.attr("id", "sliderIconError_duplicate");
@@ -2726,7 +3149,7 @@
 		$(element).find('ul').each(function(ulIndex, ulElement) {
 			var absoluteDivRect = ulElement.getBoundingClientRect();
 			var $ulElement = $(ulElement);
-			
+
 			if (absoluteDivRect.right > viewportWidth) {
 				$ulElement.css('left', 'auto')
 				$ulElement.css('right', '0')
@@ -2738,10 +3161,10 @@
 		});
 		});
 
-		
-		
 
-		
-		});		
+
+
+
+		});
 	</script>
 </th:block>

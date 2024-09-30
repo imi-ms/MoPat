@@ -63,6 +63,10 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
     @OneToMany(mappedBy = "answer", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private Set<SliderIcon> icons = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "slider_icon_config_id", referencedColumnName = "id")
+    private SliderIconConfig sliderIconConfig;
+
     protected SliderAnswer() {
         // default constructor (in protected state), should not be accessible
         // to anything else but the JPA implementation (here: Hibernate) and
@@ -281,5 +285,13 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
      */
     public void addIcon(final SliderIcon icon) {
         this.icons.add(icon);
+    }
+
+    public SliderIconConfig getSliderIconConfig() {
+        return sliderIconConfig;
+    }
+
+    public void setSliderIconConfig(SliderIconConfig sliderIconConfig) {
+        this.sliderIconConfig = sliderIconConfig;
     }
 }

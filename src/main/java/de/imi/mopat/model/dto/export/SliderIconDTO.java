@@ -4,9 +4,9 @@ public class SliderIconDTO {
 
     private Long id;
 
-    private Integer position = null;
+    private Integer iconPosition = null;
 
-    private String icon = null;
+    private String predefinedSliderIcon = null;
 
     private Long answerId;
 
@@ -14,20 +14,20 @@ public class SliderIconDTO {
         return id;
     }
 
-    public Integer getPosition() {
-        return position;
+    public Integer getIconPosition() {
+        return iconPosition;
     }
 
-    public void setPosition(final Integer position) {
-        this.position = position;
+    public void setIconPosition(final Integer position) {
+        this.iconPosition = position;
     }
 
-    public String getIcon() {
-        return icon;
+    public String getPredefinedSliderIcon() {
+        return predefinedSliderIcon;
     }
 
-    public void setIcon(final String icon) {
-        this.icon = icon;
+    public void setPredefinedSliderIcon(final String icon) {
+        this.predefinedSliderIcon = icon;
     }
 
     public Long getAnswerId() {

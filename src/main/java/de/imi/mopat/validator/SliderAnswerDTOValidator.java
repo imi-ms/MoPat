@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import de.imi.mopat.model.dto.export.SliderIconDTO;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -28,6 +29,9 @@ public class SliderAnswerDTOValidator implements Validator {
 
     @Autowired
     private SliderIconDTOValidator sliderIconDTOValidator;
+
+    @Autowired
+    private SliderIconConfigDTOValidator sliderIconConfigDTOValidator;
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -101,8 +105,15 @@ public class SliderAnswerDTOValidator implements Validator {
                     }
                 }
             }
+            if (Objects.equals(sliderAnswer.getSliderIconConfigDTO().getConfigType(), "newConfig")
+                || Objects.equals(sliderAnswer.getSliderIconConfigDTO().getConfigType(),
+                "oldConfig")) {
+                errors.pushNestedPath("sliderIconConfigDTO");
+                sliderIconConfigDTOValidator.validate(sliderAnswer.getSliderIconConfigDTO(), errors);
+                errors.popNestedPath();
 
-            if (sliderAnswer.getShowIcons() != null && sliderAnswer.getShowIcons()) {
+
+            } else if (sliderAnswer.getShowIcons() != null && sliderAnswer.getShowIcons()) {
                 for (int i = 0; i < sliderAnswer.getIcons().size(); i++) {
                     SliderIconDTO sliderIconDTO = sliderAnswer.getIcons().get(i);
                     // tell the errors object that from now on the validation

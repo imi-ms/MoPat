@@ -6,37 +6,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import de.imi.mopat.dao.PredefinedSliderIconDao;
+import de.imi.mopat.dao.SliderIconConfigDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.ServletContextInfo;
-import de.imi.mopat.helper.controller.StringUtilities;
-import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.FreetextAnswer;
-import de.imi.mopat.model.ImageAnswer;
-import de.imi.mopat.model.NumberInputAnswer;
-import de.imi.mopat.model.Question;
-import de.imi.mopat.model.SelectAnswer;
-import de.imi.mopat.model.SliderAnswer;
-import de.imi.mopat.model.SliderFreetextAnswer;
-import de.imi.mopat.model.SliderIcon;
-import de.imi.mopat.model.conditions.Condition;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
+import de.imi.mopat.model.*;
+import de.imi.mopat.model.dto.SliderIconConfigDTO;
+import de.imi.mopat.model.dto.SliderIconDetailDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import jakarta.servlet.ServletContext;
-import java.util.Set;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This class represents the data transfer obejct of model {@link Answer} to convert a model to json
@@ -83,6 +68,8 @@ public class JsonAnswerDTO {
 
     private Set<SliderIcon> icons = new HashSet<>();
     private List<JsonConditionDTO> conditions = new ArrayList<>();
+
+    private SliderIconConfigDTO sliderIconConfigDTO = null;
 
     public JsonAnswerDTO() {
     }
@@ -267,7 +254,7 @@ public class JsonAnswerDTO {
         return icons;
     }
 
-    public void addCondition(JsonConditionDTO jsonConditionDTO){
+    public void addCondition(JsonConditionDTO jsonConditionDTO) {
         this.conditions.add(jsonConditionDTO);
     }
 
@@ -275,13 +262,22 @@ public class JsonAnswerDTO {
         this.icons = icons;
     }
 
+    public SliderIconConfigDTO getSliderIconConfigDTO() {
+        return sliderIconConfigDTO;
+    }
+
+    public void setSliderIconConfigDTO(SliderIconConfigDTO sliderIconConfigDTO) {
+        this.sliderIconConfigDTO = sliderIconConfigDTO;
+    }
+
+
     /**
      * Convert instance of this class to {@link Answer} object.
      *
      * @param question {@link Question} object the answer belongs to.
      * @return Object of model {@link Answer}.
      */
-    public Answer convertToAnswer(final Question question) {
+    public Answer convertToAnswer(final Question question, final SliderIconConfigDao sliderIconConfigDao,final PredefinedSliderIconDao predefinedSliderIconDao, final SliderIconDetailService sliderIconDetailService) {
         Answer answer = null;
         switch (this.getJsonQuestionDTO().getQuestionType()) {
             case MULTIPLE_CHOICE:
@@ -290,7 +286,7 @@ public class JsonAnswerDTO {
                 // select answers have a localized label)
                 if (this.getLocalizedLabel() != null && !this.getLocalizedLabel().isEmpty()) {
                     SelectAnswer selectAnswer = new SelectAnswer(question, this.getIsEnabled(),
-                        this.getLocalizedLabel(), this.getIsOther());
+                            this.getLocalizedLabel(), this.getIsOther());
                     selectAnswer.setValue(this.getValue());
                     selectAnswer.setCodedValue(this.getCodedValue());
                     answer = selectAnswer;
@@ -302,14 +298,14 @@ public class JsonAnswerDTO {
                 try {
                     if (this.getStartDate() != null && this.getEndDate() == null) {
                         answer = new DateAnswer(question, this.getIsEnabled(),
-                            Constants.DATE_FORMAT.parse(this.getStartDate()), null);
+                                Constants.DATE_FORMAT.parse(this.getStartDate()), null);
                     } else if (this.getStartDate() == null && this.getEndDate() != null) {
                         answer = new DateAnswer(question, this.getIsEnabled(), null,
-                            Constants.DATE_FORMAT.parse(this.getStartDate()));
+                                Constants.DATE_FORMAT.parse(this.getStartDate()));
                     } else if (this.getStartDate() != null && this.getEndDate() != null) {
                         answer = new DateAnswer(question, this.getIsEnabled(),
-                            Constants.DATE_FORMAT.parse(this.getStartDate()),
-                            Constants.DATE_FORMAT.parse(this.getEndDate()));
+                                Constants.DATE_FORMAT.parse(this.getStartDate()),
+                                Constants.DATE_FORMAT.parse(this.getEndDate()));
                     } else {
                         answer = new DateAnswer(question, this.getIsEnabled(), null, null);
                     }
@@ -343,21 +339,45 @@ public class JsonAnswerDTO {
                     Double.parseDouble(this.getStepsize());
                 }
                 answer = new NumberInputAnswer(question, this.getIsEnabled(), this.getMinValue(),
-                    this.getMaxValue(), stepsize);
+                        this.getMaxValue(), stepsize);
                 break;
             case SLIDER:
             case NUMBER_CHECKBOX:
                 SliderAnswer sliderAnswer = new SliderAnswer(question, this.getIsEnabled(),
-                    this.getMinValue(), this.getMaxValue(), Double.parseDouble(this.getStepsize()),
-                    this.getVertical());
+                        this.getMinValue(), this.getMaxValue(), Double.parseDouble(this.getStepsize()),
+                        this.getVertical());
                 sliderAnswer.setLocalizedMinimumText(this.getLocalizedMinimumText());
                 sliderAnswer.setLocalizedMaximumText(this.getLocalizedMaximumText());
                 sliderAnswer.setShowValueOnButton(this.getShowValueOnButton());
                 sliderAnswer.setShowIcons(this.getShowIcons());
+                if (this.getSliderIconConfigDTO() != null) {
+                    SliderIconConfig sliderIconConfig = sliderIconConfigDao.getElementByName(this.getSliderIconConfigDTO().getConfigName());
+                    if(sliderIconConfig==null){
+                        sliderIconConfig = new SliderIconConfig(this.getSliderIconConfigDTO().getNumberOfIcons(), this.getSliderIconConfigDTO().getConfigName());
+                        sliderIconConfigDao.merge(sliderIconConfig);
+
+                        List<SliderIconDetail> sliderIconDetails = new ArrayList<>();
+                        for (SliderIconDetailDTO sliderIconDetailDTO : this.getSliderIconConfigDTO().getSliderIconDetailDTOS()) {
+                            if (sliderIconDetailDTO.getPredefinedSliderIcon()!=null) {
+                                sliderIconDetails.add(
+                                        sliderIconDetailService.toSliderIconDetail(sliderIconDetailDTO,
+                                                sliderIconConfig));
+                            } else {
+                                sliderIconDetails.add(
+                                        sliderIconDetailService.toSliderIconDetailPersistImage(sliderIconDetailDTO,
+                                                sliderIconConfig));
+                            }
+                        }
+                        sliderIconConfig.setIcons(sliderIconDetails);
+                        sliderIconConfigDao.merge(sliderIconConfig);
+                    }
+
+                    sliderAnswer.setSliderIconConfig(sliderIconConfig);
+                }
                 Set<SliderIcon> iconSet = new HashSet<>();
                 for (SliderIcon icon : this.getIcons()) {
-                    SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                        sliderAnswer);
+                    SliderIcon newIcon = new SliderIcon(icon.getIconPosition(), predefinedSliderIconDao.getIconByName(icon.getPredefinedSliderIcon().getIconName()),
+                            sliderAnswer);
                     iconSet.add(newIcon);
                 }
                 sliderAnswer.setIcons(iconSet);
@@ -365,9 +385,9 @@ public class JsonAnswerDTO {
                 break;
             case NUMBER_CHECKBOX_TEXT:
                 SliderFreetextAnswer sliderFreetextAnswer = new SliderFreetextAnswer(question,
-                    this.getIsEnabled(), this.getMinValue(), this.getMaxValue(),
-                    Double.parseDouble(this.getStepsize()), this.getLocalizedFreetextLabel(),
-                    this.getVertical());
+                        this.getIsEnabled(), this.getMinValue(), this.getMaxValue(),
+                        Double.parseDouble(this.getStepsize()), this.getLocalizedFreetextLabel(),
+                        this.getVertical());
                 sliderFreetextAnswer.setLocalizedMinimumText(this.getLocalizedMinimumText());
                 sliderFreetextAnswer.setLocalizedMaximumText(this.getLocalizedMaximumText());
                 answer = sliderFreetextAnswer;

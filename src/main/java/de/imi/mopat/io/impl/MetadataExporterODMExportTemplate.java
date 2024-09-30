@@ -8,6 +8,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.SliderIconDetailService;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BodyPartAnswer;
@@ -107,9 +108,9 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
 
     @Override
     public byte[] export(Questionnaire questionnaire, MessageSource messageSource,
-        ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
-        ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
-        QuestionDao questionDao, ScoreDao scoreDao) {
+                         ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
+                         ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
+                         QuestionDao questionDao, ScoreDao scoreDao, SliderIconDetailService sliderIconDetailService) {
         // Get current timestamp as XMLGregorianCalendar
         GregorianCalendar gregorianCalender = new GregorianCalendar();
         XMLGregorianCalendar nowXMLTimestamp = null;
