@@ -310,7 +310,7 @@ public class ApplicationSecurityConfig {
                         new AntPathRequestMatcher("/mobile/survey/questionnairetest/**"),
                         new AntPathRequestMatcher("/mobile/survey/encounter"),
                         new AntPathRequestMatcher("/mobile/survey/schedule"),
-                        new AntPathRequestMatcher("mobile/survey/questionnaireScheduled"),
+                        new AntPathRequestMatcher("/mobile/survey/questionnaireScheduled"),
                         new AntPathRequestMatcher("/mobile/survey/scores"),
                         new AntPathRequestMatcher("/mobile/survey/finishQuestionnaire"),
                         new AntPathRequestMatcher("/mobile/survey/pseudonym"),
