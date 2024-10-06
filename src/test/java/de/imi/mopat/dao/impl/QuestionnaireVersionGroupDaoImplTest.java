@@ -5,9 +5,9 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.QuestionnaireGroupDao;
+import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.QuestionnaireTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +30,10 @@ import static org.junit.Assert.assertNotNull;
         MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
-public class QuestionnaireGroupDaoImplTest {
+public class QuestionnaireVersionGroupDaoImplTest {
 
     @Autowired
-    QuestionnaireGroupDao questionnaireGroupDao;
+    QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
 
     @Autowired
     QuestionnaireDao questionnaireDao;
@@ -55,25 +55,25 @@ public class QuestionnaireGroupDaoImplTest {
         List<Questionnaire> allElements = questionnaireDao.getAllElements();
         assertEquals("Expected one questionnaire", 1, allElements.size());
 
-        QuestionnaireGroup questionnaireGroup = new QuestionnaireGroup();
+        QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
 
-        questionnaireGroup.setName(questionnaire.getName());
-        questionnaireGroup.addQuestionnaire(questionnaire);
+        questionnaireVersionGroup.setName(questionnaire.getName());
+        questionnaireVersionGroup.addQuestionnaire(questionnaire);
 
         // Act
-        questionnaireGroupDao.merge(questionnaireGroup);
-        List<QuestionnaireGroup> groups = questionnaireGroupDao.getAllElements();
+        questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
+        List<QuestionnaireVersionGroup> groups = questionnaireVersionGroupDao.getAllElements();
 
         // Assert
         assertNotNull("QuestionnaireGroup list should not be null", groups);
         assertEquals("QuestionnaireGroup list size should be 1", 1, groups.size());
-        assertEquals("Stored QuestionnaireGroup should match the original", questionnaireGroup, groups.get(0));
+        assertEquals("Stored QuestionnaireGroup should match the original", questionnaireVersionGroup, groups.get(0));
     }
 
     public void clearTable() {
-        List<QuestionnaireGroup> allGroups = questionnaireGroupDao.getAllElements();
-        for (QuestionnaireGroup group : allGroups) {
-            questionnaireGroupDao.remove(group);
+        List<QuestionnaireVersionGroup> allGroups = questionnaireVersionGroupDao.getAllElements();
+        for (QuestionnaireVersionGroup group : allGroups) {
+            questionnaireVersionGroupDao.remove(group);
         }
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
         for (Questionnaire questionnaire : allQuestionnaires) {

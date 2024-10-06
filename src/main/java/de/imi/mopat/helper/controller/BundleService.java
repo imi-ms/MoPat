@@ -65,8 +65,8 @@ public class BundleService {
                     return questionnaireDTO;
                 })
                 .sorted(
-                        Comparator.comparing(QuestionnaireDTO::getGroupName, String::compareToIgnoreCase)
-                                .thenComparing(QuestionnaireDTO::getGroupId)
+                        Comparator.comparing(QuestionnaireDTO::getQuestionnaireVersionGroupName, String::compareToIgnoreCase)
+                                .thenComparing(QuestionnaireDTO::getQuestionnaireVersionGroupId)
                                 .thenComparing(QuestionnaireDTO::getVersion))
                 .toList();
     }

@@ -6,7 +6,6 @@ import de.imi.mopat.model.ExportTemplate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import jakarta.validation.constraints.NotNull;
@@ -58,7 +57,7 @@ public class QuestionnaireDTO {
     private List<QuestionDTO> questionDTOs;
 
     @JsonIgnore
-    private QuestionnaireGroupDTO questionnaireGroupDTO;
+    private QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO;
 
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
@@ -179,19 +178,19 @@ public class QuestionnaireDTO {
         return version;
     }
 
-    public Long getGroupId() {
-        return (questionnaireGroupDTO != null) ? questionnaireGroupDTO.getGroupId() : null;
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupId() : null;
     }
 
-    public String getGroupName() {
-        return  (questionnaireGroupDTO != null) ? questionnaireGroupDTO.getGroupName() : null;
+    public String getQuestionnaireVersionGroupName() {
+        return  (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
     }
 
-    public QuestionnaireGroupDTO getQuestionnaireGroupDTO() {
-        return questionnaireGroupDTO;
+    public QuestionnaireVersionGroupDTO getQuestionnaireGroupDTO() {
+        return questionnaireVersionGroupDTO;
     }
 
-    public void setQuestionnaireGroupDTO(QuestionnaireGroupDTO questionnaireGroupDTO) {
-        this.questionnaireGroupDTO = questionnaireGroupDTO;
+    public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
+        this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
     }
 }

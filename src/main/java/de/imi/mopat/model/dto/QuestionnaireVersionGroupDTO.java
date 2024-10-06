@@ -2,7 +2,7 @@ package de.imi.mopat.model.dto;
 
 import java.util.List;
 
-public class QuestionnaireGroupDTO {
+public class QuestionnaireVersionGroupDTO {
     private Long groupId;
     private String groupName;
     private List<QuestionnaireDTO> questionnaireDTOS;

@@ -137,8 +137,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
     private Long createdBy;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "group_id")
-    private QuestionnaireGroup questionnaireGroup;
+    @JoinColumn(name = "version_group_id")
+    private QuestionnaireVersionGroup questionnaireVersionGroup;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -855,15 +855,15 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return version == 1;
     }
 
-    public QuestionnaireGroup getGroup() {
-        return questionnaireGroup;
+    public QuestionnaireVersionGroup getQuestionnaireVersionGroup() {
+        return questionnaireVersionGroup;
+    }
+    
+    public void setQuestionnaireVersionGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
+        this.questionnaireVersionGroup = questionnaireVersionGroup;
     }
 
-    public Long getGroupId() {
-        return (questionnaireGroup != null) ? questionnaireGroup.getId() : null;
-    }
-
-    public void setGroup(QuestionnaireGroup questionnaireGroup) {
-        this.questionnaireGroup = questionnaireGroup;
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
     }
 }

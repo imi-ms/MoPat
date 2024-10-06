@@ -68,7 +68,7 @@ public class QuestionnaireServiceTest {
     private LogoValidator logoValidator;
 
     @Mock
-    private QuestionnaireGroupService questionnaireGroupService;
+    private QuestionnaireVersionGroupService questionnaireVersionGroupService;
 
     @InjectMocks
     private QuestionnaireService questionnaireService;

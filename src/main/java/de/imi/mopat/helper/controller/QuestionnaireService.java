@@ -5,7 +5,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.BundleQuestionnaire;
-import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -84,7 +84,7 @@ public class QuestionnaireService {
     private QuestionnaireFactory questionnaireFactory;
 
     @Autowired
-    private QuestionnaireGroupService questionnaireGroupService;
+    private QuestionnaireVersionGroupService questionnaireVersionGroupService;
 
 
     /**
@@ -286,7 +286,7 @@ public class QuestionnaireService {
      * @return The newly created {@link Questionnaire}.
      */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
-        QuestionnaireGroup questionnaireGroup = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 questionnaireDTO.getName(),
                 questionnaireDTO.getDescription(),
@@ -294,7 +294,7 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setGroup(questionnaireGroup);
+        newQuestionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
         questionnaireDao.merge(newQuestionnaire);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
@@ -337,7 +337,7 @@ public class QuestionnaireService {
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
-        QuestionnaireGroup existingGroup = existingQuestionnaire.getGroup();
+        QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 newName,
                 questionnaireDTO.getDescription(),
@@ -345,7 +345,7 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setGroup(existingGroup);
+        newQuestionnaire.setQuestionnaireVersionGroup(existingGroup);
         questionnaireDao.merge(newQuestionnaire);
 
         // Set version in Questionnaire
@@ -386,10 +386,10 @@ public class QuestionnaireService {
         }
 
         int version;
-        Optional<QuestionnaireGroup> groupForQuestionnaire = questionnaireGroupService.findGroupForQuestionnaire(existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> groupForQuestionnaire = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
 
         if (groupForQuestionnaire.isPresent()) {
-            int maxVersionInGroup = questionnaireGroupService.findMaxVersionInGroup(groupForQuestionnaire.get());
+            int maxVersionInGroup = questionnaireVersionGroupService.findMaxVersionInGroup(groupForQuestionnaire.get());
             version = maxVersionInGroup + 1;
         } else {
             version = existingQuestionnaire.getVersion() + 1;
@@ -544,9 +544,9 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        Optional<QuestionnaireGroup> group = questionnaireGroupService.findGroupForQuestionnaire(existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> group = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
         if (group.isPresent()) {
-            return questionnaireGroupService.findMaxVersionInGroup(group.get()) + 1;
+            return questionnaireVersionGroupService.findMaxVersionInGroup(group.get()) + 1;
         } else {
             return existingQuestionnaire.getVersion() + 1;
         }

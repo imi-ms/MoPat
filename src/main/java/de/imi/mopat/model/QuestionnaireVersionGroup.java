@@ -19,8 +19,8 @@ import java.util.Set;
 
 
 @Entity
-@Table(name = "questionnaire_group")
-public class QuestionnaireGroup implements Serializable {
+@Table(name = "questionnaire_version_group")
+public class QuestionnaireVersionGroup implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class QuestionnaireGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "questionnaireGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "questionnaireVersionGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
 
     public Long getId() {
