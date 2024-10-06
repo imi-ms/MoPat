@@ -277,7 +277,6 @@ public class QuestionnaireServiceTest {
                 anyString(),
                 anyString(),
                 anyLong(),
-                anyLong(),
                 anyBoolean())
         ).thenReturn(newQuestionnaire);
 
@@ -322,7 +321,6 @@ public class QuestionnaireServiceTest {
         Assert.assertNotNull("The updated questionnaire should not be null", result);
         verify(questionnaireDao, times(1)).merge(modifiableQuestionnaire); // Ensure the existing questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, it's an update
-        verify(modifiableQuestionnaire, never()).setCreatedBy(anyLong()); // Ensure setCreatedBy is not called, which is specific to new questionnaires
     }
 
     /**
@@ -340,7 +338,7 @@ public class QuestionnaireServiceTest {
 
         when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(newQuestionnaire);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(newQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
@@ -373,7 +371,7 @@ public class QuestionnaireServiceTest {
 
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
@@ -411,7 +409,7 @@ public class QuestionnaireServiceTest {
         when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
@@ -452,7 +450,7 @@ public class QuestionnaireServiceTest {
 
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
         doReturn(1L).when(existingQuestionnaire).getId();
 
@@ -468,7 +466,6 @@ public class QuestionnaireServiceTest {
         verify(questionnaireDao, times(1)).merge(any(Questionnaire.class)); // Ensure the existing questionnaire is merged
         verify(questionnaireDao, never()).merge(copiedQuestionnaire); // Ensure no new questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, implying it's an update
-        verify(existingQuestionnaire, never()).setCreatedBy(anyLong()); // Ensure setCreatedBy is not called, which is specific to new questionnaires
     }
 
     @Test
@@ -481,7 +478,7 @@ public class QuestionnaireServiceTest {
 
         doReturn(existingQuestionnaire).when(questionnaireDao).getElementById(anyLong());
         doReturn(null).when(newQuestionnaire).getId();
-        doReturn(newQuestionnaire).when(questionnaireFactory).createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean());
+        doReturn(newQuestionnaire).when(questionnaireFactory).createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean());
 
         // Assert
         thrown.expect(IllegalStateException.class);
@@ -600,7 +597,7 @@ public class QuestionnaireServiceTest {
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
         when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
+        when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean()))
                 .thenReturn(newQuestionnaire);
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
@@ -632,7 +629,7 @@ public class QuestionnaireServiceTest {
         existingQuestionnaire.setLogo(MultipartFileUtils.VALID_LOGO_FILENAME);
 
         when(questionnaireDao.getElementById(anyLong())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyLong(), anyBoolean()))
+        when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean()))
                 .thenReturn(existingQuestionnaire);
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
         doReturn(true).when(existingQuestionnaire).isOriginal();

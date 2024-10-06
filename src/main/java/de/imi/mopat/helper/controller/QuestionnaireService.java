@@ -291,7 +291,6 @@ public class QuestionnaireService {
                 questionnaireDTO.getName(),
                 questionnaireDTO.getDescription(),
                 userId,
-                userId,
                 Boolean.TRUE
         );
         newQuestionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
@@ -341,7 +340,6 @@ public class QuestionnaireService {
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 newName,
                 questionnaireDTO.getDescription(),
-                userId,
                 userId,
                 Boolean.TRUE
         );

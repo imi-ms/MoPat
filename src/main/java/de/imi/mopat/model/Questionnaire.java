@@ -133,9 +133,6 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Column(name = "version", nullable = false)
     private Integer version = 1;
 
-    @Column(name = "created_by", nullable = false)
-    private Long createdBy;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
@@ -160,12 +157,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy, final Long createdBy,
-        final Boolean isPublished) {
+    public Questionnaire(final String name, final String description, final Long changedBy, final Boolean isPublished) {
         setName(name);
         setDescription(description);
         setChangedBy(changedBy);
-        setCreatedBy(createdBy);
         setPublished(isPublished);
     }
 
@@ -828,14 +823,6 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
     }
 
     public void setQuestions(Set<Question> questions) {
