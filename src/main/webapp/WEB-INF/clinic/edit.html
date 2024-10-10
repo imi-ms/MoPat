@@ -49,6 +49,18 @@
 					/>
 				</div>
 
+				<ul class="list-group mb-4"></ul>
+					<!--/* Loop through all configuration to show them */-->
+					<th:block
+						layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
+												configurationMappingList=${clinicDTO.clinicConfigurationMappingDTOS},
+												selectionPath=|clinicConfigurationMappingDTOS|,
+												idPath=|clinicDTO.clinicConfigurationMappingDTOS|,
+												parent=null
+					)}"
+					/>
+				</ul>
+
 				<th:block th:with="clinicBundleIndex=${counter.clear()}">
 					<div
 						class="container-fluid doubleList"
@@ -764,6 +776,15 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
+	$(document).ready(function () {
+			/*[- Initial state check for all checkboxes -]*/
+
+			$("input[triggerid]").each(function () {
+				toggleChildrenVisibility(this);
+			});
+
+		});	
+
 		var startTable;
 		var targetTable;
 
@@ -840,5 +861,28 @@
 
 			});
 		});
+
+	/*[- used in handleCheckbox -]*/
+	function toggleChildrenVisibility(element) {
+		if ($(element).is(":checked")) {
+			$(element).prev().val("true");
+		} else {
+			$(element).prev().val("false");
+		}
+
+		var configId = $(element).attr("triggerid");
+
+		if (configId != null && configId != undefined && configId != "") {
+			$("li[class*=children]")
+				.filter("li[parentid=" + configId + "]")
+				.each(function () {
+					if ($(element).is(":checked")) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+		}
+	}
 	</script>
 </th:block>

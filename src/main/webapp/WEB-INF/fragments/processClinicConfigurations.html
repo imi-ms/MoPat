@@ -1,0 +1,89 @@
+<th:block
+	layout:fragment="processClinicConfigurations(configurationMappingList, selectionPath, idPath, parent)"
+>
+	<th:block
+		th:each="clinicConfigurationMappingDTO, configurationIndex: ${configurationMappingList}"
+	>
+		<li
+			class="list-group-item"
+			th:classappend="${parent != null} ? |children| : ''"
+			th:attr="parentId=${parent != null} ? ${parent.id} : ''"
+		>
+			<div class="configuration">
+				<!--/* Put the configuration id into a hidden field */-->
+				<input
+					type="hidden"
+					class="configurationId"
+					th:name="|${selectionPath}[${configurationIndex.index}].id|"
+					th:id="|${idPath}${configurationIndex.index}.id|"
+					th:value="${clinicConfigurationMappingDTO.id}"
+				/>
+
+				<th:block
+					th:switch="${clinicConfigurationMappingDTO?.clinicConfigurationDTO?.configurationType?.toString()}"
+				>
+					<th:block th:case="STRING">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="LOCAL_PATH">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="PATTERN">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+						/>
+					</th:block>
+					<th:block th:case="LONG">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+						/>
+					</th:block>
+					<th:block th:case="INTEGER">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+						/>
+					</th:block>
+					<th:block th:case="*">
+						<th:block
+							layout:insert="~{helper/var :: add(key='formType', value=${clinicConfigurationMappingDTO?.clinicConfigurationDTO?.configurationType?.toString()})}"
+						/>
+					</th:block>
+				</th:block>
+
+				<div
+					layout:replace="~{fragments/configurationTypes :: __${vars['formType']}__(
+                                    configuration=${clinicConfigurationMappingDTO?.clinicConfigurationDTO},
+                                    selectionPath=|${selectionPath}[${configurationIndex.index}]|,
+                                    idPath=|${idPath}${configurationIndex.index}|
+                )}"
+				>
+				</div>
+
+				<div
+					th:if="${#fields.hasErrors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+					th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
+					th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+					style="color: red"
+				>
+				</div>
+			</div>
+		</li>
+
+		<th:block
+			th:if="${clinicConfigurationMappingDTO?.clinicConfigurationDTO.children != null && not #lists.isEmpty(clinicConfigurationMappingDTO?.clinicConfigurationDTO.children)}"
+		>
+			<th:block
+				layout:replace="~{fragments/processConfigurations :: processConfigurations(
+                                        configurationList=${clinicConfigurationMappingDTO?.clinicConfigurationDTO.children},
+                                        selectionPath=|${selectionPath}[${configurationIndex.index}].clinicConfigurationDTO.children|,
+                                        idPath=|${idPath}${configurationIndex.index}.clinicConfigurationDTO.children|,
+                                        parent=${clinicConfigurationMappingDTO?.clinicConfigurationDTO}
+            )}"
+			/>
+		</th:block>
+	</th:block>
+</th:block>

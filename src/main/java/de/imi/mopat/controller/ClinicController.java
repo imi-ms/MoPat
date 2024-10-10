@@ -1,6 +1,8 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicConfigurationDao;
+import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
@@ -8,9 +10,8 @@ import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.ClinicService;
-import de.imi.mopat.model.Bundle;
-import de.imi.mopat.model.BundleClinic;
-import de.imi.mopat.model.Clinic;
+import de.imi.mopat.model.*;
+import de.imi.mopat.model.dto.*;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.dto.BundleClinicDTO;
@@ -73,6 +74,10 @@ public class ClinicController {
     private BundleService bundleService;
     @Autowired
     private ClinicService clinicService;
+    @Autowired
+    private ClinicConfigurationDao clinicConfigurationDao;
+    @Autowired
+    private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
 
     /**
      * @param id The Id of the {@link Clinic} object
@@ -192,8 +197,32 @@ public class ClinicController {
             }
         }
 
-        clinicDTO.setAssignedUserDTOs(assignedUserDTOs);
+        List<ClinicConfigurationDTO> clinicConfigurationDTOS = new ArrayList<>();
 
+        for (ClinicConfiguration configuration : clinicConfigurationDao.getAllElements()) {
+            if (configuration.getParent() == null) {
+                ClinicConfigurationDTO configurationDTO = configuration.toClinicConfigurationDTO();
+
+                if (configuration.getChildren() != null && !configuration.getChildren()
+                        .isEmpty()) {
+                    processChildrenElements(configuration, configurationDTO);
+                }
+                clinicConfigurationDTOS.add(configurationDTO);
+            }
+        }
+        List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = new ArrayList<>();
+        if(clinic != null){
+
+        } else {
+            for(ClinicConfigurationDTO clinicConfigurationDTO: clinicConfigurationDTOS){
+                ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = new ClinicConfigurationMappingDTO();
+                clinicConfigurationMappingDTO.setClinicConfigurationDTO(clinicConfigurationDTO);
+                clinicConfigurationMappingDTOS.add(clinicConfigurationMappingDTO);
+            }
+        }
+
+        clinicDTO.setAssignedUserDTOs(assignedUserDTOs);
+        clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingDTOS);
         model.addAttribute("clinicDTO", clinicDTO);
         model.addAttribute("availableBundleDTOs", getAvailableBundleDTOs(clinicId));
         model.addAttribute("availableUserDTOs", availableUserDTOs);
@@ -455,5 +484,29 @@ public class ClinicController {
                     new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
         }
         return showClinics(model);
+    }
+
+
+    /**
+     * Function that recursively processes all children elements to allow the use of multiple nested
+     * elements
+     *
+     * @param clinicConfiguration    The configuration element
+     * @param clinicConfigurationDTO The currently processed DTO
+     */
+    private void processChildrenElements(final ClinicConfiguration clinicConfiguration,
+                                         final ClinicConfigurationDTO clinicConfigurationDTO) {
+        //Set the children DTOs
+        clinicConfigurationDTO.setChildren(new ArrayList<>());
+        for (ClinicConfiguration child : clinicConfiguration.getChildren()) {
+            ClinicConfigurationDTO childDTO = child.toClinicConfigurationDTO();
+
+            if (child.getChildren() != null && !child.getChildren().isEmpty()) {
+                processChildrenElements(child, childDTO);
+            }
+            //Add dto after processing its children
+            clinicConfigurationDTO.getChildren().add(childDTO);
+
+        }
     }
 }
