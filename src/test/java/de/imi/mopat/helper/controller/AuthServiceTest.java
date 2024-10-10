@@ -365,8 +365,6 @@ public class AuthServiceTest {
         // Act
         UserRole highestRole = authService.getHighestRole();
 
-        System.out.println(highestRole.getTextValue());
-
         // Assert
         assertEquals("The highest role should be ROLE_EDITOR", UserRole.ROLE_EDITOR, highestRole);
     }

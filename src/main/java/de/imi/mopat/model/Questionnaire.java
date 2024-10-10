@@ -133,12 +133,9 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Column(name = "version", nullable = false)
     private Integer version = 1;
 
-    @Column(name = "created_by", nullable = false)
-    private Long createdBy;
-
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "group_id")
-    private QuestionnaireGroup questionnaireGroup;
+    @JoinColumn(name = "version_group_id")
+    private QuestionnaireVersionGroup questionnaireVersionGroup;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -160,12 +157,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy, final Long createdBy,
-        final Boolean isPublished) {
+    public Questionnaire(final String name, final String description, final Long changedBy, final Boolean isPublished) {
         setName(name);
         setDescription(description);
         setChangedBy(changedBy);
-        setCreatedBy(createdBy);
         setPublished(isPublished);
     }
 
@@ -830,14 +825,6 @@ public class Questionnaire implements ConditionTarget, Serializable {
         this.version = version;
     }
 
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
     public void setQuestions(Set<Question> questions) {
         this.questions = questions;
     }
@@ -855,11 +842,15 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return version == 1;
     }
 
-    public QuestionnaireGroup getGroup() {
-        return questionnaireGroup;
+    public QuestionnaireVersionGroup getQuestionnaireVersionGroup() {
+        return questionnaireVersionGroup;
+    }
+    
+    public void setQuestionnaireVersionGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
+        this.questionnaireVersionGroup = questionnaireVersionGroup;
     }
 
-    public void setGroup(QuestionnaireGroup questionnaireGroup) {
-        this.questionnaireGroup = questionnaireGroup;
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
     }
 }

@@ -1,12 +1,11 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.QuestionnaireGroupDao;
+import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,40 +16,37 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class QuestionnaireGroupService {
+public class QuestionnaireVersionGroupService {
 
-    private final QuestionnaireGroupDao questionnaireGroupDao;
+    private final QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
 
     private final QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
-    private final QuestionnaireDao questionnaireDao;
-
     @Autowired
-    public QuestionnaireGroupService(QuestionnaireGroupDao questionnaireGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper, QuestionnaireDao questionnaireDao) {
-        this.questionnaireGroupDao = questionnaireGroupDao;
+    public QuestionnaireVersionGroupService(QuestionnaireVersionGroupDao questionnaireVersionGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper) {
+        this.questionnaireVersionGroupDao = questionnaireVersionGroupDao;
         this.questionnaireGroupDTOMapper = questionnaireGroupDTOMapper;
-        this.questionnaireDao = questionnaireDao;
     }
 
-    public QuestionnaireGroup createQuestionnaireGroup(String name) {
-        QuestionnaireGroup questionnaireGroup = new QuestionnaireGroup();
-        questionnaireGroup.setName(name);
-        questionnaireGroupDao.merge(questionnaireGroup);
-        return questionnaireGroup;
+    public QuestionnaireVersionGroup createQuestionnaireGroup(String name) {
+        QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
+        questionnaireVersionGroup.setName(name);
+        questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
+        return questionnaireVersionGroup;
     }
 
-    public QuestionnaireGroup createOrFindQuestionnaireGroup(QuestionnaireDTO questionnaireDTO) {
-        if (questionnaireDTO.getGroupId() != null) {
-            return getQuestionnaireGroupById(questionnaireDTO.getGroupId()).orElseGet(() -> {
-                QuestionnaireGroup newGroup = new QuestionnaireGroup();
+    public QuestionnaireVersionGroup createOrFindQuestionnaireGroup(QuestionnaireDTO questionnaireDTO) {
+        if (questionnaireDTO.getQuestionnaireVersionGroupId() != null) {
+            return getQuestionnaireGroupById(questionnaireDTO.getQuestionnaireVersionGroupId()).orElseGet(() -> {
+                QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
                 newGroup.setName(questionnaireDTO.getName());
-                questionnaireGroupDao.merge(newGroup);
+                questionnaireVersionGroupDao.merge(newGroup);
                 return newGroup;
             });
         } else {
-            QuestionnaireGroup newGroup = new QuestionnaireGroup();
+            QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
             newGroup.setName(questionnaireDTO.getName());
-            questionnaireGroupDao.merge(newGroup);
+            questionnaireVersionGroupDao.merge(newGroup);
             return newGroup;
         }
     }
@@ -61,39 +57,38 @@ public class QuestionnaireGroupService {
      * @param groupId the ID of the group to retrieve
      * @return an Optional containing the group if it exists, or an empty Optional
      */
-    public Optional<QuestionnaireGroup> getQuestionnaireGroupById(Long groupId) {
-        return questionnaireGroupDao.getAllElements().stream()
+    public Optional<QuestionnaireVersionGroup> getQuestionnaireGroupById(Long groupId) {
+        return questionnaireVersionGroupDao.getAllElements().stream()
                 .filter(group -> group.getId().equals(groupId))
                 .findFirst();
     }
 
-    public Optional<QuestionnaireGroup> findGroupForQuestionnaire(Questionnaire questionnaire) {
+    public Optional<QuestionnaireVersionGroup> findGroupForQuestionnaire(Questionnaire questionnaire) {
         validateQuestionnaires(questionnaire);
-        return questionnaireGroupDao.getAllElements().stream()
+        return questionnaireVersionGroupDao.getAllElements().stream()
                 .filter(group -> group.getQuestionnaires().stream()
                         .anyMatch(member -> member.equals(questionnaire)))
                 .findFirst();
     }
 
-    public int findMaxVersionInGroup(QuestionnaireGroup questionnaireGroup) {
-        return questionnaireGroup.getQuestionnaires().stream()
+    public int findMaxVersionInGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
+        return questionnaireVersionGroup.getQuestionnaires().stream()
                 .map(Questionnaire::getVersion)
                 .max(Integer::compareTo)
                 .orElse(1);
     }
 
     public Set<Long> getAllGroupIds() {
-        return questionnaireGroupDao.getAllElements().stream()
-                .map(QuestionnaireGroup::getId)
+        return questionnaireVersionGroupDao.getAllElements().stream()
+                .map(QuestionnaireVersionGroup::getId)
                 .collect(Collectors.toSet());
     }
 
-    public List<QuestionnaireGroup> getQuestionnaireGroups(Set<Long> groupIds) {
+    public List<QuestionnaireVersionGroup> getQuestionnaireGroups(Set<Long> groupIds) {
         return groupIds.stream()
                 .map(this::getQuestionnaireGroupById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .peek(QuestionnaireGroup::sortQuestionnairesByVersion)
                 .collect(Collectors.toList());
     }
 
@@ -103,8 +98,8 @@ public class QuestionnaireGroupService {
      * @return a set of all unique group IDs
      */
     public Set<Long> getAllUniqueGroupIds() {
-        return questionnaireGroupDao.getAllElements().stream()
-                .map(QuestionnaireGroup::getId)
+        return questionnaireVersionGroupDao.getAllElements().stream()
+                .map(QuestionnaireVersionGroup::getId)
                 .collect(Collectors.toSet());
     }
 
@@ -113,10 +108,10 @@ public class QuestionnaireGroupService {
      *
      * @return a list of all QuestionnaireGroupDTOs
      */
-    public List<QuestionnaireGroupDTO> getAllQuestionnaireGroupDTOs() {
-        return questionnaireGroupDao.getAllElements().stream()
+    public List<QuestionnaireVersionGroupDTO> getAllQuestionnaireGroupDTOs() {
+        return questionnaireVersionGroupDao.getAllElements().stream()
                 .map(questionnaireGroupDTOMapper)
-                .sorted(Comparator.comparing(QuestionnaireGroupDTO::getGroupName))
+                .sorted(Comparator.comparing(QuestionnaireVersionGroupDTO::getGroupName))
                 .toList();
     }
 
@@ -133,7 +128,7 @@ public class QuestionnaireGroupService {
         }
     }
 
-    public List<QuestionnaireGroup> getAllQuestionnaireGroups() {
-        return questionnaireGroupDao.getAllElements();
+    public List<QuestionnaireVersionGroup> getAllQuestionnaireGroups() {
+        return questionnaireVersionGroupDao.getAllElements();
     }
 }

@@ -56,7 +56,8 @@ public class QuestionnaireDTO {
 
     private List<QuestionDTO> questionDTOs;
 
-    private QuestionnaireGroupDTO questionnaireGroupDTO;
+    @JsonIgnore
+    private QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO;
 
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
@@ -177,19 +178,19 @@ public class QuestionnaireDTO {
         return version;
     }
 
-    public Long getGroupId() {
-        return questionnaireGroupDTO.getGroupId();
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupId() : null;
     }
 
-    public String getGroupName() {
-        return questionnaireGroupDTO.getGroupName();
+    public String getQuestionnaireVersionGroupName() {
+        return  (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
     }
 
-    public QuestionnaireGroupDTO getQuestionnaireGroupDTO() {
-        return questionnaireGroupDTO;
+    public QuestionnaireVersionGroupDTO getQuestionnaireGroupDTO() {
+        return questionnaireVersionGroupDTO;
     }
 
-    public void setQuestionnaireGroupDTO(QuestionnaireGroupDTO questionnaireGroupDTO) {
-        this.questionnaireGroupDTO = questionnaireGroupDTO;
+    public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
+        this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
     }
 }

@@ -2,7 +2,6 @@ package de.imi.mopat.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.UserDTO;
 
 import java.io.Serializable;
 import java.util.*;
@@ -77,7 +76,7 @@ public class User implements Serializable, UserDetails {
     private boolean principal;
 
     @Valid
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Authority> authority = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -104,23 +103,6 @@ public class User implements Serializable, UserDetails {
         // FIXME Missing parameters?
         setUsername(username);
         setPassword(password);
-    }
-
-    /*
-     * Converts this {@link User} object to an {@link UserDTO} object.
-     *
-     * @return An {@link UserDTO} object based on this {@link Clinic}
-     * object.
-     */
-    public UserDTO toUserDTO() {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(this.id);
-        userDTO.setUsername(this.username);
-        userDTO.setFirstname(this.firstname);
-        userDTO.setLastname(this.lastname);
-        userDTO.setEmail(this.email);
-
-        return userDTO;
     }
 
     /**
@@ -157,8 +139,33 @@ public class User implements Serializable, UserDetails {
         return Collections.unmodifiableCollection(auth);
     }
 
-    public void addRole(UserRole role) {
-        this.authority.add(new Authority(this, role));
+    /**
+     * Updates the user's role by removing all existing roles of type {@link UserRole}
+     * from the authority set and adding the specified new role.
+     *
+     * <p>This method will remove any {@link Authority} in the authority set that can be
+     * converted to a {@link UserRole}. It then adds a new {@link Authority} with the
+     * specified {@link UserRole}.
+     *
+     * @param newRole the new role to assign to the user, replacing any existing roles of type {@link UserRole}.
+     */
+    public void replaceRolesWith(UserRole newRole) {
+        // Remove all authorities that are of type UserRole
+        authority.removeIf(auth -> {
+            try {
+                // Attempt to convert the authority string to a UserRole
+                UserRole userRole = UserRole.fromString(auth.getAuthority());
+                // If the conversion is successful, this Authority object will be removed
+                return userRole != null;
+            } catch (IllegalArgumentException e) {
+                // If the conversion fails, it means this Authority is not a UserRole,
+                // so this Authority object will not be removed.
+                return false;
+            }
+        });
+
+        // Add the new role to the authority set
+        authority.add(new Authority(this, newRole));
     }
 
     /**

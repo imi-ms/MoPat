@@ -4,7 +4,8 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
 
     private final QuestionDTOMapper questionDTOMapper;
 
+    @Autowired
     public QuestionnaireDTOMapper(ConfigurationDao configurationDao, QuestionDTOMapper questionDTOMapper) {
         this.configurationDao = configurationDao;
         this.questionDTOMapper = questionDTOMapper;
@@ -38,11 +40,11 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
 
     private QuestionnaireDTO applyWithGroup(Questionnaire questionnaire, boolean includeGroup) {
         QuestionnaireDTO questionnaireDTO = basicApply(questionnaire);
-        if (includeGroup && questionnaire.getGroup() != null) {
-            QuestionnaireGroupDTO groupDTO = new QuestionnaireGroupDTO();
-            groupDTO.setGroupId(questionnaire.getGroup().getId());
-            groupDTO.setGroupName(questionnaire.getGroup().getName());
-            Set<Questionnaire> questionnaires = questionnaire.getGroup().getQuestionnaires();
+        if (includeGroup && questionnaire.getQuestionnaireVersionGroup() != null) {
+            QuestionnaireVersionGroupDTO groupDTO = new QuestionnaireVersionGroupDTO();
+            groupDTO.setGroupId(questionnaire.getQuestionnaireVersionGroup().getId());
+            groupDTO.setGroupName(questionnaire.getQuestionnaireVersionGroup().getName());
+            Set<Questionnaire> questionnaires = questionnaire.getQuestionnaireVersionGroup().getQuestionnaires();
             groupDTO.setQuestionnaireDTOS(questionnaires.stream()
                     .map(q -> applyWithGroup(q, false)) // Include false to avoid infinite recursion
                     .toList());

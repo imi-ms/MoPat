@@ -1,13 +1,13 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.QuestionnaireGroupDao;
+import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.QuestionnaireTest;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -28,41 +28,41 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class QuestionnaireGroupServiceTest {
+public class QuestionnaireVersionGroupServiceTest {
 
     @Mock
-    private QuestionnaireGroupDao mockQuestionnaireGroupDao;
+    private QuestionnaireVersionGroupDao mockQuestionnaireVersionGroupDao;
 
     @Mock
     private QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
     @InjectMocks
-    private QuestionnaireGroupService questionnaireGroupService;
+    private QuestionnaireVersionGroupService questionnaireVersionGroupService;
 
-    private List<QuestionnaireGroup> questionnaireGroups;
+    private List<QuestionnaireVersionGroup> questionnaireVersionGroups;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        questionnaireGroups = new ArrayList<>();
-        when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
+        questionnaireVersionGroups = new ArrayList<>();
+        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
         doAnswer(invocation -> {
-            QuestionnaireGroup group = invocation.getArgument(0);
-            if (!questionnaireGroups.contains(group)) {
-                questionnaireGroups.add(group);
+            QuestionnaireVersionGroup group = invocation.getArgument(0);
+            if (!questionnaireVersionGroups.contains(group)) {
+                questionnaireVersionGroups.add(group);
             }
             return null;
-        }).when(mockQuestionnaireGroupDao).merge(any(QuestionnaireGroup.class));
+        }).when(mockQuestionnaireVersionGroupDao).merge(any(QuestionnaireVersionGroup.class));
     }
 
     @Test
     public void testCreateQuestionnaireGroup() {
         // Act
-        QuestionnaireGroup createdGroup = questionnaireGroupService.createQuestionnaireGroup("Test Group");
+        QuestionnaireVersionGroup createdGroup = questionnaireVersionGroupService.createQuestionnaireGroup("Test Group");
 
         // Assert
         assertEquals("Test Group", createdGroup.getName());
-        verify(mockQuestionnaireGroupDao, times(1)).merge(createdGroup);
+        verify(mockQuestionnaireVersionGroupDao, times(1)).merge(createdGroup);
     }
 
     @Test
@@ -70,51 +70,51 @@ public class QuestionnaireGroupServiceTest {
         // Arrange
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
         questionnaireDTO.setName("New Questionnaire");
-        QuestionnaireGroupDTO questionnaireGroupDTO = new QuestionnaireGroupDTO();
-        questionnaireDTO.setQuestionnaireGroupDTO(questionnaireGroupDTO);
+        QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO = new QuestionnaireVersionGroupDTO();
+        questionnaireDTO.setQuestionnaireGroupDTO(questionnaireVersionGroupDTO);
 
         // Act
-        QuestionnaireGroup group = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
 
         // Assert
         assertEquals("New Questionnaire", group.getName());
-        verify(mockQuestionnaireGroupDao, times(1)).merge(group);
+        verify(mockQuestionnaireVersionGroupDao, times(1)).merge(group);
     }
 
     @Test
     public void testCreateOrFindQuestionnaireGroup_ExistingGroup() {
         // Arrange
-        QuestionnaireGroupDTO existingGroupDTO = spy(new QuestionnaireGroupDTO());
+        QuestionnaireVersionGroupDTO existingGroupDTO = spy(new QuestionnaireVersionGroupDTO());
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
         questionnaireDTO.setName("Existing Questionnaire");
         questionnaireDTO.setQuestionnaireGroupDTO(existingGroupDTO);
 
         doReturn(1L).when(existingGroupDTO).getGroupId();
-        QuestionnaireGroup existingGroup = spy(new QuestionnaireGroup());
+        QuestionnaireVersionGroup existingGroup = spy(new QuestionnaireVersionGroup());
         doReturn(1L).when(existingGroup).getId();
         existingGroup.setName("Existing Group");
-        questionnaireGroups.add(existingGroup);
+        questionnaireVersionGroups.add(existingGroup);
 
-        when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
+        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
 
         // Act
-        QuestionnaireGroup group = questionnaireGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
 
         // Assert
         assertEquals(existingGroup.getId(), group.getId());
-        verify(mockQuestionnaireGroupDao, times(0)).merge(any(QuestionnaireGroup.class));
+        verify(mockQuestionnaireVersionGroupDao, times(0)).merge(any(QuestionnaireVersionGroup.class));
     }
 
     @Test
     public void testGetQuestionnaireGroupById() {
         // Arrange
-        QuestionnaireGroup group = spy(new QuestionnaireGroup());
+        QuestionnaireVersionGroup group = spy(new QuestionnaireVersionGroup());
         doReturn(1L).when(group).getId();
 
-        questionnaireGroups.add(group);
+        questionnaireVersionGroups.add(group);
 
         // Act
-        Optional<QuestionnaireGroup> result = questionnaireGroupService.getQuestionnaireGroupById(1L);
+        Optional<QuestionnaireVersionGroup> result = questionnaireVersionGroupService.getQuestionnaireGroupById(1L);
 
         // Assert
         assertTrue(result.isPresent());
@@ -125,14 +125,14 @@ public class QuestionnaireGroupServiceTest {
     public void testFindGroupForQuestionnaire() {
         // Arrange
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        QuestionnaireGroup group = new QuestionnaireGroup();
+        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
         group.getQuestionnaires().add(questionnaire);
-        questionnaireGroups.add(group);
+        questionnaireVersionGroups.add(group);
 
-        when(mockQuestionnaireGroupDao.getAllElements()).thenReturn(questionnaireGroups);
+        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
 
         // Act
-        Optional<QuestionnaireGroup> result = questionnaireGroupService.findGroupForQuestionnaire(questionnaire);
+        Optional<QuestionnaireVersionGroup> result = questionnaireVersionGroupService.findGroupForQuestionnaire(questionnaire);
 
         // Assert
         assertTrue(result.isPresent());
@@ -148,13 +148,13 @@ public class QuestionnaireGroupServiceTest {
         Questionnaire questionnaire2 = QuestionnaireTest.getNewValidQuestionnaire();
         questionnaire2.setVersion(2);
 
-        QuestionnaireGroup group = new QuestionnaireGroup();
+        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
         group.getQuestionnaires().add(questionnaire1);
         group.getQuestionnaires().add(questionnaire2);
-        questionnaireGroups.add(group);
+        questionnaireVersionGroups.add(group);
 
         // Act
-        int maxVersion = questionnaireGroupService.findMaxVersionInGroup(group);
+        int maxVersion = questionnaireVersionGroupService.findMaxVersionInGroup(group);
 
         // Assert
         assertEquals(2, maxVersion);

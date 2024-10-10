@@ -1,8 +1,8 @@
 package de.imi.mopat.helper.model;
 
-import de.imi.mopat.model.QuestionnaireGroup;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireGroupDTO;
+import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Component
-public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireGroup, QuestionnaireGroupDTO> {
+public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireVersionGroup, QuestionnaireVersionGroupDTO> {
 
     private final QuestionnaireDTOMapper questionnaireDTOMapper;
 
@@ -21,18 +21,18 @@ public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireGroup,
     }
 
     @Override
-    public QuestionnaireGroupDTO apply(QuestionnaireGroup questionnaireGroup) {
-        if (questionnaireGroup == null) {
+    public QuestionnaireVersionGroupDTO apply(QuestionnaireVersionGroup questionnaireVersionGroup) {
+        if (questionnaireVersionGroup == null) {
             throw new IllegalArgumentException("QuestionnaireGroup must not be null");
         }
-        if (!questionnaireGroup.hasQuestionnaires()) {
-            QuestionnaireGroupDTO noMemberQuestionnaireGroupDTO = new QuestionnaireGroupDTO();
-            noMemberQuestionnaireGroupDTO.setGroupId(questionnaireGroup.getId());
-            return noMemberQuestionnaireGroupDTO;
+        if (!questionnaireVersionGroup.hasQuestionnaires()) {
+            QuestionnaireVersionGroupDTO noMemberQuestionnaireVersionGroupDTO = new QuestionnaireVersionGroupDTO();
+            noMemberQuestionnaireVersionGroupDTO.setGroupId(questionnaireVersionGroup.getId());
+            return noMemberQuestionnaireVersionGroupDTO;
         }
 
         // Sort the questionnaires by version number
-        List<QuestionnaireDTO> questionnaireDTOs = questionnaireGroup.getQuestionnaires().stream()
+        List<QuestionnaireDTO> questionnaireDTOs = questionnaireVersionGroup.getQuestionnaires().stream()
                 .map(questionnaireDTOMapper::applyWithoutGroup)
                 .sorted(Comparator.comparing(QuestionnaireDTO::getVersion))
                 .toList();
@@ -42,12 +42,12 @@ public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireGroup,
 //        String groupName = questionnaireGroup.getName();
 
         // Get the group ID (assuming all items in groupList have the same group ID)
-        Long groupId = questionnaireGroup.getId();
+        Long groupId = questionnaireVersionGroup.getId();
 
-        QuestionnaireGroupDTO questionnaireGroupDTO = new QuestionnaireGroupDTO();
-        questionnaireGroupDTO.setGroupId(groupId);
-        questionnaireGroupDTO.setGroupName(groupName);
-        questionnaireGroupDTO.setQuestionnaireDTOS(questionnaireDTOs);
-        return questionnaireGroupDTO;
+        QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO = new QuestionnaireVersionGroupDTO();
+        questionnaireVersionGroupDTO.setGroupId(groupId);
+        questionnaireVersionGroupDTO.setGroupName(groupName);
+        questionnaireVersionGroupDTO.setQuestionnaireDTOS(questionnaireDTOs);
+        return questionnaireVersionGroupDTO;
     }
 }
