@@ -419,9 +419,17 @@
 													</a>
 												</div>
 												<div class="col-5 toggle-questionnaire-version-group">
-													<i onClick="toggleGroupItems($(this))" class="bi bi-chevron-down chevron-icon-down" style="cursor: pointer;" title="Versionen anzeigen"></i>
-													<i onClick="toggleGroupItems($(this))" class="bi bi-chevron-up chevron-icon-up" style="cursor: pointer;" title="Versionen ausblenden"></i>
-												</div>												
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-down chevron-icon-down"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
+													</i>
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-up chevron-icon-up"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
+													</i>
+												</div>
 												<input
 													type="hidden"
 													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
