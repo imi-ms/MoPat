@@ -10,7 +10,6 @@ import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.ConfigurationGroup;
 import de.imi.mopat.model.ExportTemplate;
-import de.imi.mopat.model.QuestionnaireGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
