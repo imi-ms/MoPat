@@ -1,7 +1,5 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.conditions.Condition;
@@ -10,7 +8,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,7 +39,6 @@ public class QuestionService {
         for (Question originalQuestion : questionMap.keySet()) {
             for (Answer answer : originalQuestion.getAnswers()) {
                 Set<Condition> conditions = answer.getConditions();
-                System.out.println(conditions);
                 for (Condition condition : conditions) {
                     Condition newCondition = null;
                     if (condition.getTrigger().getClass() == answer.getClass()

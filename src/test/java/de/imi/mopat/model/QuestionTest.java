@@ -1035,44 +1035,7 @@ public class QuestionTest {
     }
 
     /**
-     * Test of {@link Question#cloneWithAnswersAndReferenceToQuestionnaire(Questionnaire)}.<br>
-     * Valid input: valid {@link Question} and a specific {@link Questionnaire}.
-     */
-    @Test
-    public void testCloneWithAnswersAndReferenceToSpecificQuestionnaire() {
-        // Arrange
-        Questionnaire testQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        int countAnswers = random.nextInt(50) + 1;
-        for (int i = 0; i < countAnswers; i++) {
-            testQuestion.addAnswer(AnswerTest.getNewValidRandomAnswer());
-        }
-
-        // Act: Clone the question with the new questionnaire reference
-        Question testClone = testQuestion.cloneWithAnswersAndReferenceToQuestionnaire(testQuestionnaire);
-
-        // Assert
-        assertEquals("The getting LocalizedQuestionText was not the expected one",
-                testQuestion.getLocalizedQuestionText(), testClone.getLocalizedQuestionText());
-        assertEquals("The getting isRequired was not the expected one",
-                testQuestion.getIsRequired(), testClone.getIsRequired());
-        assertEquals("The getting isEnabled was not the expected one", testQuestion.getIsEnabled(),
-                testClone.getIsEnabled());
-        assertEquals("The getting QuestionType was not the expected one",
-                testQuestion.getQuestionType(), testClone.getQuestionType());
-        assertEquals("The getting Position was not the expected one",
-                testQuestion.getPosition(), testClone.getPosition());
-        assertEquals("The getting Questionnaire was not the expected one",
-                testQuestionnaire, testClone.getQuestionnaire());
-        assertEquals("The getting MinNumberAnswers was not the expected one",
-                testQuestion.getMinNumberAnswers(), testClone.getMinNumberAnswers());
-        assertEquals("The getting MaxNumberAnswers was not the expected one",
-                testQuestion.getMaxNumberAnswers(), testClone.getMaxNumberAnswers());
-        assertEquals("The getting number of Answers was not the expected one", countAnswers,
-                testClone.getAnswers().size());
-    }
-
-    /**
-     * Test of {@link QuestionDTOMapper#apply(Question)}.<br> Valid input: valid {@link Question} with random
+     * Test of {@link Question#toQuestionDTO}.<br> Valid input: valid {@link Question} with random
      * number of {@link Answer Answers}
      */
     @Test

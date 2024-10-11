@@ -48,7 +48,6 @@ public class QuestionnaireDTO {
     private Boolean deleteLogo = false;
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
-
     private int version;
 
     @JsonIgnore

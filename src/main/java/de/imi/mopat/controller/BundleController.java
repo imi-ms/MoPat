@@ -2,9 +2,7 @@ package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
@@ -13,10 +11,8 @@ import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.helper.controller.ClinicService;
-import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Answer;
@@ -30,7 +26,9 @@ import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
-import de.imi.mopat.model.dto.*;
+import de.imi.mopat.model.dto.BundleDTO;
+import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
+import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.user.AclObjectIdentity;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.BundleDTOValidator;
@@ -47,8 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -87,8 +83,6 @@ public class BundleController {
     private UserService userService;
     @Autowired
     private ClinicService clinicService;
-    @Autowired
-    private ReviewService reviewService;
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
     @Autowired
@@ -176,26 +170,10 @@ public class BundleController {
     public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         final Model model) {
         BundleDTO bundleDTO = getBundleDTO(bundleId);
-        List<QuestionnaireDTO> availableQuestionnaires = bundleService.getAvailableQuestionnaires(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        model.addAttribute("availableQuestionnaireDTOs", availableQuestionnaires);
+        model.addAttribute("availableQuestionnaireDTOs", bundleService.getAvailableQuestionnaires(bundleId));
         return "bundle/edit";
-    }
-
-    private List<UserDTO> getAvailableReviewers() {
-        String username = authService.getAuthenticatedUser().getUsername();
-        if (username == null) {
-            return Collections.emptyList();
-        }
-        UserDTO user = userService.getUserByUsername(username);
-        if (user == null) {
-            return Collections.emptyList();
-        }
-        // Hole alle Kliniken
-        List<ClinicDTO> clinics = clinicService.getAllClinics();
-        clinics.forEach(clinicDTO -> clinicDTO.setAssignedUserDTOs(userService.getAssignedUserDTOs(clinicDTO.getId())));
-        return userService.getClinicModeratorsAndAdmins(clinics, user);
     }
 
     /**

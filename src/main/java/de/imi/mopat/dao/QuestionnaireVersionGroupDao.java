@@ -4,6 +4,4 @@ import de.imi.mopat.model.QuestionnaireVersionGroup;
 
 public interface QuestionnaireVersionGroupDao extends MoPatDao<QuestionnaireVersionGroup> {
 
-
-
 }

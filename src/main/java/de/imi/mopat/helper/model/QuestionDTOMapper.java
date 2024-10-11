@@ -2,13 +2,17 @@ package de.imi.mopat.helper.model;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.model.*;
+import de.imi.mopat.model.BodyPartAnswer;
+import de.imi.mopat.model.Question;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 @Component

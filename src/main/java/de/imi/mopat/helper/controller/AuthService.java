@@ -85,4 +85,3 @@ public class AuthService {
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
 }
-

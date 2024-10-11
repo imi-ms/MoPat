@@ -7,7 +7,6 @@ public class QuestionnaireVersionGroupDTO {
     private String groupName;
     private List<QuestionnaireDTO> questionnaireDTOS;
 
-    // Getter und Setter
     public Long getGroupId() {
         return groupId;
     }

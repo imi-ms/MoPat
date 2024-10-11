@@ -29,4 +29,6 @@ public class ClinicService {
     public void merge(Clinic clinic) {
         clinicDao.merge(clinic);
     }
+
+
 }

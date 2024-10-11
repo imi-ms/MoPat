@@ -25,63 +25,48 @@ public class User implements Serializable, UserDetails {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private Collection<Invitation> invitationCollection;
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-
     @Column(name = "uuid")
     private final String uuid = UUIDGenerator.createUUID();
-
     @Column(name = "sid")
     @NotNull(message = "{user.username.notNull}")
     @NotEmpty(message = "{user.username.notEmpty}")
     private String username;
-
     @NotNull(message = "{user.firstname.notNull}")
     @Size(min = 3, max = 255, message = "{user.firstname.size}")
     @Column(name = "firstname")
     private String firstname;
-
     @NotNull(message = "{user.lastname.notNull}")
     @Size(min = 3, max = 255, message = "{user.lastname.size}")
     @Column(name = "lastname")
     private String lastname;
-
     @NotNull(message = "{user.email.notNull}")
     @Size(min = 3, max = 255, message = "{user.email.size}")
     @Pattern(regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
         + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
     @Column(name = "email")
     private String email;
-
     //    @NotNull(message = "{user.password.notNull}")
 //    @NotEmpty(message = "{user.password.notEmpty}")
 //    @Size(min = 8, max = 255, message = "{user.password.size}")
     @Column(name = "password")
     private String password;
-
     private transient String newPassword;
-
     private transient String oldPassword;
-
     private transient String passwordCheck;
-
     @Column(name = "salt")
     private String salt;
-
     @NotNull(message = "{user.principal.notNull}")
     @Column(name = "principal")
     private boolean principal;
-
     @Valid
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Authority> authority = new HashSet<>();
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final Set<AclEntry> rights = new HashSet<>();
-
     @Column(name = "is_enabled")
     private Boolean isEnabled = Boolean.TRUE;
 
@@ -163,7 +148,6 @@ public class User implements Serializable, UserDetails {
                 return false;
             }
         });
-
         // Add the new role to the authority set
         authority.add(new Authority(this, newRole));
     }

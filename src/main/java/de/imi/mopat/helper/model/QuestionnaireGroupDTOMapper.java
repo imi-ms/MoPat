@@ -39,7 +39,6 @@ public class QuestionnaireGroupDTOMapper implements Function<QuestionnaireVersio
 
         // Use the name of the questionnaire with the smallest version number as the group name
         String groupName = questionnaireDTOs.get(0).getName();
-//        String groupName = questionnaireGroup.getName();
 
         // Get the group ID (assuming all items in groupList have the same group ID)
         Long groupId = questionnaireVersionGroup.getId();

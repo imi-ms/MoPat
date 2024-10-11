@@ -27,4 +27,3 @@ public class UserDTOMapper implements Function<User, UserDTO> {
         return userDTO;
     }
 }
-

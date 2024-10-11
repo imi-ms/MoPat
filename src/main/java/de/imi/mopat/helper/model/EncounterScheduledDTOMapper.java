@@ -62,5 +62,6 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
 
         return encounterScheduledDTO;
     }
-}
 
+
+}

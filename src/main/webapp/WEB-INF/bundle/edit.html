@@ -64,7 +64,7 @@
 					<input
 						layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
-                        clazz='form-control', showErrors=true, 
+                        clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')})}"
 
 					/>
@@ -73,7 +73,7 @@
 					<textarea
 						layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
-                        clazz='wysiwyg', showErrors=true, 
+                        clazz='wysiwyg', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.description', 'Description')})}"
 					>
 					</textarea>
@@ -85,7 +85,7 @@
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedWelcomeTextCollapsableText',
                         inputType='textarea',
-                        inputClazz='form-control wysiwyg localablePostElement', 
+                        inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedWelcomeText[#INDEXFIELD]',
                         firstRequiredLocalableElement=true)}"
 					>
@@ -104,7 +104,7 @@
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedFinalTextCollapsableText',
                         inputType='textarea',
-                        inputClazz='form-control wysiwyg localablePostElement', 
+                        inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedFinalText[#INDEXFIELD]')}"
 					>
 						<th:block layout:fragment="collapseLabel">
@@ -160,14 +160,14 @@
 								<div class="row removableFlex list-group-item">
 									<div class="col-7 drag-n-drop-header-item">
 										<th:block
-											th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 
+											th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires',
                                             'Assigned questionnaires')}"
 										>
 										</th:block>
 										<span
 											class="bi bi-info-circle-fill"
 											style="display: inline-block"
-											th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 
+											th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo',
                                             'For each questionnaire it is possible to enable the export templates to be exported')}"
 										>
 										</span>
@@ -600,6 +600,7 @@
 														th:value="${index.index+1}"
 													/>
 												</div>
+
 												<div class="col-3">
 													<th:block
 														th:text="${availableQuestionnaireDTO.name}"

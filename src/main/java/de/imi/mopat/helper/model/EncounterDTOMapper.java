@@ -1,13 +1,11 @@
 package de.imi.mopat.helper.model;
 
-import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.Response;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +53,8 @@ public class EncounterDTOMapper implements BiFunction<Boolean, Encounter, Encoun
 
             encounterDTO.setIsAtHome(encounter.getEncounterScheduled() != null);
         } else {
-            // Set successfullyExports to "-" and change it, if there is a Bundle
+            // Set successfullyExports to "-" and change it, if there is a
+            // Bundle
             String successfullExports = "-";
             if (encounter.getBundle() != null) {
                 encounterDTO.setBundleDTO(bundleDTOMapper.apply(false, encounter.getBundle()));
@@ -68,5 +67,5 @@ public class EncounterDTOMapper implements BiFunction<Boolean, Encounter, Encoun
 
         return encounterDTO;
     }
-}
 
+}

@@ -35,4 +35,3 @@ public class BundleClinicDTOMapper implements BiFunction<ClinicDTO, BundleClinic
         return bundleClinicDTO;
     }
 }
-

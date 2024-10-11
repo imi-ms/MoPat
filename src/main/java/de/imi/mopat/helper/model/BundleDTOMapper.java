@@ -69,4 +69,3 @@ public class BundleDTOMapper implements BiFunction<Boolean, Bundle, BundleDTO> {
         return bundleDTO;
     }
 }
-

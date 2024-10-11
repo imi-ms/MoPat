@@ -1,7 +1,16 @@
 package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import de.imi.mopat.auth.*;
+import de.imi.mopat.auth.CustomAuthenticationFailureHandler;
+import de.imi.mopat.auth.CustomPostAuthenticationChecks;
+import de.imi.mopat.auth.CustomPreAuthenticationChecks;
+import de.imi.mopat.auth.LDAPUserDetailsService;
+import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
+import de.imi.mopat.auth.MoPatUserDetailService;
+import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
+import de.imi.mopat.auth.RoleBasedAuthenticationSuccessHandler;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
 import org.apache.groovy.util.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;

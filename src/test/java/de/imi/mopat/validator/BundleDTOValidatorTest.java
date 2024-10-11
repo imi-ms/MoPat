@@ -188,8 +188,7 @@ public class BundleDTOValidatorTest {
         bundleQuestionnaire.getQuestionnaire().setLocalizedWelcomeText(new TreeMap<>());
         bundleQuestionnaireDTO = bundleQuestionnaire.toBundleQuestionnaireDTO();
         questionnaireDTO = Mockito.spy(
-                questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire())
-        );
+                questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire()));
         Mockito.when(questionnaireDTO.getId()).thenReturn(Math.abs(random.nextLong()));
         bundleQuestionnaireDTO.setQuestionnaireDTO(questionnaireDTO);
         bundleQuestionnaireDTO.setIsEnabled(false);

@@ -70,5 +70,3 @@ public class QuestionnaireVersionGroup implements Serializable {
         this.questionnaires.addAll(questionnaires);
     }
 }
-
-

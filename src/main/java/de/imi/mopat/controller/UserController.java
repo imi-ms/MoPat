@@ -88,7 +88,6 @@ public class UserController {
     private ConfigurationDao configurationDao;
     @Autowired
     private UserService userService;
-
     @Autowired
     private CacheService cacheService;
     @Autowired
@@ -573,7 +572,8 @@ public class UserController {
 
         User user = (User) model.asMap().get("user");
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        user, PermissionType.READ));
         Collection<Clinic> availableClinics = clinicDao.getAllElements();
         availableClinics.removeAll(assignedClinics);
         model.addAttribute("availableClinics", availableClinics);

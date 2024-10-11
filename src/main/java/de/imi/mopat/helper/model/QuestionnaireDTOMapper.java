@@ -85,4 +85,3 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         return questionnaireDTO;
     }
 }
-

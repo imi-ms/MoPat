@@ -68,4 +68,3 @@ public class LogoValidator {
                         LocaleContextHolder.getLocale()));
     }
 }
-

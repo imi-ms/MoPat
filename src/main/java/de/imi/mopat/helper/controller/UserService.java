@@ -5,7 +5,6 @@ import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.model.UserDTOMapper;
 import de.imi.mopat.model.Clinic;
-import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.UserDTO;
 import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclEntry;
@@ -93,44 +92,6 @@ public class UserService {
         return userDao.getAllElements().stream()
                 .map(userDTOMapper)
                 .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieves users in the same clinics as the specified user.
-     *
-     * @param clinics List of clinics to check.
-     * @param user The user to compare.
-     * @return List of UserDTOs representing users in the same clinics.
-     */
-    private List<UserDTO> getUsersInSameClinicsAsUser(List<ClinicDTO> clinics, UserDTO user) {
-        return clinics.stream()
-                .filter(clinicDTO -> {
-                    List<UserDTO> assignedUserDTOs = getAssignedUserDTOs(clinicDTO.getId());
-                    return assignedUserDTOs != null && assignedUserDTOs.contains(user);
-                })
-                .flatMap(clinic -> clinic.getAssignedUserDTOs().stream())
-                .distinct() // Remove duplicate UserDTOs
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieves all moderators and admins within the same clinics as the specified user.
-     *
-     * @param clinics List of clinics to check.
-     * @param user The user to compare.
-     * @return List of UserDTOs representing moderators and admins in the same clinics.
-     */
-    public List<UserDTO> getClinicModeratorsAndAdmins(List<ClinicDTO> clinics, UserDTO user) {
-        List<UserDTO> usersInSameClinics = getUsersInSameClinicsAsUser(clinics, user);
-
-        return usersInSameClinics.stream()
-                .map(userDTO -> userDao.loadUserByUsername(userDTO.getUsername()))
-                .filter(user1 -> user1.getAuthorities().stream()
-                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR") ||
-                                authority.getAuthority().equals("ROLE_ADMIN")))
-                .map(userDTOMapper)
-                .distinct() // Remove duplicate UserDTOs
                 .collect(Collectors.toList());
     }
 

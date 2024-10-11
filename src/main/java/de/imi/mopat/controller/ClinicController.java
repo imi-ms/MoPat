@@ -114,8 +114,6 @@ public class ClinicController {
                 .sorted((bundleDTO1, bundleDTO2) ->
                         bundleDTO1.getName().compareToIgnoreCase(bundleDTO2.getName()))
                 .toList();
-
-
     }
 
     /**
@@ -149,8 +147,9 @@ public class ClinicController {
         if (clinic != null) {
             clinicDTO = clinicDTOMapper.apply(clinic);
         }
-        List<UserDTO> availableUserDTOs = userService.getAvailableUserDTOs(clinicId);
+
         List<UserDTO> assignedUserDTOs = userService.getAssignedUserDTOs(clinicId);
+        List<UserDTO> availableUserDTOs = userService.getAvailableUserDTOs(clinicId);
 
         clinicDTO.setAssignedUserDTOs(assignedUserDTOs);
 
