@@ -899,6 +899,11 @@
 			if (isAssigned) {
 				$toggleGroup.hide();  // Hide toggle questionnaire version group in ASSIGNED_TABLE
 				questionnaireElement.append($moveIcon.parent().parent());
+				// Remove 'show' class from chevrons in ASSIGNED_TABLE
+				const chevronDown = questionnaireElement.find(".chevron-icon-down");
+				const chevronUp = questionnaireElement.find(".chevron-icon-up");
+				chevronDown.removeClass("show");
+				chevronUp.removeClass("show")
 			} else {
 				$toggleGroup.show();  // Show toggle questionnaire version group in AVAILABLE_TABLE
 				questionnaireElement.prepend($moveIcon.parent().parent());
