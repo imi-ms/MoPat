@@ -65,9 +65,9 @@ public class QuestionnaireVersionGroupDaoImplTest {
         List<QuestionnaireVersionGroup> groups = questionnaireVersionGroupDao.getAllElements();
 
         // Assert
-        assertNotNull("QuestionnaireGroup list should not be null", groups);
-        assertEquals("QuestionnaireGroup list size should be 1", 1, groups.size());
-        assertEquals("Stored QuestionnaireGroup should match the original", questionnaireVersionGroup, groups.get(0));
+        assertNotNull("QuestionnaireVersionGroup list should not be null", groups);
+        assertEquals("QuestionnaireVersionGroup list size should be 1", 1, groups.size());
+        assertEquals("Stored QuestionnaireVersionGroup should match the original", questionnaireVersionGroup, groups.get(0));
     }
 
     public void clearTable() {

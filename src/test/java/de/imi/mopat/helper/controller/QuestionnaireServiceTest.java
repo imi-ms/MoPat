@@ -356,6 +356,12 @@ public class QuestionnaireServiceTest {
         doReturn(false).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
+        // Mock question duplication with empty maps
+        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
+        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
+                .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
                 questionnaireDTO,
@@ -388,6 +394,12 @@ public class QuestionnaireServiceTest {
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(false).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
+
+        // Mock question duplication with empty maps
+        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
+        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
+                .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -426,6 +438,13 @@ public class QuestionnaireServiceTest {
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
+
+        // Mock question duplication with empty maps
+        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
+        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
+                .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -615,6 +634,12 @@ public class QuestionnaireServiceTest {
                 .thenReturn(newQuestionnaire);
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
+        // Mock question duplication with empty maps
+        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
+        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
+                .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
                 questionnaireDTO,
@@ -647,6 +672,12 @@ public class QuestionnaireServiceTest {
                 .thenReturn(existingQuestionnaire);
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
         doReturn(true).when(existingQuestionnaire).isOriginal();
+
+        // Mock question duplication with empty maps
+        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
+        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
+                .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(

@@ -34,8 +34,8 @@ public class UserTest {
     private static final Random random = new Random();
     private User testUser;
     
-    @Autowired
-    UserDTOMapper userDTOMapper;
+
+    private UserDTOMapper userDTOMapper;
 
     public UserTest() {
     }
@@ -62,6 +62,7 @@ public class UserTest {
     @Before
     public void setUp() {
         testUser = getNewValidUser();
+        userDTOMapper = new UserDTOMapper();
     }
 
     @After
