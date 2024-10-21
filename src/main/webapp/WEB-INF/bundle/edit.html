@@ -19,7 +19,7 @@
 					id="errors"
 					class="alert alert-danger"
 					style="width: 100%"
-					th:text="${messages.get(#locale, 'bundle.error.notModifiable', 
+					th:text="${messages.get(#locale, 'bundle.error.notModifiable',
                         'This bundle is not editable due to at least one unfinished encounter associated to this bundle.')}"
 				>
 				</div>
@@ -185,6 +185,7 @@
 										<a
 											data-bs-toggle="collapse"
 											class="bi bi-plus-lg"
+											id="moreQuestionnaire"
 											onclick="DragNDropList.toggleCollapseTable(this)"
 										>
 										</a>
@@ -678,7 +679,7 @@
 													   style="cursor: pointer;"
 													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
 													</i>
-												</div>																																
+												</div>
 											</div>
 											<th:block th:if="${index.index == availableQuestionnaireDTOs.size() - 1 || (availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index + 1].getQuestionnaireVersionGroupId())}">
 												<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="display: none"></div>
@@ -944,7 +945,7 @@
 		 * ---------------------------------------------------- */
 
 		/** Generates HTML for a group spacer. */
-		function generateQuestionnaireVersionGroupSpacerHtml(groupId) { 
+		function generateQuestionnaireVersionGroupSpacerHtml(groupId) {
 			return `
 				<div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>
 				<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>`;

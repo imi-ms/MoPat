@@ -6,7 +6,6 @@ import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.user.UserDao;
-import de.imi.mopat.helper.controller.CacheService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.controller.UserService;
@@ -59,8 +58,6 @@ public class ClinicController {
     private ClinicDao clinicDao;
     @Autowired
     private ClinicDTOValidator clinicDTOValidator;
-    @Autowired
-    private CacheService cacheService;
     @Autowired
     private BundleDao bundleDao;
     @Autowired
@@ -371,8 +368,6 @@ public class ClinicController {
             bundleDao.merge(deletedBundle);
         }
         clinicDao.updateUserRights(clinic, deletedBundles, clinicDTO.getAssignedUserDTOs());
-        //Evict the current ACL Cache to make changes available
-        cacheService.evictAllCaches();
 
         return "redirect:/clinic/list";
     }

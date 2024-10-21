@@ -1,6 +1,6 @@
 # Mobile Patient Survey (MoPat)
 MoPat is a web-based platform designed to transform conventional paper-based questionnaires into a digital format. The application is universally usable across a range of devices, including desktop computers, tablets, and smartphones. Thanks to its full compatibility with all major operating systems such as Windows, MacOS, Linux, iOS, and Android via the web browser, MoPat offers users the flexibility to access the questionnaire service on any device with network access. By automatically exporting the questionnaire results into different systems, MoPat can integrate with other systems. <br />
-**DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes only.** 
+**DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes.** 
 
 Currently MoPat supports the automatic export to the following data formats or systems: 
 
@@ -16,48 +16,7 @@ Currently MoPat supports the automatic export to the following data formats or s
 ## Documentation and Wiki
 We have a dedicated [GitHub Wiki](https://github.com/imi-ms/MoPat/wiki) that describes MoPats functions in detail.
 
-## Prerequisites
-
-Before you begin, ensure you have met the following requirements:
-#### MySQL Database 
-You need a local MySQL database running on your machine. Ensure you have MySQL installed and running before you proceed. We recommend to use MariaDB to ensure that everything is working correctly. 
-
-#### Database User
-Create a user named `mopat` in your MySQL database. It is recommended to set a secure password for this user, even if you only test the application locally. 
-
-#### Configuration File
-You can override the standard MoPat configuration by creating a file named `config.properties` under `/etc/mopat/`. This will adjust the application during runtime to use your local settings. To override the database URLs and authentication settings, use the following properties: 
-```conf
-de.imi.mopat.datasource.user=
-de.imi.mopat.datasource.password=
-de.imi.mopat.datasource.mopatDataSource.jdbc-url=<jdbc:mysql://<SQL-URL>/moPat?>autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
-de.imi.mopat.datasource.mopat_userDataSource.jdbc-url=jdbc:mysql://<SQL-URL>/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
-de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url=jdbc:mysql://<SQL-URL>/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
-```
-It is also possible to change the path of the properties file. However this is only possible by modifying the `mopat.properties` in the repository and building the application yourself. 
-
-#### Database Initialization
-We provide scripts to ease the initialization of the database. To use them, navigate to the db folder in the project directory.<br/>
-Run the script installationInit to set up your database schema:
-```bash
-mysql -u mopat -p > installationInit.sql
-``` 
-Run the script installationInitTest to populate a test database with initial test data. Unit tests rely on this database:
-
-```bash
-mysql -u mopat -p > installationInitTest.sql
-```
-
-#### Java
-Ensure you have a suitable Java Runtime Environment installed that can run Java 17 applications.        
-
-#### Tomcat
-In order to run the application as a service on a server the use of Tomcat is highly recommended. At least Tomcat 10 is required to run MoPat. 
-
-
 ## Setup development environment
-You can either use our [precompiled .war](https://github.com/imi-ms/MoPat/releases) to run the application on a local server or you can compile the code for yourself.
-
 Steps to install the project locally:
 
 ```bash
@@ -73,13 +32,90 @@ mvn clean install
 This will also create the deployable WAR file under `target/MoPat.war`
 
 ## Installation
-#### Start Tomcat
+
+### Docker 
+If you want to run MoPat via Docker, you can use [docker-compose](https://github.com/docker/compose).
+
+A Dockerfile to build and run MoPat, as well as a docker-compose configuration is included in the project.
+The setup is runnable without needing to perform any additional changes to the project: 
+
+```bash
+docker-compose up
+```
+This will create all necessary docker containers as well as the network, so they are able to communicate.<br/>
+Docker is configured to automatically mount local directories into the container to be able to persist database, exports and uploads across different installations. <br/>
+
+Initially the following paths are mounted: 
+- `<MoPat directory>/data/db`
+- `<MoPat directory>/data/images`
+- `<MoPat directory>/data/upload`
+- `<MoPat directory>/data/export/FHIR`
+- `<MoPat directory>/data/export/HL7`
+- `<MoPat directory>/data/export/ODM`
+
+Make sure these directories exist, to ensure that the data will be saved outside of the container. 
+It is possible, that you will not be able to view the contents of these directories, as docker will determine the rights for the files.
+Under Linux, you can adjust these rights by running the following command:
+```bash
+sudo chmod -R 775 ./data
+```
+
+While the application is runnable without any additional settings, it is highly advised to adjust the `.env` file in the root directory of the project to use secure settings.
+
+
+### Manual Installation
+To install the application manually, follow these steps carefully:
+
+#### Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+1. MySQL Database 
+- You need a local MySQL database running on your machine. Ensure you have MySQL installed and running before you proceed. We recommend to use MariaDB to ensure that everything is working correctly.
+
+2. Database User
+- Create a user named `mopat` in your MySQL database. It is recommended to set a secure password for this user, even if you only test the application locally.
+
+3. Configuration File
+- You can override the standard MoPat configuration by creating a file named `config.properties` under `/etc/mopat/`. This will adjust the application during runtime to use your local settings. To override the database URLs and authentication settings, use the following properties:
+```conf
+de.imi.mopat.datasource.user=
+de.imi.mopat.datasource.password=
+de.imi.mopat.datasource.mopatDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+de.imi.mopat.datasource.mopat_userDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+```
+- It is also possible to change the path of the properties file. However this is only possible by modifying the `mopat.properties` in the repository and building the application yourself.
+4. Database Initialization
+- We provide scripts to ease the initialization of the database. To use them, navigate to the db folder in the project directory.<br/>
+Run the script installationInit to set up your database schema:
+```bash
+mysql -u root -p < installationInit.sql
+``` 
+Run the script installationInitTest to populate a test database with initial test data. Unit tests rely on this database:
+
+```bash
+mysql -u root -p < installationInitTest.sql
+```
+
+Since `<` is a reserverd symbol for powershell, if you want to run the scripts on Windows you could instead use the following command:
+```powershell
+Get-Content path/to/installationInit.sql | mysql -u root -p
+```
+
+5. Java
+- Ensure you have a suitable Java Runtime Environment installed that can run Java 17 applications.
+
+6. Tomcat
+- In order to run the application as a service on a server the use of Tomcat is highly recommended. At least Tomcat 10 is required to run MoPat.
+
+
+#### Start MoPat
 If you are installing MoPat on a server, it is recommended to run Tomcat as a service. This ensures that Tomcat automatically starts up whenever the server is rebooted and runs in the background.
 On Linux, you can use system management tools like systemd or init to configure Tomcat as a service.
 
 Alternatively, if you are not running Tomcat as a service, you can start it manually using the startup.sh script (on Linux/Unix) or startup.bat script (on Windows) located in the bin directory of your Tomcat installation folder.
 
-#### Deploying MoPat
 Build the WAR (Web Application Archive) file from the MoPat source code or obtain a [pre-built WAR](https://github.com/imi-ms/MoPat/releases) file from the repository.
 MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please adjust `src/main/resources/mopat.properties`:
 ```conf
@@ -145,14 +181,15 @@ MoPat makes use of several awesome open source projects:
 - [DataTables](https://github.com/DataTables/DataTables)
 
 ## Credits
-MoPat was developed by the Institute of Medical Informatics, University of Münster<br/>
+MoPat was developed by the Medical Data Integration Center (MeDIC), Institute of Medical Informatics, University of Münster
+
+Medical Data Integration Center (MeDIC)<br/>
+Institute of Medical Informatics<br/>
+University of Münster<br/>
 Albert-Schweitzer-Campus 1, Gebäude A11<br/>
 48149 Münster<br/>
-Tel.: +49 251 83 55262<br/>
-Fax: +49 251 83 52259<br/>
-imi@uni-muenster.de<br/>
-
-
+medic@uni-muenster.de<br/>
+0251 / 83 – 5 57 22
 
 ## Contact
 **E-Mail**: mopat@uni-muenster.de <br/>

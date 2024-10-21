@@ -13,6 +13,7 @@ mopat_errors.log
 mopat_logfile.log
 mopat_warnings.log
 MoPat.iml
+data
 
 src/main/resources/less/mobile/includes
 src/main/resources/less/admin/includes
