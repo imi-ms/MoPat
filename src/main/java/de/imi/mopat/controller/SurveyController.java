@@ -1,56 +1,24 @@
 package de.imi.mopat.controller;
 
-import de.imi.mopat.dao.AnswerDao;
-import de.imi.mopat.dao.AuditEntryDao;
-import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.ClinicDao;
-import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.dao.EncounterDao;
-import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.ResponseDao;
-import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.EncounterService;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.PatientDataRetriever;
+import de.imi.mopat.dao.*;
+import de.imi.mopat.dao.user.AclEntryDao;
+import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.io.EncounterExporter;
-import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.enumeration.AuditEntryActionType;
-import de.imi.mopat.model.enumeration.AuditPatientAttribute;
-import de.imi.mopat.model.Bundle;
-import de.imi.mopat.model.BundleQuestionnaire;
-import de.imi.mopat.model.Configuration;
-import de.imi.mopat.model.Encounter;
-import de.imi.mopat.model.EncounterExportTemplate;
-import de.imi.mopat.model.ExportTemplate;
-import de.imi.mopat.model.PointOnImage;
-import de.imi.mopat.model.Response;
-import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.*;
+import de.imi.mopat.model.enumeration.*;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.PointOnImageDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
-import de.imi.mopat.model.enumeration.ExportStatus;
-import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -111,6 +79,12 @@ public class SurveyController {
     private BundleService bundleService;
     @Autowired
     private EncounterService encounterService;
+    @Autowired
+    private AclEntryDao aclEntryDao;
+    @Autowired
+    private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
+    @Autowired
+    private ClinicConfigurationMappingService clinicConfigurationMappingService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -152,21 +126,46 @@ public class SurveyController {
                     encounterService.toEncounterDTO(true,new Encounter()));
         }
 
-        if (!model.containsAttribute("patientDataService")) {
-            if (configurationDao.isRegistryOfPatientActivated()) {
-                model.addAttribute("patientDataService", "register");
-            } else if (configurationDao.isUsePatientDataLookupActivated()) {
-                model.addAttribute("patientDataService", "searchHIS");
-            } else if (configurationDao.isPseudonymizationServiceActivated()) {
-                model.addAttribute("patientDataService", "pseudonym");
-            } else {
-                model.addAttribute("patientDataService", "inactive");
-            }
-        }
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
 
-        model.addAttribute("register", configurationDao.isRegistryOfPatientActivated());
-        model.addAttribute("searchHIS", configurationDao.isUsePatientDataLookupActivated());
-        model.addAttribute("pseudonym", configurationDao.isPseudonymizationServiceActivated());
+        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        currentUser , PermissionType.READ)));
+
+        if(assignedClinics.size() == 1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+            if (!model.containsAttribute("patientDataService")) {
+                if (clinicConfigurationMappingDao.isRegistryOfPatientActivated(assignedClinics.get(0).getId())) {
+                    model.addAttribute("patientDataService", "register");
+                } else if (clinicConfigurationMappingDao.isUsePatientDataLookupActivated(assignedClinics.get(0).getId())) {
+                    model.addAttribute("patientDataService", "searchHIS");
+                } else if (clinicConfigurationMappingDao.isPseudonymizationServiceActivated(assignedClinics.get(0).getId())) {
+                    model.addAttribute("patientDataService", "pseudonym");
+                } else {
+                    model.addAttribute("patientDataService", "inactive");
+                }
+            }
+
+            model.addAttribute("register", clinicConfigurationMappingDao.isRegistryOfPatientActivated(assignedClinics.get(0).getId()));
+            model.addAttribute("searchHIS", clinicConfigurationMappingDao.isUsePatientDataLookupActivated(assignedClinics.get(0).getId()));
+            model.addAttribute("pseudonym", clinicConfigurationMappingDao.isPseudonymizationServiceActivated(assignedClinics.get(0).getId()));
+        } else {
+            if (!model.containsAttribute("patientDataService")) {
+                if (configurationDao.isRegistryOfPatientActivated()) {
+                    model.addAttribute("patientDataService", "register");
+                } else if (configurationDao.isUsePatientDataLookupActivated()) {
+                    model.addAttribute("patientDataService", "searchHIS");
+                } else if (configurationDao.isPseudonymizationServiceActivated()) {
+                    model.addAttribute("patientDataService", "pseudonym");
+                } else {
+                    model.addAttribute("patientDataService", "inactive");
+                }
+            }
+
+            model.addAttribute("register", configurationDao.isRegistryOfPatientActivated());
+            model.addAttribute("searchHIS", configurationDao.isUsePatientDataLookupActivated());
+            model.addAttribute("pseudonym", configurationDao.isPseudonymizationServiceActivated());
+        }
 
         model.addAttribute("hideProfile", Boolean.FALSE);
         String caseNumberType = getCaseNumberType();
@@ -218,10 +217,23 @@ public class SurveyController {
         encounterDTO.removeDemographics();
         encounterDTO.setCaseNumber(caseNumber);
 
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+
+        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        currentUser , PermissionType.READ)));
+
         //Checkout which service to save or get patient data has been chosen
         if (patientDataService.equalsIgnoreCase("searchHIS")) {
-            PatientDataRetriever patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                "patientDataRetriever");
+            PatientDataRetriever patientDataRetriever;
+            if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                        "clinicPatientDataRetriever", assignedClinics.get(0).getId());
+            } else {
+                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                        "patientDataRetriever");
+            }
             if (patientDataRetriever != null) {
                 EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
                     caseNumber);
@@ -281,9 +293,22 @@ public class SurveyController {
         @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
         final BindingResult result, final Model model) {
 
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+
+        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        currentUser , PermissionType.READ)));
+
         if (patientDataService != null && patientDataService.equalsIgnoreCase("searchHIS")) {
-            PatientDataRetriever patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                "patientDataRetriever");
+            PatientDataRetriever patientDataRetriever;
+            if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                        "clinicPatientDataRetriever", assignedClinics.get(0).getId());
+            } else {
+                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                        "patientDataRetriever");
+            }
             if (patientDataRetriever != null) {
                 EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
                     encounterDTO.getCaseNumber());

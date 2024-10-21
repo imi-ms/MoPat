@@ -1,19 +1,9 @@
 package de.imi.mopat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.ClinicConfigurationDTO;
-import de.imi.mopat.model.dto.ConfigurationDTO;
-import de.imi.mopat.model.enumeration.ConfigurationType;
 import jakarta.persistence.*;
-import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 @Entity
 @Table(name = "clinic_configuration_mapping")
@@ -67,6 +57,15 @@ public class ClinicConfigurationMapping implements Serializable {
      */
     public String getValue() {
         return value;
+    }
+
+
+    public ClinicConfiguration getClinicConfiguration() {
+        return clinicConfiguration;
+    }
+
+    public void setClinicConfiguration(ClinicConfiguration clinicConfiguration) {
+        this.clinicConfiguration = clinicConfiguration;
     }
 
     /**

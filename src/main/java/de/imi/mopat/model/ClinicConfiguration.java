@@ -33,6 +33,9 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 @Entity
 @Table(name = "clinic_configuration")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("GENERAL")
 public class ClinicConfiguration implements Serializable {
 
     @Id

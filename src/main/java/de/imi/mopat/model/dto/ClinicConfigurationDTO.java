@@ -2,6 +2,8 @@ package de.imi.mopat.model.dto;
 
 import de.imi.mopat.model.enumeration.ConfigurationType;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -100,6 +102,14 @@ public class ClinicConfigurationDTO {
     }
 
     public List<ClinicConfigurationDTO> getChildren() {
+        if (children != null) {
+            Collections.sort(children, new Comparator<ClinicConfigurationDTO>() {
+                @Override
+                public int compare(ClinicConfigurationDTO o1, ClinicConfigurationDTO o2) {
+                    return Integer.compare(o1.getPosition(), o2.getPosition());
+                }
+            });
+        }
         return children;
     }
 

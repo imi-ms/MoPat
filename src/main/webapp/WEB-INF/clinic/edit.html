@@ -48,18 +48,34 @@
 
 					/>
 				</div>
+				<div class="accordion" id="accordionExample">
 
-				<ul class="list-group mb-4"></ul>
-					<!--/* Loop through all configuration to show them */-->
-					<th:block
-						layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
-												configurationMappingList=${clinicDTO.clinicConfigurationMappingDTOS},
-												selectionPath=|clinicConfigurationMappingDTOS|,
-												idPath=|clinicDTO.clinicConfigurationMappingDTOS|,
-												parent=null
-					)}"
-					/>
-				</ul>
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="headingOne">
+					  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+						<th:block
+						th:text="${messages.get(#locale, 'clinic.heading.clinicConfiguration', 'Clinic Configuration')}"
+					/>					  </button>
+					</h2>
+					<div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+						<ul class="list-group mb-4">
+							<!--/* Loop through all configuration to show them */-->
+							<th:block
+								layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
+														configurationList=${clinicDTO.clinicConfigurationMappingDTOS},
+														selectionPath=|clinicConfigurationMappingDTOS|,
+														idPath=|clinicDTO.clinicConfigurationMappingDTOS|,
+														parent=null
+							)}"
+							/>
+						</ul>
+					</div>
+				  </div>
+				</div>
+						
+
+				
+
 
 				<th:block th:with="clinicBundleIndex=${counter.clear()}">
 					<div
