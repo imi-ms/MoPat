@@ -27,6 +27,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.lang.reflect.Field;
 
@@ -70,6 +71,9 @@ public class QuestionnaireServiceTest {
 
     @Mock
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
+
+    @Mock
+    private FileUtils fileUtils;
 
     @InjectMocks
     private QuestionnaireService questionnaireService;
@@ -714,6 +718,8 @@ public class QuestionnaireServiceTest {
         exportTemplates.add(newExportTemplate2);
         exportTemplates.add(newExportTemplate3);
 
+        when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn(anyString());
+
         // Act
 
         Set<ExportTemplate> copiedExportTemplates = questionnaireService.copyExportTemplates(exportTemplates, newQuestionnaire);
@@ -725,5 +731,62 @@ public class QuestionnaireServiceTest {
             Assert.assertEquals("Export templates are not equal",exportTemplate.getQuestionnaire(), newQuestionnaire);
         }
 
+    }
+
+    @Test
+    public void testCopyExportTemplates_success() throws Exception {
+        // Arrange
+        Questionnaire validQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        ExportTemplate exportTemplateToCopy = ExportTemplateTest.getNewValidExportTemplate();
+
+        exportTemplateToCopy.setName("Template 1");
+        exportTemplateToCopy.setFilename("template1.json");
+
+        Set<ExportTemplate> templates = new HashSet<>();
+        templates.add(exportTemplateToCopy);
+        when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn("template1_copy.json");
+        doNothing().when(fileUtils).copyTemplateFile(anyString(), anyString());
+
+        // Act
+        Set<ExportTemplate> copiedTemplates = questionnaireService.copyExportTemplates(templates, validQuestionnaire);
+
+        // Assert
+        Assert.assertEquals(1, copiedTemplates.size());
+        ExportTemplate copiedTemplate = copiedTemplates.iterator().next();
+        Assert.assertEquals("Template 1", copiedTemplate.getName());
+        Assert.assertEquals("template1_copy.json", copiedTemplate.getFilename());
+
+        // Verify
+        verify(fileUtils).generateFileNameForExportTemplate(eq("template1.json"), anyLong());
+        verify(fileUtils).copyTemplateFile("template1.json", "template1_copy.json");
+        verify(exportTemplateDao, times(2)).merge(any(ExportTemplate.class));
+    }
+
+    @Test
+    public void testCopyExportTemplates_failureOnFileCopy() throws Exception {
+        // Arrange
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        ExportTemplate templateToCopy = ExportTemplateTest.getNewValidExportTemplate();
+        templateToCopy.setName("Template 1");
+        templateToCopy.setFilename("template1.json");
+        Set<ExportTemplate> templatesToCopy = new HashSet<>();
+        templatesToCopy.add(templateToCopy);
+
+        when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn("template1_copy.json");
+        doThrow(new IOException("File copy failed")).when(fileUtils).copyTemplateFile(anyString(), anyString());
+        doNothing().when(exportTemplateDao).remove(any(ExportTemplate.class));
+        doNothing().when(fileUtils).deleteExportTemplateFrom(anyString());
+
+        // Act
+        Set<ExportTemplate> copiedTemplates = questionnaireService.copyExportTemplates(templatesToCopy, newQuestionnaire);
+
+        // Assert
+        Assert.assertTrue(copiedTemplates.isEmpty());  // Ensure no templates were copied due to failure
+
+        // Verify
+        verify(fileUtils).generateFileNameForExportTemplate(eq("template1.json"), anyLong());
+        verify(fileUtils).copyTemplateFile("template1.json", "template1_copy.json");
+        verify(exportTemplateDao).remove(any(ExportTemplate.class));  // Ensure failed template was removed
+        verify(fileUtils).deleteExportTemplateFrom("template1_copy.json");
     }
 }

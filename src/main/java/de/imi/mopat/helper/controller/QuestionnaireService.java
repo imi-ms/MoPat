@@ -103,6 +103,9 @@ public class QuestionnaireService {
     @Autowired
     private ExportTemplateDao exportTemplateDao;
 
+    @Autowired
+    private FileUtils fileUtils;
+
     /**
      * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
      * It removes unnecessary HTML tags such as "<p><br></p>", "<br>".
@@ -154,7 +157,6 @@ public class QuestionnaireService {
      * @param userId           The ID of the user performing the action.
      * @return The saved or updated {@link Questionnaire}.
      */
-    @Transactional(transactionManager = "MoPat")
     public Questionnaire saveOrUpdateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
 
         // Update questionnaire directly if editing is allowed
@@ -375,12 +377,12 @@ public class QuestionnaireService {
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
-        questionnaireDao.merge(newQuestionnaire);
 
         for(Condition condition : clonedConditions)
             conditionDao.merge(condition);
 
         copyExportTemplates(existingQuestionnaire.getExportTemplates(), newQuestionnaire);
+        questionnaireDao.merge(newQuestionnaire);
         return newQuestionnaire;
     }
 
@@ -462,41 +464,47 @@ public class QuestionnaireService {
      */
     public Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire){
         Set<ExportTemplate> copiedExportTemplates = new HashSet<>();
-        for(ExportTemplate exportTemplate : exportTemplates){
-            String name = exportTemplate.getName();
-            String fileName = exportTemplate.getFilename();
-            ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
-            ConfigurationGroup configurationGroup = exportTemplate.getConfigurationGroup();
-
-            String objectStoragePath = configurationDao.getObjectStoragePath();
-            String contextPath = objectStoragePath
-                + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
-            Path path = Paths.get(contextPath + '/' + fileName);
-            ExportTemplate newExportTemplate = new ExportTemplate();
-            newExportTemplate.setName(name);
-            newExportTemplate.setExportTemplateType(exportTemplateType);
-            newExportTemplate.setConfigurationGroup(configurationGroup);
-            if(exportTemplate.getOriginalFilename() != null){
-                newExportTemplate.setOriginalFilename(exportTemplate.getOriginalFilename());
-            }
-            exportTemplateDao.merge(newExportTemplate);
-
-            String newFileName = newExportTemplate.getId() + "_" + fileName.split("_")[1] + "_" + fileName.split("_")[2];
-            Path targetPath = Paths.get(contextPath+"/"+newFileName);
+        for(ExportTemplate templateToCopy : exportTemplates){
+            ExportTemplate copiedTemplate = createExportTemplate(templateToCopy, newQuestionnaire);
+            exportTemplateDao.merge(copiedTemplate);  // Persist to DB to get the ID
+            String newFileName = fileUtils.generateFileNameForExportTemplate(templateToCopy.getFilename(), copiedTemplate.getId());
+            copiedTemplate.setFilename(newFileName);
             try {
                 // Copy the file
-                Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("File cloned successfully to: " + targetPath);
+                fileUtils.copyTemplateFile(templateToCopy.getFilename(), newFileName);
+                exportTemplateDao.merge(copiedTemplate);
+                copiedExportTemplates.add(copiedTemplate);
+                newQuestionnaire.addExportTemplate(copiedTemplate);
             } catch (IOException e) {
-                e.printStackTrace();
-                System.err.println("Failed to clone the file.");
+                LOGGER.error("Failed to copy export template '{}': {}", templateToCopy.getFilename(), e.getMessage());
+                // Clean up: remove only the failed template from the DB and the filesystem
+                fileUtils.deleteExportTemplateFrom(copiedTemplate.getFilename());
+                exportTemplateDao.remove(copiedTemplate);
+                newQuestionnaire.removeExportTemplate(copiedTemplate);
             }
-            newExportTemplate.setFilename(newFileName);
-            newExportTemplate.setQuestionnaire(newQuestionnaire);
-            exportTemplateDao.merge(newExportTemplate);
-            copiedExportTemplates.add(newExportTemplate);
         }
         return copiedExportTemplates;
+    }
+
+    /**
+     * Creates a new {@link ExportTemplate} instance by copying the attributes from an existing template and associating
+     * it with a new {@link Questionnaire}. The ID is not copied, and a new ID will be generated when the new template
+     * is persisted in the database.
+     *
+     * @param templateToCopy the {@link ExportTemplate} that should be copied.
+     * @param newQuestionnaire the {@link Questionnaire} that will be associated with the new template.
+     * @return a new {@link ExportTemplate} instance with the same attributes as the original, but associated with the provided {@link Questionnaire}.
+     */
+    private ExportTemplate createExportTemplate(ExportTemplate templateToCopy, Questionnaire newQuestionnaire) {
+        ExportTemplate newExportTemplate = new ExportTemplate();
+        newExportTemplate.setName(templateToCopy.getName());
+        if(templateToCopy.getOriginalFilename() != null){
+            newExportTemplate.setOriginalFilename(templateToCopy.getOriginalFilename());
+        }
+        newExportTemplate.setExportTemplateType(templateToCopy.getExportTemplateType());
+        newExportTemplate.setConfigurationGroup(templateToCopy.getConfigurationGroup());
+        newExportTemplate.setQuestionnaire(newQuestionnaire);
+        return newExportTemplate;
     }
 
     /**
@@ -516,6 +524,9 @@ public class QuestionnaireService {
     }
 
     public Boolean hasQuestionnaireConditions(Questionnaire questionnaire){
+        if (questionnaire == null){
+            return false;
+        }
         for (Question originalQuestion : questionnaire.getQuestions()) {
             for (Answer answer : originalQuestion.getAnswers()) {
                 for (Condition condition : answer.getConditions()) {
