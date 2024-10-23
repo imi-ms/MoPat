@@ -12,7 +12,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.ContextLoaderListener;
-import de.imi.mopat.helper.controller.QuestionService;
+import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTest;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
@@ -55,7 +55,7 @@ public class QuestionTest {
     private static final Random random = new Random();
 
     @Autowired
-    private QuestionService questionService;
+    private QuestionDTOMapper questionDTOMapper;
     private Question testQuestion;
 
     public QuestionTest() {
@@ -1100,7 +1100,7 @@ public class QuestionTest {
             spyQuestion.addAnswer(testAnswer);
         }
 
-        QuestionDTO testQuestionDTO = questionService.toQuestionDTO(spyQuestion);
+        QuestionDTO testQuestionDTO = questionDTOMapper.apply(spyQuestion);
 
         assertEquals("The getting LocalizedQuestionText was not the expected one",
             spyQuestion.getId(), testQuestionDTO.getId());

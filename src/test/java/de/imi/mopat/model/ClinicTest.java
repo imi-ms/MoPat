@@ -10,7 +10,7 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.utils.Helper;
 import java.util.HashSet;
@@ -45,7 +45,7 @@ public class ClinicTest {
     private Clinic testClinic;
 
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
 
     public ClinicTest() {
     }
@@ -361,7 +361,7 @@ public class ClinicTest {
     }
 
     /**
-     * Test of {@link Clinic#toCLinicDTO} method.<br> Valid input: random {@link Clinic}
+     * Test of {@link ClinicDTOMapper#apply(Clinic)} method.<br> Valid input: random {@link Clinic}
      */
     @Test
     public void testToClinicDTO() {
@@ -374,7 +374,7 @@ public class ClinicTest {
         BundleClinic bundleClinic = BundleClinicTest.getNewValidBundleClinic(spyClinic, bundle);
         spyClinic.addBundleClinic(bundleClinic);
         spyClinic.setEmail(Helper.getRandomMailAddress());
-        ClinicDTO clinicDTO = clinicService.toClinicDTO(spyClinic);
+        ClinicDTO clinicDTO = clinicDTOMapper.apply(spyClinic);
         assertEquals(
             "Converting the clinic to DTO failed. The returned id didn't match the expected value.",
             spyClinic.getId(), clinicDTO.getId());

@@ -5,7 +5,7 @@ import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.helper.controller.BundleService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
@@ -65,7 +65,7 @@ public class ConditionController {
     @Autowired
     private ConditionListDTOValidator conditionListDTOValidator;
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
 
     /**
      * Controls the HTTP GET requests for the URL
@@ -171,7 +171,7 @@ public class ConditionController {
          complex.
          */
         for (BundleQuestionnaire currentBundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
-            BundleDTO bundleDTO = bundleService.toBundleDTO(true,currentBundleQuestionnaire.getBundle());
+            BundleDTO bundleDTO = bundleDTOMapper.apply(true,currentBundleQuestionnaire.getBundle());
 
             boolean hasAssignedBundleQuestionnaire = false;
             // If there is one questionnaire in this bundle after the current

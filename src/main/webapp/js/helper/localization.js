@@ -231,7 +231,7 @@ function collapsableClick(elem) {
         formGroupContainer.css('padding', '10px');
         formGroupContainer.css('height', '40px');
 
-    } else {
+    } else if (bootstrapIconSpan.hasClass('bi-chevron-down')) {
         /* Delete all made css, to reset the original design */
         formGroupContainer.css('padding', '');
         formGroupContainer.css('height', '');

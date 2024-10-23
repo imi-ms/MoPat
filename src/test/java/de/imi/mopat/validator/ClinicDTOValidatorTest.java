@@ -9,7 +9,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.ClinicDao;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.ClinicTest;
 import de.imi.mopat.model.dto.ClinicDTO;
@@ -49,7 +49,7 @@ public class ClinicDTOValidatorTest {
     @Autowired
     private ClinicDao clinicDao;
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
 
     /**
      * Test of {@link ClinicDTOValidator#supports(java.lang.Class)}<br> Valid input:
@@ -74,7 +74,7 @@ public class ClinicDTOValidatorTest {
      */
     @Test
     public void testValidate() {
-        ClinicDTO clinicDTO = clinicService.toClinicDTO(ClinicTest.getNewValidClinic());
+        ClinicDTO clinicDTO = clinicDTOMapper.apply(ClinicTest.getNewValidClinic());
         BindingResult result = new MapBindingResult(new HashMap<>(),
             Helper.getRandomAlphabeticString(random.nextInt(13)));
         clinicDTOValidator.validate(clinicDTO, result);

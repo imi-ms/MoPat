@@ -10,7 +10,9 @@ import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.Clinic;
@@ -25,6 +27,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 
@@ -83,7 +86,11 @@ public class UserController {
     @Autowired
     private ConfigurationDao configurationDao;
     @Autowired
+    private UserService userService;
+    @Autowired
     private MoPatActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider;
+    @Autowired
+    private AuthService authService;
 
     /**
      * @param id (<i>optional</i>) Id of the {@link User User} object
@@ -542,34 +549,37 @@ public class UserController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/user/clinicrights</i>. Shows the page
+     * Controls the HTTP GET requests for the URL <i>/user/rights</i>. Shows the page
      * containing the form fields for granting or revoking rights for clinics to a
      * {@link User User}.
      *
      * @param model The model, which holds the information for the view.
      * @return The <i>user/edit</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/rights", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String editClinicRights(final Model model) {
+    public String editUserRights(final Model model) {
 
         if (model.asMap().get("user") == null) {
             model.addAttribute("user", null);
             return "redirect:/user/list";
         }
 
+        User user = (User) model.asMap().get("user");
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                (User) model.asMap().get("user"), PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        user, PermissionType.READ));
         Collection<Clinic> availableClinics = clinicDao.getAllElements();
         availableClinics.removeAll(assignedClinics);
         model.addAttribute("availableClinics", availableClinics);
         model.addAttribute("assignedClinics", assignedClinics);
-        return "user/clinicrights";
+        model.addAttribute("roleList", new ArrayList<>(Arrays.asList(UserRole.values())));
+        model.addAttribute("userRole", userService.getHighestRole(user));
+        return "user/rights";
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/user/clinicrights</i>. Provides the ability
+     * Controls the HTTP POST requests for the URL <i>/user/rights</i>. Provides the ability
      * to grant or revoke rights for clinics to a {@link User User}.
      *
      * @param clinicIDs The {@link Clinic clinic} object IDs, which are assigned to the
@@ -579,37 +589,18 @@ public class UserController {
      *                  edited.
      * @param result    The result for validation of the bundle object.
      * @param model     The model, which holds the information for the view.
-     * @return The <i>/user/clinicrights</i> website.
+     * @return The <i>/user/rights</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.POST)
-    public String editClinicRights(
-        @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
-        @RequestParam(value = "action", required = true) final String action,
-        @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
+    @RequestMapping(value = "/user/rights", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String updateUserRights(
+            @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
+            @RequestParam(value = "action", required = true) final String action,
+            @RequestParam(value = "role") final UserRole role,
+            @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
         if (action.equalsIgnoreCase("save")) {
-            Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user,
-                    PermissionType.READ));
-            Collection<Clinic> currentClinics = new ArrayList<>();
-            if (clinicIDs != null && !clinicIDs.isEmpty()) {
-                currentClinics = clinicDao.getElementsById(clinicIDs);
-            }
-            assignedClinics.removeAll(currentClinics);
-            currentClinics.removeAll(assignedClinics);
-            for (Clinic clinic : currentClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry == null) {
-                    clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
-            for (Clinic clinic : assignedClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry != null) {
-                    clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
+            userService.updateUserClinicRights(user, clinicIDs);
+            userService.replaceUserRoles(user, role);
         }
         return "redirect:/user/list";
     }

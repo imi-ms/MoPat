@@ -125,11 +125,11 @@
 										</th:block>
 										<a
 											class="link"
-											th:href="|clinicrights?id=${item.id}|"
+											th:href="|rights?id=${item.id}|"
 										>
 											<i
 												class="bi-list-task"
-												th:title="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+												th:title="${messages.get(#locale, 'user.button.rights', 'Edit user rights')}"
 											>
 											</i>
 										</a>
@@ -165,8 +165,8 @@
 												</a>
 												<a
 													class="dropdown-item link"
-													th:href="|clinicrights?id=${item.id}|"
-													th:text="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+													th:href="|rights?id=${item.id}|"
+													th:text="${messages.get(#locale, 'user.button.rights', 'Edit user rights')}"
 												></a>
 											</th:block>
 										</th:block>

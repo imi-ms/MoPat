@@ -1,26 +1,28 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.helper.model;
 
 import de.imi.mopat.model.Encounter;
-import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Response;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.function.BiFunction;
 
-@Service
-public class EncounterService {
+@Component
+public class EncounterDTOMapper implements BiFunction<Boolean, Encounter, EncounterDTO> {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        Question.class);
+    private final BundleDTOMapper bundleDTOMapper;
 
     @Autowired
-    private BundleService bundleService;
+    public EncounterDTOMapper(BundleDTOMapper bundleDTOMapper) {
+        this.bundleDTOMapper = bundleDTOMapper;
+    }
 
-    public EncounterDTO toEncounterDTO(final Boolean activeSurvey, Encounter encounter) {
+    @Override
+    public EncounterDTO apply(Boolean activeSurvey, Encounter encounter) {
         EncounterDTO encounterDTO = new EncounterDTO();
 
         encounterDTO.setId(encounter.getId());
@@ -46,7 +48,7 @@ public class EncounterService {
             encounterDTO.setResponses(responseDTOs);
 
             if (encounter.getBundle() != null) {
-                encounterDTO.setBundleDTO(bundleService.toBundleDTO(true, encounter.getBundle()));
+                encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, encounter.getBundle()));
             }
 
             encounterDTO.setIsAtHome(encounter.getEncounterScheduled() != null);
@@ -55,10 +57,10 @@ public class EncounterService {
             // Bundle
             String successfullExports = "-";
             if (encounter.getBundle() != null) {
-                encounterDTO.setBundleDTO(bundleService.toBundleDTO(false, encounter.getBundle()));
+                encounterDTO.setBundleDTO(bundleDTOMapper.apply(false, encounter.getBundle()));
                 successfullExports =
-                    encounter.getNumberOfAssignedAndSuccessfullyExportedExportTemplates() + "/"
-                        + encounter.getBundle().getNumberOfAssignedExportTemplate();
+                        encounter.getNumberOfAssignedAndSuccessfullyExportedExportTemplates() + "/"
+                                + encounter.getBundle().getNumberOfAssignedExportTemplate();
             }
             encounterDTO.setSuccessfullExports(successfullExports);
         }

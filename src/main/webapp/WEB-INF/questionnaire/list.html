@@ -22,6 +22,7 @@
 				<th:block th:text="${messageFail}" />
 			</div>
 		</th:block>
+		<div class="alert alert-warning" role="alert" th:if="${hasQuestionnaireConditions}" th:text="${messages.get(#locale, 'questionnaire.warning.cloneConditions', '')}"></div>
 		<div class="table-responsive">
 			<table
 				id="questionnaireTable"

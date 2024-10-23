@@ -12,6 +12,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.BundleService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.utils.Helper;
 import java.sql.Timestamp;
@@ -48,6 +49,9 @@ public class BundleTest {
 
     @Autowired
     private BundleService bundleService;
+
+    @Autowired
+    private BundleDTOMapper bundleDTOMapper;
 
     public BundleTest() {
     }
@@ -1024,7 +1028,7 @@ public class BundleTest {
         spyBundle.setLocalizedWelcomeText(availableLanguages);
         spyBundle.setLocalizedFinalText(availableLanguages);
 
-        BundleDTO testBundleDTO = bundleService.toBundleDTO(Boolean.TRUE, spyBundle);
+        BundleDTO testBundleDTO = bundleDTOMapper.apply(Boolean.TRUE, spyBundle);
 
         assertEquals("The getting ID was not the expected one", spyBundle.getId(),
             testBundleDTO.getId());

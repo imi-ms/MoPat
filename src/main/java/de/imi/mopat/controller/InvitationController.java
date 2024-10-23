@@ -8,7 +8,7 @@ import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.dto.ClinicDTO;
@@ -72,7 +72,7 @@ public class InvitationController {
     @Autowired
     private ApplicationMailer applicationMailer;
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
 
     /**
      * Returns a list of {@link ClinicDTO clinicDTOs}, which are not assigned to the given
@@ -89,7 +89,7 @@ public class InvitationController {
 
         // Get availableClinics by removing assignedClinics from all clinics
         for (Clinic clinic : clinicDao.getAllElements()) {
-            availableClinicDTOs.add(clinicService.toClinicDTO(clinic));
+            availableClinicDTOs.add(clinicDTOMapper.apply(clinic));
         }
         availableClinicDTOs.removeAll(invitationDTO.getAssignedClinics());
 
@@ -144,7 +144,7 @@ public class InvitationController {
             // Add assignedClinics to invitation
             for (AclObjectIdentity aclObjectIdentity
                 : invitation.getAssignedClinics()) {
-                assignedClinicDTOs.add(clinicService.toClinicDTO(clinicDao.getElementById(aclObjectIdentity.getObjectIdIdentity())));
+                assignedClinicDTOs.add(clinicDTOMapper.apply(clinicDao.getElementById(aclObjectIdentity.getObjectIdIdentity())));
             }
             invitationDTO.setAssignedClinics(assignedClinicDTOs);
         }

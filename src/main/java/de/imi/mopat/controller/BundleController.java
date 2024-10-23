@@ -2,17 +2,19 @@ package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.controller.UserService;
+import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -37,13 +39,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -65,11 +66,7 @@ public class BundleController {
     @Autowired
     private BundleDao bundleDao;
     @Autowired
-    private ClinicDao clinicDao;
-    @Autowired
     private ConditionDao conditionDao;
-    @Autowired
-    private EncounterDao encounterDao;
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
@@ -81,9 +78,17 @@ public class BundleController {
     @Autowired
     private MessageSource messageSource;
     @Autowired
-    private QuestionnaireService questionnaireService;
-    @Autowired
     private BundleService bundleService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ClinicService clinicService;
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
+    @Autowired
+    private BundleDTOMapper bundleDTOMapper;
+    @Autowired
+    private AuthService authService;
 
     /**
      * @param id for bundle
@@ -99,7 +104,7 @@ public class BundleController {
             if (bundle == null) {
                 result = new BundleDTO();
             } else {
-                bundleDTO = bundleService.toBundleDTO(true,bundle);
+                bundleDTO = bundleDTOMapper.apply(true,bundle);
                 for (BundleQuestionnaireDTO bundleQuestionnaireDTO
                         : bundleDTO.getBundleQuestionnaireDTOs()) {
                     bundleQuestionnaireDTO.getQuestionnaireDTO()
@@ -119,36 +124,19 @@ public class BundleController {
      */
     private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long id) {
         BundleDTO bundleDTO = getBundleDTO(id);
-
-        List<QuestionnaireDTO> questionnaireDTOs = new ArrayList<>();
-
-        // Add questionnaires not already assigned to this bundle
-        outerLoop:
-        for (Questionnaire questionnaire : questionnaireDao.getAllElements()) {
-            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = bundleDTO.getBundleQuestionnaireDTOs();
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleQuestionnaireDTOs) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                          .equals(questionnaireService.toQuestionnaireDTO(questionnaire))) {
-                    continue outerLoop;
-                }
-            }
-            // Add questionnaires, which have at least one question attached
-            if (!questionnaire.getQuestions()
-                              .isEmpty()) {
-                QuestionnaireDTO questionnaireDTO =
-                        questionnaireService.toQuestionnaireDTO(questionnaire);
-                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
-                questionnaireDTOs.add(questionnaireDTO);
-            }
-        }
-
-        // Sort by name
-        questionnaireDTOs.sort(new Comparator<QuestionnaireDTO>() {
-            @Override
-            public int compare(final QuestionnaireDTO o1, final QuestionnaireDTO o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
+        List<QuestionnaireDTO> questionnaireDTOs = questionnaireDao.getAllElements().stream()
+                .filter(questionnaire -> {
+                    boolean isAssigned = bundleDTO.getBundleQuestionnaireDTOs().stream()
+                            .anyMatch(bqDTO -> bqDTO.getQuestionnaireDTO().equals(questionnaireDTOMapper.apply(questionnaire)));
+                    return !isAssigned && !questionnaire.getQuestions().isEmpty();
+                })
+                .map(questionnaire -> {
+                    QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
+                    questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
+                    return questionnaireDTO;
+                })
+                .sorted(Comparator.comparing(QuestionnaireDTO::getName, String::compareToIgnoreCase))
+                .collect(Collectors.toCollection(ArrayList::new));
         return questionnaireDTOs;
     }
 
@@ -184,7 +172,7 @@ public class BundleController {
         BundleDTO bundleDTO = getBundleDTO(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        model.addAttribute("availableQuestionnaireDTOs", getAvailableQuestionnaires(bundleId));
+        model.addAttribute("availableQuestionnaireDTOs", bundleService.getAvailableQuestionnaires(bundleId));
         return "bundle/edit";
     }
 
@@ -280,8 +268,7 @@ public class BundleController {
         }
 
         // Set property of the Bundle to current user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User principal = (User) authentication.getPrincipal();
+        User principal = authService.getAuthenticatedUser();
 
         Bundle bundle;
         if (bundleDTO.getId() != null) {
@@ -306,8 +293,7 @@ public class BundleController {
             // end persist (not merge)
             bundleDao.merge(bundle);
             // Get the current user, which is the owner of the bundle
-            User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
+            User currentUser = authService.getAuthenticatedUser();
             // Create a new ACLObjectIdentity for the bundle and save it
             AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
                 Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
@@ -400,7 +386,7 @@ public class BundleController {
                 for (BundleClinic bundleClinic : bundle.getBundleClinics()) {
                     Clinic clinic = bundleClinic.getClinic();
                     clinic.removeBundleClinic(bundleClinic);
-                    clinicDao.merge(clinic);
+                    clinicService.merge(clinic);
                 }
 
                 // Delete connection to the questionnaires
