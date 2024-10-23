@@ -27,6 +27,7 @@ import de.imi.mopat.helper.controller.ODMProcessingBean;
 import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.AuthService;
+import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
@@ -37,6 +38,7 @@ import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
@@ -153,7 +155,8 @@ public class QuestionnaireController {
     private QuestionnaireService questionnaireService;
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private QuestionnaireVersionGroupService questionnaireVersionGroupService;
 
     @Autowired
     private ODMProcessingBean odmReader;
@@ -351,6 +354,7 @@ public class QuestionnaireController {
                 }
                 questionnaire.removeAllBundleQuestionnaires();
                 questionnaireDao.remove(questionnaire);
+                questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
                 model.addAttribute("messageSuccess",
                     messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
                         new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
@@ -633,6 +637,11 @@ public class QuestionnaireController {
                 }
 
                 questionnaireDao.merge(questionnaire);
+
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
+                questionnaireVersionGroup.addQuestionnaire(questionnaire);
+                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 //Loop through all persisted questions to get the
                 // imageAnswers and save the images
