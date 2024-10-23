@@ -304,15 +304,16 @@ public class QuestionnaireService {
      * @return The newly created {@link Questionnaire}.
      */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
-        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 questionnaireDTO.getName(),
                 questionnaireDTO.getDescription(),
                 userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
         questionnaireDao.merge(newQuestionnaire);
+
+        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(newQuestionnaire.getName());
+        questionnaireVersionGroupService.addQuestionnaireToGroup(questionnaireVersionGroup, newQuestionnaire);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
@@ -354,18 +355,19 @@ public class QuestionnaireService {
     private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
-        QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
                 newName,
                 questionnaireDTO.getDescription(),
                 userId,
                 Boolean.TRUE
         );
-        newQuestionnaire.setQuestionnaireVersionGroup(existingGroup);
         questionnaireDao.merge(newQuestionnaire);
 
         // Set version in Questionnaire
         setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
+        QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
+        questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
+
         MapHolder questionCopyMaps = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
         Map<Question, Question> questionMap = questionCopyMaps.questionMap();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
