@@ -363,11 +363,6 @@ public class QuestionnaireService {
         );
         questionnaireDao.merge(newQuestionnaire);
 
-        // Set version in Questionnaire
-        setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
-        QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
-        questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
-
         MapHolder questionCopyMaps = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
         Map<Question, Question> questionMap = questionCopyMaps.questionMap();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
@@ -384,6 +379,12 @@ public class QuestionnaireService {
             conditionDao.merge(condition);
 
         copyExportTemplates(existingQuestionnaire.getExportTemplates(), newQuestionnaire);
+
+        // Set version in Questionnaire
+        setVersionForNewQuestionnaire(newQuestionnaire, existingQuestionnaire);
+        QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
+        questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
+
         questionnaireDao.merge(newQuestionnaire);
         return newQuestionnaire;
     }
