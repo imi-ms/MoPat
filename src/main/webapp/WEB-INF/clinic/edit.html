@@ -48,6 +48,34 @@
 
 					/>
 				</div>
+				<div class="accordion" id="accordionExample">
+
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="headingOne">
+					  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+						<th:block
+						th:text="${messages.get(#locale, 'clinic.heading.clinicConfiguration', 'Clinic Configuration')}"
+					/>					  </button>
+					</h2>
+					<div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+						<ul class="list-group mb-4">
+							<!--/* Loop through all configuration to show them */-->
+							<th:block
+								layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
+														configurationList=${clinicDTO.clinicConfigurationMappingDTOS},
+														selectionPath=|clinicConfigurationMappingDTOS|,
+														idPath=|clinicDTO.clinicConfigurationMappingDTOS|,
+														parent=null
+							)}"
+							/>
+						</ul>
+					</div>
+				  </div>
+				</div>
+						
+
+				
+
 
 				<th:block th:with="clinicBundleIndex=${counter.clear()}">
 					<div
@@ -764,6 +792,15 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
+	$(document).ready(function () {
+			/*[- Initial state check for all checkboxes -]*/
+
+			$("input[triggerid]").each(function () {
+				toggleChildrenVisibility(this);
+			});
+
+		});	
+
 		var startTable;
 		var targetTable;
 
@@ -840,5 +877,28 @@
 
 			});
 		});
+
+	/*[- used in handleCheckbox -]*/
+	function toggleChildrenVisibility(element) {
+		if ($(element).is(":checked")) {
+			$(element).prev().val("true");
+		} else {
+			$(element).prev().val("false");
+		}
+
+		var configId = $(element).attr("triggerid");
+
+		if (configId != null && configId != undefined && configId != "") {
+			$("li[class*=children]")
+				.filter("li[parentid=" + configId + "]")
+				.each(function () {
+					if ($(element).is(":checked")) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+		}
+	}
 	</script>
 </th:block>

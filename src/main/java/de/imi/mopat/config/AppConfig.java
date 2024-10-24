@@ -1,5 +1,6 @@
 package de.imi.mopat.config;
 
+import de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.helper.controller.PatientDataRetrieverFactoryBean;
@@ -214,6 +215,37 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     @Bean
     public PatientDataRetriever patientDataRetriever() throws Exception {
         PatientDataRetriever result = pdrfb().getObject();
+        if (result.toString().equals("null")) {
+            return null;
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * Creates ClinicPatientDataRetrieverFactoryBean
+     *
+     * @return ClinicPatientDataRetrieverFactoryBean
+     */
+    @Bean(name = "clinicPatientDataRetriever")
+    @Scope("prototype")
+    public ClinicPatientDataRetrieverFactoryBean cpdrfb(Long clinicId) {
+        return new ClinicPatientDataRetrieverFactoryBean(clinicId);
+    }
+
+    /**
+     * Adds PatientDataRetriever to servlet depending on whether it is set in the database
+     * <p>
+     * Since it is not advised to use NullBeans with java config it is checked whether the
+     * PatientDataRetriever was set in the ClinicPatientDataRetrieverFactoryBean by comparing the toString
+     * results
+     *
+     * @return PatientDataRetriever / null
+     * @throws Exception
+     */
+    @Bean
+    public PatientDataRetriever clinicPatientDataRetriever(Long clinicId) throws Exception {
+        PatientDataRetriever result = cpdrfb(clinicId).getObject();
         if (result.toString().equals("null")) {
             return null;
         } else {

@@ -1,6 +1,8 @@
 package de.imi.mopat.model.dto;
 
 import java.util.List;
+
+import de.imi.mopat.model.ClinicConfigurationMapping;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -22,6 +24,7 @@ public class ClinicDTO {
     private String email;
     private List<BundleClinicDTO> bundleClinicDTOs;
     private List<UserDTO> assignedUserDTOs;
+    private List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS;
 
     public Long getId() {
         return id;
@@ -62,6 +65,15 @@ public class ClinicDTO {
     public void setBundleClinicDTOs(final List<BundleClinicDTO> bundleClinicDTOs) {
         this.bundleClinicDTOs = bundleClinicDTOs;
     }
+
+    public List<ClinicConfigurationMappingDTO> getClinicConfigurationMappingDTOS() {
+        return clinicConfigurationMappingDTOS;
+    }
+
+    public void setClinicConfigurationMappingDTOS(final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
+        this.clinicConfigurationMappingDTOS = clinicConfigurationMappingDTOS;
+    }
+
 
     public String getEmail() {
         return email;
