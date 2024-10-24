@@ -204,13 +204,11 @@ public class ClinicController {
         }
 
         List<ClinicConfigurationDTO> clinicConfigurationDTOS = new ArrayList<>();
-        List<ClinicConfiguration> clinicConfigurations = clinicConfigurationDao.getAllElements();
-        for (ClinicConfiguration configuration : clinicConfigurations) {
+        for (ClinicConfiguration configuration : clinicConfigurationDao.getAllElements()) {
             if (configuration.getParent() == null) {
                 ClinicConfigurationDTO configurationDTO = configuration.toClinicConfigurationDTO();
 
-                if (configuration.getChildren() != null && !configuration.getChildren()
-                        .isEmpty()) {
+                if (configuration.getChildren() != null) {
                     clinicConfigurationService.processChildrenElements(configuration, configurationDTO);
                 }
                 clinicConfigurationDTOS.add(configurationDTO);

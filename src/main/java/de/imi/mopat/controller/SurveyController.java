@@ -126,12 +126,7 @@ public class SurveyController {
                     encounterService.toEncounterDTO(true,new Encounter()));
         }
 
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-
-        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                        currentUser , PermissionType.READ)));
+        List<Clinic> assignedClinics = getAssignedClinics(getCurrentUser());
 
         if(assignedClinics.size() == 1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
             if (!model.containsAttribute("patientDataService")) {
@@ -217,23 +212,11 @@ public class SurveyController {
         encounterDTO.removeDemographics();
         encounterDTO.setCaseNumber(caseNumber);
 
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-
-        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                        currentUser , PermissionType.READ)));
+        List<Clinic> assignedClinics = getAssignedClinics(getCurrentUser());
 
         //Checkout which service to save or get patient data has been chosen
         if (patientDataService.equalsIgnoreCase("searchHIS")) {
-            PatientDataRetriever patientDataRetriever;
-            if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
-                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                        "clinicPatientDataRetriever", assignedClinics.get(0).getId());
-            } else {
-                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                        "patientDataRetriever");
-            }
+            PatientDataRetriever patientDataRetriever = getPatientRetriever(assignedClinics);
             if (patientDataRetriever != null) {
                 EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
                     caseNumber);
@@ -293,22 +276,10 @@ public class SurveyController {
         @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
         final BindingResult result, final Model model) {
 
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-
-        List<Clinic> assignedClinics = new ArrayList<>(clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                        currentUser , PermissionType.READ)));
+        List<Clinic> assignedClinics = getAssignedClinics(getCurrentUser());
 
         if (patientDataService != null && patientDataService.equalsIgnoreCase("searchHIS")) {
-            PatientDataRetriever patientDataRetriever;
-            if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
-                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                        "clinicPatientDataRetriever", assignedClinics.get(0).getId());
-            } else {
-                patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                        "patientDataRetriever");
-            }
+            PatientDataRetriever patientDataRetriever = getPatientRetriever(assignedClinics);
             if (patientDataRetriever != null) {
                 EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
                     encounterDTO.getCaseNumber());
@@ -1176,5 +1147,28 @@ public class SurveyController {
         Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
             caseNumberTypeProperty, className);
         return configuration.getValue();
+    }
+
+    private User getCurrentUser(){
+        return (User) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+    }
+
+    private List<Clinic> getAssignedClinics(User user){
+        return new ArrayList<>(clinicDao.getElementsById(
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        user , PermissionType.READ)));
+    }
+
+    private PatientDataRetriever getPatientRetriever(List<Clinic> assignedClinics){
+        PatientDataRetriever patientDataRetriever;
+        if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+            patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                    "clinicPatientDataRetriever", assignedClinics.get(0).getId());
+        } else {
+            patientDataRetriever = (PatientDataRetriever) appContext.getBean(
+                    "patientDataRetriever");
+        }
+        return patientDataRetriever;
     }
 }
