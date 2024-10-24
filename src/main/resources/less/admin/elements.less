@@ -119,6 +119,36 @@ label {
     text-decoration: none;
 }
 
+.form-switch {
+    //Same dimensions as the input fields
+    .form-check-input {
+        width: 60px !important; 
+        height: 25px !important; 
+    }
+}
+
+.form-check-input{
+
+    &:checked{
+        background-color: @color-blue-light;
+        border-color: @color-blue-light;
+    }
+}
+
+.form-checkbox {
+    label {
+        display: flex;
+        align-items: center; 
+        cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+        width: 18px; 
+        height: 18px; 
+        margin: 0 10px 0 0;
+        cursor: pointer;
+    }
+}
 
 /* Style the links which collapse a area. I.e. question/edit */
 a[data-bs-toggle='collapse'] {

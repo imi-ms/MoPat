@@ -50,9 +50,20 @@ public class UserDaoImpl extends UserManagementDaoImpl<User> implements UserDao 
     }
 
     @Override
+    public void setPin(User user) {
+        user.setPin(passwordEncoder.encode(user.getPin()));
+    }
+
+    @Override
     public boolean isCorrectPassword(final User user, final String password) {
         return passwordEncoder.matches(password, user.getPassword());
     }
+
+    @Override
+    public boolean isCorrectPin(User user, String pin) {
+        return passwordEncoder.matches(pin, user.getPin());
+    }
+
 
     /* (non-Javadoc)
      * @see de.imi.mopat.dao.UserDao#getAllEnabledEMailAddressesDistinct()
