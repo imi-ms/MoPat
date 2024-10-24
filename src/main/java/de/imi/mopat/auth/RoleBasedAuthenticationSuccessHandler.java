@@ -1,25 +1,28 @@
 package de.imi.mopat.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Map;
-
 public class RoleBasedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
+    @Autowired
+    private PinAuthorizationService pinAuthorizationService;
 
     private Map<String, String> roleUrlMap;
 
     @Override
     public void onAuthenticationSuccess(final HttpServletRequest request,
         final HttpServletResponse response, final Authentication authentication)
-        throws IOException, ServletException {
+        throws IOException {
+
+        pinAuthorizationService.removePinAuthForCurrentUser();
 
         DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession()
             .getAttribute("SPRING_SECURITY_SAVED_REQUEST");
