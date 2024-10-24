@@ -83,4 +83,9 @@ public class ClinicConfigurationMapping implements Serializable {
             this.value = value.trim();
         }
     }
+
+    public Clinic getClinic(){
+        return clinic;
+    }
+
 }
