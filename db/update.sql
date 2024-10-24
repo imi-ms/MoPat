@@ -39,9 +39,9 @@ CREATE TABLE IF NOT EXISTS `clinic_configuration_mapping` (
   `value` varchar(255) DEFAULT NULL,
   `clinic_id` bigint DEFAULT NULL,
   `clinic_configuration_id` bigint DEFAULT NULL,
-  PRIMARY KEY (`id`)
-  KEY `fk_clinic_id` (`clinic_id`)
-  KEY `fk_clinic_configuration_id` (`clinic_configuration_id`)
+  PRIMARY KEY (`id`),
+  KEY `fk_clinic_id` (`clinic_id`),
+  KEY `fk_clinic_configuration_id` (`clinic_configuration_id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 ALTER TABLE `clinic_configuration_mapping`
