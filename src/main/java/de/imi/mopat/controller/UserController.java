@@ -12,7 +12,6 @@ import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.PinAuthorizationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.CacheService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.enumeration.PermissionType;
@@ -83,8 +82,6 @@ public class UserController {
     private ApplicationMailer applicationMailer;
     @Autowired
     private ConfigurationDao configurationDao;
-    @Autowired
-    private CacheService cacheService;
     @Autowired
     private MoPatActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider;
     @Autowired
@@ -487,8 +484,6 @@ public class UserController {
         Collection<Clinic> assignedClinics = clinicDao.getClinicsFromAclObjectIdentitys(
             currentInvitation.getAssignedClinics());
         model.addAttribute("clinics", assignedClinics);
-        //Reset caches so users can directly access assigned questionnaires
-        cacheService.evictAllCaches();
         return "mobile/user/register";
     }
 
@@ -721,8 +716,6 @@ public class UserController {
                 }
             }
         }
-        //Delete ACL caches to make changes directly visible
-        cacheService.evictAllCaches();
         return "redirect:/user/list";
     }
 

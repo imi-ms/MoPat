@@ -502,7 +502,7 @@ INSERT INTO `SEQUENCE` (`SEQ_NAME`, `SEQ_COUNT`) VALUES
 -- User permissions for mopat databases
 --
 
-GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER ON `moPat` . * TO 'mopat'@'localhost';
-GRANT SELECT , INSERT , UPDATE , DELETE ON `moPat\_user` . * TO 'mopat'@'localhost';
-GRANT INSERT ON `moPat\_audit`.* TO 'mopat'@'localhost';
-GRANT SELECT, UPDATE (SEQ_COUNT) ON `moPat_audit`.`SEQUENCE` TO 'mopat'@'localhost';
+GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER ON `moPat` . * TO 'mopat'@'%';
+GRANT SELECT , INSERT , UPDATE , DELETE ON `moPat\_user` . * TO 'mopat'@'%';
+GRANT INSERT ON `moPat\_audit`.* TO 'mopat'@'%';
+GRANT SELECT, UPDATE (SEQ_COUNT) ON `moPat_audit`.`SEQUENCE` TO 'mopat'@'%';
