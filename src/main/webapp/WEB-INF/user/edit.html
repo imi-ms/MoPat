@@ -81,41 +81,62 @@
 					/>
 				</div>
 				<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
-					<div class="form-group">
-						<input
-							layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='oldPassword', required=false, clazz='form-control',
-                            type='password', id='oldPassword', name='oldPassword', 
-                            text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
+					<div class="form-group form-checkbox">
+						<label>
+							<input
+								type="checkbox"
+								th:with="message=${messages.get(
+									#locale,
+									'user.label.changePassword',
+									messages.buildArguments(#authentication.getPrincipal().getUsername()),
+									'Change the password for the the user __${#authentication.getPrincipal().getUsername()}__')}"
+								th:utext="${message}"
+								th:checked="${#fields.hasErrors('oldPassword') or #fields.hasErrors('newPassword') or #fields.hasErrors('passwordCheck') ? 'true' : 'false'}"
+								onclick="togglePasswordVisibility();"
+							/>
+						</label>
+					</div>				
 
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
-						/>
-					</div>
-					<div class="form-group">
-						<input
-							layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='newPassword', required=false, clazz='form-control', 
-                            type='password', id='newPassword', name='newPassword',
-                            text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
+					<div 
+						id="passwordContainer"
+						th:classappend="${not #fields.hasErrors('oldPassword') and not #fields.hasErrors('newPassword') and not #fields.hasErrors('passwordCheck') ? 'd-none' : ''}"
+					>
+						<div class="form-group">
+							<input
+								layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='oldPassword', required=false, clazz='form-control',
+								type='password', id='oldPassword', name='oldPassword', 
+								text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
 
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
-						/>
-					</div>
-					<div class="form-group">
-						<input
-							layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='newPasswordApprove', required=false, clazz='form-control',
-                            type='password', id='newPasswordApprove', name='newPasswordApprove',
-                            text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
+							/>
+							<error
+								layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
+							/>
+						</div>
+						<div class="form-group">
+							<input
+								layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='newPassword', required=false, clazz='form-control', 
+								type='password', id='newPassword', name='newPassword',
+								text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
 
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
-						/>
+							/>
+							<error
+								layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
+							/>
+						</div>
+						<div class="form-group">
+							<input
+								layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='newPasswordApprove', required=false, clazz='form-control',
+								type='password', id='newPasswordApprove', name='newPasswordApprove',
+								text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
+
+							/>
+							<error
+								layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
+							/>
+						</div>
 					</div>
 				</th:block>
 
@@ -138,16 +159,24 @@
 			});
 
 			function switchPinInput(element) {
-			var isPinActive = $(element).get(0).checked;
+				var isPinActive = $(element).get(0).checked;
 
-			if (isPinActive) {
-				// Activate input
-				$("#pin").removeAttr("disabled");
-			} else {
-				// Deactivate input
-				$("#pin").attr("disabled", "disabled");
+				if (isPinActive) {
+					// Activate input
+					$("#pin").removeAttr("disabled");
+				} else {
+					// Deactivate input
+					$("#pin").attr("disabled", "disabled");
+				}
 			}
-		}
+
+			function togglePasswordVisibility() {
+				if ($("#passwordContainer").hasClass("d-none")) {
+					$("#passwordContainer").removeClass("d-none"); 
+				} else {
+					$("#passwordContainer").addClass("d-none");
+				}
+			}
 		</script>
 	</th:block>
 </th:block>
