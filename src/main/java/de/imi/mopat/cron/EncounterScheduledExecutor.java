@@ -153,9 +153,8 @@ public class EncounterScheduledExecutor {
 
                 encounter.sendMail(applicationMailer, messageSource, configurationDao.getBaseURL());
                 // Store last reminder date, which was set in sendMail
-                encounterScheduledDao.merge(encounterScheduled);
                 bundle.addEncounter(encounter);
-                bundleDao.merge(bundle);
+                encounterScheduledDao.merge(encounterScheduled);
             }
         }
     }

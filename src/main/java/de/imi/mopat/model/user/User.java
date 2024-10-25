@@ -69,6 +69,10 @@ public class User implements Serializable, UserDetails {
     private final Set<AclEntry> rights = new HashSet<>();
     @Column(name = "is_enabled")
     private Boolean isEnabled = Boolean.TRUE;
+    @Column(name="use_pin")
+    private Boolean usePin = Boolean.FALSE;
+    @Column(name="pin")
+    private String pin;
 
     public User() {
         //default constructor (in protected state), should not be accessible
@@ -496,5 +500,21 @@ public class User implements Serializable, UserDetails {
      */
     public Set<AclEntry> getRights() {
         return Collections.unmodifiableSet(this.rights);
+    }
+
+    public Boolean getUsePin() {
+        return usePin;
+    }
+
+    public void setUsePin(Boolean usePin) {
+        this.usePin = usePin;
+    }
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
     }
 }

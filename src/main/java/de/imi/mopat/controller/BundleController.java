@@ -38,9 +38,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -122,22 +124,24 @@ public class BundleController {
      * @return Returns all {@link Questionnaire Questionnaire} objects that are not already present
      * in the bundle with the given id.
      */
-    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long id) {
-        BundleDTO bundleDTO = getBundleDTO(id);
-        List<QuestionnaireDTO> questionnaireDTOs = questionnaireDao.getAllElements().stream()
-                .filter(questionnaire -> {
-                    boolean isAssigned = bundleDTO.getBundleQuestionnaireDTOs().stream()
-                            .anyMatch(bqDTO -> bqDTO.getQuestionnaireDTO().equals(questionnaireDTOMapper.apply(questionnaire)));
-                    return !isAssigned && !questionnaire.getQuestions().isEmpty();
-                })
-                .map(questionnaire -> {
-                    QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
-                    questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
-                    return questionnaireDTO;
-                })
-                .sorted(Comparator.comparing(QuestionnaireDTO::getName, String::compareToIgnoreCase))
-                .collect(Collectors.toCollection(ArrayList::new));
-        return questionnaireDTOs;
+    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
+        // Fetch questionnaires not linked with the given bundle
+        List<Questionnaire> availableQuestionnaires = bundleDao.getAvailableQuestionnairesForBundle(bundleId);
+
+        // Collect IDs for fetching scores
+        Set<Long> questionnaireIds = availableQuestionnaires.stream().map(Questionnaire::getId).collect(Collectors.toSet());
+        Set<Long> questionnairesWithScores = scoreDao.findQuestionnairesWithScores(new ArrayList<>(questionnaireIds));
+
+        // Map to DTO and sort
+        return availableQuestionnaires.stream()
+            .filter(q -> !q.getQuestions().isEmpty())
+            .map(q -> {
+                QuestionnaireDTO dto = questionnaireDTOMapper.apply(q);
+                dto.setHasScores(questionnairesWithScores.contains(q.getId()));
+                return dto;
+            })
+            .sorted(Comparator.comparing(QuestionnaireDTO::getName, String.CASE_INSENSITIVE_ORDER))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -150,9 +154,16 @@ public class BundleController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listBundles(final Model model) {
         List<Bundle> bundles = bundleDao.getAllElements();
+        Set<Long> bundleIds = bundleService.getUniqueQuestionnaireIds(bundles);
+        Set<Long> targetBundles = conditionDao.findConditionTargetIds(
+            bundleIds.stream().toList(),
+            "Bundle"
+        );
+
         for (Bundle bundle : bundles) {
-            bundle.setHasConditions(conditionDao.isConditionTarget(bundle));
+            bundle.setHasConditions(targetBundles.contains(bundle.getId()));
         }
+
         model.addAttribute("allBundles", bundles);
         return "bundle/list";
     }

@@ -32,12 +32,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -134,39 +136,49 @@ public class EncounterController {
     @GetMapping(value = "/encounter/list")
     @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
     public String listEncounter(final Model model) {
-        Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
-        patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
-        patientAttributes.add(AuditPatientAttribute.EMAIL_ADDRESS);
-        Set<String> caseNumbers = new HashSet<>();
+        // Initialize containers
+        Set<AuditPatientAttribute> patientAttributes = new HashSet<>(
+            Arrays.asList(
+                AuditPatientAttribute.CASE_NUMBER,
+                AuditPatientAttribute.EMAIL_ADDRESS
+            )
+        );
 
+        Set<String> caseNumbers = new HashSet<>();
         List<EncounterDTO> encounterDTOs = new ArrayList<>();
         List<EncounterScheduledDTO> encounterScheduledDTOs = new ArrayList<>();
         Set<String> encounterScheduledJSONSet = new HashSet<>();
 
-        // Collect all encounters for bundles the current user has read access
-        // and add caseNumbers
-        for (Bundle bundle : bundleDao.getAllElements()) {
-            for (Encounter encounter : bundle.getEncounters()) {
+        // Fetch all required elements at once
+        List<Bundle> bundles = bundleDao.getAllElements();
+        List<EncounterScheduled> allEncounterScheduled = encounterScheduledDao.getAllElements();
+
+        // Group EncounterScheduled by Bundle ID for quick access
+        Map<Long, List<EncounterScheduled>> encounterScheduledByBundle = allEncounterScheduled.stream()
+            .collect(Collectors.groupingBy(e -> e.getBundle().getId()));
+
+        // Process each bundle
+        bundles.forEach(bundle -> {
+            // Add encounters to DTOs list if they have no scheduled encounters, collect case numbers
+            bundle.getEncounters().forEach(encounter -> {
                 caseNumbers.add(encounter.getCaseNumber());
                 if (encounter.getEncounterScheduled() == null) {
                     encounterDTOs.add(encounterDTOMapper.apply(false, encounter));
                 }
-            }
-            for (EncounterScheduled encounterScheduled : encounterScheduledDao.getAllElements()) {
-                if (encounterScheduled.getBundle().getId().equals(bundle.getId())) {
-                    EncounterScheduledDTO encounterScheduledDTO = encounterScheduledDTOMapper.apply(
-                        encounterScheduled);
-                    encounterScheduledDTOs.add(encounterScheduledDTO);
-                    encounterScheduledJSONSet.add(encounterScheduledDTO.getJSON());
-                }
-            }
-        }
-        // Sort the encounters and scheduled encounters by start date
-        Collections.sort(encounterDTOs,
-            (EncounterDTO o1, EncounterDTO o2) -> o1.getStartTime().compareTo(o2.getStartTime()));
-        Collections.sort(encounterScheduledDTOs,
-            (EncounterScheduledDTO o1, EncounterScheduledDTO o2) -> o1.getStartDate()
-                .compareTo(o2.getStartDate()));
+            });
+
+            // Add EncounterScheduled to DTOs based on already grouped data by bundle
+            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
+                .map(encounterScheduledDTOMapper)
+                .forEach(dto -> {
+                    encounterScheduledDTOs.add(dto);
+                    encounterScheduledJSONSet.add(dto.getJSON());
+                });
+        });
+
+        // Sort the encounters and scheduled encounters by start date using stream sorted method
+        encounterDTOs.sort(Comparator.comparing(EncounterDTO::getStartTime));
+        encounterScheduledDTOs.sort(Comparator.comparing(EncounterScheduledDTO::getStartDate));
 
         model.addAttribute("allEncounters", encounterDTOs);
         model.addAttribute("allEncounterScheduled", encounterScheduledDTOs);

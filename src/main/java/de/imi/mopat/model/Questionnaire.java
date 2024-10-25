@@ -40,6 +40,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * The database table model for table <i>questionnaire</i>. This model represents a set of
@@ -695,6 +696,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
      *
      * @return A map with localized display names grouped by country
      */
+    @Cacheable("localizedDisplayNames")
     public SortedMap<String, Map<String, String>> getLocalizedDisplayNamesGroupedByCountry() {
         SortedMap<String, Map<String, String>> groupedLocalizedQuestionTextByCountry = new TreeMap<>();
         // Loop through each localized question text

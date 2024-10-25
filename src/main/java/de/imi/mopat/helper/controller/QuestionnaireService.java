@@ -8,14 +8,12 @@ import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BundleQuestionnaire;
-import de.imi.mopat.model.ConfigurationGroup;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.BinaryExpression;
 import de.imi.mopat.model.score.BinaryOperator;
 import de.imi.mopat.model.score.Expression;
@@ -31,10 +29,6 @@ import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -574,7 +567,7 @@ public class QuestionnaireService {
         if (!uploadDir.exists() && !uploadDir.mkdirs()) {
             LOGGER.warn("Failed to create directory for questionnaire with id {}", questionnaire.getId());
         }
-
+        
         File uploadFile = new File(imagePath, logoFilename);
         try {
             BufferedImage uploadImage = ImageIO.read(logo.getInputStream());
@@ -754,5 +747,19 @@ public class QuestionnaireService {
         }
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
+    }
+    
+    /**
+     * Returns a set of unique {@link Questionnaire}-IDs for a list of {@link Questionnaire}
+     * instances
+     * @param questionnaires to get ids for
+     * @return {@link Set} with Ids
+     */
+    public Set<Long> getUniqueQuestionnaireIds(List<Questionnaire> questionnaires) {
+        Set<Long> resultSet = new HashSet<>();
+        for (Questionnaire questionnaire: questionnaires) {
+            resultSet.add(questionnaire.getId());
+        }
+        return resultSet;
     }
 }

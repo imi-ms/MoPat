@@ -52,6 +52,16 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
     }
 
     @Override
+    public Set<Long> findQuestionnairesWithScores(List<Long> questionnaireIds) {
+        Query query = moPatEntityManager.createQuery(
+            "SELECT DISTINCT e.questionnaire.id FROM Score e WHERE e.questionnaire.id IN :questionnaireIds",
+            Long.class);
+        query.setParameter("questionnaireIds", questionnaireIds);
+        List<Long> result = query.getResultList();
+        return new HashSet<>(result);
+    }
+
+    @Override
     public List<Score> getScores(final Question question) {
         List<Score> scoreList = new ArrayList<>();
         try {

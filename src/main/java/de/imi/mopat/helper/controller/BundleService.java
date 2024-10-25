@@ -10,6 +10,7 @@ import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -108,6 +109,20 @@ public class BundleService {
      */
     public List<BundleQuestionnaire> findByQuestionnaireId(Long questionnaireID) {
         return bundleQuestionnaireDao.findByQuestionnaire(questionnaireID);
+    }
+
+    /**
+     * Returns a set of unique {@link Bundle}-IDs for a list of {@link Bundle}
+     * instances
+     * @param bundles to get ids for
+     * @return {@link Set} with Ids
+     */
+    public Set<Long> getUniqueQuestionnaireIds(List<Bundle> bundles) {
+        Set<Long> resultSet = new HashSet<>();
+        for (Bundle bundle: bundles) {
+            resultSet.add(bundle.getId());
+        }
+        return resultSet;
     }
 
 

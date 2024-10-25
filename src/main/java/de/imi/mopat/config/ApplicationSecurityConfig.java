@@ -8,6 +8,7 @@ import de.imi.mopat.auth.CustomPreAuthenticationChecks;
 import de.imi.mopat.auth.LDAPUserDetailsService;
 import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
 import de.imi.mopat.auth.MoPatUserDetailService;
+import de.imi.mopat.auth.PinAuthorizationFilter;
 import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
 import de.imi.mopat.auth.RoleBasedAuthenticationSuccessHandler;
 import java.beans.PropertyVetoException;
@@ -34,9 +35,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -292,6 +296,11 @@ public class ApplicationSecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
+    @Bean
+    public PinAuthorizationFilter pinAuthenticationFilter() {
+        return new PinAuthorizationFilter();
+    }
+
 
     /**
      * Basic filter chain for http requests
@@ -339,12 +348,23 @@ public class ApplicationSecurityConfig {
                     .successHandler(redirectRoleStrategy())
             ).logout(
                 logout -> logout.logoutUrl("/j_spring_security_logout")
-                    .logoutSuccessUrl("/mobile/user/login")
-            ).exceptionHandling(
-                exceptionHandler -> exceptionHandler.accessDeniedPage("/error/accessdenied")
-            ).authenticationManager(authenticationManager(http))
-            .csrf(authz -> authz.disable());
+                    .logoutSuccessUrl("/mobile/user/login")).exceptionHandling(
+                exceptionHandler -> exceptionHandler.accessDeniedPage("/error/accessdenied"))
+            .authenticationManager(authenticationManager(http)).csrf(authz -> authz.disable())
+            .addFilterAfter(pinAuthenticationFilter(), BasicAuthenticationFilter.class)
+            .sessionManagement(
+                session -> session.maximumSessions(1).sessionRegistry(sessionRegistry()));
         return http.build();
+    }
+
+    /**
+     * Session registry bean to access all current sessions
+     *
+     * @return SessionRegistry
+     */
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     /**
