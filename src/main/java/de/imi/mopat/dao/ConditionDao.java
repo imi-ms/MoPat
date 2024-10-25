@@ -1,5 +1,6 @@
 package de.imi.mopat.dao;
 
+import java.util.Set;
 import org.springframework.stereotype.Component;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
@@ -27,6 +28,15 @@ public interface ConditionDao extends MoPatDao<Condition> {
      * @return Returns true if the {@link Object} has {@link Condition conditions}, false otherwise.
      */
     boolean isConditionTarget(Object target);
+
+    /**
+     * Return a Set of {@link Condition} IDs where the target is a {@link Questionnaire} and
+     * the target id matches with the passed list of questionnaireIds.
+     * Optimized
+     * @param ids questionnaire ids to bulk check with
+     * @return {@link List} of target ids
+     */
+    Set<Long> findConditionTargetIds(List<Long> ids, String type);
 
     /**
      * Returns the list of associated {@link Condition conditions} to the given

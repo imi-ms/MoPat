@@ -1,5 +1,9 @@
 package de.imi.mopat.dao.impl;
 
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.model.Answer;
@@ -70,6 +74,15 @@ public class ConditionDaoImpl extends MoPatDaoImpl<Condition> implements Conditi
         }
         // Otherwise return false
         return false;
+    }
+
+    @Override
+    public Set<Long> findConditionTargetIds(List<Long> ids, String type) {
+        List<BigInteger> results = moPatEntityManager.createNativeQuery(
+                "SELECT target_id FROM mopat_condition WHERE target_class = '" + type + "' AND target_id IN (?1)")
+            .setParameter(1, ids)
+            .getResultList();
+        return results.stream().map(BigInteger::longValue).collect(Collectors.toSet());
     }
 
     @Override
