@@ -213,7 +213,7 @@ public class ClinicController {
                 clinicConfigurationDTOS.add(configurationDTO);
             }
         }
-        if (clinic == null) {
+        if (clinic == null || clinic.getClinicConfigurationMappings().isEmpty()) {
             List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS;
             clinicConfigurationMappingDTOS = recursivelyInitializeClinicConfigurationMappingDTOS(
                 clinicConfigurationDTOS);
@@ -509,7 +509,7 @@ public class ClinicController {
         for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicConfigurationMappingDTOS) {
             ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(
                 clinicConfigurationMappingDTO.getClinicConfigurationId());
-            if (clinic.getId() == null) {
+            if (clinic.getId() == null || clinic.getClinicConfigurationMappings().isEmpty()) {
                 ClinicConfigurationMapping clinicConfigurationMapping = new ClinicConfigurationMapping(clinic,
                     clinicConfiguration, clinicConfigurationMappingDTO.getValue());
                 clinicConfigurationMappingList.add(clinicConfigurationMapping);

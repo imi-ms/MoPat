@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `clinic_configuration_mapping` (
   `clinic_configuration_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_clinic_id` (`clinic_id`),
-  KEY `fk_clinic_configuration_id` (`clinic_configuration_id`),
+  KEY `fk_clinic_configuration_id` (`clinic_configuration_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 ALTER TABLE `clinic_configuration_mapping`
@@ -49,7 +49,6 @@ ALTER TABLE `clinic_configuration_mapping`
 
 ALTER TABLE `clinic_configuration_mapping`
     ADD CONSTRAINT FK_clinic_id FOREIGN KEY (clinic_id) REFERENCES clinic(id) ON DELETE CASCADE;
-
 
 CREATE TABLE IF NOT EXISTS `SelectClinicConfiguration_OPTIONS` (
   `SelectClinicConfiguration_id` bigint(20) DEFAULT NULL,

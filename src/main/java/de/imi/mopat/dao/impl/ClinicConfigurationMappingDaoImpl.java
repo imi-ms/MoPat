@@ -58,20 +58,20 @@ public class ClinicConfigurationMappingDaoImpl extends MoPatDaoImpl<ClinicConfig
     public Boolean isRegistryOfPatientActivated(final Long clinicId) {
         ClinicConfigurationMapping clinicConfigurationMapping = getConfigurationByAttributeAndClass(
                 clinicId, Constants.REGISTER_PATIENT_DATA, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(clinicConfigurationMapping.getValue());
+        return Boolean.valueOf(clinicConfigurationMapping != null ? clinicConfigurationMapping.getValue() : "false");
     }
 
     @Override
     public Boolean isUsePatientDataLookupActivated(final Long clinicId) {
         ClinicConfigurationMapping clinicConfigurationMapping = getConfigurationByAttributeAndClass(
                clinicId, Constants.USE_PATIENT_DATA_LOOKUP, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(clinicConfigurationMapping.getValue());
+        return Boolean.valueOf(clinicConfigurationMapping != null ? clinicConfigurationMapping.getValue() : "false");
     }
 
     @Override
     public Boolean isPseudonymizationServiceActivated(final Long clinicId) {
         ClinicConfigurationMapping clinicConfigurationMapping = getConfigurationByAttributeAndClass(
                clinicId, Constants.USE_PSEUDONYMIZATION_SERVICE, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(clinicConfigurationMapping.getValue());
+        return Boolean.valueOf(clinicConfigurationMapping != null ? clinicConfigurationMapping.getValue() : "false");
     }
 }
