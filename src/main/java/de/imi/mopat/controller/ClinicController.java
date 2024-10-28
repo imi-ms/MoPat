@@ -249,10 +249,12 @@ public class ClinicController {
         }
 
         List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = new ArrayList<>();
-        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
-            clinicConfigurationMappingDTOS.add(
-                clinicConfigurationMappingService.processClinicConfigurationMappingDTO(
-                    clinicConfigurationMappingDTO));
+        if (clinicDTO.getClinicConfigurationMappingDTOS() != null) {
+            for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
+                clinicConfigurationMappingDTOS.add(
+                    clinicConfigurationMappingService.processClinicConfigurationMappingDTO(
+                        clinicConfigurationMappingDTO));
+            }
         }
         clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingDTOS);
 
