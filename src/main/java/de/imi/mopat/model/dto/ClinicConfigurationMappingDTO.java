@@ -131,6 +131,7 @@ public class ClinicConfigurationMappingDTO {
     public void setPosition(final Integer position) {
         this.position = position;
     }
+
     public List<ClinicConfigurationMappingDTO> getChildren() {
         return children;
     }
@@ -146,7 +147,6 @@ public class ClinicConfigurationMappingDTO {
     public void setClinicConfigurationId(Long clinicConfigurationId) {
         this.clinicConfigurationId = clinicConfigurationId;
     }
-
 
 
 }

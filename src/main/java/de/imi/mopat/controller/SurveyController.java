@@ -101,11 +101,11 @@ public class SurveyController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showCheckCaseNumberFirstTime(final Model model) {
         model.addAttribute(
-                "encounterDTO",
-                encounterService.toEncounterDTO(true,new Encounter()));
+            "encounterDTO",
+            encounterService.toEncounterDTO(true, new Encounter()));
         model.addAttribute(
-                "hideProfile",
-                Boolean.FALSE);
+            "hideProfile",
+            Boolean.FALSE);
         return showCheckCaseNumber(model);
     }
 
@@ -122,28 +122,33 @@ public class SurveyController {
     public String showCheckCaseNumber(final Model model) {
         if (!model.containsAttribute("encounterDTO")) {
             model.addAttribute(
-                    "encounterDTO",
-                    encounterService.toEncounterDTO(true,new Encounter()));
+                "encounterDTO",
+                encounterService.toEncounterDTO(true, new Encounter()));
         }
 
         List<Clinic> assignedClinics = getAssignedClinics(getCurrentUser());
 
-        if(assignedClinics.size() == 1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+        if (assignedClinics.size() == 1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))) {
             if (!model.containsAttribute("patientDataService")) {
                 if (clinicConfigurationMappingDao.isRegistryOfPatientActivated(assignedClinics.get(0).getId())) {
                     model.addAttribute("patientDataService", "register");
-                } else if (clinicConfigurationMappingDao.isUsePatientDataLookupActivated(assignedClinics.get(0).getId())) {
+                } else if (clinicConfigurationMappingDao.isUsePatientDataLookupActivated(
+                    assignedClinics.get(0).getId())) {
                     model.addAttribute("patientDataService", "searchHIS");
-                } else if (clinicConfigurationMappingDao.isPseudonymizationServiceActivated(assignedClinics.get(0).getId())) {
+                } else if (clinicConfigurationMappingDao.isPseudonymizationServiceActivated(
+                    assignedClinics.get(0).getId())) {
                     model.addAttribute("patientDataService", "pseudonym");
                 } else {
                     model.addAttribute("patientDataService", "inactive");
                 }
             }
 
-            model.addAttribute("register", clinicConfigurationMappingDao.isRegistryOfPatientActivated(assignedClinics.get(0).getId()));
-            model.addAttribute("searchHIS", clinicConfigurationMappingDao.isUsePatientDataLookupActivated(assignedClinics.get(0).getId()));
-            model.addAttribute("pseudonym", clinicConfigurationMappingDao.isPseudonymizationServiceActivated(assignedClinics.get(0).getId()));
+            model.addAttribute("register",
+                clinicConfigurationMappingDao.isRegistryOfPatientActivated(assignedClinics.get(0).getId()));
+            model.addAttribute("searchHIS",
+                clinicConfigurationMappingDao.isUsePatientDataLookupActivated(assignedClinics.get(0).getId()));
+            model.addAttribute("pseudonym",
+                clinicConfigurationMappingDao.isPseudonymizationServiceActivated(assignedClinics.get(0).getId()));
         } else {
             if (!model.containsAttribute("patientDataService")) {
                 if (configurationDao.isRegistryOfPatientActivated()) {
@@ -176,11 +181,9 @@ public class SurveyController {
     /**
      * Controls the HTTP POST requests for the URL
      * <i>/mobile/survey/check</i>. Checks a case number and looks it up in the
-     * HIS, if desired. The patient data is then added to the {@link Encounter Encounter} object
-     * stored in the session.
+     * HIS, if desired. The patient data is then added to the {@link Encounter Encounter} object stored in the session.
      * <p>
-     * In case the passed action is <code>showBundles</code>, it redirects to the bundle overview
-     * page.
+     * In case the passed action is <code>showBundles</code>, it redirects to the bundle overview page.
      *
      * @param caseNumber         (<i>required</i>) Case number for the patient
      * @param patientDataService The registration service for the casenumber and patient Id
@@ -303,10 +306,10 @@ public class SurveyController {
             // The bundle needs to be published and has to have at least one
             // clinic attached
             if (bundle.getIsPublished() && !bundle.getBundleClinics()
-                                                  .isEmpty()) {
+                .isEmpty()) {
                 bundleLanguageEncounterMap.put(
-                        bundleService.toBundleDTO(false,bundle),
-                        new HashMap<>());
+                    bundleService.toBundleDTO(false, bundle),
+                    new HashMap<>());
             }
         }
 
@@ -317,7 +320,7 @@ public class SurveyController {
         // Loop through all incomplete encounter
         for (Encounter incompleteEncounter : incompleteEncounters) {
             // Save the temporarily used BundleDTO to save some computation time
-            BundleDTO tempBundleDTO = bundleService.toBundleDTO(false,incompleteEncounter.getBundle());
+            BundleDTO tempBundleDTO = bundleService.toBundleDTO(false, incompleteEncounter.getBundle());
             // If the bundle is already in the map the user has the rights to
             // see it
             if (bundleLanguageEncounterMap.containsKey(tempBundleDTO)) {
@@ -329,23 +332,23 @@ public class SurveyController {
                     // If not, add the language code and the current
                     // encounter to the map of the current bundle
                     List<EncounterDTO> encounterList = new ArrayList<>();
-                    encounterList.add(encounterService.toEncounterDTO(true,incompleteEncounter));
+                    encounterList.add(encounterService.toEncounterDTO(true, incompleteEncounter));
                     localeCodeEncounterMap.put(
-                            incompleteEncounter.getBundleLanguage(),
-                            encounterList);
+                        incompleteEncounter.getBundleLanguage(),
+                        encounterList);
                     bundleLanguageEncounterMap.put(
-                            tempBundleDTO,
-                            localeCodeEncounterMap);
+                        tempBundleDTO,
+                        localeCodeEncounterMap);
                 } else {
                     // Otherwise the map for the current bundle contains the
                     // current locale code.
                     // Add the incomplete encounter to the list for the
                     // bundle combined with the language code
                     bundleLanguageEncounterMap.get(tempBundleDTO)
-                                              .get(incompleteEncounter.getBundleLanguage())
-                                              .add(encounterService.toEncounterDTO(
-                                                      true,
-                                                  incompleteEncounter));
+                        .get(incompleteEncounter.getBundleLanguage())
+                        .add(encounterService.toEncounterDTO(
+                            true,
+                            incompleteEncounter));
                 }
             }
         }
@@ -403,11 +406,12 @@ public class SurveyController {
             // and add it
             // to the model to override the default (new) encounter
             if (incompleteEncounterUUID != null
-                    && !incompleteEncounterUUID.isEmpty()) {
-                EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
+                && !incompleteEncounterUUID.isEmpty()) {
+                EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,
+                    encounterDao.getElementByUUID(incompleteEncounterUUID));
                 model.addAttribute(
-                        "encounterDTO",
-                        incompleteEncounterDTO);
+                    "encounterDTO",
+                    incompleteEncounterDTO);
                 // Otherwise get the bundle and set it to the default (new)
                 // encounter
             } else {
@@ -415,7 +419,7 @@ public class SurveyController {
 
                 // Make a bundleDTO from the bundle and add it to the
                 // encounterDTO
-                encounterDTO.setBundleDTO(bundleService.toBundleDTO(true,bundle));
+                encounterDTO.setBundleDTO(bundleService.toBundleDTO(true, bundle));
 
                 Encounter encounter = new Encounter();
 
@@ -429,10 +433,10 @@ public class SurveyController {
                 // (bundle has just been set) encounter object,
                 // otherwise the bundle object would not be merged
                 encounterDao.merge(encounter);
-                encounterDTO = encounterService.toEncounterDTO(true,encounter);
+                encounterDTO = encounterService.toEncounterDTO(true, encounter);
                 model.addAttribute(
-                        "encounterDTO",
-                        encounterDTO);
+                    "encounterDTO",
+                    encounterDTO);
             }
             // If the selected bundle language is available for the gui, then
             // use this language
@@ -482,8 +486,8 @@ public class SurveyController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/mobile/survey/test</i> Displays the
-     * {@link Bundle}, which should be tested.
+     * Controls the HTTP GET requests for the URL <i>/mobile/survey/test</i> Displays the {@link Bundle}, which should
+     * be tested.
      *
      * @param bundleId           The id of the current {@link Bundle}.
      * @param model              The model, which holds the information for the view.
@@ -502,18 +506,18 @@ public class SurveyController {
 
         } else {
             EncounterDTO encounterDTO = new EncounterDTO(
-                    true,
-                    "test");
-            encounterDTO.setBundleDTO(bundleService.toBundleDTO(true,bundle));
+                true,
+                "test");
+            encounterDTO.setBundleDTO(bundleService.toBundleDTO(true, bundle));
             model.addAttribute(
-                    "hideProfile",
-                    "false");
+                "hideProfile",
+                "false");
             model.addAttribute(
-                    "bundle",
-                    bundle);
+                "bundle",
+                bundle);
             model.addAttribute(
-                    "encounterDTO",
-                    encounterDTO);
+                "encounterDTO",
+                encounterDTO);
 
             // Check all questionnaireDTOs for conditions and set the boolean
             for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
@@ -541,8 +545,8 @@ public class SurveyController {
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/mobile/survey/test</i>. Starts the
-     * {@link Bundle}, which should be tested.
+     * Controls the HTTP POST requests for the URL <i>/mobile/survey/test</i>. Starts the {@link Bundle}, which should
+     * be tested.
      *
      * @param encounterDTO   The current {@link EncounterDTO}.
      * @param model          The model, which holds the information for the view.
@@ -577,8 +581,7 @@ public class SurveyController {
     }
 
     /**
-     * If a user is not logged in and want to test a bundle, he/she will be forwarded to the
-     * questionnaire.
+     * If a user is not logged in and want to test a bundle, he/she will be forwarded to the questionnaire.
      *
      * @param model   The model, which holds the information for the view
      * @param session The current session object
@@ -615,7 +618,7 @@ public class SurveyController {
             return "encounter/completed";
         }
 
-        EncounterDTO encounterDTO =encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(uuid));
+        EncounterDTO encounterDTO = encounterService.toEncounterDTO(true, encounterDao.getElementByUUID(uuid));
 
         if (encounterDTO.getEndTime() == null && encounterDTO.getLastSeenQuestionId() == null) {
             //Set the startTime if the encounter started for the first time
@@ -660,10 +663,9 @@ public class SurveyController {
      *
      * @param bundleLanguage          The selected language the survey should run with.
      * @param guiLanguage             The language of the GUI.
-     * @param incompleteEncounterUUID The uuid of a incompleted encounter, could be null if
-     *                                encounter hasn't started before.
-     * @param encounterDTO            The {@link EncounterDTO} object which holds information for
-     *                                the survey.
+     * @param incompleteEncounterUUID The uuid of a incompleted encounter, could be null if encounter hasn't started
+     *                                before.
+     * @param encounterDTO            The {@link EncounterDTO} object which holds information for the survey.
      * @param model                   The model which holds information for the view.
      * @return The <i>/mobile/survey/questionnaireScheduled/</i> website.
      */
@@ -683,10 +685,11 @@ public class SurveyController {
         // and add it
         // to the model to override the default (new) encounter
         if (incompleteEncounterUUID != null && !incompleteEncounterUUID.isEmpty()) {
-            EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
+            EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,
+                encounterDao.getElementByUUID(incompleteEncounterUUID));
             model.addAttribute(
-                    "encounterDTO",
-                    incompleteEncounterDTO);
+                "encounterDTO",
+                incompleteEncounterDTO);
             // Otherwise set the bundleLanguage and startTime to the
             // encounter and merge it
         } else {
@@ -695,8 +698,8 @@ public class SurveyController {
             encounter.setBundleLanguage(bundleLanguage);
             encounterDao.merge(encounter);
             model.addAttribute(
-                    "encounterDTO",
-                    encounterService.toEncounterDTO(true,encounter));
+                "encounterDTO",
+                encounterService.toEncounterDTO(true, encounter));
         }
 
         // If the selected bundle language is available for the gui, then use
@@ -712,8 +715,7 @@ public class SurveyController {
     }
 
     /**
-     * If a user is not logged in and want to answer an encounter, he/she will be forwarded to the
-     * questionnaire.
+     * If a user is not logged in and want to answer an encounter, he/she will be forwarded to the questionnaire.
      *
      * @param encounterDTO The {@link EncounterDTO} object which holds information of the survey.
      * @param model        The model which holds information for the view.
@@ -1088,12 +1090,10 @@ public class SurveyController {
     /**
      * Controls the HTTP POST requests for the URL
      * <i>/mobile/survey/finishQuestionnaire</i>. Stores/Updates the given
-     * {@link Encounter} and exports the {@link Questionnaire} identified by the given
-     * questionnaireId
+     * {@link Encounter} and exports the {@link Questionnaire} identified by the given questionnaireId
      *
      * @param encounterDTO    The data transfer object containing the responses of the encounter.
-     * @param questionnaireId the id of the questionnaire that has been finished and can be
-     *                        exported.
+     * @param questionnaireId the id of the questionnaire that has been finished and can be exported.
      */
     @RequestMapping(value = "/mobile/survey/finishQuestionnaire", method = RequestMethod.POST)
     @ResponseBody
@@ -1138,8 +1138,8 @@ public class SurveyController {
     }
 
     /**
-     * Returns the case number type from the {@link ConfigurationDao} by using the name of this
-     * class and the appropriate attribute name.
+     * Returns the case number type from the {@link ConfigurationDao} by using the name of this class and the
+     * appropriate attribute name.
      *
      * @return The configured case number type string.
      */
@@ -1149,25 +1149,25 @@ public class SurveyController {
         return configuration.getValue();
     }
 
-    private User getCurrentUser(){
+    private User getCurrentUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
+            .getPrincipal();
     }
 
-    private List<Clinic> getAssignedClinics(User user){
+    private List<Clinic> getAssignedClinics(User user) {
         return new ArrayList<>(clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                        user , PermissionType.READ)));
+            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                user, PermissionType.READ)));
     }
 
-    private PatientDataRetriever getPatientRetriever(List<Clinic> assignedClinics){
+    private PatientDataRetriever getPatientRetriever(List<Clinic> assignedClinics) {
         PatientDataRetriever patientDataRetriever;
-        if(assignedClinics.size()==1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))){
+        if (assignedClinics.size() == 1 && clinicConfigurationMappingService.clinicHasConfig(assignedClinics.get(0))) {
             patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                    "clinicPatientDataRetriever", assignedClinics.get(0).getId());
+                "clinicPatientDataRetriever", assignedClinics.get(0).getId());
         } else {
             patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-                    "patientDataRetriever");
+                "patientDataRetriever");
         }
         return patientDataRetriever;
     }

@@ -111,8 +111,8 @@ public class ClinicController {
             // Add only bundles, which are published
             // and have at least one questionnaire attached
             if (bundle.getIsPublished() && !bundle.getBundleQuestionnaires()
-                                                  .isEmpty()) {
-                bundleDTOs.add(bundleService.toBundleDTO(true,bundle));
+                .isEmpty()) {
+                bundleDTOs.add(bundleService.toBundleDTO(true, bundle));
             }
         }
 
@@ -128,8 +128,7 @@ public class ClinicController {
 
     /**
      * @param id The Id of the {@link Clinic} object.
-     * @return Returns all {@link User Users} that are available to be assigned to the
-     * {@link Clinic} object.
+     * @return Returns all {@link User Users} that are available to be assigned to the {@link Clinic} object.
      */
     private List<UserDTO> getAvailableUserDTOs(final Long id) {
 
@@ -172,8 +171,8 @@ public class ClinicController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/clinic/edit</i>. Shows the page containing the
-     * form fields for editing a {@link Clinic} object.
+     * Controls the HTTP GET requests for the URL <i>/clinic/edit</i>. Shows the page containing the form fields for
+     * editing a {@link Clinic} object.
      *
      * @param clinicId Id of the {@link Clinic} object.
      * @param model    The model, which holds information for the view.
@@ -214,9 +213,10 @@ public class ClinicController {
                 clinicConfigurationDTOS.add(configurationDTO);
             }
         }
-        if(clinic == null){
+        if (clinic == null) {
             List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS;
-            clinicConfigurationMappingDTOS = recursivelyInitializeClinicConfigurationMappingDTOS(clinicConfigurationDTOS);
+            clinicConfigurationMappingDTOS = recursivelyInitializeClinicConfigurationMappingDTOS(
+                clinicConfigurationDTOS);
             clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingDTOS);
         }
 
@@ -228,8 +228,8 @@ public class ClinicController {
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/clinic/edit</i>. Provides the ability to
-     * update a {@link Clinic} object.
+     * Controls the HTTP POST requests for the URL <i>/clinic/edit</i>. Provides the ability to update a {@link Clinic}
+     * object.
      *
      * @param action    The name of the submit button which has been clicked.
      * @param clinicDTO The current {@link ClinicDTO}.
@@ -247,6 +247,14 @@ public class ClinicController {
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/clinic/list";
         }
+
+        List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = new ArrayList<>();
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
+            clinicConfigurationMappingDTOS.add(
+                clinicConfigurationMappingService.processClinicConfigurationMappingDTO(
+                    clinicConfigurationMappingDTO));
+        }
+        clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingDTOS);
 
         // Validate the clinic object
         clinicDTOValidator.validate(clinicDTO, result);
@@ -308,11 +316,6 @@ public class ClinicController {
                 }
             }
 
-            List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = new ArrayList<>();
-            for(ClinicConfigurationMappingDTO clinicConfigurationMappingDTO: clinicDTO.getClinicConfigurationMappingDTOS()){
-                clinicConfigurationMappingDTOS.add(clinicConfigurationMappingService.processClinicConfigurationMappingDTO(clinicConfigurationMappingDTO));
-            }
-            clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingDTOS);
             availableUserDTOs.removeAll(userDTOsToDelete);
 
             model.addAttribute("availableBundleDTOs", availableBundles);
@@ -425,10 +428,12 @@ public class ClinicController {
             }
         }
 
-        List<ClinicConfigurationMapping> clinicConfigurationMappingList;
-        List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = clinicDTO.getClinicConfigurationMappingDTOS();
-        clinicConfigurationMappingList=processClinicConfigurationMappingDTOS(clinic, clinicConfigurationMappingDTOS);
-        clinic.setClinicConfigurationMappings(clinicConfigurationMappingList);
+        if (clinicDTO.getClinicConfigurationMappingDTOS() != null) {
+            List<ClinicConfigurationMapping> clinicConfigurationMappingList;
+            clinicConfigurationMappingList = processClinicConfigurationMappingDTOS(clinic,
+                clinicDTO.getClinicConfigurationMappingDTOS());
+            clinic.setClinicConfigurationMappings(clinicConfigurationMappingList);
+        }
         if (clinic.getId() != null) {
             clinicDao.merge(clinic);
         } else { // If the clinic is new, create a corresponding ACLObject
@@ -456,8 +461,8 @@ public class ClinicController {
     }
 
     /**
-     * Controls the HTTP requests for the URL <i>clinic/remove</i>. Removes a {@link Clinic} object
-     * by a given id and redirects to the list of clinics.
+     * Controls the HTTP requests for the URL <i>clinic/remove</i>. Removes a {@link Clinic} object by a given id and
+     * redirects to the list of clinics.
      *
      * @param id    Id of the {@link Clinic} object, which should be removed.
      * @param model The model, which holds the information for the view.
@@ -496,38 +501,29 @@ public class ClinicController {
         return showClinics(model);
     }
 
-
-    private void recursivelyFindChildConfigurations(Clinic clinic, ClinicConfigurationDTO clinicConfigurationDTO, List<ClinicConfigurationMapping> clinicConfigurationMappingList){
-            ClinicConfiguration clinicConfiguration = new ClinicConfiguration(
-                    clinicConfigurationDTO.getEntityClass(), clinicConfigurationDTO.getAttribute(), clinicConfigurationDTO.getConfigurationType(),
-                    clinicConfigurationDTO.getLabelMessageCode(),clinicConfigurationDTO.getDescriptionMessageCode(),clinicConfigurationDTO.getTestMethod(),clinicConfigurationDTO.getUpdateMethod(),
-                    clinicConfigurationDTO.getPosition());
-            for (ClinicConfigurationDTO child : clinicConfigurationDTO.getChildren()) {
-                if (child.getChildren() != null && !child.getChildren().isEmpty()) {
-                    recursivelyFindChildConfigurations(clinic, child, clinicConfigurationMappingList);
-                }
-            }
-            clinicConfigurationMappingList.add(new ClinicConfigurationMapping(clinic, clinicConfiguration, clinicConfiguration.getValue()));
-
-    }
-
-    private List<ClinicConfigurationMapping> processClinicConfigurationMappingDTOS(Clinic clinic, final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS){
+    private List<ClinicConfigurationMapping> processClinicConfigurationMappingDTOS(Clinic clinic,
+        final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
         List<ClinicConfigurationMapping> clinicConfigurationMappingList = new ArrayList<>();
-        for(ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicConfigurationMappingDTOS){
-            ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(clinicConfigurationMappingDTO.getClinicConfigurationId());
-            if(clinic.getId()==null){
-                ClinicConfigurationMapping clinicConfigurationMapping = new ClinicConfigurationMapping(clinic, clinicConfiguration, clinicConfigurationMappingDTO.getValue());
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicConfigurationMappingDTOS) {
+            ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(
+                clinicConfigurationMappingDTO.getClinicConfigurationId());
+            if (clinic.getId() == null) {
+                ClinicConfigurationMapping clinicConfigurationMapping = new ClinicConfigurationMapping(clinic,
+                    clinicConfiguration, clinicConfigurationMappingDTO.getValue());
                 clinicConfigurationMappingList.add(clinicConfigurationMapping);
-                if(clinicConfigurationMappingDTO.getChildren() != null){
-                    List<ClinicConfigurationMapping> children = processClinicConfigurationMappingDTOS(clinic, clinicConfigurationMappingDTO.getChildren());
+                if (clinicConfigurationMappingDTO.getChildren() != null) {
+                    List<ClinicConfigurationMapping> children = processClinicConfigurationMappingDTOS(clinic,
+                        clinicConfigurationMappingDTO.getChildren());
                     clinicConfigurationMappingList.addAll(children);
                 }
             } else {
-                ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getElementById(clinicConfigurationMappingDTO.getId());
-                clinicConfigurationMapping.setValue(clinicConfigurationMappingDTO.getValue());
+                ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getElementById(
+                    clinicConfigurationMappingDTO.getId());
+                clinicConfigurationMapping.setValue(clinicConfigurationMappingDTO.getValue()!=null ? clinicConfigurationMappingDTO.getValue() : "");
                 clinicConfigurationMappingList.add(clinicConfigurationMapping);
-                if(clinicConfigurationMappingDTO.getChildren() != null){
-                    List<ClinicConfigurationMapping> children = processClinicConfigurationMappingDTOS(clinic, clinicConfigurationMappingDTO.getChildren());
+                if (clinicConfigurationMappingDTO.getChildren() != null) {
+                    List<ClinicConfigurationMapping> children = processClinicConfigurationMappingDTOS(clinic,
+                        clinicConfigurationMappingDTO.getChildren());
                     clinicConfigurationMappingList.addAll(children);
                 }
             }
@@ -536,12 +532,15 @@ public class ClinicController {
         return clinicConfigurationMappingList;
     }
 
-    private List<ClinicConfigurationMappingDTO> recursivelyInitializeClinicConfigurationMappingDTOS(List<ClinicConfigurationDTO> clinicConfigurationDTOS){
+    private List<ClinicConfigurationMappingDTO> recursivelyInitializeClinicConfigurationMappingDTOS(
+        List<ClinicConfigurationDTO> clinicConfigurationDTOS) {
         List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS = new ArrayList<>();
-        for(ClinicConfigurationDTO clinicConfigurationDTO: clinicConfigurationDTOS){
-            ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = clinicConfigurationMappingService.toClinicConfigurationMappingDTO(clinicConfigurationDTO);
-            if(clinicConfigurationDTO.getChildren() != null){
-                List<ClinicConfigurationMappingDTO> children = recursivelyInitializeClinicConfigurationMappingDTOS(clinicConfigurationDTO.getChildren());
+        for (ClinicConfigurationDTO clinicConfigurationDTO : clinicConfigurationDTOS) {
+            ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = clinicConfigurationMappingService.toClinicConfigurationMappingDTO(
+                clinicConfigurationDTO);
+            if (clinicConfigurationDTO.getChildren() != null) {
+                List<ClinicConfigurationMappingDTO> children = recursivelyInitializeClinicConfigurationMappingDTOS(
+                    clinicConfigurationDTO.getChildren());
                 clinicConfigurationMappingDTO.setChildren(children);
             }
             clinicConfigurationMappingDTOS.add(clinicConfigurationMappingDTO);

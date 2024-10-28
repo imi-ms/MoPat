@@ -87,9 +87,9 @@ public class ClinicConfiguration implements Serializable {
     }
 
     public ClinicConfiguration(final String entityClass, final String attribute,
-                         final ConfigurationType configurationType, final String labelMessageCode,
-                         final String descriptionMessageCode, final String testMethod, final String updateMethod,
-                         final Integer position) {
+        final ConfigurationType configurationType, final String labelMessageCode,
+        final String descriptionMessageCode, final String testMethod, final String updateMethod,
+        final Integer position) {
         this.entityClass = entityClass;
         this.attribute = attribute;
         this.configurationType = configurationType;
@@ -164,9 +164,8 @@ public class ClinicConfiguration implements Serializable {
     }
 
     /**
-     * Returns the entityClass of the current configuration object. The entityClass indicates where
-     * this conifguration is used. If its used in more than one class, the entityClass is
-     * CLASS_GLOBAL defined in {@link Constants}.
+     * Returns the entityClass of the current configuration object. The entityClass indicates where this conifguration
+     * is used. If its used in more than one class, the entityClass is CLASS_GLOBAL defined in {@link Constants}.
      *
      * @return The current uuid of this configuration object. Might be
      * <code>null</code> for newly created objects.
@@ -283,8 +282,7 @@ public class ClinicConfiguration implements Serializable {
     }
 
     /**
-     * Returns the {@link List} object which contains children configurations of the current
-     * configuration object.
+     * Returns the {@link List} object which contains children configurations of the current configuration object.
      *
      * @return The list containing the children configurations of the current configuration object.
      */
@@ -310,8 +308,8 @@ public class ClinicConfiguration implements Serializable {
     }
 
     /**
-     * Returns the position of the current configuration object it has got in the order of
-     * {@link ConfigurationGroup}'s adhering list of configurations.
+     * Returns the position of the current configuration object it has got in the order of {@link ConfigurationGroup}'s
+     * adhering list of configurations.
      *
      * @return Integer The position of the current configuration object.
      */
@@ -320,8 +318,8 @@ public class ClinicConfiguration implements Serializable {
     }
 
     /**
-     * Sets the position of the current configuration object it has got in the order of the
-     * {@link ConfigurationGroup}'s adhering list of configurations.
+     * Sets the position of the current configuration object it has got in the order of the {@link ConfigurationGroup}'s
+     * adhering list of configurations.
      *
      * @param position The position to be set for the configuration object.
      */

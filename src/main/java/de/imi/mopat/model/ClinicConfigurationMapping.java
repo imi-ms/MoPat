@@ -30,10 +30,11 @@ public class ClinicConfigurationMapping implements Serializable {
     public ClinicConfigurationMapping() {
     }
 
-    public ClinicConfigurationMapping(final Clinic clinic, final ClinicConfiguration clinicConfiguration, final String value) {
-        this.clinic=clinic;
-        this.clinicConfiguration=clinicConfiguration;
-        this.value=value;
+    public ClinicConfigurationMapping(final Clinic clinic, final ClinicConfiguration clinicConfiguration,
+        final String value) {
+        this.clinic = clinic;
+        this.clinicConfiguration = clinicConfiguration;
+        this.value = value;
     }
 
 
@@ -84,7 +85,7 @@ public class ClinicConfigurationMapping implements Serializable {
         }
     }
 
-    public Clinic getClinic(){
+    public Clinic getClinic() {
         return clinic;
     }
 

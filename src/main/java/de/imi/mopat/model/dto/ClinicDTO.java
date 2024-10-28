@@ -70,7 +70,8 @@ public class ClinicDTO {
         return clinicConfigurationMappingDTOS;
     }
 
-    public void setClinicConfigurationMappingDTOS(final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
+    public void setClinicConfigurationMappingDTOS(
+        final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
         this.clinicConfigurationMappingDTOS = clinicConfigurationMappingDTOS;
     }
 

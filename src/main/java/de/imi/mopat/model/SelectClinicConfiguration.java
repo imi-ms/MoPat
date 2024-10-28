@@ -33,9 +33,9 @@ public class SelectClinicConfiguration extends ClinicConfiguration implements Se
     }
 
     public SelectClinicConfiguration(final List<String> options, final Long id, final String entityClass,
-                                     final String attribute, final String value, final ConfigurationType configurationType,
-                                     final String labelMessageCode, final String descriptionMessageCode, final String testMethod,
-                                     final String updateMethod, final String name, final Integer position) {
+        final String attribute, final String value, final ConfigurationType configurationType,
+        final String labelMessageCode, final String descriptionMessageCode, final String testMethod,
+        final String updateMethod, final String name, final Integer position) {
         super(entityClass, attribute, configurationType, labelMessageCode, descriptionMessageCode,
             testMethod, updateMethod, position);
         this.options = options;

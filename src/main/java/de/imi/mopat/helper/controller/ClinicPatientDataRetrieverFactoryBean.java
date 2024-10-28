@@ -7,12 +7,11 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Factory to look up, instantiate and provide an implementation of {@link PatientDataRetriever} via
- * the {@link ClinicPatientDataRetrieverFactoryBean#getObject()} method. Checks the configuration whether a
- * {@link PatientDataRetriever} has been activated. If yes, searches for a class given in the
- * configuration and tries to instantiate it (the implementation itself has to gather and use the
- * information it needs). If everything worked, the implementation is provided. Otherwise, it just
- * returns <code>null</code>.
+ * Factory to look up, instantiate and provide an implementation of {@link PatientDataRetriever} via the
+ * {@link ClinicPatientDataRetrieverFactoryBean#getObject()} method. Checks the configuration whether a
+ * {@link PatientDataRetriever} has been activated. If yes, searches for a class given in the configuration and tries to
+ * instantiate it (the implementation itself has to gather and use the information it needs). If everything worked, the
+ * implementation is provided. Otherwise, it just returns <code>null</code>.
  *
  * @version 1.0
  */
@@ -31,12 +30,14 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
     public final String usePatientDataLookupProperty = "usePatientDataLookup";
     public final String patientDataRetrieverClassProperty = "patientDataRetrieverClass";
 
-    public ClinicPatientDataRetrieverFactoryBean(){
+    public ClinicPatientDataRetrieverFactoryBean() {
 
     }
-    public  ClinicPatientDataRetrieverFactoryBean(Long clinicId){
-        this.clinicId=clinicId;
+
+    public ClinicPatientDataRetrieverFactoryBean(Long clinicId) {
+        this.clinicId = clinicId;
     }
+
     @Override
     public PatientDataRetriever getObject() throws Exception {
         PatientDataRetriever result = null;
@@ -95,11 +96,11 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
 
     private String getPatientRetrieverClass(Long clinicId) {
         ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getConfigurationByAttributeAndClass(
-            clinicId,patientDataRetrieverClassProperty, className);
+            clinicId, patientDataRetrieverClassProperty, className);
         return clinicConfigurationMapping.getValue();
     }
 
-    private void setClinicId(Long clinicId){
+    private void setClinicId(Long clinicId) {
         this.clinicId = clinicId;
     }
 }

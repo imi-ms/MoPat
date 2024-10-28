@@ -102,7 +102,7 @@ public class ClinicConfigurationDTO {
     }
 
     public List<ClinicConfigurationDTO> getChildren() {
-        if (children != null && children.size()>1) {
+        if (children != null && children.size() > 1) {
             Collections.sort(children, new Comparator<ClinicConfigurationDTO>() {
                 @Override
                 public int compare(ClinicConfigurationDTO o1, ClinicConfigurationDTO o2) {

@@ -11,13 +11,13 @@ public class ClinicConfigurationService {
 
 
     /**
-     * Function that recursively processes all children elements to allow the use of multiple nested
-     * elements
+     * Function that recursively processes all children elements to allow the use of multiple nested elements
      *
      * @param clinicConfiguration    The configuration element
      * @param clinicConfigurationDTO The currently processed DTO
      */
-    public void processChildrenElements(final ClinicConfiguration clinicConfiguration, final ClinicConfigurationDTO clinicConfigurationDTO) {
+    public void processChildrenElements(final ClinicConfiguration clinicConfiguration,
+        final ClinicConfigurationDTO clinicConfigurationDTO) {
         //Set the children DTOs
         clinicConfigurationDTO.setChildren(new ArrayList<>());
         for (ClinicConfiguration child : clinicConfiguration.getChildren()) {
