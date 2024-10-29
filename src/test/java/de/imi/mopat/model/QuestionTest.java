@@ -119,6 +119,24 @@ public class QuestionTest {
 
         return question;
     }
+    
+    public static Question getNewValidSelectQuestion(Questionnaire questionnaire) {
+        Boolean isRequired = random.nextBoolean();
+        Boolean isEnabled = random.nextBoolean();
+        QuestionType questiontype = QuestionType.MULTIPLE_CHOICE;
+        Integer position = Math.abs(random.nextInt());
+        Map<String, String> localizedQuestionText = new HashMap<>();
+        int count = Math.abs(random.nextInt(50)) + 1;
+        for (int i = 0; i < count; i++) {
+            localizedQuestionText.put(Helper.getRandomLocale(),
+                Helper.getRandomString(random.nextInt(50) + 1));
+        }
+        
+        Question question = new Question(localizedQuestionText, isRequired, isEnabled, questiontype,
+            position, questionnaire);
+        
+        return question;
+    }
 
     /**
      * Returns a valid new Question with given localizedQuestiontext and Questionnaire

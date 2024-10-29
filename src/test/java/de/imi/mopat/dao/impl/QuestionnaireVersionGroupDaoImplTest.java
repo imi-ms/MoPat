@@ -66,18 +66,20 @@ public class QuestionnaireVersionGroupDaoImplTest {
 
         // Assert
         assertNotNull("QuestionnaireVersionGroup list should not be null", groups);
-        assertEquals("QuestionnaireVersionGroup list size should be 1", 1, groups.size());
-        assertEquals("Stored QuestionnaireVersionGroup should match the original", questionnaireVersionGroup, groups.get(0));
+        //2, as the questionnaire stores its own version group
+        assertEquals("QuestionnaireVersionGroup list size should be 2", 2, groups.size());
+        assertEquals("Stored QuestionnaireVersionGroup should match the original", questionnaire.getQuestionnaireVersionGroup(), groups.get(0));
     }
 
     public void clearTable() {
-        List<QuestionnaireVersionGroup> allGroups = questionnaireVersionGroupDao.getAllElements();
-        for (QuestionnaireVersionGroup group : allGroups) {
-            questionnaireVersionGroupDao.remove(group);
-        }
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
         for (Questionnaire questionnaire : allQuestionnaires) {
             questionnaireDao.remove(questionnaire);
+        }
+        
+        List<QuestionnaireVersionGroup> allGroups = questionnaireVersionGroupDao.getAllElements();
+        for (QuestionnaireVersionGroup group : allGroups) {
+            questionnaireVersionGroupDao.remove(group);
         }
     }
 }

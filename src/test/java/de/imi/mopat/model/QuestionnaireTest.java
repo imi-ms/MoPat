@@ -83,9 +83,25 @@ public class QuestionnaireTest {
         Boolean isPublished = random.nextBoolean();
 
         Questionnaire questionnaire = new Questionnaire(name, description, changedBy, isPublished);
+        
+        QuestionnaireVersionGroup questionnaireVersionGroup = getNewValidQuestionnaireVersionGroup();
+        Set<Questionnaire> questionnaireSet = new HashSet<>();
+        questionnaireSet.add(questionnaire);
+        
+        questionnaireVersionGroup.setQuestionnaires(questionnaireSet);
+        questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
 
         return questionnaire;
 
+    }
+    
+    private static QuestionnaireVersionGroup getNewValidQuestionnaireVersionGroup() {
+        String name = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
+        
+        QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
+        questionnaireVersionGroup.setName(name);
+        
+        return questionnaireVersionGroup;
     }
 
     @Before

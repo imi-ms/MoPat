@@ -51,11 +51,11 @@ public class FileUtilsTest {
     @Test(expected = IOException.class)
     public void testCopyTemplateFile_failure() throws Exception {
         // Arrange
-        when(configurationDao.getObjectStoragePath()).thenReturn("/tmp/storage");
+        when(configurationDao.getObjectStoragePath()).thenReturn("/tmp/storage/");
         String sourceFileName = "template_ERROR.json";
         String destinationFileName = "template_copy.json";
-        Path sourcePath = Paths.get("/tmp/storage/templates", sourceFileName);
-        Path destinationPath = Paths.get("/tmp/storage/templates", destinationFileName);
+        Path sourcePath = Paths.get("/tmp/storage/exporttemplates", sourceFileName);
+        Path destinationPath = Paths.get("/tmp/storage/exporttemplates", destinationFileName);
 
         try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING))
