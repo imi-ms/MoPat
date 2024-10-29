@@ -24,8 +24,8 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
     private final AnswerDTOMapper answerDTOMapper;
 
     @Autowired
-    public QuestionDTOMapper(ConfigurationDao configurationDao) {
-        this.answerDTOMapper = new AnswerDTOMapper(configurationDao);
+    public QuestionDTOMapper(ConfigurationDao configurationDao, ConditionDTOMapper conditionDTOMapper) {
+        this.answerDTOMapper = new AnswerDTOMapper(configurationDao, conditionDTOMapper);
     }
 
     /**
