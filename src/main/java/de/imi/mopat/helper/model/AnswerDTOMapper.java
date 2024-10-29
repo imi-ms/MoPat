@@ -7,7 +7,6 @@ import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
-import de.imi.mopat.model.conditions.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +24,17 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(AnswerDTOMapper.class);
     private final ConfigurationDao configurationDao;
+    
+    private final ConditionDTOMapper conditionDTOMapper;
 
     @Autowired
-    public AnswerDTOMapper(ConfigurationDao configurationDao) {
+    public AnswerDTOMapper(ConfigurationDao configurationDao, ConditionDTOMapper conditionDTOMapper) {
         this.configurationDao = configurationDao;
+        this.conditionDTOMapper = conditionDTOMapper;
     }
+    
+    
+    
 
     @Override
     public AnswerDTO apply(Answer answer) {
@@ -56,7 +61,7 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
         answerDTO.setHasResponse(!answer.getResponses().isEmpty());
         answerDTO.setHasConditionsAsTrigger(!answer.getConditions().isEmpty());
         answerDTO.setConditions(answer.getConditions().stream()
-                .map(Condition::toConditionDTO)
+                .map(conditionDTOMapper::apply)
                 .collect(Collectors.toList()));
         answerDTO.setHasExportRule(!answer.getExportRules().isEmpty());
 
