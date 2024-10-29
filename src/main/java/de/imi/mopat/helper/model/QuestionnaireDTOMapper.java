@@ -5,12 +5,15 @@ import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Function;
 
 @Component
@@ -45,9 +48,13 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
             groupDTO.setGroupId(questionnaire.getQuestionnaireVersionGroup().getId());
             groupDTO.setGroupName(questionnaire.getQuestionnaireVersionGroup().getName());
             Set<Questionnaire> questionnaires = questionnaire.getQuestionnaireVersionGroup().getQuestionnaires();
-            groupDTO.setQuestionnaireDTOS(questionnaires.stream()
-                    .map(q -> applyWithGroup(q, false)) // Include false to avoid infinite recursion
-                    .toList());
+            List<QuestionnaireDTO> groupQuestionnaireDTOs = new ArrayList<>();
+            
+            for(Questionnaire nestedQuestionnaire : questionnaires) {
+                groupQuestionnaireDTOs.add(applyWithGroup(nestedQuestionnaire, false));
+            }
+            
+            groupDTO.setQuestionnaireDTOS(groupQuestionnaireDTOs);
             questionnaireDTO.setQuestionnaireGroupDTO(groupDTO);
         }
         return questionnaireDTO;
@@ -70,9 +77,23 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         questionnaireDTO.setName(questionnaire.getName());
         questionnaireDTO.setDescription(questionnaire.getDescription());
         questionnaireDTO.setVersion(questionnaire.getVersion());
-        questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(questionnaire.getLocalizedWelcomeText()));
-        questionnaireDTO.setLocalizedFinalText(new TreeMap<>(questionnaire.getLocalizedFinalText()));
-        questionnaireDTO.setLocalizedDisplayName(new TreeMap<>(questionnaire.getLocalizedDisplayName()));
+        
+        Map<String, String> localizedWelcomeMap = questionnaire.getLocalizedWelcomeText();
+        if (localizedWelcomeMap != null) {
+            questionnaireDTO.setLocalizedWelcomeText((SortedMap<String, String>) localizedWelcomeMap);
+        }
+        
+        Map<String, String> localizedFinalMap = questionnaire.getLocalizedWelcomeText();
+        if (localizedFinalMap != null) {
+            questionnaireDTO.setLocalizedFinalText((SortedMap<String, String>) localizedFinalMap);
+        }
+        
+        Map<String, String> localizedDisplayMap = questionnaire.getLocalizedWelcomeText();
+        if (localizedDisplayMap != null) {
+            questionnaireDTO.setLocalizedDisplayName((SortedMap<String, String>) localizedDisplayMap);
+        }
+        
+        
         questionnaireDTO.setLogo(questionnaire.getLogo());
         questionnaireDTO.setLogoBase64(logoBase64);
         questionnaireDTO.setExportTemplates(questionnaire.getExportTemplates());
