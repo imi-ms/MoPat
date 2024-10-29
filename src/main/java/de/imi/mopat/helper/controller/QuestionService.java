@@ -1,13 +1,18 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.AnswerDao;
+import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.Questionnaire;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +20,15 @@ public class QuestionService {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
             QuestionService.class);
+    
+    @Autowired
+    private AnswerDao answerDao;
+    
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+    
+    @Autowired
+    private BundleDao bundleDao;
 
     /**
      * Clones conditions from a set of original questions to corresponding new questions and answers
@@ -63,31 +77,67 @@ public class QuestionService {
         return newConditions;
     }
 
-    MapHolder duplicateQuestionsToNewQuestionnaire(Set<Question> originalQuestions,
-        Questionnaire newQuestionnaire) {
-        Map<Question, Question> questionMap = new HashMap<>();
+    Questionnaire duplicateQuestionsToNewQuestionnaire(
+        Set<Question> originalQuestions,
+        Questionnaire newQuestionnaire
+    ) {
         Set<Question> copiedQuestions = new HashSet<>();
-        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = new HashMap<>();
+        
         for (Question originalQuestion : originalQuestions) {
             Question newQuestion = new Question(
                 new HashMap<>(originalQuestion.getLocalizedQuestionText()),
                 originalQuestion.getIsRequired(), originalQuestion.getIsEnabled(),
                 originalQuestion.getQuestionType(), originalQuestion.getPosition(),
-                newQuestionnaire);
-            newQuestion.setMinMaxNumberAnswers(originalQuestion.getMinNumberAnswers(),
-                originalQuestion.getMaxNumberAnswers());
-            Map<Answer, Answer> answerMap = new HashMap<>();
+                newQuestionnaire
+            );
+            
+            newQuestion.setMinMaxNumberAnswers(
+                originalQuestion.getMinNumberAnswers(),
+                originalQuestion.getMaxNumberAnswers()
+            
+            );
+            
             for (Answer answer : originalQuestion.getAnswers()) {
-                Answer newAnswer = answer.cloneWithoutReferences();
-                answerMap.put(answer, newAnswer);
-                newQuestion.addAnswer(newAnswer);
+                newQuestion.addAnswer(answer.cloneWithoutReferences());
             }
+            
             newQuestion.setQuestionnaire(newQuestionnaire);
-            questionMap.put(originalQuestion, newQuestion);
-            oldQuestionToNewAnswerMap.put(originalQuestion, answerMap);
             copiedQuestions.add(newQuestion);
         }
         newQuestionnaire.setQuestions(copiedQuestions);
+        questionnaireDao.merge(newQuestionnaire);
+        //Refetch questionnaire to get ids from db
+        return questionnaireDao.getElementById(newQuestionnaire.getId());
+    }
+    
+    MapHolder getMappingForDuplicatedQuestions(
+        Questionnaire originalQuestionnnaire,
+        Questionnaire newQuestionnaire
+    ) {
+        Map<Question, Question> questionMap = new HashMap<>();
+        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = new HashMap<>();
+        
+        
+        for (int i = 0; i < originalQuestionnnaire.getQuestions().size(); i++) {
+            
+            Question originalQuestion = new ArrayList<>(originalQuestionnnaire.getQuestions()).get(i);
+            Question newQuestion = new ArrayList<>(newQuestionnaire.getQuestions()).get(i);
+            
+            if (originalQuestion != null && newQuestion != null) {
+                questionMap.put(originalQuestion, newQuestion);
+                
+                Map<Answer, Answer> answerMap = new HashMap<>();
+                
+                for (int j = 0; j < originalQuestion.getAnswers().size(); j++) {
+                    Answer originalAnswer = originalQuestion.getAnswers().get(j);
+                    Answer newAnswer = newQuestion.getAnswers().get(j);
+                    answerMap.put(originalAnswer, newAnswer);
+                }
+                
+                oldQuestionToNewAnswerMap.put(originalQuestion, answerMap);
+            }
+        }
         return new MapHolder(questionMap, oldQuestionToNewAnswerMap);
     }
+    
 }
