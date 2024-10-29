@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +40,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -614,16 +616,13 @@ public class UserController {
             return "mobile/user/login";
         }
 
-        PinAuthorization pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
-            .toList().get(0);
-
         if (userDao.isCorrectPin(user, pin)) {
             //If pin is entered correctly, the filter has to be stopped by removing all entries from db
             pinAuthorizationService.removePinAuthForUser(user);
         } else {
             pinAuthorizationService.decreaseRemainingTriesForUser(user);
             //Refetch the entry
-            pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
+            PinAuthorization pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
                 .toList().get(0);
 
             model.addAttribute("message",
