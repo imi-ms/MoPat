@@ -8,8 +8,6 @@ import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.SelectAnswer;
 import de.imi.mopat.model.SliderAnswer;
-import de.imi.mopat.model.dto.ConditionDTO;
-
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -66,7 +64,10 @@ public abstract class Condition implements Serializable {
             // @DiscriminatorClass
             @DiscriminatorClass(discriminator = "Question", value = Question.class),
             @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class),
-            @DiscriminatorClass(discriminator = "SliderAnswer", value = SliderAnswer.class)}, discriminatorColumn = @DiscriminatorColumn(name = "trigger_class"))
+            @DiscriminatorClass(discriminator = "SliderAnswer", value = SliderAnswer.class)
+        },
+        discriminatorColumn = @DiscriminatorColumn(name = "trigger_class")
+    )
     @JoinColumn(name = "trigger_id", referencedColumnName = "id")
     private ConditionTrigger trigger;
 
@@ -83,7 +84,9 @@ public abstract class Condition implements Serializable {
             // @DiscriminatorClass
             @DiscriminatorClass(discriminator = "Question", value = Question.class),
             @DiscriminatorClass(discriminator = "Questionnaire", value = Questionnaire.class),
-            @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class)}, discriminatorColumn = @DiscriminatorColumn(name = "target_class"))
+            @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class)},
+        discriminatorColumn = @DiscriminatorColumn(name = "target_class")
+    )
     @JoinColumn(name = "target_id", referencedColumnName = "id")
     private ConditionTarget target;
 
@@ -261,32 +264,6 @@ public abstract class Condition implements Serializable {
      */
     public void setTargetAnswerQuestion(final Question targetAnswerQuestion) {
         this.targetAnswerQuestion = targetAnswerQuestion;
-    }
-
-    public ConditionDTO toConditionDTO() {
-        ConditionDTO conditionDTO = new ConditionDTO();
-        conditionDTO.setId(this.getId());
-        conditionDTO.setAction(this.getAction().name());
-        conditionDTO.setTargetClass(this.getTargetClass());
-        conditionDTO.setTargetId(this.getTarget().getId());
-        conditionDTO.setTriggerId(this.getTrigger().getId());
-        if (this.getTargetAnswerQuestion() != null) {
-            conditionDTO.setTargetAnswerQuestionId(this.getTargetAnswerQuestion().getId());
-        }
-        if (this.bundle != null) {
-            conditionDTO.setBundleId(this.bundle.getId());
-        } else {
-            conditionDTO.setBundleId(null);
-        }
-
-        if (this instanceof SliderAnswerThresholdCondition) {
-            // If condition is a SliderAnswerThresholdCondition set the
-            // appropriate values
-            SliderAnswerThresholdCondition tresholdCondition = (SliderAnswerThresholdCondition) this;
-            conditionDTO.setThresholdType(tresholdCondition.getThresholdComparisonType());
-            conditionDTO.setThresholdValue(tresholdCondition.getThreshold());
-        }
-        return conditionDTO;
     }
 
     @Override
