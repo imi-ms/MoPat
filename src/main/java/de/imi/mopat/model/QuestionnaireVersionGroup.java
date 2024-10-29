@@ -30,7 +30,7 @@ public class QuestionnaireVersionGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "questionnaireVersionGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "questionnaireVersionGroup", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
 
     public Long getId() {
