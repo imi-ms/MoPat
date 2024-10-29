@@ -133,11 +133,11 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     @Column(name = "version", nullable = false)
     private Integer version = 1;
-
-    @ManyToOne(fetch = FetchType.EAGER)
+    
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
-
+    
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
