@@ -4,6 +4,7 @@ import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.Answer;
@@ -98,6 +99,12 @@ public class QuestionnaireService {
 
     @Autowired
     private FileUtils fileUtils;
+    
+    @Autowired
+    private ConditionService conditionService;
+    
+    @Autowired
+    private ConditionDTOMapper conditionDTOMapper;
 
     /**
      * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
@@ -356,7 +363,8 @@ public class QuestionnaireService {
         );
         questionnaireDao.merge(newQuestionnaire);
 
-        MapHolder questionCopyMaps = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
+        newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
+        MapHolder questionCopyMaps = questionService.getMappingForDuplicatedQuestions(existingQuestionnaire, newQuestionnaire);
         Map<Question, Question> questionMap = questionCopyMaps.questionMap();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
 
@@ -368,9 +376,6 @@ public class QuestionnaireService {
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
 
-        for(Condition condition : clonedConditions)
-            conditionDao.merge(condition);
-
         copyExportTemplates(existingQuestionnaire.getExportTemplates(), newQuestionnaire);
 
         // Set version in Questionnaire
@@ -379,6 +384,11 @@ public class QuestionnaireService {
         questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
 
         questionnaireDao.merge(newQuestionnaire);
+        
+        //Apparently Conditions are already persisted with the previous merge command
+        //for(Condition condition : clonedConditions)
+        //    conditionService.mergeCondition(conditionDTOMapper.apply(condition));
+        
         return newQuestionnaire;
     }
 
@@ -539,15 +549,20 @@ public class QuestionnaireService {
      * @param questionnaireDTO   The {@link QuestionnaireDTO} containing the logo information.
      * @param logo               The {@link MultipartFile} containing the new logo file.
      */
-    private void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
-        String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + questionnaire.getId().toString();
-
-        if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
-            deleteExistingLogo(questionnaire, imagePath);
-        }
-
-        if (!logo.isEmpty()) {
-            uploadNewLogo(questionnaire, logo, imagePath);
+    public void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
+        try {
+            String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/"
+                + questionnaire.getId().toString();
+            
+            if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
+                deleteExistingLogo(questionnaire, imagePath);
+            }
+            
+            if (!logo.isEmpty()) {
+                uploadNewLogo(questionnaire, logo, imagePath);
+            }
+        } catch(Exception e) {
+            LOGGER.error("Could not upload file", e);
         }
     }
 
@@ -761,5 +776,45 @@ public class QuestionnaireService {
             resultSet.add(questionnaire.getId());
         }
         return resultSet;
+    }
+    
+    /**
+     * Returns the list of questionnaires sorted by their id property (ascending)
+     * @param questionnaires to sort
+     * @return List<Questionnaire>
+     */
+    public List<Questionnaire> sortQuestionnairesByIdAsc(List<Questionnaire> questionnaires) {
+        questionnaires.sort((q1, q2) -> Long.compare(q1.getId(), q2.getId()));
+        return questionnaires;
+    }
+    
+    /**
+     * Returns the list of questionnaires sorted by their id property (descending)
+     * @param questionnaires to sort
+     * @return List<Questionnaire>
+     */
+    public List<Questionnaire> sortQuestionnairesByIdDesc(List<Questionnaire> questionnaires) {
+        questionnaires.sort((q1, q2) -> Long.compare(q2.getId(), q1.getId()));
+        return questionnaires;
+    }
+    
+    /**
+     * Returns the list of questionnaires sorted by their createdAt property (ascending)
+     * @param questionnaires to sort
+     * @return sorted List<Questionnaire>
+     */
+    public List<Questionnaire> sortQuestionnairesByCreatedAtAsc(List<Questionnaire> questionnaires) {
+        questionnaires.sort((q1, q2) -> q1.getCreatedAt().compareTo(q2.getCreatedAt()));
+        return questionnaires;
+    }
+    
+    /**
+     * Returns the list of questionnaires sorted by their createdAt property (descending)
+     * @param questionnaires to sort
+     * @return sorted List<Questionnaire>
+     */
+    public List<Questionnaire> sortQuestionnairesByCreatedAtDesc(List<Questionnaire> questionnaires) {
+        questionnaires.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+        return questionnaires;
     }
 }
