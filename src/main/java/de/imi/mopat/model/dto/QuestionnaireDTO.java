@@ -184,11 +184,13 @@ public class QuestionnaireDTO {
     public String getQuestionnaireVersionGroupName() {
         return  (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
     }
-
+    
+    @JsonIgnore
     public QuestionnaireVersionGroupDTO getQuestionnaireGroupDTO() {
         return questionnaireVersionGroupDTO;
     }
 
+    @JsonIgnore
     public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
         this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
     }
