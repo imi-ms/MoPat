@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Questionnaire;
@@ -21,15 +22,14 @@ public class QuestionnaireVersionGroupService {
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(QuestionnaireVersionGroupService.class);
 
-    private final QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
-
-    private final QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
+    @Autowired
+    private QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
+    
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
 
     @Autowired
-    public QuestionnaireVersionGroupService(QuestionnaireVersionGroupDao questionnaireVersionGroupDao, QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper) {
-        this.questionnaireVersionGroupDao = questionnaireVersionGroupDao;
-        this.questionnaireGroupDTOMapper = questionnaireGroupDTOMapper;
-    }
+    private QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
     /**
      * Creates a new questionnaire version group where the name of the group is always
@@ -196,9 +196,13 @@ public class QuestionnaireVersionGroupService {
         }
 
         if (questionnairesInGroup.isEmpty()){
+            //If there would be no questionnaire left, delete the group
             questionnaireVersionGroupDao.remove(questionnaireVersionGroup);
-        }else{
-            questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
+        } else {
+            //Relationship between version group and questionnaire is controlled
+            //by the questionnaire, so it has to be removed there
+            questionnaire.setQuestionnaireVersionGroup(null);
+            questionnaireDao.merge(questionnaire);
         }
     }
 }

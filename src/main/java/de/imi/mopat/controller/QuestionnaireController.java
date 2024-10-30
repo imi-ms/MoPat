@@ -364,8 +364,8 @@ public class QuestionnaireController {
                     bundleDao.merge(bundle);
                 }
                 questionnaire.removeAllBundleQuestionnaires();
-                questionnaireDao.remove(questionnaire);
                 questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
+                questionnaireDao.remove(questionnaire);
                 model.addAttribute("messageSuccess",
                     messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
                         new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));

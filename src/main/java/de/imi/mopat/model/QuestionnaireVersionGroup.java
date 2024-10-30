@@ -1,6 +1,5 @@
 package de.imi.mopat.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -30,7 +29,7 @@ public class QuestionnaireVersionGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "questionnaireVersionGroup", fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "questionnaireVersionGroup", fetch = FetchType.LAZY)
     private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
 
     public Long getId() {
