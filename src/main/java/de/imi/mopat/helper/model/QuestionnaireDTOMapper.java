@@ -8,7 +8,7 @@ import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -80,17 +80,17 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         
         Map<String, String> localizedWelcomeMap = questionnaire.getLocalizedWelcomeText();
         if (localizedWelcomeMap != null) {
-            questionnaireDTO.setLocalizedWelcomeText((SortedMap<String, String>) localizedWelcomeMap);
+            questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(localizedWelcomeMap));
         }
         
-        Map<String, String> localizedFinalMap = questionnaire.getLocalizedWelcomeText();
+        Map<String, String> localizedFinalMap = questionnaire.getLocalizedFinalText();
         if (localizedFinalMap != null) {
-            questionnaireDTO.setLocalizedFinalText((SortedMap<String, String>) localizedFinalMap);
+            questionnaireDTO.setLocalizedFinalText(new TreeMap<>(localizedFinalMap));
         }
         
-        Map<String, String> localizedDisplayMap = questionnaire.getLocalizedWelcomeText();
+        Map<String, String> localizedDisplayMap = questionnaire.getLocalizedDisplayName();
         if (localizedDisplayMap != null) {
-            questionnaireDTO.setLocalizedDisplayName((SortedMap<String, String>) localizedDisplayMap);
+            questionnaireDTO.setLocalizedDisplayName(new TreeMap<>(localizedDisplayMap));
         }
         
         
