@@ -809,6 +809,7 @@
 				const firstItem = groupElements.first();
 				const isSingleElement = groupElements.length === 1;
 				updateGroupChevronAndSpacer(groupId, firstItem, isSingleElement ? ACTIONS.HIDE : ACTIONS.MINIMIZE, false);
+				toggleGroupItems(firstItem); 
 			});
 		}
 
