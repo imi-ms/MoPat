@@ -11,12 +11,8 @@ import java.util.function.BiFunction;
 @Component
 public class BundleClinicDTOMapper implements BiFunction<ClinicDTO, BundleClinic, BundleClinicDTO> {
 
-    private final BundleDTOMapper bundleDTOMapper;
-
     @Autowired
-    public BundleClinicDTOMapper(BundleDTOMapper bundleDTOMapper) {
-        this.bundleDTOMapper = bundleDTOMapper;
-    }
+    private BundleDTOMapper bundleDTOMapper;
 
     /*
      * Converts this {@link BundleClinic} object to an {@link

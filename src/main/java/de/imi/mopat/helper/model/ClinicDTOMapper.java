@@ -13,12 +13,8 @@ import java.util.stream.Collectors;
 @Component
 public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
 
-    private final BundleClinicDTOMapper bundleClinicDTOMapper;
-
     @Autowired
-    public ClinicDTOMapper(BundleClinicDTOMapper bundleClinicDTOMapper) {
-        this.bundleClinicDTOMapper = bundleClinicDTOMapper;
-    }
+    private BundleClinicDTOMapper bundleClinicDTOMapper;
 
     /*
      * Converts this {@link Clinic} object to an {@link ClinicDTO} object.

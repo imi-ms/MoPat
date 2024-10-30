@@ -15,12 +15,8 @@ import java.util.function.BiFunction;
 @Component
 public class BundleDTOMapper implements BiFunction<Boolean, Bundle, BundleDTO> {
 
-    private final QuestionnaireDTOMapper questionnaireDTOMapper;
-
     @Autowired
-    public BundleDTOMapper(QuestionnaireDTOMapper questionnaireDTOMapper) {
-        this.questionnaireDTOMapper = questionnaireDTOMapper;
-    }
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
     /**
      * Converts this {@link Bundle} object to an {@link BundleDTO} object.

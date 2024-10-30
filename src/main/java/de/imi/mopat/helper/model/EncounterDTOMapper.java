@@ -14,12 +14,8 @@ import java.util.function.BiFunction;
 @Component
 public class EncounterDTOMapper implements BiFunction<Boolean, Encounter, EncounterDTO> {
 
-    private final BundleDTOMapper bundleDTOMapper;
-
     @Autowired
-    public EncounterDTOMapper(BundleDTOMapper bundleDTOMapper) {
-        this.bundleDTOMapper = bundleDTOMapper;
-    }
+    private BundleDTOMapper bundleDTOMapper;
 
     @Override
     public EncounterDTO apply(Boolean activeSurvey, Encounter encounter) {

@@ -23,18 +23,13 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
 
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(AnswerDTOMapper.class);
-    private final ConfigurationDao configurationDao;
     
-    private final ConditionDTOMapper conditionDTOMapper;
-
     @Autowired
-    public AnswerDTOMapper(ConfigurationDao configurationDao, ConditionDTOMapper conditionDTOMapper) {
-        this.configurationDao = configurationDao;
-        this.conditionDTOMapper = conditionDTOMapper;
-    }
+    private ConfigurationDao configurationDao;
     
-    
-    
+    @Autowired
+    private ConditionDTOMapper conditionDTOMapper;
+
 
     @Override
     public AnswerDTO apply(Answer answer) {

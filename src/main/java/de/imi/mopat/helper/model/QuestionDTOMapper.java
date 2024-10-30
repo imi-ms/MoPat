@@ -21,12 +21,9 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
     private static final int FRONT = 0;
     private static final int BACK = 1;
     private static final int FRONT_BACK = 2;
-    private final AnswerDTOMapper answerDTOMapper;
-
+    
     @Autowired
-    public QuestionDTOMapper(ConfigurationDao configurationDao, ConditionDTOMapper conditionDTOMapper) {
-        this.answerDTOMapper = new AnswerDTOMapper(configurationDao, conditionDTOMapper);
-    }
+    private AnswerDTOMapper answerDTOMapper;
 
     /**
      * Converts this {@link Question} object to an {@link QuestionDTO} object.

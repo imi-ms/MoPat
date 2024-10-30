@@ -5,6 +5,7 @@ import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
+import jakarta.interceptor.AroundInvoke;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +23,11 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(QuestionnaireDTOMapper.class);
 
-    private final ConfigurationDao configurationDao;
-
-    private final QuestionDTOMapper questionDTOMapper;
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     @Autowired
-    public QuestionnaireDTOMapper(ConfigurationDao configurationDao, QuestionDTOMapper questionDTOMapper) {
-        this.configurationDao = configurationDao;
-        this.questionDTOMapper = questionDTOMapper;
-    }
+    private QuestionDTOMapper questionDTOMapper;
 
     @Override
     public QuestionnaireDTO apply(Questionnaire questionnaire) {

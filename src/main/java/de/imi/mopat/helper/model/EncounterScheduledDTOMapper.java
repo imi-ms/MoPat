@@ -16,14 +16,11 @@ import java.util.function.Function;
 @Component
 public class EncounterScheduledDTOMapper implements Function<EncounterScheduled, EncounterScheduledDTO> {
 
-    private final BundleDTOMapper bundleDTOMapper;
-    private final EncounterDTOMapper encounterDTOMapper;
-
     @Autowired
-    public EncounterScheduledDTOMapper(BundleDTOMapper bundleDTOMapper, EncounterDTOMapper encounterDTOMapper) {
-        this.bundleDTOMapper = bundleDTOMapper;
-        this.encounterDTOMapper = encounterDTOMapper;
-    }
+    private BundleDTOMapper bundleDTOMapper;
+    
+    @Autowired
+    private EncounterDTOMapper encounterDTOMapper;
 
     @Override
     public EncounterScheduledDTO apply(EncounterScheduled encounterScheduled) {
