@@ -243,7 +243,11 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
                 hostname = configuration.getValue();
             }
             if (configuration.getAttribute().equals("exportPort")) {
-                port = Integer.valueOf(configuration.getValue());
+                try {
+                    port = Integer.valueOf(configuration.getValue());
+                } catch (NumberFormatException e) {
+                    LOGGER.error("The port could not be converted to a number, as it was " + configuration.getValue(), e);
+                }
             }
             if (configuration.getAttribute().equals("exportInDirectory")) {
                 isExportInDirectory = Boolean.parseBoolean(configuration.getValue());
