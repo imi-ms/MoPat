@@ -65,10 +65,23 @@
 				role="tabpanel"
 				aria-labelledby="encounter-tablink"
 			>
+				<div 
+					id="loadingContainer" 
+					class="d-flex flex-column align-items-center justify-content-center vh-50"
+				>
+					<div 
+						class="spinner-border" 
+						id="loadingSpinner" 
+						role="status" 
+					>
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
 				<div class="table-responsive">
 					<table
-						class="table table-hover pagedTable responsive"
-						style="width: 100%"
+						class="table table-hover responsive"
+						id="encounterTable"
+						style="width: 100%; display: none"
 					>
 						<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
 						<!--/* So: If you change this, please update the audit log call in EncounterController.listEncounter! */-->
@@ -181,10 +194,22 @@
 				class="tab-pane fade"
 				aria-labelledby="encounterScheduled-tablink"
 			>
+				<div 
+					id="loadingContainerScheduled" 
+					class="d-flex flex-column align-items-center justify-content-center vh-50"
+				>
+					<div 
+						class="spinner-border" 
+						id="loadingSpinnerScheduled" 
+						role="status" 
+					>
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
 				<div class="table-responsive">
 					<table
 						id="encounterScheduled"
-						class="table table-hover pagedTable responsive"
+						class="table table-hover responsive"
 						style="width: 100%"
 					>
 						<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
@@ -684,6 +709,29 @@
 		}
 
 		$(document).ready(function () {
+
+			$('#encounterTable').DataTable({
+				"deferRender": true,
+				"paging": true,
+				"ordering": false,
+				"initComplete": function(settings, json) {
+					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
+					$('#loadingContainer').addClass("d-none")
+					$('#encounterTable').fadeIn(); // Show the table
+				}
+			});
+
+			$('#encounterScheduled').DataTable({
+				"deferRender": true,
+				"paging": true,
+				"ordering": false,
+				"initComplete": function(settings, json) {
+					$('#loadingSpinnerScheduled').fadeOut(); // Hide the loading indicator
+					$('#loadingContainerScheduled').addClass("d-none")
+					$('#encounterScheduled').fadeIn(); // Show the table
+				}
+			});
+
 			$(".interruptLink").click(function (e) {
 				if (
 					confirm(strings["encounterScheduled.label.cancelEncounterDialog"])

@@ -117,7 +117,8 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (74, 'GENERAL', 5, 72, 14, 'clientPKCSPassword', 'PASSWORD', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2', 'configuration.label.exportHL7ClientPKCSPassword', NULL, NULL, '7273b090-d149-45f2-a787-6af5838345b6', '', NULL),
 (75, 'GENERAL', 1, NULL, 12, 'imageUploadPath', 'LOCAL_PATH', NULL, 'GLOBAL', 'configuration.label.imageUploadPath', NULL, NULL, 'fb1db996-4538-47e3-bd7b-7c5ce4f03264', '/var/lib/tomcat10/images', NULL),
 (76, 'GENERAL', 10, NULL, 3, 'FHIRsystemURI', 'STRING', NULL, 'GLOBAL', 'configuration.label.FHIRsystemURI', NULL, NULL, 'cbd13c7f-a41b-42fa-9f87-7f78bc7e8a5d', 'https://mopat.uni-muenster.de/FHIR/', NULL),
-(77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL);
+(77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL),
+(78, 'GENERAL', 1, NULL, 15, 'enableGlobalPinAuth', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.enableGlobalPinAuth', NULL, NULL, '5c4ca0df-fe5e-4582-8e9e-e290e1ed8efe', 'true', NULL);
 
 --
 -- Tabellenstruktur für Tabelle `Configuration_Group`
@@ -305,6 +306,8 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
   `firstname` varchar(255) NOT NULL,
   `lastname` varchar(255) NOT NULL,
   `is_enabled` tinyint(1) NOT NULL,
+  `use_pin` tinyint(1),
+  `pin` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
@@ -312,9 +315,9 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
 -- Daten für Tabelle `acl_sid`
 --
 
-INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`) VALUES
-(1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1),
-(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1);
+INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`, `use_pin`, `pin`) VALUES
+(1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1, 0, NULL),
+(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1, 0, NULL);
 
 
 -- --------------------------------------------------------
@@ -399,6 +402,18 @@ CREATE TABLE IF NOT EXISTS `invitation_acl_object_identity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table for the quick pin login
+--
+CREATE TABLE IF NOT EXISTS `pin_authorization` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `sid` bigint(20) NOT NULL,
+  `created_on` datetime DEFAULT CURDATE() NOT NULL,
+  `remaining_tries` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `foreign_fk_6` (`sid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+--
 -- Constraints der exportierten Tabellen
 --
 
@@ -414,6 +429,12 @@ ALTER TABLE `acl_entry`
   ADD CONSTRAINT `foreign_fk_4` FOREIGN KEY (`acl_object_identity`) REFERENCES `acl_object_identity` (`id`);
 ALTER TABLE `acl_entry`
   ADD CONSTRAINT `foreign_fk_5` FOREIGN KEY (`sid`) REFERENCES `acl_sid` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `pin_authorization`
+--
+ALTER TABLE `pin_authorization`
+  ADD CONSTRAINT `foreign_fk_6` FOREIGN KEY (`sid`) REFERENCES `acl_sid` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints der Tabelle `acl_object_identity`
@@ -488,7 +509,7 @@ INSERT INTO `SEQUENCE` (`SEQ_NAME`, `SEQ_COUNT`) VALUES
 -- User permissions for mopat databases
 --
 
-GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER ON `moPat\_test` . * TO 'mopat'@'localhost';
-GRANT SELECT , INSERT , UPDATE , DELETE ON `moPat\_user\_test` . * TO 'mopat'@'localhost';
-GRANT SELECT , INSERT ON `moPat\_audit\_test`.* TO 'mopat'@'localhost';
-GRANT SELECT, UPDATE (SEQ_COUNT) ON `moPat_audit_test`.`SEQUENCE` TO 'mopat'@'localhost';
+GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER ON `moPat\_test` . * TO 'mopat'@'%';
+GRANT SELECT , INSERT , UPDATE , DELETE ON `moPat\_user\_test` . * TO 'mopat'@'%';
+GRANT SELECT , INSERT ON `moPat\_audit\_test`.* TO 'mopat'@'%';
+GRANT SELECT, UPDATE (SEQ_COUNT) ON `moPat_audit_test`.`SEQUENCE` TO 'mopat'@'%';
