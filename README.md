@@ -11,7 +11,7 @@ Currently MoPat supports the automatic export to the following data formats or s
 
 
 
-<img width="100%" src="mopat.svg">
+<img width="100%" src="img/mopat.svg">
 
 ## Documentation and Wiki
 We have a dedicated [GitHub Wiki](https://github.com/imi-ms/MoPat/wiki) that describes MoPats functions in detail.
@@ -150,6 +150,14 @@ MoPat makes use of Logback and SLF4J logging. The logging mechanism is configure
 When you encounter any errors, please look into the logs. If you think you encountered a bug, you can create a ticket and attach the error and debug logs. 
 
 **Beware, that in a productive setting, sensitive information could be stored in these files.**
+
+## Install MoPat on an iOS device
+To make the installation of MoPat as an iOS application easier, we have developed a shortcut, that automatically
+installs a profile to install MoPat as a webclip. If you know what you are doing, just use this link to install the
+shortcut: www.icloud.com/shortcuts/a4a954ef22d64d15a66a0d58b1808c4d
+
+We also have a step-by-step instruction for this with more information how to install and use MoPat in a productive 
+environment: [Webclip Installation Instructions](WEBCLIP_INSTALL.md) 
 
 ## Contributing
 Feel free to submit reasonable changes like bugfixes or functional additions! For major changes, please open an issue first to discuss what you would like to change.
