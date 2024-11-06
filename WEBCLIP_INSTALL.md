@@ -38,9 +38,9 @@ the name which should be shown on your Home Page: </h4>
 ![webclip step 6](./img/webclip_06.png)
 
 <h4>and the URL to access your local MoPat installation. 
-<br/>**Important: For newer iOS versions, Apple only allows webclips to 
+<br/>Important: For newer iOS versions, Apple only allows webclips to 
 open in fullscreen, if the URL in the webclip is the same as the final URL. MoPat performs an immediate redirect to the
-login page, so you need to enter the URL of the login page: `https://<YOURMOPATDOMAIN>/mobile/user/login`**</h4>
+login page, so you need to enter the URL of the login page: https://<YOURMOPATDOMAIN>/mobile/user/login</h4>
 
 ![webclip step 7](./img/webclip_07.png)
 
@@ -94,7 +94,7 @@ proceed.</h4>
 ![webclip step 18](./img/webclip_18.png)
 
 ### Troubleshooting
-<h4>*I can see the login page, but it opens in my browser instead of its own app*<br/></h4>
+<h4>I can see the login page, but it opens in my browser instead of its own app<br/></h4>
 
 This can happen if you entered a faulty URL during the installation. If a redirect happens upon opening our new app, 
 Apple will identify this as a security risk and will therefore open it in a browser instead, so users can see the
@@ -102,7 +102,7 @@ page they were redirected to. Make sure you entered the URL correctly: `https://
 Uninstall the Profile from your settings and try again. 
 <br/>
 
-<h4>*The App shows up on my Home Screen, but when I open it, I cannot see MoPat*<br/></h4>
+<h4>The App shows up on my Home Screen, but when I open it, I cannot see MoPat<br/></h4>
 
 This could have multiple reasons. Maybe you entered a faulty URL in the setup process. It could also be, that your 
 device is not able to access the server, where MoPat is running. To make sure, that this is possible, open the URL
