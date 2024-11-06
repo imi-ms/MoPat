@@ -1,0 +1,7 @@
+{
+    "name": "MoPat",
+    "short_name": "MoPat",
+    "start_url": "/",
+    "scope": "/",
+    "display": "fullscreen"
+}

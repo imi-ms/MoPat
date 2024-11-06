@@ -36,8 +36,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import jakarta.validation.Valid;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -117,39 +119,31 @@ public class BundleController {
      * @return Returns all {@link Questionnaire Questionnaire} objects that are not already present
      * in the bundle with the given id.
      */
-    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long id) {
-        BundleDTO bundleDTO = getBundleDTO(id);
+    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
+        // Fetch questionnaires not linked with the given bundle
+        List<Questionnaire> availableQuestionnaires = bundleDao.getAvailableQuestionnairesForBundle(bundleId);
 
-        List<QuestionnaireDTO> questionnaireDTOs = new ArrayList<>();
-
-        // Add questionnaires not already assigned to this bundle
-        outerLoop:
-        for (Questionnaire questionnaire : questionnaireDao.getAllElements()) {
-            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = bundleDTO.getBundleQuestionnaireDTOs();
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleQuestionnaireDTOs) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                          .equals(questionnaireService.toQuestionnaireDTO(questionnaire))) {
-                    continue outerLoop;
-                }
-            }
-            // Add questionnaires, which have at least one question attached
-            if (!questionnaire.getQuestions()
-                              .isEmpty()) {
-                QuestionnaireDTO questionnaireDTO =
-                        questionnaireService.toQuestionnaireDTO(questionnaire);
-                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
-                questionnaireDTOs.add(questionnaireDTO);
-            }
+        // Collect IDs for fetching scores
+        Set<Long> questionnaireIds = availableQuestionnaires.stream().map(Questionnaire::getId).collect(Collectors.toSet());
+        Set<Long> questionnairesWithScores = new HashSet<>();
+        if (!questionnaireIds.isEmpty()) {
+            questionnairesWithScores.addAll(
+                scoreDao.findQuestionnairesWithScores(
+                    new ArrayList<>(questionnaireIds)
+                )
+            );
         }
 
-        // Sort by name
-        questionnaireDTOs.sort(new Comparator<QuestionnaireDTO>() {
-            @Override
-            public int compare(final QuestionnaireDTO o1, final QuestionnaireDTO o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return questionnaireDTOs;
+        // Map to DTO and sort
+        return availableQuestionnaires.stream()
+            .filter(q -> !q.getQuestions().isEmpty())
+            .map(q -> {
+                QuestionnaireDTO dto = questionnaireService.toQuestionnaireDTO(q);
+                dto.setHasScores(questionnairesWithScores.contains(q.getId()));
+                return dto;
+            })
+            .sorted(Comparator.comparing(QuestionnaireDTO::getName, String.CASE_INSENSITIVE_ORDER))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -162,9 +156,16 @@ public class BundleController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listBundles(final Model model) {
         List<Bundle> bundles = bundleDao.getAllElements();
+        Set<Long> bundleIds = bundleService.getUniqueQuestionnaireIds(bundles);
+        Set<Long> targetBundles = conditionDao.findConditionTargetIds(
+            bundleIds.stream().toList(),
+            "Bundle"
+        );
+
         for (Bundle bundle : bundles) {
-            bundle.setHasConditions(conditionDao.isConditionTarget(bundle));
+            bundle.setHasConditions(targetBundles.contains(bundle.getId()));
         }
+
         model.addAttribute("allBundles", bundles);
         return "bundle/list";
     }
