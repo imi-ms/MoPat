@@ -11,7 +11,7 @@ Currently MoPat supports the automatic export to the following data formats or s
 
 
 
-<img width="100%" src="mopat.svg">
+<img width="100%" src="img/mopat.svg">
 
 ## Documentation and Wiki
 We have a dedicated [GitHub Wiki](https://github.com/imi-ms/MoPat/wiki) that describes MoPats functions in detail.
