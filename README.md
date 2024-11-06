@@ -126,7 +126,7 @@ installs a profile to install MoPat as a webclip. If you know what you are doing
 shortcut: www.icloud.com/shortcuts/a4a954ef22d64d15a66a0d58b1808c4d
 
 We also have a step-by-step instruction for this with more information how to install and use MoPat in a productive 
-environment: [Webclip Installation Instructions](WEBCLIP_INSTALL) 
+environment: [Webclip Installation Instructions](WEBCLIP_INSTALL.md) 
 
 ## Contributing
 Feel free to submit reasonable changes like bugfixes or functional additions! For major changes, please open an issue first to discuss what you would like to change.
