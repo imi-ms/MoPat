@@ -1,54 +1,102 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.config.AppConfig;
+import de.imi.mopat.config.ApplicationSecurityConfig;
+import de.imi.mopat.config.MvcWebApplicationInitializer;
+import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.dao.*;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTOTest;
-import de.imi.mopat.model.score.*;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.utils.Helper;
 import de.imi.mopat.utils.MultipartFileUtils;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
-import java.lang.reflect.Field;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {AppConfig.class, ApplicationSecurityConfig.class,
+        MvcWebApplicationInitializer.class, PersistenceConfig.class})
+@TestPropertySource(locations = {"classpath:mopat-test.properties"})
+@WebAppConfiguration
 public class QuestionnaireServiceTest {
 
-    private Random random;
+    @Autowired
+    private ConfigurationDao configurationDao;
+
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+
+    @Autowired
+    private ExportTemplateDao exportTemplateDao;
+
+    @Autowired
+    private ResponseDao responseDao;
+
+    @Autowired
+    private AnswerDao answerDao;
+
+    @Autowired
+    private QuestionDao questionDao;
+
+    @Autowired
+    private BundleDao bundleDao;
+
+    @Autowired
+    private EncounterDao encounterDao;
+
+    @Autowired
+    private ConfigurationGroupDao configurationGroupDao;
+
+    @Autowired
+    private QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
+
+    @Autowired
+    private ScoreDao scoreDao;
+
+    @Autowired
+    private ExpressionDao expressionDao;
 
     @Mock
     private MessageSource messageSource;
-
-    @Mock
-    private ConfigurationDao configurationDao;
-
-    @Mock
-    private QuestionnaireDao questionnaireDao;
 
     @Mock
     private QuestionService questionService;
@@ -77,111 +125,36 @@ public class QuestionnaireServiceTest {
     @Mock
     private FileUtils fileUtils;
 
+    @Autowired
     @InjectMocks
     private QuestionnaireService questionnaireService;
-
-    @Mock
-    private ExportTemplateDao exportTemplateDao;
     
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    // Helper method to create a Score object with a BinaryExpression
-    private Score createValidScoreWithBinaryExpression(Questionnaire questionnaire) {
-        Score score = new Score();
-        score.setName("Test Binary Score");
-        score.setQuestionnaire(questionnaire);
-
-        // Create and set a BinaryExpression
-        BinaryExpression binaryExpression = createValidBinaryExpression();
-        score.setExpression(binaryExpression);
-
-        return score;
-    }
-
-    // Helper method to create a Score object with a MultiExpression
-    private Score createValidScoreWithMultiExpression(Questionnaire questionnaire) {
-        Score score = new Score();
-        score.setName("Test Multi Score");
-        score.setQuestionnaire(questionnaire);
-
-        MultiExpression multiExpression = createValidMultiExpression();
-        score.setExpression(multiExpression);
-
-        return score;
-    }
-
-    // Helper method to create a BinaryExpression
-    private BinaryExpression createValidBinaryExpression() {
-        BinaryExpression expression = new BinaryExpression();
-        BinaryOperator binaryOperator = mock(BinaryOperator.class);
-        expression.setOperator(binaryOperator);
-
-        UnaryExpression childExpression1 = createValidUnaryExpression();
-        UnaryExpression childExpression2 = createValidUnaryExpression();
-
-        List<Expression> expressions = new ArrayList<>();
-        expressions.add(childExpression1);
-        expressions.add(childExpression2);
-
-        expression.setExpressions(expressions);
-
-        return expression;
-    }
-
-    // Helper method to create a MultiExpression
-    private MultiExpression createValidMultiExpression() {
-        MultiExpression expression = new MultiExpression();
-        MultiOperator multiOperator = mock(MultiOperator.class);
-        expression.setOperator(multiOperator);
-
-        UnaryExpression childExpression1 = createValidUnaryExpression();
-        UnaryExpression childExpression2 = createValidUnaryExpression();
-
-        List<Expression> expressions = new ArrayList<>();
-        expressions.add(childExpression1);
-        expressions.add(childExpression2);
-
-        expression.setExpressions(expressions);
-
-        return expression;
-    }
-
-    // Helper method to create a UnaryExpression
-    private UnaryExpression createValidUnaryExpression() {
-        UnaryExpression expression = new UnaryExpression();
-        UnaryOperator unaryOperator = mock(UnaryOperator.class);
-        expression.setOperator(unaryOperator);
-        expression.setQuestion(new Question());
-        return expression;
-    }
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
+        SecurityContextHolder.setContext(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("testUser", "password", List.of(new SimpleGrantedAuthority("ROLE_MODERATOR")))));
+    }
 
-        random = new Random();
+    // Helper method to create and persist Questionnaire
+    private Questionnaire createAndPersistQuestionnaire() {
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaireDao.merge(questionnaire);
+        return questionnaire;
+    }
 
-        // Mocking the behavior of the merge method to set an ID using a custom Answer
-        doAnswer(invocation -> {
-            Questionnaire questionnaire = invocation.getArgument(0);
-            if (questionnaire.getId() == null) {
-                Field idField = Questionnaire.class.getDeclaredField("id");
-                idField.setAccessible(true);
-                idField.set(questionnaire, random.nextLong());
-            }
-            return null;
-        }).when(questionnaireDao).merge(any(Questionnaire.class));
-
-        doAnswer(invocation -> {
-            ExportTemplate exportTemplate = invocation.getArgument(0);
-            if (exportTemplate.getId() == null) {
-                Field idField = ExportTemplate.class.getDeclaredField("id");
-                idField.setAccessible(true);
-                idField.set(exportTemplate, random.nextLong());
-            }
-            return null;
-        }).when(exportTemplateDao).merge(any(ExportTemplate.class));
+    // Helper method to create and persist ExportTemplate
+    private ExportTemplate createAndPersistExportTemplate(String name, String filename, ConfigurationGroup configGroup, Questionnaire questionnaire) {
+        ExportTemplate exportTemplate = ExportTemplateTest.getNewValidExportTemplate();
+        exportTemplate.setName(name);
+        exportTemplate.setFilename(filename);
+        exportTemplate.setConfigurationGroup(configGroup);
+        exportTemplate.setQuestionnaire(questionnaire);
+        exportTemplateDao.merge(exportTemplate);
+        return exportTemplate;
     }
 
     /**
@@ -292,7 +265,6 @@ public class QuestionnaireServiceTest {
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
         Long validUserId = Helper.generatePositiveNonZeroLong();
 
-        when(questionnaireDao.getElementById(anyLong())).thenReturn(null);
         when(questionnaireFactory.createQuestionnaire(
                 anyString(),
                 anyString(),
@@ -308,9 +280,10 @@ public class QuestionnaireServiceTest {
         );
 
         // Assert
-        verify(questionnaireDao, times(2)).merge(newQuestionnaire);
         verify(questionService, times(0)).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class));
         Assert.assertNotNull("The created questionnaire should not be null", createdQuestionnaire);
+
+        questionnaireDao.remove(createdQuestionnaire);
     }
 
     /**
@@ -318,15 +291,15 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and admin can edit the questionnaire without executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() throws Exception {
+    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() {
         // Arrange
+        Questionnaire newValidQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(newValidQuestionnaire.getId());
         Long validUserId = Helper.generatePositiveNonZeroLong();
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
-
         when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
-        when(questionnaireDao.getElementById(any())).thenReturn(modifiableQuestionnaire);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(modifiableQuestionnaire).getId();
 
@@ -339,8 +312,9 @@ public class QuestionnaireServiceTest {
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
-        verify(questionnaireDao, times(1)).merge(modifiableQuestionnaire); // Ensure the existing questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, it's an update
+
+        questionnaireDao.remove(newValidQuestionnaire);
     }
 
     /**
@@ -350,26 +324,31 @@ public class QuestionnaireServiceTest {
     @Test
     public void testSaveOrUpdateQuestionnaire_AdminModeratorCantEditQuestionnaireWithExecutedSurvey() {
         // Arrange
-        QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long userId = Helper.generatePositiveNonZeroLong();
+        Questionnaire existingQUestionnaire = createAndPersistQuestionnaire();
+        Question testQuestion = QuestionTest.getNewValidQuestion(existingQUestionnaire);
+        questionDao.merge(testQuestion);
+        SliderFreetextAnswer testAnswer = SliderFreetextAnswerTest.getNewValidSliderFreetextAnswer();
+        testAnswer.setQuestion(testQuestion);
+        answerDao.merge(testAnswer);
+        Bundle testBundle = BundleTest.getNewValidBundle();
+        bundleDao.merge(testBundle);
+        Encounter testEncounter = EncounterTest.getNewValidEncounter(testBundle);
+        encounterDao.merge(testEncounter);
+        Response testResponse = new Response(testAnswer, testEncounter);
+        responseDao.merge(testResponse);
+        questionnaireDao.merge(existingQUestionnaire);
 
-        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        Questionnaire newQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        doReturn(Helper.generatePositiveNonZeroLong()).when(newQuestionnaire).getId();
+        QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaireDTO.setId(existingQUestionnaire.getId());
+        Long userId = Helper.generatePositiveNonZeroLong();
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
         when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
-        when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(newQuestionnaire);
-        doReturn(false).when(existingQuestionnaire).isModifiable();
-        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
-        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
-            .thenReturn(newQuestionnaire);
-        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class))).thenReturn(newQuestionnaire);
+        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class))).thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -380,9 +359,13 @@ public class QuestionnaireServiceTest {
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
-        verify(questionnaireDao, never()).merge(existingQuestionnaire); // Ensure merge is not called on the specific questionnaire object (no update)
-        verify(questionnaireDao, times(2)).merge(any()); // Ensure a questionnaire is merged
         verify(questionService, atLeastOnce()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure questions are copied, implying it's an update
+
+        responseDao.remove(testResponse);
+        encounterDao.remove(testEncounter);
+        bundleDao.remove(testBundle);
+        questionnaireDao.remove(existingQUestionnaire);
+        questionnaireDao.remove(result);
     }
 
     /**
@@ -390,40 +373,49 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor cannot edit the questionnaire if it has executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_EditorCannotEditWithExecutedSurveys() throws Exception {
+    public void testSaveOrUpdateQuestionnaire_EditorCannotEditWithExecutedSurveys() {
         // Arrange
-        QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Long validUserId = Helper.generatePositiveNonZeroLong();
+        Questionnaire existingQUestionnaire = createAndPersistQuestionnaire();
+        Question existingQuestion = QuestionTest.getNewValidQuestion(existingQUestionnaire);
+        questionDao.merge(existingQuestion);
+        SliderFreetextAnswer existingAnswer = SliderFreetextAnswerTest.getNewValidSliderFreetextAnswer();
+        existingAnswer.setQuestion(existingQuestion);
+        answerDao.merge(existingAnswer);
+        Bundle existingBundle = BundleTest.getNewValidBundle();
+        bundleDao.merge(existingBundle);
+        Encounter testEncounter = EncounterTest.getNewValidEncounter(existingBundle);
+        encounterDao.merge(testEncounter);
+        Response testResponse = new Response(existingAnswer, testEncounter);
+        responseDao.merge(testResponse);
+        questionnaireDao.merge(existingQUestionnaire);
 
-        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        Questionnaire copiedQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-
+        QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaireDTO.setId(existingQUestionnaire.getId());
+        Long userId = Helper.generatePositiveNonZeroLong();
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
-        when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
-        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
-        doReturn(false).when(existingQuestionnaire).isModifiable();
-        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(newQuestionnaire);
 
         // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
-        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
-            .thenReturn(copiedQuestionnaire);
-        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class))).thenReturn(newQuestionnaire);
+        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class))).thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
-                validQuestionnaireDTO,
+                questionnaireDTO,
                 MultipartFileUtils.getEmptyLogo(),
-                validUserId
+                userId
         );
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
-        verify(questionnaireDao, never()).merge(existingQuestionnaire); // Ensure merge is not called on the specific questionnaire object (no update)
-        verify(questionnaireDao, times(2)).merge(copiedQuestionnaire); // Ensure a new questionnaire is merged
-        verify(questionService, times(1)).duplicateQuestionsToNewQuestionnaire(anySet(), eq(copiedQuestionnaire)); // Ensure questions are copied to the new questionnaire
+        verify(questionService, atLeastOnce()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure questions are copied, implying it's an update
+
+        responseDao.remove(testResponse);
+        encounterDao.remove(testEncounter);
+        bundleDao.remove(existingBundle);
+        questionnaireDao.remove(existingQUestionnaire);
+        questionnaireDao.remove(result);
     }
 
     /**
@@ -433,7 +425,9 @@ public class QuestionnaireServiceTest {
     @Test
     public void testSaveOrUpdateQuestionnaire_EditorCannotEditIfPartOfEnabledBundle() throws Exception {
         // Arrange
+        Questionnaire testQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(testQuestionnaire.getId());
         Long validUserId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
@@ -445,19 +439,13 @@ public class QuestionnaireServiceTest {
 
         when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
-        when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
 
         // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
-        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
-            .thenReturn(copiedQuestionnaire);
-        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
-
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class))).thenReturn(copiedQuestionnaire);
+        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class))).thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -468,9 +456,11 @@ public class QuestionnaireServiceTest {
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
-        verify(questionnaireDao, never()).merge(existingQuestionnaire); // Ensure merge is not called on the specific questionnaire object (no update)
-        verify(questionnaireDao, times(2)).merge(copiedQuestionnaire); // Ensure a new questionnaire is merged
         verify(questionService, times(1)).duplicateQuestionsToNewQuestionnaire(anySet(), eq(copiedQuestionnaire)); // Ensure questions are copied to the new questionnaire
+
+        questionnaireDao.remove(testQuestionnaire);
+        questionnaireDao.remove(copiedQuestionnaire);
+
     }
 
     /**
@@ -478,9 +468,11 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor can edit the questionnaire if it does not belong to a bundle that is enabled
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_EditorCanEditIfNotPartOfEnabledBundle() throws Exception {
+    public void testSaveOrUpdateQuestionnaire_EditorCanEditIfNotPartOfEnabledBundle() {
         // Arrange
+        Questionnaire testQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(testQuestionnaire.getId());
         Long validUserId = Helper.generatePositiveNonZeroLong();
 
         Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
@@ -491,11 +483,8 @@ public class QuestionnaireServiceTest {
         newValidBundleQuestionnaire.setIsEnabled(false);
         List<BundleQuestionnaire> bundleQuestionnaireList = List.of(newValidBundleQuestionnaire);
 
-        // Simulating all bundles are not enabled
         when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
-
         when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
-        when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
         doReturn(true).when(existingQuestionnaire).isModifiable();
         doReturn(1L).when(existingQuestionnaire).getId();
@@ -509,47 +498,10 @@ public class QuestionnaireServiceTest {
 
         // Assert
         Assert.assertNotNull("The updated questionnaire should not be null", result);
-        verify(questionnaireDao, times(1)).merge(any(Questionnaire.class)); // Ensure the existing questionnaire is merged
-        verify(questionnaireDao, never()).merge(copiedQuestionnaire); // Ensure no new questionnaire is merged
         verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, implying it's an update
-    }
 
-    @Test
-    public void testSaveOrUpdateQuestionnaire_NewQuestionnaireIdNull() {
-        // Arrange
-        Long userId = Helper.generatePositiveNonZeroLong();
-        QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
-        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-        Questionnaire newQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
-
-        doReturn(existingQuestionnaire).when(questionnaireDao).getElementById(anyLong());
-        doReturn(null).when(newQuestionnaire).getId();
-        doReturn(newQuestionnaire).when(questionnaireFactory).createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean());
-        // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
-        
-        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
-            .thenReturn(existingQuestionnaire);
-        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
-        
-        // Assert
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            // Act
-            questionnaireService.saveOrUpdateQuestionnaire(
-                questionnaireDTO,
-                MultipartFileUtils.getEmptyLogo(),
-                userId
-            );
-        });
-        
-        String expectedMessage = "The new questionnaire must be persisted before saving versioning information.";
-        String actualMessage = exception.getMessage();
-        
-        assertTrue(actualMessage.contains(expectedMessage));
-        
-        
+        questionnaireDao.remove(testQuestionnaire);
+        questionnaireDao.remove(copiedQuestionnaire);
     }
 
     /**
@@ -581,7 +533,6 @@ public class QuestionnaireServiceTest {
      */
     @Test
     public void testGetQuestionnaireDTOById_NotFound() {
-        when(questionnaireDao.getElementById(anyLong())).thenReturn(null);
 
         Optional<QuestionnaireDTO> result = questionnaireService.getQuestionnaireDTOById(1L);
         Assert.assertFalse("The result should not be present for a non-existent ID", result.isPresent());
@@ -593,16 +544,18 @@ public class QuestionnaireServiceTest {
      */
     @Test
     public void testGetQuestionnaireDTOById_Found() {
-        long validQuestionnaireId = Helper.generatePositiveNonZeroLong();
-        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        Questionnaire existingQuestionnaire = createAndPersistQuestionnaire();
+
         QuestionnaireDTO expectedQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
 
-        when(questionnaireDao.getElementById(validQuestionnaireId)).thenReturn(questionnaire);
-        when(questionnaireDTOMapper.apply(questionnaire)).thenReturn(expectedQuestionnaireDTO);
+        when(questionnaireDTOMapper.apply(existingQuestionnaire))
+                .thenReturn(expectedQuestionnaireDTO);
 
-        Optional<QuestionnaireDTO> result = questionnaireService.getQuestionnaireDTOById(validQuestionnaireId);
+        Optional<QuestionnaireDTO> result = questionnaireService.getQuestionnaireDTOById(existingQuestionnaire.getId());
         assertTrue("The result should be present for a valid ID", result.isPresent());
-        Assert.assertEquals("The result should match the expected QuestionnaireDTO", expectedQuestionnaireDTO, result.get());
+        assertEquals("The result should match the expected QuestionnaireDTO", expectedQuestionnaireDTO, result.get());
+
+        questionnaireDao.remove(existingQuestionnaire);
     }
 
     /**
@@ -634,14 +587,14 @@ public class QuestionnaireServiceTest {
 
         // Assert
         // Verify that unnecessary HTML tags are removed from the welcome text map
-        Assert.assertEquals("The English welcome text should be empty", "", testQuestionnaireDTO.getLocalizedWelcomeText().get("en"));
-        Assert.assertEquals("The German welcome text should be empty", "", testQuestionnaireDTO.getLocalizedWelcomeText().get("de"));
-        Assert.assertEquals("The Dutch welcome text should be 'Hoi'", "Hoi", testQuestionnaireDTO.getLocalizedWelcomeText().get("nl"));
+        assertEquals("The English welcome text should be empty", "", testQuestionnaireDTO.getLocalizedWelcomeText().get("en"));
+        assertEquals("The German welcome text should be empty", "", testQuestionnaireDTO.getLocalizedWelcomeText().get("de"));
+        assertEquals("The Dutch welcome text should be 'Hoi'", "Hoi", testQuestionnaireDTO.getLocalizedWelcomeText().get("nl"));
 
         // Verify that unnecessary HTML tags are removed from the final text map
-        Assert.assertEquals("The English final text should be 'Thanks!'", "Thanks!", testQuestionnaireDTO.getLocalizedFinalText().get("en"));
-        Assert.assertEquals("The German final text should be empty", "", testQuestionnaireDTO.getLocalizedFinalText().get("de"));
-        Assert.assertEquals("The Dutch final text should be empty", "", testQuestionnaireDTO.getLocalizedFinalText().get("nl"));
+        assertEquals("The English final text should be 'Thanks!'", "Thanks!", testQuestionnaireDTO.getLocalizedFinalText().get("en"));
+        assertEquals("The German final text should be empty", "", testQuestionnaireDTO.getLocalizedFinalText().get("de"));
+        assertEquals("The Dutch final text should be empty", "", testQuestionnaireDTO.getLocalizedFinalText().get("nl"));
     }
 
     /**
@@ -651,23 +604,19 @@ public class QuestionnaireServiceTest {
     @Test
     public void testUploadNewLogo() {
         // Arrange
-        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire existingQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaireDTO.setId(existingQuestionnaire.getId());
         Long userId = Helper.generatePositiveNonZeroLong();
-        Questionnaire newQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
-        when(questionnaireDao.getElementById(any())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean()))
                 .thenReturn(newQuestionnaire);
-        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
-
         // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
         when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
-            .thenReturn(newQuestionnaire);
+                .thenReturn(newQuestionnaire);
         when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+                .thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -678,9 +627,10 @@ public class QuestionnaireServiceTest {
 
         // Assert
         Assert.assertNotNull("The created questionnaire should not be null", result);
-        Assert.assertEquals("The logo should be set correctly", "logo.png", result.getLogo());
-        File uploadDir = new File(configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/" + newQuestionnaire.getId());
-        assertTrue("The upload directory should exist", uploadDir.exists());
+        assertEquals("The logo should be set correctly", "logo.png", result.getLogo());
+
+        questionnaireDao.remove(existingQuestionnaire);
+        questionnaireDao.remove(result);
     }
 
     /**
@@ -690,25 +640,21 @@ public class QuestionnaireServiceTest {
     @Test
     public void testDeleteExistingLogo(){
         // Arrange
-        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire existingQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaireDTO.setId(existingQuestionnaire.getId());
         questionnaireDTO.setDeleteLogo(true);
         Long userId = Helper.generatePositiveNonZeroLong();
         existingQuestionnaire.setLogo(MultipartFileUtils.VALID_LOGO_FILENAME);
 
-        when(questionnaireDao.getElementById(anyLong())).thenReturn(existingQuestionnaire);
         when(questionnaireFactory.createQuestionnaire(anyString(), anyString(), anyLong(), anyBoolean()))
                 .thenReturn(existingQuestionnaire);
-        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
-        doReturn(true).when(existingQuestionnaire).isOriginal();
 
         // Mock question duplication with empty maps
-        Map<Question, Question> emptyQuestionMap = Collections.emptyMap();
-        Map<Question, Map<Answer, Answer>> emptyOldQuestionToNewAnswerMap = Collections.emptyMap();
         when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)))
                 .thenReturn(existingQuestionnaire);
         when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class)))
-            .thenReturn(new MapHolder(emptyQuestionMap, emptyOldQuestionToNewAnswerMap));
+            .thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
 
         // Act
         Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
@@ -721,47 +667,59 @@ public class QuestionnaireServiceTest {
         Assert.assertNotNull("The updated questionnaire should not be null", result);
         Assert.assertNull("The logo should be null after deletion", result.getLogo());
 
-        //Assert.assertFalse("The old logo file should be deleted", deletedFile.exists());
+        questionnaireDao.remove(existingQuestionnaire);
     }
 
     @Test
     public void testCopyExportTemplates(){
         // Arrange
-        Set<ExportTemplate> exportTemplates = new HashSet<>();
-        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        ExportTemplate newExportTemplate1 = ExportTemplateTest.getNewValidExportTemplate();
-        ExportTemplate newExportTemplate2 = ExportTemplateTest.getNewValidExportTemplate();
-        ExportTemplate newExportTemplate3 = ExportTemplateTest.getNewValidExportTemplate();
-        newExportTemplate1.setFilename("test_test_test1");
-        newExportTemplate2.setFilename("test_test_test2");
-        newExportTemplate3.setFilename("test_test_test3");
-        exportTemplates.add(newExportTemplate1);
-        exportTemplates.add(newExportTemplate2);
-        exportTemplates.add(newExportTemplate3);
+        Questionnaire existingQuestionnaire = createAndPersistQuestionnaire();
+        Questionnaire newQuestionnaire = createAndPersistQuestionnaire();
 
-        when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn(anyString());
+        ConfigurationGroup configGroup = ConfigurationGroupTest.getNewValidConfigurationGroup();
+        configGroup.setName("TestConfigurationGroup");
+        configGroup.setPosition(1);
+        configGroup.setRepeating(false);
+        configGroup.setLabelMessageCode("TestMessageCode");
+        configurationGroupDao.merge(configGroup);
+
+        ExportTemplate newExportTemplate1 = createAndPersistExportTemplate("test_test_test1", "test1.json", configGroup, existingQuestionnaire);
+        ExportTemplate newExportTemplate2 = createAndPersistExportTemplate("test_test_test2", "test2.json", configGroup, existingQuestionnaire);
+        ExportTemplate newExportTemplate3 = createAndPersistExportTemplate("test_test_test3", "test3.json", configGroup, existingQuestionnaire);
+        Set<ExportTemplate> exportTemplates = new HashSet<>(List.of(newExportTemplate1, newExportTemplate2, newExportTemplate3));
+
+        when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn("TestGeneratedFileName");
 
         // Act
-
         Set<ExportTemplate> copiedExportTemplates = questionnaireService.copyExportTemplates(exportTemplates, newQuestionnaire);
 
         // Assert
-        Assert.assertEquals("The size for the original and the copied export templates fail to match", copiedExportTemplates.size(), exportTemplates.size());
-
+        assertEquals("The size for the original and the copied export templates fail to match", copiedExportTemplates.size(), exportTemplates.size());
         for(ExportTemplate exportTemplate : copiedExportTemplates){
-            Assert.assertEquals("Export templates are not equal",exportTemplate.getQuestionnaire(), newQuestionnaire);
+            assertEquals("Export templates are not equal",exportTemplate.getQuestionnaire(), newQuestionnaire);
         }
-
+        questionnaireDao.remove(existingQuestionnaire);
+        questionnaireDao.remove(newQuestionnaire);
     }
 
     @Test
     public void testCopyExportTemplates_success() throws Exception {
         // Arrange
-        Questionnaire validQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        ExportTemplate exportTemplateToCopy = ExportTemplateTest.getNewValidExportTemplate();
+        Questionnaire existingQuestionnaire = createAndPersistQuestionnaire();
+        Questionnaire newQuestionnaire = createAndPersistQuestionnaire();
 
+        ConfigurationGroup configGroup = ConfigurationGroupTest.getNewValidConfigurationGroup();
+        configGroup.setName("TestConfigurationGroup");
+        configGroup.setPosition(1);
+        configGroup.setRepeating(false);
+        configGroup.setLabelMessageCode("TestMessageCode");
+        configurationGroupDao.merge(configGroup);
+
+        ExportTemplate exportTemplateToCopy = createAndPersistExportTemplate("Template 1", "template1.json", configGroup, existingQuestionnaire);
         exportTemplateToCopy.setName("Template 1");
         exportTemplateToCopy.setFilename("template1.json");
+        exportTemplateToCopy.setConfigurationGroup(configGroup);
+        exportTemplateToCopy.setQuestionnaire(existingQuestionnaire);
 
         Set<ExportTemplate> templates = new HashSet<>();
         templates.add(exportTemplateToCopy);
@@ -769,33 +727,44 @@ public class QuestionnaireServiceTest {
         doNothing().when(fileUtils).copyTemplateFile(anyString(), anyString());
 
         // Act
-        Set<ExportTemplate> copiedTemplates = questionnaireService.copyExportTemplates(templates, validQuestionnaire);
+        Set<ExportTemplate> copiedTemplates = questionnaireService.copyExportTemplates(templates, newQuestionnaire);
 
         // Assert
-        Assert.assertEquals(1, copiedTemplates.size());
+        assertEquals(1, copiedTemplates.size());
         ExportTemplate copiedTemplate = copiedTemplates.iterator().next();
-        Assert.assertEquals("Template 1", copiedTemplate.getName());
-        Assert.assertEquals("template1_copy.json", copiedTemplate.getFilename());
+        assertEquals("Template 1", copiedTemplate.getName());
+        assertEquals("template1_copy.json", copiedTemplate.getFilename());
 
         // Verify
         verify(fileUtils).generateFileNameForExportTemplate(eq("template1.json"), anyLong());
         verify(fileUtils).copyTemplateFile("template1.json", "template1_copy.json");
-        verify(exportTemplateDao, times(2)).merge(any(ExportTemplate.class));
+
+
+        questionnaireDao.remove(existingQuestionnaire);
+        questionnaireDao.remove(newQuestionnaire);
+        configurationGroupDao.remove(configGroup);
     }
 
     @Test
     public void testCopyExportTemplates_failureOnFileCopy() throws Exception {
         // Arrange
+        Questionnaire existingQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaireDao.merge(existingQuestionnaire);
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        ExportTemplate templateToCopy = ExportTemplateTest.getNewValidExportTemplate();
-        templateToCopy.setName("Template 1");
-        templateToCopy.setFilename("template1.json");
-        Set<ExportTemplate> templatesToCopy = new HashSet<>();
-        templatesToCopy.add(templateToCopy);
+        questionnaireDao.merge(newQuestionnaire);
+
+        ConfigurationGroup newValidConfigurationGroup = ConfigurationGroupTest.getNewValidConfigurationGroup();
+        newValidConfigurationGroup.setName("TestConfigurationGroup");
+        newValidConfigurationGroup.setPosition(1);
+        newValidConfigurationGroup.setRepeating(false);
+        newValidConfigurationGroup.setLabelMessageCode("TestMessageCode");
+        configurationGroupDao.merge(newValidConfigurationGroup);
+
+        ExportTemplate templateToCopy = createAndPersistExportTemplate("Template 1", "template1.json", newValidConfigurationGroup, existingQuestionnaire);
+        Set<ExportTemplate> templatesToCopy = new HashSet<>(List.of(templateToCopy));
 
         when(fileUtils.generateFileNameForExportTemplate(anyString(), anyLong())).thenReturn("template1_copy.json");
         doThrow(new IOException("File copy failed")).when(fileUtils).copyTemplateFile(anyString(), anyString());
-        doNothing().when(exportTemplateDao).remove(any(ExportTemplate.class));
         doNothing().when(fileUtils).deleteExportTemplateFrom(anyString());
 
         // Act
@@ -807,7 +776,14 @@ public class QuestionnaireServiceTest {
         // Verify
         verify(fileUtils).generateFileNameForExportTemplate(eq("template1.json"), anyLong());
         verify(fileUtils).copyTemplateFile("template1.json", "template1_copy.json");
-        verify(exportTemplateDao).remove(any(ExportTemplate.class));  // Ensure failed template was removed
         verify(fileUtils).deleteExportTemplateFrom("template1_copy.json");
+
+        questionnaireDao.remove(existingQuestionnaire);
+        questionnaireDao.remove(newQuestionnaire);
+    }
+
+    @After
+    public void cleanUp() {
+        SecurityContextHolder.clearContext();
     }
 }

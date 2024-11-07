@@ -1,5 +1,10 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.config.AppConfig;
+import de.imi.mopat.config.ApplicationSecurityConfig;
+import de.imi.mopat.config.MvcWebApplicationInitializer;
+import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 
@@ -10,49 +15,50 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {AppConfig.class, ApplicationSecurityConfig.class,
+        MvcWebApplicationInitializer.class, PersistenceConfig.class})
+@TestPropertySource(locations = {"classpath:mopat-test.properties"})
+@WebAppConfiguration
 public class QuestionnaireVersionGroupServiceTest {
 
-    @Mock
-    private QuestionnaireVersionGroupDao mockQuestionnaireVersionGroupDao;
+    @Autowired
+    private QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
+
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
 
     @Mock
     private QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
 
+    @Autowired
     @InjectMocks
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
-
-    private List<QuestionnaireVersionGroup> questionnaireVersionGroups;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        questionnaireVersionGroups = new ArrayList<>();
-        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
-        doAnswer(invocation -> {
-            QuestionnaireVersionGroup group = invocation.getArgument(0);
-            if (!questionnaireVersionGroups.contains(group)) {
-                questionnaireVersionGroups.add(group);
-            }
-            return null;
-        }).when(mockQuestionnaireVersionGroupDao).merge(any(QuestionnaireVersionGroup.class));
+        SecurityContextHolder.setContext(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("testUser", "password",List.of(new SimpleGrantedAuthority("ROLE_MODERATOR")))));
     }
 
     @Test
@@ -62,7 +68,8 @@ public class QuestionnaireVersionGroupServiceTest {
 
         // Assert
         assertEquals("Test Group", createdGroup.getName());
-        verify(mockQuestionnaireVersionGroupDao, times(1)).merge(createdGroup);
+
+        questionnaireVersionGroupDao.remove(createdGroup);
     }
 
     @Test
@@ -78,58 +85,58 @@ public class QuestionnaireVersionGroupServiceTest {
 
         // Assert
         assertEquals("New Questionnaire", group.getName());
-        verify(mockQuestionnaireVersionGroupDao, times(1)).merge(group);
+
+        questionnaireVersionGroupDao.remove(group);
     }
 
     @Test
     public void testCreateOrFindQuestionnaireGroup_ExistingGroup() {
         // Arrange
-        QuestionnaireVersionGroupDTO existingGroupDTO = spy(new QuestionnaireVersionGroupDTO());
+        QuestionnaireVersionGroup existingGroup = new QuestionnaireVersionGroup();
+        existingGroup.setName("Existing Group");
+        questionnaireVersionGroupDao.merge(existingGroup);
+
+        QuestionnaireVersionGroupDTO existingGroupDTO = new QuestionnaireVersionGroupDTO();
+        existingGroupDTO.setGroupId(existingGroup.getId());
+
         QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
+        questionnaireDTO.setId(existingGroup.getId());
         questionnaireDTO.setName("Existing Questionnaire");
         questionnaireDTO.setQuestionnaireGroupDTO(existingGroupDTO);
-
-        doReturn(1L).when(existingGroupDTO).getGroupId();
-        QuestionnaireVersionGroup existingGroup = spy(new QuestionnaireVersionGroup());
-        doReturn(1L).when(existingGroup).getId();
-        existingGroup.setName("Existing Group");
-        questionnaireVersionGroups.add(existingGroup);
-
-        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
 
         // Act
         QuestionnaireVersionGroup group = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
 
         // Assert
         assertEquals(existingGroup.getId(), group.getId());
-        verify(mockQuestionnaireVersionGroupDao, times(0)).merge(any(QuestionnaireVersionGroup.class));
+
+        questionnaireVersionGroupDao.remove(existingGroup);
     }
 
     @Test
     public void testGetQuestionnaireGroupById() {
         // Arrange
-        QuestionnaireVersionGroup group = spy(new QuestionnaireVersionGroup());
-        doReturn(1L).when(group).getId();
+        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
 
-        questionnaireVersionGroups.add(group);
+        questionnaireVersionGroupDao.merge(group);
 
         // Act
-        Optional<QuestionnaireVersionGroup> result = questionnaireVersionGroupService.getQuestionnaireGroupById(1L);
+        Optional<QuestionnaireVersionGroup> result = questionnaireVersionGroupService.getQuestionnaireGroupById(group.getId());
 
         // Assert
         assertTrue(result.isPresent());
         assertEquals(group.getId(), result.get().getId());
+
+        questionnaireVersionGroupDao.remove(group);
+        questionnaireVersionGroupDao.remove(result.get());
     }
 
     @Test
     public void testFindGroupForQuestionnaire() {
         // Arrange
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
-        group.getQuestionnaires().add(questionnaire);
-        questionnaireVersionGroups.add(group);
-
-        when(mockQuestionnaireVersionGroupDao.getAllElements()).thenReturn(questionnaireVersionGroups);
+        questionnaireDao.merge(questionnaire);
+        QuestionnaireVersionGroup group = questionnaire.getQuestionnaireVersionGroup();
 
         // Act
         Optional<QuestionnaireVersionGroup> result = questionnaireVersionGroupService.findGroupForQuestionnaire(questionnaire);
@@ -137,6 +144,8 @@ public class QuestionnaireVersionGroupServiceTest {
         // Assert
         assertTrue(result.isPresent());
         assertEquals(group.getId(), result.get().getId());
+
+        questionnaireDao.remove(questionnaire);
     }
 
     @Test
@@ -151,12 +160,16 @@ public class QuestionnaireVersionGroupServiceTest {
         QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
         group.getQuestionnaires().add(questionnaire1);
         group.getQuestionnaires().add(questionnaire2);
-        questionnaireVersionGroups.add(group);
+        questionnaireDao.merge(questionnaire1);
+        questionnaireDao.merge(questionnaire2);
 
         // Act
         int maxVersion = questionnaireVersionGroupService.findMaxVersionInGroup(group);
 
         // Assert
         assertEquals(2, maxVersion);
+
+        questionnaireDao.remove(questionnaire1);
+        questionnaireDao.remove(questionnaire2);
     }
 }
