@@ -42,6 +42,12 @@
 					type="hidden"
 					th:value="${patientDataService}"
 				/>
+				<input
+					name="activeClinicId"
+					id="activeClinic"
+					type="hidden"
+					th:value="${activeClinic.id}"
+				/>
 				<!--/* if at least two services are activated show the radio button group */-->
 				<th:block
 					th:if="${(register and searchHIS) or (register and pseudonym) or (searchHIS and pseudonym)}"
@@ -500,6 +506,12 @@
 						type="hidden"
 						th:value="${patientDataService}"
 					/>
+					<input
+					name="activeClinicId"
+					id="activeClinic"
+					type="hidden"
+					th:value="${activeClinic.id}"
+					/>
 					<!--/* show enabled button if patient id found or his is disabled and a casenumber is given */-->
 					<th:block
 						th:if="${(not vars['emptyPatientID'] || not vars['emptyCaseNumber']) && not vars['hasAnyErrors']}"
@@ -856,18 +868,20 @@
 					var birthYear = /\d\d\d\d/.exec(birthDate);
 					birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
 				}
+				var clinicId=$('#activeClinic').val()
 
 				var pseudonym = PseudonymizationService.getPseudonym(
 					$("#firstname").val(),
 					$("#lastname").val(),
-					birthDate
+					birthDate,
+					clinicId
 				);
-				$("#caseNumber").val(pseudonym);
 
+				$("#caseNumber").val(pseudonym);
 				if (pseudonym) {
 					$.ajax({
 						url:
-							contextPath + "/mobile/survey/pseudonym?pseudonym=" + pseudonym,
+							contextPath + "/mobile/survey/pseudonym?pseudonym=" + pseudonym+"&activeClinicId="+clinicId,
 						type: "POST",
 						error: function (jqXHR, textStatus, errorThrown) {
 							alert(

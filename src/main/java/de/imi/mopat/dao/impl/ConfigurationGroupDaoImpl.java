@@ -30,6 +30,18 @@ public class ConfigurationGroupDaoImpl extends MoPatDaoImpl<ConfigurationGroup> 
     }
 
     @Override
+    public ConfigurationGroup getConfigurationGroupByName(final String name) {
+        try {
+            Query query = moPatEntityManager.createQuery("SELECT c FROM "
+                + "ConfigurationGroup c where c.name = :name");
+            query.setParameter("name", name);
+            return (ConfigurationGroup) query.getSingleResult();
+        } catch (PersistenceException e) {
+            return null;
+        }
+    }
+
+    @Override
     public boolean isConfigurationGroupDeletable(final Long configurationGroupId) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
             "SELECT count(c) FROM EncounterExportTemplate c WHERE c"

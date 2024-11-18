@@ -79,6 +79,9 @@ public class ClinicConfiguration implements Serializable {
     @Column(name = "update_method", nullable = true)
     private String updateMethod;
 
+    @Column(name = "mapped_configuration_group", nullable = true)
+    private String mappedConfigurationGroup;
+
     @OneToMany(mappedBy = "parent", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @CascadeOnDelete
     private List<ClinicConfiguration> children = null;
@@ -118,6 +121,7 @@ public class ClinicConfiguration implements Serializable {
         clinicConfigurationDTO.setTestMethod(this.getTestMethod());
         clinicConfigurationDTO.setUpdateMethod(this.getUpdateMethod());
         clinicConfigurationDTO.setPosition(this.getPosition());
+        clinicConfigurationDTO.setMappedConfigurationGroup(this.getMappedConfigurationGroup());
 
         //If parent not null set the DTO's parent
         if (this.parent != null) {
@@ -328,4 +332,25 @@ public class ClinicConfiguration implements Serializable {
         assert position > 0 : "The given position was zero or less";
         this.position = position;
     }
+
+    /**
+     * Returns the mappedConfigurationGroup.
+     *
+     * @return The current mappedConfigurationGroup. Might be
+     * <code>null</code>.
+     */
+    public String getMappedConfigurationGroup() {
+        return mappedConfigurationGroup;
+    }
+
+    /**
+     * Sets the mappedConfigurationGroup for the current ClinicConfiguration object.
+     *
+     * @param mappedConfigurationGroup The mapped configuration group from global config.
+     */
+    public void setMappedConfigurationGroup(String mappedConfigurationGroup) {
+        this.mappedConfigurationGroup = mappedConfigurationGroup;
+    }
+
+
 }

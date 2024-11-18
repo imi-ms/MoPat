@@ -277,8 +277,8 @@ public class ApplicationSecurityConfig {
         RoleBasedAuthenticationSuccessHandler roleBasedAuthenticationSuccessHandler = new RoleBasedAuthenticationSuccessHandler();
 
         roleBasedAuthenticationSuccessHandler.setRoleUrlMap(
-            Maps.of("ROLE_ADMIN", "/admin/index", "ROLE_ENCOUNTERMANAGER", "/mobile/survey/index",
-                "ROLE_USER", "/mobile/survey/index"));
+            Maps.of("ROLE_ADMIN", "/admin/index", "ROLE_ENCOUNTERMANAGER", "/mobile/survey/clinicSelect",
+                "ROLE_USER", "/mobile/survey/clinicSelect"));
         return roleBasedAuthenticationSuccessHandler;
     }
 

@@ -52,12 +52,12 @@
 
 				<div class="accordion-item">
 					<h2 class="accordion-header" id="headingOne">
-					  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+					  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
 						<th:block
 						th:text="${messages.get(#locale, 'clinic.heading.clinicConfiguration', 'Clinic Configuration')}"
 					/>					  </button>
 					</h2>
-					<div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+					<div id="collapseOne" class="accordion-collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
 						<ul class="list-group mb-4">
 							<!--/* Loop through all configuration to show them */-->
 							<th:block

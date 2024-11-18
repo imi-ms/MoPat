@@ -1,7 +1,8 @@
 package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
-import de.imi.mopat.model.ClinicConfigurationMapping;
+import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.model.Configuration;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
     @Autowired
     private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
 
+    @Autowired
+    private ConfigurationDao configurationDao;
+
     private Long clinicId;
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
@@ -28,6 +32,7 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
     private final String className = this.getClass().getName();
 
     public final String usePatientDataLookupProperty = "usePatientDataLookup";
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
     public final String patientDataRetrieverClassProperty = "patientDataRetrieverClass";
 
     public ClinicPatientDataRetrieverFactoryBean() {
@@ -95,9 +100,9 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
     }
 
     private String getPatientRetrieverClass(Long clinicId) {
-        ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getConfigurationByAttributeAndClass(
-            clinicId, patientDataRetrieverClassProperty, className);
-        return clinicConfigurationMapping.getValue();
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinicId, patientDataRetrieverClassProperty, className, usePatientDataLookupGroupName);
+        return configuration.getValue();
     }
 
     private void setClinicId(Long clinicId) {

@@ -15,6 +15,7 @@ import ca.uhn.hl7v2.model.v22.segment.QRD;
 import ca.uhn.hl7v2.parser.PipeParser;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.Configuration;
@@ -58,6 +59,10 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     private final String className = this.getClass().getName();
     private final String hostnameProperty = "HL7v22PatientInformationRetrieverHostname";
     private final String portProperty = "HL7v22PatientInformationRetrieverPort";
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
+    public final String HL7v22PatientInformationRetrieverPortAttribute = "HL7v22PatientInformationRetrieverPort";
+    public final String HL7v22PatientInformationRetrieverHostnameAttribute = "HL7v22PatientInformationRetrieverHostname";
+
 
     public HL7v22PatientInformationRetriever() {
         LOGGER.info("[SETUP] To configure this PatientDataRetriever, please set "
@@ -66,13 +71,13 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     }
 
     @Override
-    public EncounterDTO retrievePatientData(String caseNumber) {
+    public EncounterDTO retrievePatientData(Clinic clinic, String caseNumber) {
         LOGGER.debug("caseNumber is: {}", caseNumber);
         assert caseNumber != null : "The given caseNumber was null";
         caseNumber = caseNumber.trim();
         EncounterDTO result = null;
-        String hostname = getHL7v22PatientInformationRetrieverHostname();
-        Integer port = getHL7v22PatientInformationRetrieverPort();
+        String hostname = getHL7v22PatientInformationRetrieverHostname(clinic);
+        Integer port = getHL7v22PatientInformationRetrieverPort(clinic);
         if (hostname != null && port != null) {
             LOGGER.info("[SETUP] hostname is: {}", hostname);
             LOGGER.info("[SETUP] port is: {}", port);
@@ -322,11 +327,11 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
      *
      * @return The HL7v22PatientRetriever hostname string.
      */
-    private String getHL7v22PatientInformationRetrieverHostname() {
+    private String getHL7v22PatientInformationRetrieverHostname(Clinic clinic) {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            hostnameProperty, className);
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinic.getId(), HL7v22PatientInformationRetrieverHostnameAttribute, className, usePatientDataLookupGroupName);
         return configuration.getValue();
     }
 
@@ -336,11 +341,11 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
      *
      * @return The HL7v22PatientRetriever port number.
      */
-    private Integer getHL7v22PatientInformationRetrieverPort() {
+    private Integer getHL7v22PatientInformationRetrieverPort(Clinic clinic) {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            portProperty, className);
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinic.getId(), HL7v22PatientInformationRetrieverPortAttribute, className, usePatientDataLookupGroupName);
         return Integer.parseInt(configuration.getValue());
     }
 }

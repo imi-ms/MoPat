@@ -91,5 +91,32 @@
             )}"
 			/>
 		</th:block>
+
+
+		<th:block
+			th:if="${configurationDTO.mappedConfigurationGroupDTOS != null && not #lists.isEmpty(configurationDTO.mappedConfigurationGroupDTOS)}"
+		>
+		<li
+			class="list-group-item"
+			th:classappend="children"
+			th:attr="parentId=${configurationDTO.clinicConfigurationId}"
+		>
+			<div class="form-group select">
+		
+				<select
+					class="form-control"
+					th:name="|${selectionPath}[${configurationIndex.index}].mappedConfigurationGroup|"
+					th:id="|${idPath}${configurationIndex.index}.mappedConfigurationGroup|"
+				>
+					<option
+						th:each="i: ${configurationDTO.mappedConfigurationGroupDTOS}"
+						th:value="${i.configurationGroupDTO.name}"
+						th:text="${i.infoName}"
+						th:selected="${configurationDTO.mappedConfigurationGroup == i.configurationGroupDTO.name}"
+					></option>
+				</select>
+			</div>
+		</li>
+		</th:block>
 	</th:block>
 </th:block>

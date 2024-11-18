@@ -3,9 +3,14 @@ package de.imi.mopat.helper.controller;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
+import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.ClinicConfigurationDTO;
+import de.imi.mopat.model.dto.ClinicConfigurationGroupMappingDTO;
 import de.imi.mopat.model.dto.ClinicConfigurationMappingDTO;
+import de.imi.mopat.model.dto.ConfigurationDTO;
+import de.imi.mopat.model.dto.ConfigurationGroupDTO;
+import de.imi.mopat.model.enumeration.ConfigurationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +31,12 @@ public class ClinicConfigurationMappingService {
     @Autowired
     private ClinicConfigurationDao clinicConfigurationDao;
 
+    @Autowired
+    private ConfigurationGroupDao configurationGroupDao;
+
+    @Autowired
+    private ConfigurationService configurationService;
+
     /**
      * Initializes ClinicConfigurationMappingDTO using {@link ClinicConfigurationDTO} with default values.
      *
@@ -37,17 +48,25 @@ public class ClinicConfigurationMappingService {
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = new ClinicConfigurationMappingDTO();
         clinicConfigurationMappingDTO.setValue(clinicConfigurationDTO.getValue());
         clinicConfigurationMappingDTO.setConfigurationType(clinicConfigurationDTO.getConfigurationType());
-        clinicConfigurationMappingDTO.setAttribute(clinicConfigurationMappingDTO.getAttribute());
+        clinicConfigurationMappingDTO.setAttribute(clinicConfigurationDTO.getAttribute());
         clinicConfigurationMappingDTO.setValue(clinicConfigurationDTO.getValue());
-        clinicConfigurationMappingDTO.setPattern(clinicConfigurationMappingDTO.getPattern());
+        clinicConfigurationMappingDTO.setPattern(clinicConfigurationDTO.getPattern());
         clinicConfigurationMappingDTO.setDescriptionMessageCode(clinicConfigurationDTO.getDescriptionMessageCode());
         clinicConfigurationMappingDTO.setLabelMessageCode(clinicConfigurationDTO.getLabelMessageCode());
-        clinicConfigurationMappingDTO.setPosition(clinicConfigurationMappingDTO.getPosition());
-        clinicConfigurationMappingDTO.setUpdateMethod(clinicConfigurationMappingDTO.getUpdateMethod());
-        clinicConfigurationMappingDTO.setTestMethod(clinicConfigurationMappingDTO.getTestMethod());
+        clinicConfigurationMappingDTO.setPosition(clinicConfigurationDTO.getPosition());
+        clinicConfigurationMappingDTO.setUpdateMethod(clinicConfigurationDTO.getUpdateMethod());
+        clinicConfigurationMappingDTO.setTestMethod(clinicConfigurationDTO.getTestMethod());
         clinicConfigurationMappingDTO.setClinicConfigurationId(clinicConfigurationDTO.getId());
         if (clinicConfigurationDTO.getOptions() != null && !clinicConfigurationDTO.getOptions().isEmpty()) {
             clinicConfigurationMappingDTO.setOptions(clinicConfigurationDTO.getOptions());
+        }
+        if (clinicConfigurationDTO.getMappedConfigurationGroupDTOS() != null) {
+            List<ClinicConfigurationGroupMappingDTO> clinicConfigurationGroupMappingDTOS = new ArrayList<>();
+            for (ConfigurationGroupDTO configurationGroupDTO : clinicConfigurationDTO.getMappedConfigurationGroupDTOS()) {
+                clinicConfigurationGroupMappingDTOS.add(
+                    new ClinicConfigurationGroupMappingDTO(configurationGroupDTO, getInfoName(configurationGroupDTO)));
+            }
+            clinicConfigurationMappingDTO.setMappedConfigurationGroupDTOS(clinicConfigurationGroupMappingDTOS);
         }
         return clinicConfigurationMappingDTO;
     }
@@ -76,6 +95,42 @@ public class ClinicConfigurationMappingService {
         clinicConfigurationMappingDTO.setTestMethod(clinicConfigurationDTO.getTestMethod());
         if (clinicConfigurationDTO.getOptions() != null && !clinicConfigurationDTO.getOptions().isEmpty()) {
             clinicConfigurationMappingDTO.setOptions(clinicConfigurationDTO.getOptions());
+        }
+        List<ClinicConfigurationGroupMappingDTO> clinicConfigurationGroupMappingDTOS = new ArrayList<>();
+        if(clinicConfigurationDTO.getMappedConfigurationGroup() != null){
+            List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
+            for (ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(
+                clinicConfigurationDTO.getMappedConfigurationGroup())) {
+                ConfigurationGroupDTO configurationGroupDTO = configurationGroup.toConfigurationGroupDTO();
+                //Go through all adherent configurations
+                List<ConfigurationDTO> configurationDTOs = new ArrayList<>();
+
+                for (Configuration configuration1 : configurationGroup.getConfigurations()) {
+                    if (clinicConfigurationMapping.getClinicConfiguration().getParent() == null) {
+                        ConfigurationDTO configurationDTO1 = configuration1.toConfigurationDTO();
+
+                        if (clinicConfigurationMapping.getClinicConfiguration().getChildren() != null
+                            && !clinicConfigurationMapping.getClinicConfiguration().getChildren()
+                            .isEmpty()) {
+                            configurationService.processChildrenElements(configuration1, configurationDTO1);
+                        }
+                        configurationDTOs.add(configurationDTO1);
+                    }
+                }
+                configurationGroupDTO.setConfigurationDTOs(configurationDTOs);
+                configurationGroupDTOS.add(configurationGroupDTO);
+            }
+            for (ConfigurationGroupDTO configurationGroupDTO : configurationGroupDTOS) {
+                clinicConfigurationGroupMappingDTOS.add(
+                    new ClinicConfigurationGroupMappingDTO(configurationGroupDTO, getInfoName(configurationGroupDTO)));
+            }
+            clinicConfigurationMappingDTO.setMappedConfigurationGroupDTOS(clinicConfigurationGroupMappingDTOS);
+        }
+        if (!clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
+            //TODO single to multiple groups
+            clinicConfigurationMappingDTO.setMappedConfigurationGroup(
+                clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0).getConfigurationGroup()
+                    .getName());
         }
         return clinicConfigurationMappingDTO;
     }
@@ -146,10 +201,36 @@ public class ClinicConfigurationMappingService {
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationDao.getElementById(
             clinicConfigurationMappingDTO.getClinicConfigurationId()).toClinicConfigurationDTO();
+
+        List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
+        for (ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(
+            clinicConfigurationDTO.getMappedConfigurationGroup())) {
+            ConfigurationGroupDTO configurationGroupDTO = configurationGroup.toConfigurationGroupDTO();
+            //Go through all adherent configurations
+            List<ConfigurationDTO> configurationDTOs = new ArrayList<>();
+
+            for (Configuration configuration1 : configurationGroup.getConfigurations()) {
+                if (clinicConfigurationDTO.getParent() == null) {
+                    ConfigurationDTO configurationDTO1 = configuration1.toConfigurationDTO();
+
+                    if (clinicConfigurationDTO.getChildren() != null && !clinicConfigurationDTO.getChildren()
+                        .isEmpty()) {
+                        configurationService.processChildrenElements(configuration1, configurationDTO1);
+                    }
+                    configurationDTOs.add(configurationDTO1);
+                }
+            }
+            configurationGroupDTO.setConfigurationDTOs(configurationDTOs);
+            configurationGroupDTOS.add(configurationGroupDTO);
+        }
+        clinicConfigurationDTO.setMappedConfigurationGroupDTOS(configurationGroupDTOS);
+
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO1 = toClinicConfigurationMappingDTO(
             clinicConfigurationDTO);
         clinicConfigurationMappingDTO1.setValue(
             clinicConfigurationMappingDTO.getValue() != null ? clinicConfigurationMappingDTO.getValue() : "");
+        clinicConfigurationMappingDTO1.setMappedConfigurationGroup(
+            clinicConfigurationMappingDTO.getMappedConfigurationGroup());
         clinicConfigurationMappingDTO1.setId(
             clinicConfigurationMappingDTO.getId() != null ? clinicConfigurationMappingDTO.getId() : null);
         if (clinicConfigurationMappingDTO.getChildren() != null) {
@@ -174,6 +255,23 @@ public class ClinicConfigurationMappingService {
         return clinicConfigurationMappingDao.isPseudonymizationServiceActivated(clinic.getId()) ||
             clinicConfigurationMappingDao.isRegistryOfPatientActivated(clinic.getId()) ||
             clinicConfigurationMappingDao.isUsePatientDataLookupActivated(clinic.getId());
+    }
+
+
+    @JsonIgnore
+    public String getInfoName(ConfigurationGroupDTO configurationGroupDTO) {
+        String infoName = configurationGroupDTO.getName();
+        for (ConfigurationDTO configurationDTO : configurationGroupDTO.getConfigurationDTOs()) {
+            if (configurationDTO.getAttribute().toLowerCase().contains("host") || configurationDTO.getAttribute()
+                .toLowerCase().contains("url")) {
+                infoName += " | Server: " + configurationDTO.getValue();
+            } else if (configurationDTO.getAttribute().toLowerCase().contains("port")) {
+                infoName += " | Port: " + configurationDTO.getValue();
+            } else if (configurationDTO.getAttribute().toLowerCase().contains("api")) {
+                infoName += " | API Key: " + configurationDTO.getValue();
+            }
+        }
+        return infoName;
     }
 
 }

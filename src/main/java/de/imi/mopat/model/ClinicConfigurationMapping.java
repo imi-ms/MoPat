@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "clinic_configuration_mapping")
@@ -25,6 +26,9 @@ public class ClinicConfigurationMapping implements Serializable {
 
     @Column(name = "value")
     private String value;
+
+    @OneToMany(mappedBy = "clinicConfigurationMapping", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    private List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings;
 
 
     public ClinicConfigurationMapping() {
@@ -88,5 +92,16 @@ public class ClinicConfigurationMapping implements Serializable {
     public Clinic getClinic() {
         return clinic;
     }
+
+
+    public List<ClinicConfigurationGroupMapping> getClinicConfigurationGroupMappings() {
+        return clinicConfigurationGroupMappings;
+    }
+
+    public void setClinicConfigurationGroupMappings(
+        List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings) {
+        this.clinicConfigurationGroupMappings = clinicConfigurationGroupMappings;
+    }
+
 
 }

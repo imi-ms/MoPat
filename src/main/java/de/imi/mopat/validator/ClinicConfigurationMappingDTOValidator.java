@@ -1,5 +1,8 @@
 package de.imi.mopat.validator;
 
+import de.imi.mopat.dao.ClinicConfigurationDao;
+import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.model.ClinicConfiguration;
 import de.imi.mopat.model.dto.ClinicConfigurationMappingDTO;
 import de.imi.mopat.model.dto.ConfigurationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,9 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
     @Autowired
     private MessageSource messageSource;
 
+    @Autowired
+    private ClinicConfigurationDao clinicConfigurationDao;
+
     @Override
     public boolean supports(final Class<?> type) {
         return ClinicConfigurationMappingDTO.class.isAssignableFrom(type);
@@ -44,6 +50,14 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
                     message = messageSource.getMessage("configuration.validate" + ".boolean",
                         new Object[]{}, LocaleContextHolder.getLocale());
+                }
+                if(value.equalsIgnoreCase("true")){
+                    ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(
+                        clinicConfigurationMappingDTO.getClinicConfigurationId());
+                    if(clinicConfiguration.getMappedConfigurationGroup() != null && clinicConfigurationMappingDTO.getMappedConfigurationGroup()==null){
+                        message = messageSource.getMessage("configuration.validate" + ".mappedConfigurationNotFound",
+                            new Object[]{}, LocaleContextHolder.getLocale());
+                    }
                 }
                 break;
             case DOUBLE:

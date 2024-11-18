@@ -13,6 +13,7 @@
 			action="select"
 			data-ajax="false"
 		>
+		<input name="activeClinicId" th:value="${activeClinicId}" hidden="true"/>
 			<div class="mb-3">
 				<h4>
 				<b>
@@ -245,7 +246,7 @@
 				</th:block>
 
 				<div class="row mt-4 mb-3">
-					<div class="col-6 pe-3">
+					<div class="col-4 pe-3">
 						<button
 							class="btn btn-mobile w-100"
 							type="submit"
@@ -257,7 +258,19 @@
 						>
 						</button>
 					</div>
-					<div class="col-6 ps-3">
+					<div class="col-4 pe-3">
+						<button
+							class="btn btn-mobile w-100"
+							type="submit"
+							id="gotoClinicSelectButton"
+							value="gotoClinicSelect"
+							name="action"
+							data-inline="true"
+							th:text="${messages.get(#locale, 'survey.bundles.button.gotoClinicSelect', 'Reselect Clinic')}"
+						>
+						</button>
+					</div>
+					<div class="col-4 ps-3">
 						<button
 							class="btn btn-mobile btn-highlight w-100"
 							type="submit"

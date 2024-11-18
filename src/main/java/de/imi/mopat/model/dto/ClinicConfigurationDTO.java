@@ -25,6 +25,8 @@ public class ClinicConfigurationDTO {
     private ClinicConfigurationDTO parent;
     private List<ClinicConfigurationDTO> children;
     private Integer position;
+    private String mappedConfigurationGroup;
+    private List<ConfigurationGroupDTO> mappedConfigurationGroupDTOS;
 
     public ClinicConfigurationDTO() {
     }
@@ -147,5 +149,22 @@ public class ClinicConfigurationDTO {
 
     public void setPosition(final Integer position) {
         this.position = position;
+    }
+
+    public String getMappedConfigurationGroup() {
+        return mappedConfigurationGroup;
+    }
+
+    public void setMappedConfigurationGroup(String mappedConfigurationGroup) {
+        this.mappedConfigurationGroup = mappedConfigurationGroup;
+    }
+
+    public List<ConfigurationGroupDTO> getMappedConfigurationGroupDTOS() {
+        return mappedConfigurationGroupDTOS;
+    }
+
+    public void setMappedConfigurationGroupDTOS(
+        List<ConfigurationGroupDTO> mappedConfigurationGroupDTOS) {
+        this.mappedConfigurationGroupDTOS = mappedConfigurationGroupDTOS;
     }
 }

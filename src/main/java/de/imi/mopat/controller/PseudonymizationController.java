@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -37,6 +38,7 @@ public class PseudonymizationController {
     // Configuration: The name of the attribute for the pseudonymizationUrl
     public static final String PSEUDONYMIZATION_SERVICE_URL = "pseudonymizationServiceUrl";
     private static final String PSEUDONYMIZATION_SERVICE_API_KEY = "pseudonymizationServiceApiKey";
+    public final String usePseudonymizationServiceGroupName = "configurationGroup.label.pseudonymization";
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         PseudonymizationController.class);
 
@@ -48,11 +50,11 @@ public class PseudonymizationController {
      * service.
      */
     @RequestMapping(value = "/pseudonymization/pseudonym", method = RequestMethod.GET)
-    public String pseudo() {
+    public String pseudo(@RequestParam(value = "clinicId", required = true) final Long clinicId) {
         HttpClient httpClient = HttpClientBuilder.create().build();
-        String sessionURL = getSessionURL(httpClient);
-        String tokenId = getTokenId(sessionURL, httpClient);
-        return getPseudonymizationServiceURL() + "patients?tokenId=" + tokenId;
+        String sessionURL = getSessionURL(httpClient, clinicId);
+        String tokenId = getTokenId(sessionURL, httpClient,clinicId);
+        return getPseudonymizationServiceURL(clinicId) + "patients?tokenId=" + tokenId;
     }
 
     /**
@@ -62,10 +64,10 @@ public class PseudonymizationController {
      * @param httpClient A HTTP-Client for the connection.
      * @return The session url with a valid session token from the pseudonymization server.
      */
-    private String getSessionURL(final HttpClient httpClient) {
-        String connectionUrl = getPseudonymizationServiceURL() + "sessions/";
+    private String getSessionURL(final HttpClient httpClient, Long clinicId) {
+        String connectionUrl = getPseudonymizationServiceURL(clinicId) + "sessions/";
         HttpPost request = new HttpPost(connectionUrl);
-        request.addHeader("mainzellisteApiKey", getPseudonymizationServiceAPIKey());
+        request.addHeader("mainzellisteApiKey", getPseudonymizationServiceAPIKey(clinicId));
         try {
             HttpResponse httpResponse = httpClient.execute(request);
             InputStream connectionResponse = httpResponse.getEntity().getContent();
@@ -88,11 +90,11 @@ public class PseudonymizationController {
      * @param httpClient A HTTP-Client for the connection.
      * @return The query token from the pseudonymization server.
      */
-    private String getTokenId(final String sessionUrl, final HttpClient httpClient) {
+    private String getTokenId(final String sessionUrl, final HttpClient httpClient, Long clinicId) {
         String connectionUrl = sessionUrl + "tokens/";
         HttpPost request = new HttpPost(connectionUrl);
         request.addHeader("content-type", "application/json");
-        request.addHeader("mainzellisteApiKey", getPseudonymizationServiceAPIKey());
+        request.addHeader("mainzellisteApiKey", getPseudonymizationServiceAPIKey(clinicId));
         JSONObject type = new JSONObject();
         JSONObject callback = new JSONObject();
         type.put("data", callback);
@@ -116,9 +118,9 @@ public class PseudonymizationController {
      *
      * @return The URL as string.
      */
-    public String getPseudonymizationServiceURL() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            PSEUDONYMIZATION_SERVICE_URL, className);
+    public String getPseudonymizationServiceURL(Long clinicId) {
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinicId, PSEUDONYMIZATION_SERVICE_URL, className, usePseudonymizationServiceGroupName);
         return String.valueOf(configuration.getValue());
     }
 
@@ -127,9 +129,9 @@ public class PseudonymizationController {
      *
      * @return The API key as string.
      */
-    public String getPseudonymizationServiceAPIKey() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            PSEUDONYMIZATION_SERVICE_API_KEY, className);
+    public String getPseudonymizationServiceAPIKey(Long clinicId) {
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinicId, PSEUDONYMIZATION_SERVICE_API_KEY, className, usePseudonymizationServiceGroupName);
         return String.valueOf(configuration.getValue());
     }
 }
