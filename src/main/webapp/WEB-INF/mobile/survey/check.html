@@ -8,6 +8,58 @@
 	<th:block layout:fragment="content">
 		<form
 			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="clinicSelect"
+			data-ajax="false"
+		>
+		<div
+		class="mb-3"
+		data-role="fieldcontain"
+		>
+			<div
+				class="row align-items-center"
+				data-role="list-divider"
+			>
+				<label class="col-form-label">
+					<b
+						th:text="${messages.get(#locale, 'survey.bundles.label.clinicSelect', 'Select Clinic')}"
+					></b>
+				</label>
+			</div>
+			<div class="select-wrapper w-100">
+				<select
+					name="activeClinicId"
+					class="btn select-mobile w-100"
+					onchange="this.form.submit()"
+					th:disabled="${registerSuccess == true || #lists.size(clinics)==1}"
+				>
+					<option
+					th:each="i: ${clinics}"
+					th:value="${i.id}"
+					th:text="${i.name}"
+					th:selected="${activeClinic.id == i.id}"
+				></option>
+				</select>
+			</div>
+		</div>
+		</form>
+
+		<div
+			class="d-flex py-1 titleHeader"
+			th:classappend="|${#bools.isTrue(isLogin) ? 'header login-header' : ''} ${#bools.isTrue(hideTitle) ? 'd-none' : ''}|"
+		>
+			<th:block sec:authorize="isFullyAuthenticated()">
+				<div role="heading">
+					<b
+						id="title1"
+						class="titleContent"
+					></b>
+				</div>
+			</th:block>
+		</div>
+		<form
+			name="survey"
 			th:object="${encounterDTO}"
 			enctype="application/x-www-form-urlencoded"
 			method="POST"
@@ -46,8 +98,9 @@
 					name="activeClinicId"
 					id="activeClinic"
 					type="hidden"
-					th:value="${activeClinic.id}"
+					th:value="${activeClinic?.id}"
 				/>
+				
 				<!--/* if at least two services are activated show the radio button group */-->
 				<th:block
 					th:if="${(register and searchHIS) or (register and pseudonym) or (searchHIS and pseudonym)}"
@@ -510,7 +563,7 @@
 					name="activeClinicId"
 					id="activeClinic"
 					type="hidden"
-					th:value="${activeClinic.id}"
+					th:value="${activeClinic?.id}"
 					/>
 					<!--/* show enabled button if patient id found or his is disabled and a casenumber is given */-->
 					<th:block
@@ -609,6 +662,9 @@
 		$(document).ready(function () {
 			/*[- Set the heading of the page -]*/
 			$("#title").html(
+			/*[[${messages.get(#locale, 'survey.title.selectClinic', 'Select Clinic')}]]*/ "Select Clinic"
+			);
+			$("#title1").html(
 				/*[[${messages.get(#locale, 'survey.title.searchCaseNumber', 'Search for case number')}]]*/ "Search for case number"
 			);
 
