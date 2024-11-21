@@ -96,8 +96,6 @@ public class SurveyController {
     @Autowired
     private BundleDTOMapper bundleDTOMapper;
     @Autowired
-    private EncounterService encounterService;
-    @Autowired
     private AclEntryDao aclEntryDao;
     @Autowired
     private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
@@ -108,11 +106,11 @@ public class SurveyController {
     @Autowired
     private EncounterDTOMapper encounterDTOMapper;
     @Autowired
-    private UserDao userDao;
-    @Autowired
     private PinAuthorizationDao pinAuthorizationDao;
     @Autowired
     private PinAuthorizationService pinAuthorizationService;
+    @Autowired
+    private ClinicDao clinicDao;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
