@@ -491,6 +491,7 @@ public class SurveyController {
                 encounter.setPatientID(encounterDTO.getPatientID());
                 encounter.setCaseNumber(encounterDTO.getCaseNumber());
                 encounter.setBundleLanguage(bundleLanguage);
+                encounter.setClinic(clinicDao.getElementById(activeClinicId));
                 encounterDao.merge(encounter);
                 encounter.setBundle(bundle);
                 // Merge the encounter object twice to merge the before updated
