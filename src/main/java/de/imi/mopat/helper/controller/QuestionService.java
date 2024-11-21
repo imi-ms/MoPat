@@ -1,210 +1,143 @@
 package de.imi.mopat.helper.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.dao.AnswerDao;
+import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.ImageAnswer;
-import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
-import de.imi.mopat.model.SelectAnswer;
-import de.imi.mopat.model.SliderAnswer;
-import de.imi.mopat.model.SliderFreetextAnswer;
-import de.imi.mopat.model.SliderIcon;
 import de.imi.mopat.model.conditions.Condition;
-import de.imi.mopat.model.dto.AnswerDTO;
-import de.imi.mopat.model.dto.ConditionDTO;
-import de.imi.mopat.model.dto.QuestionDTO;
-import de.imi.mopat.model.dto.export.SliderIconDTO;
-import de.imi.mopat.model.enumeration.BodyPart;
-import java.io.IOException;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
+import de.imi.mopat.model.Questionnaire;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QuestionService {
 
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+            QuestionService.class);
+    
     @Autowired
-    private ConfigurationDao configurationDao;
-
+    private AnswerDao answerDao;
+    
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+    
+    @Autowired
+    private BundleDao bundleDao;
 
     /**
-     * Converts this {@link Question} object to an {@link QuestionDTO} object.
+     * Clones conditions from a set of original questions to corresponding new questions and answers
+     * based on provided mappings. This method iterates through each question and its answers in the
+     * original set, then duplicates each condition attached to those answers. The method properly
+     * assigns the cloned conditions to the new corresponding answers and questions, according to
+     * the mappings specified.
      *
-     * @return An {@link QuestionDTO} object based on this {@link Question}
-     * object.
+     * @param oldQuestionToNewAnswerMap A mapping from original {@link Question} objects to another
+     *                                  map, which further maps original {@link Answer} objects to
+     *                                  their corresponding new {@link Answer} objects. This is used
+     *                                  to find the new answer instances where conditions should
+     *                                  point.
+     * @param questionMap               A mapping from original {@link Question} objects to new
+     *                                  {@link Question} objects. This is used to update the
+     *                                  question targets of cloned conditions.
      */
-    @JsonIgnore
-    public QuestionDTO toQuestionDTO(Question question) {
-        QuestionDTO questionDTO = new QuestionDTO();
-        questionDTO.setId(question.getId());
-        questionDTO.setQuestionType(question.getQuestionType());
-        questionDTO.setLocalizedQuestionText(new TreeMap<>(question.getLocalizedQuestionText()));
-        questionDTO.setIsRequired(question.getIsRequired());
-        questionDTO.setIsEnabled(question.getIsEnabled());
-        questionDTO.setMinNumberAnswers(question.getMinNumberAnswers());
-        questionDTO.setMaxNumberAnswers(question.getMaxNumberAnswers());
-        questionDTO.setCodedValueType(question.getCodedValueType());
-        questionDTO.setPosition(question.getPosition());
-        questionDTO.setQuestionnaireId(question.getQuestionnaire()
-            .getId());
-        SortedMap<Long, AnswerDTO> answerDTOs = new TreeMap<>();
-
-        List<String> images = new ArrayList<>();
-        for (Answer answer : question.getAnswers()) {
-            AnswerDTO answerDTO = new AnswerDTO();
-            answerDTO.setId(answer.getId());
-            answerDTO.setIsEnabled(answer.getIsEnabled());
-            if (answer instanceof SelectAnswer) {
-                answerDTO.setLocalizedLabel(new TreeMap<>(((SelectAnswer) answer).getLocalizedLabel()));
-
-                if (((SelectAnswer) answer).getValue()
-                    != null) {
-                    answerDTO.setValue(((SelectAnswer) answer).getValue());
-                }
-                answerDTO.setIsOther(((SelectAnswer) answer).getIsOther());
-                answerDTO.setCodedValue(((SelectAnswer) answer).getCodedValue());
-            } else if (answer instanceof SliderFreetextAnswer) {
-                answerDTO.setMinValue(((SliderFreetextAnswer) answer).getMinValue());
-                answerDTO.setMaxValue(((SliderFreetextAnswer) answer).getMaxValue());
-                answerDTO.setVertical(((SliderFreetextAnswer) answer).getVertical());
-
-                // Format the stepsize
-                DecimalFormat decimalFormat = new DecimalFormat(
-                    "0",
-                    DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-                decimalFormat.setMaximumFractionDigits(340); //340 =
-                // DecimalFormat.DOUBLE_FRACTION_DIGITS
-                String formattedStepsize =
-                    decimalFormat.format(((SliderAnswer) answer).getStepsize());
-                answerDTO.setStepsize(formattedStepsize);
-
-                answerDTO.setLocalizedMinimumText(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMinimumText()));
-                answerDTO.setLocalizedMaximumText(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedMaximumText()));
-                answerDTO.setLocalizedFreetextLabel(new TreeMap<>(((SliderFreetextAnswer) answer).getLocalizedFreetextLabel()));
-            } else if (answer instanceof SliderAnswer) {
-                answerDTO.setMinValue(((SliderAnswer) answer).getMinValue());
-                answerDTO.setMaxValue(((SliderAnswer) answer).getMaxValue());
-                answerDTO.setVertical(((SliderAnswer) answer).getVertical());
-                // Format the stepsize
-                DecimalFormat decimalFormat = new DecimalFormat(
-                    "0",
-                    DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-                decimalFormat.setMaximumFractionDigits(340); //340 =
-                // DecimalFormat.DOUBLE_FRACTION_DIGITS
-                String formattedStepsize =
-                    decimalFormat.format(((SliderAnswer) answer).getStepsize());
-                answerDTO.setStepsize(formattedStepsize);
-
-                answerDTO.setLocalizedMinimumText(new TreeMap<>(((SliderAnswer) answer).getLocalizedMinimumText()));
-                answerDTO.setLocalizedMaximumText(new TreeMap<>(((SliderAnswer) answer).getLocalizedMaximumText()));
-                answerDTO.setShowValueOnButton(((SliderAnswer) answer).getShowValueOnButton());
-
-                answerDTO.setShowIcons(((SliderAnswer) answer).getShowIcons());
-
-                List<SliderIconDTO> iconList = new ArrayList<>();
-                for (SliderIcon icon : ((SliderAnswer) answer).getIcons()) {
-                    SliderIconDTO newSliderIconDTO = new SliderIconDTO();
-                    newSliderIconDTO.setIcon(icon.getIcon());
-                    newSliderIconDTO.setPosition(icon.getPosition());
-                    newSliderIconDTO.setAnswerId(answer.getId());
-                    iconList.add(newSliderIconDTO);
-                }
-
-                answerDTO.setIcons(iconList);
-
-            } else if (answer instanceof DateAnswer) {
-                Date startDate = ((DateAnswer) answer).getStartDate();
-                Date endDate = ((DateAnswer) answer).getEndDate();
-                SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
-                if (startDate
-                    != null) {
-                    answerDTO.setStartDate(dateFormat.format(startDate));
-                }
-                if (endDate
-                    != null) {
-                    answerDTO.setEndDate(dateFormat.format(endDate));
-                }
-            } else if (answer instanceof NumberInputAnswer) {
-                answerDTO.setMinValue(((NumberInputAnswer) answer).getMinValue());
-                answerDTO.setMaxValue(((NumberInputAnswer) answer).getMaxValue());
-                if (((NumberInputAnswer) answer).getStepsize()
-                    != null) {
-                    answerDTO.setStepsize(((NumberInputAnswer) answer).getStepsize()
-                        .toString());
-                }
-            } else if (answer instanceof ImageAnswer) {
-                ImageAnswer imageAnswer = (ImageAnswer) answer;
-                answerDTO.setImagePath(configurationDao.getImageUploadPath() + "/question/"+ imageAnswer.getImagePath());
-                try {
-                    //Navigate out of classpath root and WEB-INF
-                    String realPath = answerDTO.getImagePath();
-                    String fileName = answerDTO.getImagePath().substring(answerDTO.getImagePath().lastIndexOf("/"));
-                    answerDTO.setImageBase64(StringUtilities.convertImageToBase64String(realPath, fileName));
-                } catch (IOException e) {
-                    LOGGER.error("Image of answer with id "
-                        + imageAnswer.getId()
-                        + " and path "
-                        + imageAnswer.getImagePath()
-                        + " was not readable!");
-                }
-            } else if (answer instanceof BodyPartAnswer) {
-                BodyPartAnswer bodyPartAnswer = (BodyPartAnswer) answer;
-                BodyPart bodyPart = bodyPartAnswer.getBodyPart();
-                answerDTO.setBodyPartPath(bodyPart.getPath());
-                answerDTO.setBodyPartMessageCode(bodyPart.getMessageCode());
-                answerDTO.setBodyPartImage(bodyPart.getImagePath());
-                if (!images.contains(bodyPart.getImagePath())) {
-                    images.add(bodyPart.getImagePath());
+    public Set<Condition> cloneConditions(
+        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap,
+        Map<Question, Question> questionMap) {
+        Set<Condition> newConditions = new HashSet<>();
+        for (Question originalQuestion : questionMap.keySet()) {
+            for (Answer answer : originalQuestion.getAnswers()) {
+                Set<Condition> conditions = answer.getConditions();
+                for (Condition condition : conditions) {
+                    Condition newCondition = null;
+                    if (condition.getTrigger().getClass() == answer.getClass()
+                        && condition.getTarget().getClass() == originalQuestion.getClass()) {
+                        newCondition = condition.cloneCondition(
+                            oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
+                            questionMap.get((Question) condition.getTarget()));
+                    } else if (condition.getTrigger().getClass() == answer.getClass()
+                        && condition.getTarget().getClass() == answer.getClass()) {
+                        Question taq = condition.getTargetAnswerQuestion();
+                        newCondition = condition.cloneCondition(
+                            oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
+                            oldQuestionToNewAnswerMap.get(taq).get((Answer) condition.getTarget()));
+                    }
+                    if (newCondition != null) {
+                        newConditions.add(newCondition);
+                    }
                 }
             }
-            questionDTO.setBodyPartImages(images);
-
-            if (images.contains(Constants.BODY_FRONT)
-                && !images.contains(Constants.BODY_BACK)) {
-                questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[0]);
-            } else if (!images.contains(Constants.BODY_FRONT)
-                && images.contains(Constants.BODY_BACK)) {
-                questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[1]);
-            } else if (images.contains(Constants.BODY_FRONT)
-                && images.contains(Constants.BODY_BACK)) {
-                questionDTO.setImageType(Constants.BODY_PART_IMAGE_TYPES[2]);
-            }
-
-            answerDTO.setHasResponse(!answer.getResponses()
-                .isEmpty());
-            answerDTO.setHasConditionsAsTrigger(!answer.getConditions()
-                .isEmpty());
-            List<ConditionDTO> conditionDTOs = new ArrayList<>();
-            if (!answer.getConditions()
-                .isEmpty()) {
-                for (Condition condition : answer.getConditions()) {
-                    conditionDTOs.add(condition.toConditionDTO());
-                }
-            }
-            answerDTO.setConditions(conditionDTOs);
-
-            answerDTO.setHasExportRule(!answer.getExportRules()
-                .isEmpty());
-            answerDTOs.put(
-                Long.valueOf(answerDTOs.size()),
-                answerDTO);
         }
 
-        questionDTO.setAnswers(answerDTOs);
-        return questionDTO;
+        return newConditions;
     }
+
+    Questionnaire duplicateQuestionsToNewQuestionnaire(
+        Set<Question> originalQuestions,
+        Questionnaire newQuestionnaire
+    ) {
+        Set<Question> copiedQuestions = new HashSet<>();
+        
+        for (Question originalQuestion : originalQuestions) {
+            Question newQuestion = new Question(
+                new HashMap<>(originalQuestion.getLocalizedQuestionText()),
+                originalQuestion.getIsRequired(), originalQuestion.getIsEnabled(),
+                originalQuestion.getQuestionType(), originalQuestion.getPosition(),
+                newQuestionnaire
+            );
+            
+            newQuestion.setMinMaxNumberAnswers(
+                originalQuestion.getMinNumberAnswers(),
+                originalQuestion.getMaxNumberAnswers()
+            
+            );
+            
+            for (Answer answer : originalQuestion.getAnswers()) {
+                newQuestion.addAnswer(answer.cloneWithoutReferences());
+            }
+            
+            newQuestion.setQuestionnaire(newQuestionnaire);
+            copiedQuestions.add(newQuestion);
+        }
+        newQuestionnaire.setQuestions(copiedQuestions);
+        questionnaireDao.merge(newQuestionnaire);
+        //Refetch questionnaire to get ids from db
+        return questionnaireDao.getElementById(newQuestionnaire.getId());
+    }
+    
+    MapHolder getMappingForDuplicatedQuestions(
+        Questionnaire originalQuestionnnaire,
+        Questionnaire newQuestionnaire
+    ) {
+        Map<Question, Question> questionMap = new HashMap<>();
+        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = new HashMap<>();
+        
+        
+        for (int i = 0; i < originalQuestionnnaire.getQuestions().size(); i++) {
+            
+            Question originalQuestion = new ArrayList<>(originalQuestionnnaire.getQuestions()).get(i);
+            Question newQuestion = new ArrayList<>(newQuestionnaire.getQuestions()).get(i);
+            
+            if (originalQuestion != null && newQuestion != null) {
+                questionMap.put(originalQuestion, newQuestion);
+                
+                Map<Answer, Answer> answerMap = new HashMap<>();
+                
+                for (int j = 0; j < originalQuestion.getAnswers().size(); j++) {
+                    Answer originalAnswer = originalQuestion.getAnswers().get(j);
+                    Answer newAnswer = newQuestion.getAnswers().get(j);
+                    answerMap.put(originalAnswer, newAnswer);
+                }
+                
+                oldQuestionToNewAnswerMap.put(originalQuestion, answerMap);
+            }
+        }
+        return new MapHolder(questionMap, oldQuestionToNewAnswerMap);
+    }
+    
 }

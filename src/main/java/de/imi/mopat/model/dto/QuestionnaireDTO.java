@@ -48,11 +48,15 @@ public class QuestionnaireDTO {
     private Boolean deleteLogo = false;
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
+    private int version;
 
     @JsonIgnore
     private Set<ExportTemplate> exportTemplates = new HashSet<>();
 
     private List<QuestionDTO> questionDTOs;
+
+    @JsonIgnore
+    private QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO;
 
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
@@ -163,5 +167,31 @@ public class QuestionnaireDTO {
         QuestionnaireDTO questionnaireDTO = (QuestionnaireDTO) obj;
 
         return Objects.equals(this.getId(), questionnaireDTO.getId());
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupId() : null;
+    }
+
+    public String getQuestionnaireVersionGroupName() {
+        return  (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
+    }
+    
+    @JsonIgnore
+    public QuestionnaireVersionGroupDTO getQuestionnaireGroupDTO() {
+        return questionnaireVersionGroupDTO;
+    }
+
+    @JsonIgnore
+    public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
+        this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
     }
 }

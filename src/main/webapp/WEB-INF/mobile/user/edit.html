@@ -50,48 +50,166 @@
 					clazz='form-control', showErrors=true,
 					text=${messages.get(#locale, 'user.label.email', 'Email:')})}"
 				/>
+
+
 			</div>
+			
+			<!--/* PIN INPUTS WITH SWITCH*/-->
+
+			<div th:if="${configurationDao.isGlobalPinAuthEnabled}">
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div>
+						<label
+							class="col-form-label"
+							for="usePin"
+							id="usePinLabel"
+						>
+							<b
+								th:text="${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin:')}"
+							></b>
+						</label>
+					</div>
+
+					<div>
+						<div class="d-flex align-items-center">
+							<div class="form-check form-switch">
+								<input
+									class="form-check-input form-control me-3"
+									id="usePin"
+									th:field="*{usePin}"
+									onchange="switchPinInput(this)"
+									role="switch"
+									type="checkbox"
+								/>
+							</div>
+
+							<input
+								class="form-control"
+								id="pin"
+								th:field="*{pin}"
+								type="password"
+								oninput="checkPin(this)"
+							/>
+						</div>
+					</div>
+
+					<div>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='usePin')}"
+						/>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='pin')}"
+						/>
+					</div>
+				</div>
+				<div
+					class="row mb-3 align-content-center"
+					data-role="fieldcontain"
+				>
+					<div>
+						<i>
+							<th:block
+								th:with="message=${messages.get(#locale, 'user.label.pin.moreInfo', 'This function allows you to quickly log back in to MoPat. After activating the pin, you can quickly start a new survey. It is not necessary to log in again. <br /> <b>Security note</b>: If the pin is entered incorrectly three times, an account is automatically logged out. Otherwise, this function remains active until midnight unless you log out manually.')}"
+								th:utext="${message}"
+							></th:block>
+							
+							<div id="pin-requirements" class="d-none">
+								<th:block
+									th:text="${messages.get(#locale, 'user.label.pin.requirements', 'Bitte stellen Sie sicher, dass Ihr Pin die folgenden Anforderungen erfüllt:')}"
+								></th:block>
+								
+								<ul>
+									<li id="pin-length">
+										<th:block
+											th:text="${messages.get(#locale, 'user.label.pin.requirements.length', 'The pin has to be at least 6 digits long')}"
+										></th:block>
+										
+									</li>
+									<li id="pin-uniqueness">
+										<th:block
+											th:text="${messages.get(#locale, 'user.label.pin.requirements.uniqueness', 'The pin must consist of different digits')}"
+										></th:block>
+										
+									</li>
+									<li id="pin-sequence">
+										<th:block
+											th:text="${messages.get(#locale, 'user.label.pin.requirements.sequence', 'A numerical sequence (123456) is not allowed')}"
+										></th:block>
+										
+									</li>
+								</ul>
+							</div>
+						</i>
+					</div>
+				</div>
+			</div>
+
+				
 			<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='oldPassword', required=false, clazz='form-control',
-                            type='password', id='oldPassword', name='oldPassword', 
-                            text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
-					/>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
-					/>
+				<div class="form-group form-checkbox">
+					<label>
+						<input
+							type="checkbox"
+							th:with="message=${messages.get(
+								#locale,
+								'user.label.changePassword',
+								messages.buildArguments(#authentication.getPrincipal().getUsername()),
+								'Change the password for the the user __${#authentication.getPrincipal().getUsername()}__')}"
+							th:utext="${message}"
+							th:checked="${#fields.hasErrors('oldPassword') or #fields.hasErrors('newPassword') or #fields.hasErrors('passwordCheck') ? 'true' : 'false'}"
+							onclick="togglePasswordVisibility();"
+						/>
+					</label>
 				</div>
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='newPassword', required=false, clazz='form-control', 
-                            type='password', id='newPassword', name='newPassword',
-                            text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
-					/>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
-					/>
-				</div>
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: plainInputWithLabel(
-                            for='newPasswordApprove', required=false, clazz='form-control',
-                            type='password', id='newPasswordApprove', name='newPasswordApprove',
-                            text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
-					/>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
-					/>
+
+				<div 
+					id="passwordContainer"
+					th:classappend="${not #fields.hasErrors('oldPassword') and not #fields.hasErrors('newPassword') and not #fields.hasErrors('passwordCheck') ? 'd-none' : ''}"
+				>
+					<div class="form-group">
+						<input
+							layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='oldPassword', required=false, clazz='form-control',
+								type='password', id='oldPassword', name='oldPassword', 
+								text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
+						/>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
+						/>
+					</div>
+					<div class="form-group">
+						<input
+							layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='newPassword', required=false, clazz='form-control', 
+								type='password', id='newPassword', name='newPassword',
+								text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
+						/>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
+						/>
+					</div>
+					<div class="form-group">
+						<input
+							layout:replace="~{fragments/forms :: plainInputWithLabel(
+								for='newPasswordApprove', required=false, clazz='form-control',
+								type='password', id='newPasswordApprove', name='newPasswordApprove',
+								text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
+						/>
+						<error
+							layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
+						/>
+					</div>
 				</div>
 			</th:block>
 			<div class="form-group">
 				<button
 					type="submit"
-					class="btn btn-mobile col-bp-4 col-12 mb-2"
+					class="btn btn-mobile col-bp-4 col-12 mb-2 me-2"
 					value="cancel"
-					id="saveButton"
+					id="cancelButton"
 					name="action"
 					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
 				>
@@ -115,12 +233,86 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
-	$(document).ready(function () {
-			/*[- Set the heading of the page -]*/
-			$("#title").html(
-				/*[[${messages.get(#locale, 'user.heading.editProfile', 'Change password')}]]*/ "Change password"
-			);
+		$(document).ready(function () {
+				/*[- Set the heading of the page -]*/
+				$("#title").html(
+					/*[[${messages.get(#locale, 'user.heading.editProfile', 'Change password')}]]*/ "Change password"
+				);
 
-	});
+				switchPinInput($("#usePin"));
+
+		});
+
+
+		function switchPinInput(element) {
+			var isPinActive = $(element).get(0).checked;
+
+			if (isPinActive) {
+				// Activate input
+				$("#pin").removeAttr("disabled");
+				$("#pin-requirements").removeClass("d-none");
+			} else {
+				// Deactivate input
+				$("#pin").attr("disabled", "disabled");
+				$("#pin-requirements").addClass("d-none");
+			}
+		}
+
+		function togglePasswordVisibility() {
+			if ($("#passwordContainer").hasClass("d-none")) {
+				$("#passwordContainer").removeClass("d-none"); 
+			} else {
+				$("#passwordContainer").addClass("d-none");
+			}
+		}
+
+		function checkPin(element) {
+			var pin = $(element).val(); 
+			if (pin.length <= 0 ) {
+				$("#pin-length").removeClass("text-success")
+				$("#pin-length").addClass("text-danger"); 
+				$("#pin-uniqueness").removeClass("text-success")
+				$("#pin-uniqueness").addClass("text-danger"); 
+				$("#pin-sequence").removeClass("text-success")
+				$("#pin-sequence").addClass("text-danger"); 
+			} else {
+				if (pin.length < 6) {
+					$("#pin-length").removeClass("text-success")
+					$("#pin-length").addClass("text-danger"); 
+				} else {
+					$("#pin-length").removeClass("text-danger")
+					$("#pin-length").addClass("text-success");
+				}
+
+				if (pin.match("\\b(\\d)\\1+\\b")) {
+					$("#pin-uniqueness").removeClass("text-success")
+					$("#pin-uniqueness").addClass("text-danger"); 
+				} else {
+					$("#pin-uniqueness").removeClass("text-danger")
+					$("#pin-uniqueness").addClass("text-success");
+				}
+
+				if (isConsecutiveSequence(pin)) {
+					$("#pin-sequence").removeClass("text-success")
+					$("#pin-sequence").addClass("text-danger"); 
+				} else {
+					$("#pin-sequence").removeClass("text-danger")
+					$("#pin-sequence").addClass("text-success");
+				}
+			}
+		}
+
+		function isConsecutiveSequence(pin) {
+			for (let i = 0; i <= pin.length - 2; i++) {
+				let first = parseInt(pin.charAt(i), 10);
+				let second = parseInt(pin.charAt(i + 1), 10);
+
+				if (first + 1 !== second && first - 1 !== second) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 	</script>
 </th:block>

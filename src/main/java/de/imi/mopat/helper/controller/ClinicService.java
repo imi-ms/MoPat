@@ -3,7 +3,11 @@ package de.imi.mopat.helper.controller;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.BundleClinicDTO;
+import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.dto.ClinicDTO;
+import java.util.List;
 
 import java.util.*;
 
@@ -14,10 +18,12 @@ import org.springframework.stereotype.Service;
 public class ClinicService {
 
     private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+        org.slf4j.LoggerFactory.getLogger(ClinicService.class);
 
     @Autowired
-    private BundleClinicService bundleClinicService;
+    ClinicDTOMapper clinicDTOMapper;
+    @Autowired
+    private ClinicDao clinicDao;
 
     @Autowired
     private ClinicConfigurationMappingService clinicConfigurationMappingService;
@@ -35,12 +41,6 @@ public class ClinicService {
         clinicDTO.setDescription(clinic.getDescription());
         clinicDTO.setName(clinic.getName());
         clinicDTO.setEmail(clinic.getEmail());
-
-        List<BundleClinicDTO> bundleClinicDTOs = new ArrayList<>();
-        for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
-            bundleClinicDTOs.add(bundleClinicService.toBundleClinicDTO(clinicDTO,bundleClinic));
-        }
-        clinicDTO.setBundleClinicDTOs(bundleClinicDTOs);
 
         Map<ClinicConfigurationMapping, List<ClinicConfigurationMapping>> relation = new HashMap<>();
         for(ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()){
@@ -67,7 +67,16 @@ public class ClinicService {
 
 
         return clinicDTO;
+
+}
+
+    public List<ClinicDTO> getAllClinics(){
+        return clinicDao.getAllElements().stream()
+            .map(clinicDTOMapper)
+            .toList();
     }
 
-
+    public void merge(Clinic clinic) {
+        clinicDao.merge(clinic);
+    }
 }

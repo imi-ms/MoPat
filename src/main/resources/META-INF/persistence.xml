@@ -70,6 +70,7 @@
     <class>de.imi.mopat.model.ClinicConfigurationMapping</class>
     <class>de.imi.mopat.model.SelectClinicConfiguration</class>
     <class>de.imi.mopat.model.ClinicConfigurationGroupMapping</class>
+    <class>de.imi.mopat.model.QuestionnaireVersionGroup</class>
     <class>de.imi.mopat.model.ExportRuleQuestion</class><exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <!-- [bt] for developement porpuses: set 'ddl-generation' to 'create-tables' to tell the JPA provider to create tables on its own

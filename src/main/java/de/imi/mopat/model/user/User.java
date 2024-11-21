@@ -2,7 +2,6 @@ package de.imi.mopat.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.UserDTO;
 
 import java.io.Serializable;
 import java.util.*;
@@ -64,12 +63,16 @@ public class User implements Serializable, UserDetails {
     @Column(name = "principal")
     private boolean principal;
     @Valid
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Authority> authority = new HashSet<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final Set<AclEntry> rights = new HashSet<>();
     @Column(name = "is_enabled")
     private Boolean isEnabled = Boolean.TRUE;
+    @Column(name="use_pin")
+    private Boolean usePin = Boolean.FALSE;
+    @Column(name="pin")
+    private String pin;
     @Column(name = "last_selected_clinic_id")
     private Long lastSelectedClinicId;
 
@@ -91,23 +94,6 @@ public class User implements Serializable, UserDetails {
         // FIXME Missing parameters?
         setUsername(username);
         setPassword(password);
-    }
-
-    /*
-     * Converts this {@link User} object to an {@link UserDTO} object.
-     *
-     * @return An {@link UserDTO} object based on this {@link Clinic}
-     * object.
-     */
-    public UserDTO toUserDTO() {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(this.id);
-        userDTO.setUsername(this.username);
-        userDTO.setFirstname(this.firstname);
-        userDTO.setLastname(this.lastname);
-        userDTO.setEmail(this.email);
-
-        return userDTO;
     }
 
     /**
@@ -142,6 +128,34 @@ public class User implements Serializable, UserDetails {
             auth.add(new SimpleGrantedAuthority(userrole.getAuthority()));
         }
         return Collections.unmodifiableCollection(auth);
+    }
+
+    /**
+     * Updates the user's role by removing all existing roles of type {@link UserRole}
+     * from the authority set and adding the specified new role.
+     *
+     * <p>This method will remove any {@link Authority} in the authority set that can be
+     * converted to a {@link UserRole}. It then adds a new {@link Authority} with the
+     * specified {@link UserRole}.
+     *
+     * @param newRole the new role to assign to the user, replacing any existing roles of type {@link UserRole}.
+     */
+    public void replaceRolesWith(UserRole newRole) {
+        // Remove all authorities that are of type UserRole
+        authority.removeIf(auth -> {
+            try {
+                // Attempt to convert the authority string to a UserRole
+                UserRole userRole = UserRole.fromString(auth.getAuthority());
+                // If the conversion is successful, this Authority object will be removed
+                return userRole != null;
+            } catch (IllegalArgumentException e) {
+                // If the conversion fails, it means this Authority is not a UserRole,
+                // so this Authority object will not be removed.
+                return false;
+            }
+        });
+        // Add the new role to the authority set
+        authority.add(new Authority(this, newRole));
     }
 
     /**
@@ -488,6 +502,22 @@ public class User implements Serializable, UserDetails {
      */
     public Set<AclEntry> getRights() {
         return Collections.unmodifiableSet(this.rights);
+    }
+
+    public Boolean getUsePin() {
+        return usePin;
+    }
+
+    public void setUsePin(Boolean usePin) {
+        this.usePin = usePin;
+    }
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
     }
 
 

@@ -195,6 +195,13 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
     }
 
     @Override
+    public Boolean isGlobalPinAuthEnabled() {
+        Configuration configuration = getConfigurationByAttributeAndClass(
+            Constants.ENABLE_GLOBAL_PIN_AUTH, Constants.CLASS_GLOBAL);
+        return Boolean.valueOf(configuration.getValue());
+    }
+
+    @Override
     public Long getIncompleteEncounterScheduledTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
             Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
