@@ -130,7 +130,14 @@ public class BundleController {
 
         // Collect IDs for fetching scores
         Set<Long> questionnaireIds = availableQuestionnaires.stream().map(Questionnaire::getId).collect(Collectors.toSet());
-        Set<Long> questionnairesWithScores = scoreDao.findQuestionnairesWithScores(new ArrayList<>(questionnaireIds));
+        Set<Long> questionnairesWithScores = new HashSet<>();
+        if (!questionnaireIds.isEmpty()) {
+            questionnairesWithScores.addAll(
+                scoreDao.findQuestionnairesWithScores(
+                    new ArrayList<>(questionnaireIds)
+                )
+            );
+        }
 
         // Map to DTO and sort
         return availableQuestionnaires.stream()
