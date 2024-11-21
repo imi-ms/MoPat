@@ -173,6 +173,30 @@ a[data-bs-toggle='collapse'] {
     padding-top: 55px;
 }
 
+.questionnaire-version-group-header-spacer {
+    margin-top: 0.75rem;
+}
+
+.questionnaire-version-group-footer-spacer {
+    margin-bottom: 0.75rem;
+}
+
+.chevron-icon-down,
+.chevron-icon-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+
+    &.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+}
 
 /* Give this elements a fixed hight and make them scrollable */
 .scrollable-menu {

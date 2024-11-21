@@ -2,6 +2,7 @@ package de.imi.mopat.model.dto;
 
 import static org.junit.Assert.assertEquals;
 
+import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTest;
 import de.imi.mopat.utils.Helper;
@@ -29,6 +30,7 @@ public class AnswerDTOTest {
 
     private static final Random random = new Random();
     private AnswerDTO testAnswerDTO;
+    private ConditionDTOMapper conditionDTOMapper = new ConditionDTOMapper();
 
     public AnswerDTOTest() {
     }
@@ -336,7 +338,7 @@ public class AnswerDTOTest {
         List<ConditionDTO> conditions = new ArrayList<>();
         int count = random.nextInt(200);
         for (int i = 0; i < count; i++) {
-            conditions.add(ConditionTest.getNewValidCondition().toConditionDTO());
+            conditions.add(conditionDTOMapper.apply(ConditionTest.getNewValidCondition()));
         }
         testAnswerDTO.setConditions(conditions);
         assertEquals("The getting list of conditions was not the expected one", conditions,

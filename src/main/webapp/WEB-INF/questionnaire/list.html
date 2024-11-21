@@ -22,18 +22,19 @@
 				<th:block th:text="${messageFail}" />
 			</div>
 		</th:block>
-		<div 
-			id="loadingContainer" 
-			class="d-flex flex-column align-items-center justify-content-center vh-50"
-		>
-			<div 
-				class="spinner-border" 
-				id="loadingSpinner" 
-				role="status" 
-			>
-				<span class="visually-hidden">Loading...</span>
-			</div>
-		</div>
+		<div class="alert alert-warning" role="alert" th:if="${hasQuestionnaireConditions}" th:text="${messages.get(#locale, 'questionnaire.warning.cloneConditions', '')}"></div>
+    <div
+        id="loadingContainer"
+        class="d-flex flex-column align-items-center justify-content-center vh-50"
+    >
+      <div
+          class="spinner-border"
+          id="loadingSpinner"
+          role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 		<div class="table-responsive">
 			<table
 				id="questionnaireTable"

@@ -31,11 +31,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JSONHelper{
 
-    private final ConfigurationDao configurationDao;
-
-    public JSONHelper(final ConfigurationDao configurationDao){
-        this.configurationDao=configurationDao;
-    }
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO, final Questionnaire questionnaire){
         jsonQuestionnaireDTO.setId(questionnaire.getId());
