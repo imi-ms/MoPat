@@ -11,7 +11,8 @@ jobs:
       mariadb:
         image: mariadb:latest
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MARIADB_DATABASE: db
+          MARIADB_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: >-
