@@ -16,10 +16,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="/usr/bin/mysql --user=root --password=root --execute \"SHOW DATABASES;\""
           --health-interval=20s
           --health-timeout=20s
-          --health-retries=50
+          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
