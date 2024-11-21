@@ -8,6 +8,8 @@ jobs:
     services:
       mariadb:
         image: mariadb:latest
+        env:
+          MARIADB_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: >-
