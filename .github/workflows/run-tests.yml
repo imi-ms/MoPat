@@ -1,0 +1,43 @@
+name: Java CI with Maven
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install MariaDB client and Load Database Schema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client
+          mysql -h 127.0.0.1 -u root --password=root -e "CREATE USER IF NOT EXISTS 'mopat'@'%' IDENTIFIED BY 'mopat';"
+          mysql -h 127.0.0.1 -u root --password=root -e "GRANT ALL PRIVILEGES ON *.* TO 'mopat'@'%'; FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -u mopat --password=mopat < db/installationInitTest.sql
+
+      - name: Build with Maven
+        run: mvn -B clean package --file pom.xml
+
+      - name: Test with Maven
+        run: mvn -B test --file pom.xml
