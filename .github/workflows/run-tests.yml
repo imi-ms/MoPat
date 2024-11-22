@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   test:
+    permissions:
+      checks: write
+      pull-requests: write # only required if `comment: true` was enabled
     runs-on: ubuntu-latest
     services:
       mariadb:
