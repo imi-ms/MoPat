@@ -1,3 +1,6 @@
+<!-- TEST_REPORT_START -->
+<!-- TEST_REPORT_END -->
+
 # Mobile Patient Survey (MoPat)
 MoPat is a web-based platform designed to transform conventional paper-based questionnaires into a digital format. The application is universally usable across a range of devices, including desktop computers, tablets, and smartphones. Thanks to its full compatibility with all major operating systems such as Windows, MacOS, Linux, iOS, and Android via the web browser, MoPat offers users the flexibility to access the questionnaire service on any device with network access. By automatically exporting the questionnaire results into different systems, MoPat can integrate with other systems. <br />
 **DISCLAIMER: MoPat is not a certified Medical Device Software according to the Medical Device Regulation. Hence, the calculation of scores can only be used for research purposes.** 
