@@ -48,3 +48,33 @@ jobs:
         if: success() || failure() # always run even if the previous step fails
         with:
           report_paths: '**/target/surefire-reports/*.xml'
+
+      - name: Update README with Test Results Summary
+        run: |
+          # Read existing README
+          README=$(cat README.md)
+          # Replace the section between the markers with the new summary
+          UPDATED_README=$(echo "$README" | awk -v summary="${{ steps.junit.outputs.summary }}" 'BEGIN {p=1} /<!-- TEST_REPORT_START -->/ {print;print summary; p=0} /<!-- TEST_REPORT_END -->/ {p=1} p')
+          # Save the updated README back
+          echo "$UPDATED_README" > README.md
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update README with latest test results"
+          git push
+
+      - name: Post PR comment with Test Results
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Test Results:
+            Total: ${{ steps.junit.outputs.total }}
+            Passed: ${{ steps.junit.outputs.passed }}
+            Skipped: ${{ steps.junit.outputs.skipped }}
+            Failed: ${{ steps.junit.outputs.failed }}
+            ### Details:
+            ${{ steps.junit.outputs.summary }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
