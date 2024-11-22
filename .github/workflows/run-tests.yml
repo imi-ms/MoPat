@@ -44,6 +44,7 @@ jobs:
         run: mvn -B test --file pom.xml
 
       - name: Publish Test Report
+        id: testReport
         uses: mikepenz/action-junit-report@v5
         if: success() || failure() # always run even if the previous step fails
         with:
@@ -56,11 +57,11 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Test Results:
-            Total: ${{ steps.junit.outputs.total }}
-            Passed: ${{ steps.junit.outputs.passed }}
-            Skipped: ${{ steps.junit.outputs.skipped }}
-            Failed: ${{ steps.junit.outputs.failed }}
+            Total: ${{ steps.testReport.outputs.total }}
+            Passed: ${{ steps.testReport.outputs.passed }}
+            Skipped: ${{ steps.testReport.outputs.skipped }}
+            Failed: ${{ steps.testReport.outputs.failed }}
             ### Details:
-            ${{ steps.junit.outputs.summary }}
+            ${{ steps.testReport.outputs.summary }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
