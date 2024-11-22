@@ -1,4 +1,4 @@
-name: Java-Test
+name: test
 
 on: [push, pull_request]
 
@@ -53,7 +53,7 @@ jobs:
 name: report
 on:
   workflow_run:
-    workflows: [ Java-Test ]
+    workflows: [ test ]
     types: [ completed ]
 
 permissions:
