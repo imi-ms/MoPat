@@ -12,7 +12,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: root
         ports:
           - 3306:3306
-        options: |
+        options: >-
           --health-cmd="healthcheck.sh 
           --connect 
           --innodb_initialized" 
