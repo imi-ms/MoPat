@@ -1,6 +1,6 @@
 name: test
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
   test:
@@ -57,11 +57,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Test Results:
-            Total: ${{ steps.testReport.outputs.total }}
-            Passed: ${{ steps.testReport.outputs.passed }}
-            Skipped: ${{ steps.testReport.outputs.skipped }}
-            Failed: ${{ steps.testReport.outputs.failed }}
-            ### Details:
             ${{ steps.testReport.outputs.summary }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
