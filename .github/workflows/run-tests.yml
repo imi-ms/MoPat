@@ -52,7 +52,7 @@ jobs:
 
       - name: Post PR comment with Test Results
         if: always() && github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
