@@ -52,3 +52,7 @@ JOIN (
     WHERE q.version_group_id IS NULL
 ) AS subquery ON q.id = subquery.questionnaire_id
 SET q.version_group_id = subquery.version_group_id;
+
+INSERT INTO moPat.SelectConfiguration_OPTIONS
+(SelectConfiguration_id, `options`)
+VALUES(33, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetrieverByPID');
