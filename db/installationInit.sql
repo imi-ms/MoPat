@@ -216,6 +216,7 @@ INSERT INTO `SelectConfiguration_OPTIONS` (`SelectConfiguration_id`, `options`) 
 (81, 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImpl'),
 (81, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever'),
 (81, 'de.imi.mopat.helper.controller.DummyPatientDataRetrieverImpl'),
+(81, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetrieverByPID'),
 (38, 'de_DE'),
 (38, 'en_GB');
 
