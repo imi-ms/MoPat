@@ -63,13 +63,10 @@ public class AnswerTest {
      */
     @Test
     public void testGetAnsSetIsEnabled() {
-        fail();
-        /*
         Boolean testIsEnabled = random.nextBoolean();
         testAnswer.setIsEnabled(testIsEnabled);
         assertEquals("The getting isEnabled was not the expected one", testIsEnabled,
             testAnswer.getIsEnabled());
-         */
     }
 
     /**
