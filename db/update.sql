@@ -127,5 +127,5 @@ FROM `clinic_configuration_mapping` ccm
 WHERE ccm.clinic_configuration_id = 3;
 
 
-ALTER TABLE moPat.encounter ADD preselected_clinic_id BIGINT NULL;
-ALTER TABLE moPat.encounter ADD CONSTRAINT encounter_clinic_FK FOREIGN KEY (preselected_clinic_id) REFERENCES moPat.clinic(id);
+ALTER TABLE encounter ADD preselected_clinic_id BIGINT NULL;
+ALTER TABLE encounter ADD CONSTRAINT encounter_clinic_FK FOREIGN KEY (preselected_clinic_id) REFERENCES moPat.clinic(id);
