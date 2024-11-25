@@ -1,5 +1,6 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.auth.PinAuthorizationService;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
@@ -10,8 +11,10 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ResponseDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.EncounterService;
+import de.imi.mopat.dao.user.PinAuthorizationDao;
+import de.imi.mopat.dao.user.UserDao;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.io.EncounterExporter;
@@ -36,6 +39,8 @@ import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.user.PinAuthorization;
+import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
@@ -62,6 +67,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -90,8 +96,6 @@ public class SurveyController {
     @Autowired
     private EncounterDao encounterDao;
     @Autowired
-    private ClinicDao clinicDao;
-    @Autowired
     private AnswerDao answerDao;
     @Autowired
     private QuestionnaireDao questionnaireDao;
@@ -108,9 +112,15 @@ public class SurveyController {
     @Autowired
     private AuditEntryDao auditEntryDao;
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
     @Autowired
-    private EncounterService encounterService;
+    private EncounterDTOMapper encounterDTOMapper;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private PinAuthorizationDao pinAuthorizationDao;
+    @Autowired
+    private PinAuthorizationService pinAuthorizationService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -128,7 +138,7 @@ public class SurveyController {
     public String showCheckCaseNumberFirstTime(final Model model) {
         model.addAttribute(
                 "encounterDTO",
-                encounterService.toEncounterDTO(true,new Encounter()));
+                encounterDTOMapper.apply(true,new Encounter()));
         model.addAttribute(
                 "hideProfile",
                 Boolean.FALSE);
@@ -149,7 +159,7 @@ public class SurveyController {
         if (!model.containsAttribute("encounterDTO")) {
             model.addAttribute(
                     "encounterDTO",
-                    encounterService.toEncounterDTO(true,new Encounter()));
+                    encounterDTOMapper.apply(true,new Encounter()));
         }
 
         if (!model.containsAttribute("patientDataService")) {
@@ -309,7 +319,7 @@ public class SurveyController {
             if (bundle.getIsPublished() && !bundle.getBundleClinics()
                                                   .isEmpty()) {
                 bundleLanguageEncounterMap.put(
-                        bundleService.toBundleDTO(false,bundle),
+                        bundleDTOMapper.apply(false,bundle),
                         new HashMap<>());
             }
         }
@@ -321,7 +331,7 @@ public class SurveyController {
         // Loop through all incomplete encounter
         for (Encounter incompleteEncounter : incompleteEncounters) {
             // Save the temporarily used BundleDTO to save some computation time
-            BundleDTO tempBundleDTO = bundleService.toBundleDTO(false,incompleteEncounter.getBundle());
+            BundleDTO tempBundleDTO = bundleDTOMapper.apply(false,incompleteEncounter.getBundle());
             // If the bundle is already in the map the user has the rights to
             // see it
             if (bundleLanguageEncounterMap.containsKey(tempBundleDTO)) {
@@ -333,7 +343,7 @@ public class SurveyController {
                     // If not, add the language code and the current
                     // encounter to the map of the current bundle
                     List<EncounterDTO> encounterList = new ArrayList<>();
-                    encounterList.add(encounterService.toEncounterDTO(true,incompleteEncounter));
+                    encounterList.add(encounterDTOMapper.apply(true,incompleteEncounter));
                     localeCodeEncounterMap.put(
                             incompleteEncounter.getBundleLanguage(),
                             encounterList);
@@ -347,7 +357,7 @@ public class SurveyController {
                     // bundle combined with the language code
                     bundleLanguageEncounterMap.get(tempBundleDTO)
                                               .get(incompleteEncounter.getBundleLanguage())
-                                              .add(encounterService.toEncounterDTO(
+                                              .add(encounterDTOMapper.apply(
                                                       true,
                                                   incompleteEncounter));
                 }
@@ -408,7 +418,7 @@ public class SurveyController {
             // to the model to override the default (new) encounter
             if (incompleteEncounterUUID != null
                     && !incompleteEncounterUUID.isEmpty()) {
-                EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
+                EncounterDTO incompleteEncounterDTO = encounterDTOMapper.apply(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
                 model.addAttribute(
                         "encounterDTO",
                         incompleteEncounterDTO);
@@ -419,7 +429,7 @@ public class SurveyController {
 
                 // Make a bundleDTO from the bundle and add it to the
                 // encounterDTO
-                encounterDTO.setBundleDTO(bundleService.toBundleDTO(true,bundle));
+                encounterDTO.setBundleDTO(bundleDTOMapper.apply(true,bundle));
 
                 Encounter encounter = new Encounter();
 
@@ -433,7 +443,7 @@ public class SurveyController {
                 // (bundle has just been set) encounter object,
                 // otherwise the bundle object would not be merged
                 encounterDao.merge(encounter);
-                encounterDTO = encounterService.toEncounterDTO(true,encounter);
+                encounterDTO = encounterDTOMapper.apply(true,encounter);
                 model.addAttribute(
                         "encounterDTO",
                         encounterDTO);
@@ -464,6 +474,10 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/questionnaire", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showQuestionnaire(final Model model, final HttpSession session) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        String username = user.getUsername();
+
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         encounterDTO.removeDemographics();
         model.addAttribute("encounterDTO", encounterDTO);
@@ -479,9 +493,14 @@ public class SurveyController {
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
 
-        // invalidate the current session
-        SecurityContextHolder.getContext().setAuthentication(null);
-        session.invalidate();
+        if (configurationDao.isGlobalPinAuthEnabled()) {
+            pinAuthorizationService.resetPinAuthForUser(user);
+        } else {
+            // invalidate the current session
+            SecurityContextHolder.getContext().setAuthentication(null);
+            session.invalidate();
+        }
+
         return "mobile/survey/questionnaire";
     }
 
@@ -508,7 +527,7 @@ public class SurveyController {
             EncounterDTO encounterDTO = new EncounterDTO(
                     true,
                     "test");
-            encounterDTO.setBundleDTO(bundleService.toBundleDTO(true,bundle));
+            encounterDTO.setBundleDTO(bundleDTOMapper.apply(true,bundle));
             model.addAttribute(
                     "hideProfile",
                     "false");
@@ -619,7 +638,7 @@ public class SurveyController {
             return "encounter/completed";
         }
 
-        EncounterDTO encounterDTO =encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(uuid));
+        EncounterDTO encounterDTO = encounterDTOMapper.apply(true,encounterDao.getElementByUUID(uuid));
 
         if (encounterDTO.getEndTime() == null && encounterDTO.getLastSeenQuestionId() == null) {
             //Set the startTime if the encounter started for the first time
@@ -687,7 +706,7 @@ public class SurveyController {
         // and add it
         // to the model to override the default (new) encounter
         if (incompleteEncounterUUID != null && !incompleteEncounterUUID.isEmpty()) {
-            EncounterDTO incompleteEncounterDTO = encounterService.toEncounterDTO(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
+            EncounterDTO incompleteEncounterDTO = encounterDTOMapper.apply(true,encounterDao.getElementByUUID(incompleteEncounterUUID));
             model.addAttribute(
                     "encounterDTO",
                     incompleteEncounterDTO);
@@ -700,7 +719,7 @@ public class SurveyController {
             encounterDao.merge(encounter);
             model.addAttribute(
                     "encounterDTO",
-                    encounterService.toEncounterDTO(true,encounter));
+                    encounterDTOMapper.apply(true,encounter));
         }
 
         // If the selected bundle language is available for the gui, then use

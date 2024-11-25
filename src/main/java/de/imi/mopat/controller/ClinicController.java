@@ -6,8 +6,9 @@ import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.user.UserDao;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Clinic;
@@ -23,8 +24,6 @@ import de.imi.mopat.validator.BundleDTOValidator;
 import de.imi.mopat.validator.ClinicDTOValidator;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +69,11 @@ public class ClinicController {
     @Autowired
     private MessageSource messageSource;
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
+    @Autowired
+    private UserService userService;
 
     /**
      * @param id The Id of the {@link Clinic} object
@@ -101,50 +102,15 @@ public class ClinicController {
             // and have at least one questionnaire attached
             if (bundle.getIsPublished() && !bundle.getBundleQuestionnaires()
                                                   .isEmpty()) {
-                bundleDTOs.add(bundleService.toBundleDTO(true,bundle));
+                bundleDTOs.add(bundleDTOMapper.apply(true,bundle));
             }
         }
 
         // Sort by name
-        Collections.sort(bundleDTOs, new Comparator<BundleDTO>() {
-            @Override
-            public int compare(final BundleDTO o1, final BundleDTO o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return bundleDTOs;
-    }
-
-    /**
-     * @param id The Id of the {@link Clinic} object.
-     * @return Returns all {@link User Users} that are available to be assigned to the
-     * {@link Clinic} object.
-     */
-    private List<UserDTO> getAvailableUserDTOs(final Long id) {
-
-        List<UserDTO> availableUserDTOs = new ArrayList<>();
-
-        // Add all users that are available
-        boolean assigned = false;
-        for (User user : userDao.getAllElements()) {
-            if (id != null) {
-                for (AclEntry aclEntry : aclEntryDao.getAllElements()) {
-                    if (aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(id)
-                        && aclEntry.getUser().getId().equals(user.getId())) {
-                        assigned = true;
-                        break;
-                    }
-                }
-                if (!assigned) {
-                    availableUserDTOs.add(user.toUserDTO());
-                }
-                assigned = false;
-            } else {
-                availableUserDTOs.add(user.toUserDTO());
-            }
-        }
-
-        return availableUserDTOs;
+        return bundleDTOs.stream()
+                .sorted((bundleDTO1, bundleDTO2) ->
+                        bundleDTO1.getName().compareToIgnoreCase(bundleDTO2.getName()))
+                .toList();
     }
 
     /**
@@ -176,21 +142,11 @@ public class ClinicController {
         ClinicDTO clinicDTO = new ClinicDTO();
         Clinic clinic = clinicDao.getElementById(clinicId);
         if (clinic != null) {
-            clinicDTO = clinicService.toClinicDTO(clinic);
+            clinicDTO = clinicDTOMapper.apply(clinic);
         }
 
-        List<UserDTO> assignedUserDTOs = new ArrayList<>();
-        List<UserDTO> availableUserDTOs = getAvailableUserDTOs(clinicId);
-
-        for (User user : userDao.getAllElements()) {
-            UserDTO assignedUserDTO = user.toUserDTO();
-            assignedUserDTOs.add(assignedUserDTO);
-            for (UserDTO userDTO : availableUserDTOs) {
-                if (assignedUserDTO.getId().equals(userDTO.getId())) {
-                    assignedUserDTOs.remove(assignedUserDTO);
-                }
-            }
-        }
+        List<UserDTO> assignedUserDTOs = userService.getAssignedUserDTOs(clinicId);
+        List<UserDTO> availableUserDTOs = userService.getAvailableUserDTOs(clinicId);
 
         clinicDTO.setAssignedUserDTOs(assignedUserDTOs);
 
@@ -257,7 +213,7 @@ public class ClinicController {
 
             //If the result has an error,
             // his keeps the changes at assigned-/availableUsersTable
-            List<UserDTO> availableUserDTOs = getAvailableUserDTOs(null);
+            List<UserDTO> availableUserDTOs = userService.getAvailableUserDTOs(null);
             List<UserDTO> assignedUserDTOs = new ArrayList<>();
             if (clinicDTO.getAssignedUserDTOs() != null) {
                 for (UserDTO userDTO : clinicDTO.getAssignedUserDTOs()) {
@@ -265,7 +221,7 @@ public class ClinicController {
                         //userDTO only contains id,
                         //so we need to get new userDTO from userDao that
                         // contains username etc.
-                        assignedUserDTOs.add(userDao.getElementById(userDTO.getId()).toUserDTO());
+                        assignedUserDTOs.add(userService.getUserDTOById(userDTO.getId()));
                     }
                 }
             }
