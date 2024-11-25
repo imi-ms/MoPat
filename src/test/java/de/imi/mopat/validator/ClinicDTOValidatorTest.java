@@ -19,6 +19,7 @@ import de.imi.mopat.model.ClinicConfigurationTest;
 import de.imi.mopat.model.ClinicTest;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.enumeration.ClinicConfigurationsPatientRetriever;
+import de.imi.mopat.model.enumeration.ConfigurationType;
 import de.imi.mopat.utils.Helper;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ public class ClinicDTOValidatorTest {
         Clinic clinic = ClinicTest.getNewValidClinic();
         ClinicConfigurationMapping clinicConfigurationMapping2 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
         ClinicConfiguration clinicConfiguration = ClinicConfigurationTest.getNewValidConfiguration();
+        clinicConfiguration.setConfigurationType(ConfigurationType.STRING);
         clinicConfiguration.setAttribute(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue());
         clinicConfigurationMapping2.setValue("true");
         clinicConfigurationMapping2.setClinicConfiguration(clinicConfiguration);

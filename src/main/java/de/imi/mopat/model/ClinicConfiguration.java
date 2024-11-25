@@ -271,6 +271,9 @@ public class ClinicConfiguration implements Serializable {
     }
 
 
+    public void setConfigurationType(ConfigurationType configurationType) {
+        this.configurationType = configurationType;
+    }
     /**
      * Returns the Configuration object that is parent of the current configuration object.
      *
