@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTest;
@@ -62,10 +63,13 @@ public class AnswerTest {
      */
     @Test
     public void testGetAnsSetIsEnabled() {
+        fail();
+        /*
         Boolean testIsEnabled = random.nextBoolean();
         testAnswer.setIsEnabled(testIsEnabled);
         assertEquals("The getting isEnabled was not the expected one", testIsEnabled,
             testAnswer.getIsEnabled());
+         */
     }
 
     /**
