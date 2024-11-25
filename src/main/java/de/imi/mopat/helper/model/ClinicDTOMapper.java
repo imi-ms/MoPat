@@ -40,33 +40,37 @@ public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
         clinicDTO.setEmail(clinic.getEmail());
 
         List<BundleClinicDTO> bundleClinicDTOs = clinic.getBundleClinics().stream()
-                .map(bundleClinic -> bundleClinicDTOMapper.apply(clinicDTO, bundleClinic))
-                .collect(Collectors.toList());
+            .map(bundleClinic -> bundleClinicDTOMapper.apply(clinicDTO, bundleClinic))
+            .collect(Collectors.toList());
 
         clinicDTO.setBundleClinicDTOs(bundleClinicDTOs);
 
         Map<ClinicConfigurationMapping, List<ClinicConfigurationMapping>> relation = new HashMap<>();
-        for(ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()){
-            ClinicConfiguration parent = clinicConfigurationMapping.getClinicConfiguration().getParent();
-            if(parent != null){
-                ClinicConfigurationMapping result = clinic.getClinicConfigurationMappings().stream()
-                    .filter(obj -> obj.getClinicConfiguration().equals(clinicConfigurationMapping.getClinicConfiguration().getParent()))
-                    .findFirst()
-                    .orElse(null);
-                List<ClinicConfigurationMapping> newList = relation.get(result);
-                if(newList == null){
-                    newList = new ArrayList<>();
-                }
-                newList.add(clinicConfigurationMapping);
-                relation.put(result, newList);
-            } else {
-                if(!relation.containsKey(clinicConfigurationMapping)){
-                    relation.put(clinicConfigurationMapping,new ArrayList<>());
+        if (clinic.getClinicConfigurationMappings() != null) {
+            for (ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()) {
+                ClinicConfiguration parent = clinicConfigurationMapping.getClinicConfiguration().getParent();
+                if (parent != null) {
+                    ClinicConfigurationMapping result = clinic.getClinicConfigurationMappings().stream()
+                        .filter(obj -> obj.getClinicConfiguration()
+                            .equals(clinicConfigurationMapping.getClinicConfiguration().getParent()))
+                        .findFirst()
+                        .orElse(null);
+                    List<ClinicConfigurationMapping> newList = relation.get(result);
+                    if (newList == null) {
+                        newList = new ArrayList<>();
+                    }
+                    newList.add(clinicConfigurationMapping);
+                    relation.put(result, newList);
+                } else {
+                    if (!relation.containsKey(clinicConfigurationMapping)) {
+                        relation.put(clinicConfigurationMapping, new ArrayList<>());
+                    }
                 }
             }
         }
 
-        clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
+        clinicDTO.setClinicConfigurationMappingDTOS(
+            clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
 
         return clinicDTO;
     }

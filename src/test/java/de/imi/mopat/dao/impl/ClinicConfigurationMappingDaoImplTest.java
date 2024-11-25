@@ -52,15 +52,15 @@ public class ClinicConfigurationMappingDaoImplTest {
 
     @Before
     public void setUp() {
-        ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(43L);
+        ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(1L);
         clinic = ClinicTest.getNewValidClinic();
         ClinicConfigurationMapping clinicConfigurationMapping = new ClinicConfigurationMapping(clinic, clinicConfiguration, "true");
         List<ClinicConfigurationMapping> clinicConfigurationMappings = new ArrayList<>();
         clinicConfigurationMappings.add(clinicConfigurationMapping);
-        clinicConfiguration = clinicConfigurationDao.getElementById(31L);
+        clinicConfiguration = clinicConfigurationDao.getElementById(2L);
         clinicConfigurationMapping = new ClinicConfigurationMapping(clinic, clinicConfiguration, "true");
         clinicConfigurationMappings.add(clinicConfigurationMapping);
-        clinicConfiguration = clinicConfigurationDao.getElementById(44L);
+        clinicConfiguration = clinicConfigurationDao.getElementById(3L);
         clinicConfigurationMapping = new ClinicConfigurationMapping(clinic, clinicConfiguration, "true");
         clinicConfigurationMappings.add(clinicConfigurationMapping);
         clinic.setClinicConfigurationMappings(clinicConfigurationMappings);

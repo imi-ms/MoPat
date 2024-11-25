@@ -93,6 +93,9 @@ public class ClinicConfigurationMapping implements Serializable {
         return clinic;
     }
 
+    public void setClinic(Clinic clinic) {
+        this.clinic=clinic;
+    }
 
     public List<ClinicConfigurationGroupMapping> getClinicConfigurationGroupMappings() {
         return clinicConfigurationGroupMappings;

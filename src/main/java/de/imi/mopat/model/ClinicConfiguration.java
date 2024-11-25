@@ -178,6 +178,10 @@ public class ClinicConfiguration implements Serializable {
         return entityClass;
     }
 
+    public void setAttribute(String attribute) {
+        this.attribute= attribute;
+    }
+
     /**
      * Returns the attribute of the current configuration object.
      *

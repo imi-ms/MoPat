@@ -13,7 +13,9 @@ import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.utils.Helper;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -367,6 +369,14 @@ public class ClinicTest {
     public void testToClinicDTO() {
         Clinic spyClinic = spy(testClinic);
         Mockito.when(spyClinic.getId()).thenReturn(Math.abs(random.nextLong()));
+        ClinicConfigurationMapping clinicConfigurationMapping1 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
+        clinicConfigurationMapping1.setClinic(spyClinic);
+        ClinicConfigurationMapping clinicConfigurationMapping2 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
+        clinicConfigurationMapping2.setClinic(spyClinic);
+        List<ClinicConfigurationMapping> clinicConfigurationMappings = new ArrayList<>();
+        clinicConfigurationMappings.add(clinicConfigurationMapping1);
+        clinicConfigurationMappings.add(clinicConfigurationMapping2);
+        spyClinic.setClinicConfigurationMappings(clinicConfigurationMappings);
         Bundle bundle = spy(BundleTest.getNewValidBundle());
         Mockito.when(bundle.getId()).thenReturn(Math.abs(random.nextLong()));
         bundle.setLocalizedFinalText(new TreeMap<>());

@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
 
 import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
@@ -11,10 +12,17 @@ import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.Clinic;
+import de.imi.mopat.model.ClinicConfiguration;
+import de.imi.mopat.model.ClinicConfigurationMapping;
+import de.imi.mopat.model.ClinicConfigurationMappingTest;
+import de.imi.mopat.model.ClinicConfigurationTest;
 import de.imi.mopat.model.ClinicTest;
 import de.imi.mopat.model.dto.ClinicDTO;
+import de.imi.mopat.model.enumeration.ClinicConfigurationsPatientRetriever;
 import de.imi.mopat.utils.Helper;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +82,17 @@ public class ClinicDTOValidatorTest {
      */
     @Test
     public void testValidate() {
-        ClinicDTO clinicDTO = clinicDTOMapper.apply(ClinicTest.getNewValidClinic());
+        Clinic clinic = ClinicTest.getNewValidClinic();
+        ClinicConfigurationMapping clinicConfigurationMapping2 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
+        ClinicConfiguration clinicConfiguration = ClinicConfigurationTest.getNewValidConfiguration();
+        clinicConfiguration.setAttribute(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue());
+        clinicConfigurationMapping2.setValue("true");
+        clinicConfigurationMapping2.setClinicConfiguration(clinicConfiguration);
+        clinicConfigurationMapping2.setClinic(clinic);
+        List<ClinicConfigurationMapping> clinicConfigurationMappings = new ArrayList<>();
+        clinicConfigurationMappings.add(clinicConfigurationMapping2);
+        clinic.setClinicConfigurationMappings(clinicConfigurationMappings);
+        ClinicDTO clinicDTO = clinicDTOMapper.apply(clinic);
         BindingResult result = new MapBindingResult(new HashMap<>(),
             Helper.getRandomAlphabeticString(random.nextInt(13)));
         clinicDTOValidator.validate(clinicDTO, result);
@@ -83,11 +101,11 @@ public class ClinicDTOValidatorTest {
             result.hasErrors());
 
         //Set up clinic with name, to test the validate method
-        Clinic clinic = ClinicTest.getNewValidClinic();
+        Clinic clinic1 = ClinicTest.getNewValidClinic();
         String name = Helper.getRandomAlphabeticString(random.nextInt(13) + 3);
         clinicDTO.setName(name);
-        clinic.setName(name);
-        clinicDao.merge(clinic);
+        clinic1.setName(name);
+        clinicDao.merge(clinic1);
         clinicDTOValidator.validate(clinicDTO, result);
         assertTrue(
             "The validation of clinicDTO name failed. The result didn't catch errors excepted it was expected to do.",

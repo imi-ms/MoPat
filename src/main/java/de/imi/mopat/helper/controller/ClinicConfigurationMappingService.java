@@ -91,13 +91,13 @@ public class ClinicConfigurationMappingService {
         clinicConfigurationMappingDTO.setLabelMessageCode(clinicConfigurationDTO.getLabelMessageCode());
         clinicConfigurationMappingDTO.setPosition(clinicConfigurationDTO.getPosition());
         clinicConfigurationMappingDTO.setDescriptionMessageCode(clinicConfigurationDTO.getDescriptionMessageCode());
-        clinicConfigurationMappingDTO.setAttribute(clinicConfigurationMappingDTO.getAttribute());
+        clinicConfigurationMappingDTO.setAttribute(clinicConfigurationDTO.getAttribute());
         clinicConfigurationMappingDTO.setTestMethod(clinicConfigurationDTO.getTestMethod());
         if (clinicConfigurationDTO.getOptions() != null && !clinicConfigurationDTO.getOptions().isEmpty()) {
             clinicConfigurationMappingDTO.setOptions(clinicConfigurationDTO.getOptions());
         }
         List<ClinicConfigurationGroupMappingDTO> clinicConfigurationGroupMappingDTOS = new ArrayList<>();
-        if(clinicConfigurationDTO.getMappedConfigurationGroup() != null){
+        if (clinicConfigurationDTO.getMappedConfigurationGroup() != null) {
             List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
             for (ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(
                 clinicConfigurationDTO.getMappedConfigurationGroup())) {
@@ -126,7 +126,8 @@ public class ClinicConfigurationMappingService {
             }
             clinicConfigurationMappingDTO.setMappedConfigurationGroupDTOS(clinicConfigurationGroupMappingDTOS);
         }
-        if (!clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
+        if (clinicConfigurationMapping.getClinicConfigurationGroupMappings() != null
+            && !clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
             //TODO single to multiple groups
             clinicConfigurationMappingDTO.setMappedConfigurationGroup(
                 clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0).getConfigurationGroup()

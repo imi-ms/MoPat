@@ -53,7 +53,7 @@ public class ClinicDTOValidator implements Validator {
                 messageSource.getMessage("clinic.error.nameInUse", new Object[]{},
                     LocaleContextHolder.getLocale()));
         }
-        if(!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)){
+        if (!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)) {
             errors.rejectValue("clinicConfigurationMappingDTOS[0].value", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage("clinic.error.noConfiguration",
                     new Object[]{}, LocaleContextHolder.getLocale()));
@@ -84,19 +84,19 @@ public class ClinicDTOValidator implements Validator {
     private static boolean checkIfAnyOnePatientRetrieverIsEnabled(ClinicDTO clinicDTO) {
         boolean check = false;
         for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
-            if (clinicConfigurationMappingDTO.getAttribute()
-                .equals(ClinicConfigurationsPatientRetriever.usePseudonymizationService.getTextValue())) {
-                check = clinicConfigurationMappingDTO.getValue().equals("true");
+            if (clinicConfigurationMappingDTO.getAttribute() != null) {
+                if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.usePseudonymizationService.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.registerPatientData.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                }
             }
-            else if (clinicConfigurationMappingDTO.getAttribute()
-                .equals(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue())) {
-                check = clinicConfigurationMappingDTO.getValue().equals("true");
-            }
-            else if (clinicConfigurationMappingDTO.getAttribute()
-                .equals(ClinicConfigurationsPatientRetriever.registerPatientData.getTextValue())) {
-                check = clinicConfigurationMappingDTO.getValue().equals("true");
-            }
-            if(check){
+            if (check) {
                 break;
             }
         }

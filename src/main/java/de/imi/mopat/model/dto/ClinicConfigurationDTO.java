@@ -108,7 +108,19 @@ public class ClinicConfigurationDTO {
             Collections.sort(children, new Comparator<ClinicConfigurationDTO>() {
                 @Override
                 public int compare(ClinicConfigurationDTO o1, ClinicConfigurationDTO o2) {
-                    return Integer.compare(o1.getPosition(), o2.getPosition());
+                    Integer pos1 = o1.getPosition();
+                    Integer pos2 = o2.getPosition();
+
+                    if (pos1 == null && pos2 == null) {
+                        return 0;
+                    }
+                    if (pos1 == null) {
+                        return -1;
+                    }
+                    if (pos2 == null) {
+                        return 1;
+                    }
+                    return pos1.compareTo(pos2);
                 }
             });
         }
