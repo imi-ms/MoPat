@@ -15,6 +15,7 @@ import ca.uhn.hl7v2.model.v22.segment.QRD;
 import ca.uhn.hl7v2.parser.PipeParser;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.dto.EncounterDTO;
@@ -66,7 +67,7 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
     }
 
     @Override
-    public EncounterDTO retrievePatientData(String patientNumber) {
+    public EncounterDTO retrievePatientData(Clinic clinic, String patientNumber) {
         LOGGER.debug("patientNumber is: {}", patientNumber);
         assert patientNumber != null : "The given patientNumber was null";
         patientNumber = patientNumber.trim();
