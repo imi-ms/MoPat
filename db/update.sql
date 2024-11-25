@@ -23,6 +23,12 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 UPDATE SelectConfiguration_OPTIONS set `SelectConfiguration_id` = 81 WHERE `SelectConfiguration_id`=33;
 DELETE FROM `configuration_group` WHERE `id`=3;
 
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 32 SET cfg1.value = cfg2.value WHERE cfg1.id = 80;
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 33 SET cfg1.value = cfg2.value WHERE cfg1.id = 81;
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 34 SET cfg1.value = cfg2.value WHERE cfg1.id = 82;
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 35 SET cfg1.value = cfg2.value WHERE cfg1.id = 83;
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 45 SET cfg1.value = cfg2.value WHERE cfg1.id = 84;
+UPDATE configuration AS cfg1 JOIN configuration AS cfg2 ON cfg2.id = 46 SET cfg1.value = cfg2.value WHERE cfg1.id = 85;
 
 DELETE FROM `configuration` where `id` in (31,32,33,34,35,43,44,45,46);
 
@@ -95,6 +101,31 @@ CREATE TABLE IF NOT EXISTS `clinic_configuration_group_mapping` (
 
 ALTER TABLE `clinic_configuration_group_mapping` ADD CONSTRAINT `clinic_configuration_group_mapping_fk1` FOREIGN KEY (`clinic_configuration_mapping_id`) REFERENCES `clinic_configuration_mapping` (`id`);
 ALTER TABLE `clinic_configuration_group_mapping` ADD CONSTRAINT `clinic_configuration_group_mapping_fk2` FOREIGN KEY (`configuration_group_id`) REFERENCES `configuration_group` (`id`);
+
+
+INSERT INTO `clinic_configuration_mapping` (value, clinic_id, clinic_configuration_id)
+SELECT 'true', c.id, 1
+FROM `clinic` c
+UNION ALL
+SELECT 'true', c.id, 2
+FROM `clinic` c
+UNION ALL
+SELECT 'false', c.id, 3
+FROM `clinic` c;
+
+
+-- For clinic_configuration_id = 1 and group id 13
+INSERT INTO `clinic_configuration_group_mapping` (clinic_configuration_mapping_id, configuration_group_id)
+SELECT ccm.id, 13
+FROM `clinic_configuration_mapping` ccm
+WHERE ccm.clinic_configuration_id = 1;
+
+-- For clinic_configuration_id = 3 and group id 14
+INSERT INTO `clinic_configuration_group_mapping` (clinic_configuration_mapping_id, configuration_group_id)
+SELECT ccm.id, 14
+FROM `clinic_configuration_mapping` ccm
+WHERE ccm.clinic_configuration_id = 3;
+
 
 ALTER TABLE moPat.encounter ADD preselected_clinic_id BIGINT NULL;
 ALTER TABLE moPat.encounter ADD CONSTRAINT encounter_clinic_FK FOREIGN KEY (preselected_clinic_id) REFERENCES moPat.clinic(id);
