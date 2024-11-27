@@ -252,10 +252,10 @@ public class ClinicConfigurationMappingService {
      * @return true if any config enabled in {@link Clinic} object.
      */
     @JsonIgnore
-    public Boolean clinicHasConfig(Clinic clinic) {
-        return clinicConfigurationMappingDao.isPseudonymizationServiceActivated(clinic.getId()) ||
-            clinicConfigurationMappingDao.isRegistryOfPatientActivated(clinic.getId()) ||
-            clinicConfigurationMappingDao.isUsePatientDataLookupActivated(clinic.getId());
+    public Boolean clinicHasConfig(Long clinicId) {
+        return clinicConfigurationMappingDao.isPseudonymizationServiceActivated(clinicId) ||
+            clinicConfigurationMappingDao.isRegistryOfPatientActivated(clinicId) ||
+            clinicConfigurationMappingDao.isUsePatientDataLookupActivated(clinicId);
     }
 
 
