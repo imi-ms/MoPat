@@ -536,35 +536,45 @@ public class ConfigurationController {
             Configuration newConfiguration;
             //Handle Select-, Pattern- and usual Configuration cases
             if (configurationDTO.getOptions() != null) {
-                newConfiguration= new SelectConfiguration(configurationDTO.getOptions(),null,configurationDTO.getEntityClass(),
+                newConfiguration = new SelectConfiguration(
+                    configurationDTO.getOptions(),
+                    null,
+                    configurationDTO.getEntityClass(),
+                    configurationDTO.getAttribute(),configurationDTO.getValue(), configurationDTO.getConfigurationType(),
+                    configurationDTO.getLabelMessageCode(),
+                    configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
+                    configurationDTO.getUpdateMethod(),
+                    configurationDTO.getPosition(),
+                    referenceConfigurationGroup
+                );
+            } else if (configurationDTO.getPattern() != null &&
+                        !configurationDTO.getPattern().equalsIgnoreCase("")) {
+                newConfiguration = new PatternConfiguration(
+                    configurationDTO.getPattern(),
+                    null,
+                    configurationDTO.getEntityClass(),
                     configurationDTO.getAttribute(),configurationDTO.getValue(), configurationDTO.getConfigurationType(),
                     configurationDTO.getLabelMessageCode(),
                     configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
                     configurationDTO.getUpdateMethod(),configurationDTO.getPosition(),
-                    referenceConfigurationGroup);
-                resultList.add(newConfiguration);
-            } else if (configurationDTO.getPattern() != null && !configurationDTO.getPattern()
-                .equalsIgnoreCase("")) {
-
-                newConfiguration= new PatternConfiguration(configurationDTO.getPattern(),null,configurationDTO.getEntityClass(),
-                    configurationDTO.getAttribute(),configurationDTO.getValue(), configurationDTO.getConfigurationType(),
-                    configurationDTO.getLabelMessageCode(),
-                    configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
-                    configurationDTO.getUpdateMethod(),configurationDTO.getPosition(),
-                    referenceConfigurationGroup);
-                resultList.add(newConfiguration);
-
-                resultList.add(newConfiguration);
+                    referenceConfigurationGroup
+                );
             } else {
-                newConfiguration = new Configuration(configurationDTO.getEntityClass(),
-                    configurationDTO.getAttribute(), configurationDTO.getConfigurationType(),
+                newConfiguration = new Configuration(
+                    configurationDTO.getEntityClass(),
+                    configurationDTO.getAttribute(),
+                    configurationDTO.getConfigurationType(),
                     configurationDTO.getLabelMessageCode(),
-                    configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
-                    configurationDTO.getUpdateMethod(), configurationDTO.getPosition(),
-                    referenceConfigurationGroup);
-                newConfiguration.setValue(configurationDTO.getValue());
-                resultList.add(newConfiguration);
+                    configurationDTO.getDescriptionMessageCode(),
+                    configurationDTO.getTestMethod(),
+                    configurationDTO.getUpdateMethod(),
+                    configurationDTO.getPosition(),
+                    referenceConfigurationGroup
+                );
             }
+            
+            newConfiguration.setValue(configurationDTO.getValue());
+            resultList.add(newConfiguration);
 
             if (parent != null) {
                 newConfiguration.setParent(parent);
