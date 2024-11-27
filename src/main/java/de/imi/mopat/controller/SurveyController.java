@@ -229,10 +229,10 @@ public class SurveyController {
             
             if (isHISActivated) {
                 PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicDTO.getId());
-                if (patientDataRetriever.getClass() == HL7v22PatientInformationRetriever.class) {
-                    model.addAttribute("searchHISType", "CASE_NUMBER");
-                } else if (patientDataRetriever.getClass() == HL7v22PatientInformationRetrieverByPID.class) {
+                if (patientDataRetriever.getClass() == HL7v22PatientInformationRetrieverByPID.class) {
                     model.addAttribute("searchHISType", "PID");
+                } else {
+                    model.addAttribute("searchHISType", "CASE_NUMBER");
                 }
             }
             
