@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import jakarta.validation.Valid;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -134,7 +135,7 @@ public class ClinicController {
         return bundleDTOs.stream()
                 .sorted((bundleDTO1, bundleDTO2) ->
                         bundleDTO1.getName().compareToIgnoreCase(bundleDTO2.getName()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
