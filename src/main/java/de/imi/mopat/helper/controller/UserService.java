@@ -53,7 +53,7 @@ public class UserService {
     public List<UserDTO> getAllUser(){
         return userDao.getAllElements().stream()
                 .map(userDTOMapper)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
