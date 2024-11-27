@@ -60,8 +60,6 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     private final String hostnameProperty = "HL7v22PatientInformationRetrieverHostname";
     private final String portProperty = "HL7v22PatientInformationRetrieverPort";
     public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
-    public final String HL7v22PatientInformationRetrieverPortAttribute = "HL7v22PatientInformationRetrieverPort";
-    public final String HL7v22PatientInformationRetrieverHostnameAttribute = "HL7v22PatientInformationRetrieverHostname";
 
 
     public HL7v22PatientInformationRetriever() {
@@ -331,7 +329,7 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinic.getId(), HL7v22PatientInformationRetrieverHostnameAttribute, className, usePatientDataLookupGroupName);
+            clinic.getId(), hostnameProperty, className, usePatientDataLookupGroupName);
         return configuration.getValue();
     }
 
@@ -345,7 +343,7 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinic.getId(), HL7v22PatientInformationRetrieverPortAttribute, className, usePatientDataLookupGroupName);
+            clinic.getId(), portProperty, className, usePatientDataLookupGroupName);
         return Integer.parseInt(configuration.getValue());
     }
 }
