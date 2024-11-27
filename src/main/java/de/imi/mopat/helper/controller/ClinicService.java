@@ -1,12 +1,12 @@
 package de.imi.mopat.helper.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.model.*;
-import de.imi.mopat.model.dto.BundleClinicDTO;
+import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.dto.ClinicDTO;
+import de.imi.mopat.model.enumeration.PermissionType;
+import de.imi.mopat.model.user.User;
 import java.util.List;
 
 import java.util.*;
@@ -24,56 +24,42 @@ public class ClinicService {
     ClinicDTOMapper clinicDTOMapper;
     @Autowired
     private ClinicDao clinicDao;
+    @Autowired
+    private AclEntryDao aclEntryDao;
 
     @Autowired
     private ClinicConfigurationMappingService clinicConfigurationMappingService;
 
-    /*
-     * Converts this {@link Clinic} object to an {@link ClinicDTO} object.
-     *
-     * @return An {@link ClinicDTO} object based on this {@link Clinic}
-     * object.
-     */
-    @JsonIgnore
-    public ClinicDTO toClinicDTO(Clinic clinic) {
-        ClinicDTO clinicDTO = new ClinicDTO();
-        clinicDTO.setId(clinic.getId());
-        clinicDTO.setDescription(clinic.getDescription());
-        clinicDTO.setName(clinic.getName());
-        clinicDTO.setEmail(clinic.getEmail());
-
-        Map<ClinicConfigurationMapping, List<ClinicConfigurationMapping>> relation = new HashMap<>();
-        for(ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()){
-            ClinicConfiguration parent = clinicConfigurationMapping.getClinicConfiguration().getParent();
-            if(parent != null){
-                ClinicConfigurationMapping result = clinic.getClinicConfigurationMappings().stream()
-                        .filter(obj -> obj.getClinicConfiguration().equals(clinicConfigurationMapping.getClinicConfiguration().getParent()))
-                        .findFirst()
-                        .orElse(null);
-                List<ClinicConfigurationMapping> newList = relation.get(result);
-                if(newList == null){
-                    newList = new ArrayList<>();
-                }
-                newList.add(clinicConfigurationMapping);
-                relation.put(result, newList);
-            } else {
-                if(!relation.containsKey(clinicConfigurationMapping)){
-                    relation.put(clinicConfigurationMapping,new ArrayList<>());
-                }
-            }
-        }
-
-        clinicDTO.setClinicConfigurationMappingDTOS(clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
-
-
-        return clinicDTO;
-
-}
-
-    public List<ClinicDTO> getAllClinics(){
+    public List<ClinicDTO> getAllClinics() {
         return clinicDao.getAllElements().stream()
             .map(clinicDTOMapper)
             .toList();
+    }
+    
+    public ClinicDTO getClinicDTOById(Long id) {
+        return clinicDTOMapper.apply(
+            clinicDao.getElementById(id)
+        );
+    }
+    
+    public List<Clinic> getAssignedClinics(User user) {
+        return new ArrayList<>(clinicDao.getElementsById(
+            aclEntryDao.getObjectIdsForClassUserAndRight(
+                Clinic.class, user, PermissionType.READ
+            )
+        ));
+    }
+    
+    public List<ClinicDTO> transformClinicsToDTOs(List<Clinic> clinics) {
+        return clinics.stream().map(clinic -> clinicDTOMapper.apply(clinic)).toList();
+    }
+    
+    public Clinic getClinicByIdFromList(List<Clinic> clinics, Long id) {
+        try {
+            return clinics.stream().filter(clinic -> clinic.getId().equals(id)).findFirst().get();
+        } catch(NoSuchElementException e) {
+            return null;
+        }
     }
 
     public void merge(Clinic clinic) {
