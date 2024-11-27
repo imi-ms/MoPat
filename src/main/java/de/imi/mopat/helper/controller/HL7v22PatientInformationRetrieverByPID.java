@@ -59,6 +59,8 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
     private final String className = "de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever";
     private final String hostnameProperty = "HL7v22PatientInformationRetrieverHostname";
     private final String portProperty = "HL7v22PatientInformationRetrieverPort";
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
+    
 
     public HL7v22PatientInformationRetrieverByPID() {
         LOGGER.info("[SETUP] To configure this PatientDataRetriever, please set "
@@ -72,8 +74,8 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
         assert patientNumber != null : "The given patientNumber was null";
         patientNumber = patientNumber.trim();
         EncounterDTO result = null;
-        String hostname = getHL7v22PatientInformationRetrieverHostname();
-        Integer port = getHL7v22PatientInformationRetrieverPort();
+        String hostname = getHL7v22PatientInformationRetrieverHostname(clinic);
+        Integer port = getHL7v22PatientInformationRetrieverPort(clinic);
         if (hostname != null && port != null) {
             LOGGER.info("[SETUP] hostname is: {}", hostname);
             LOGGER.info("[SETUP] port is: {}", port);
@@ -339,11 +341,11 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
      *
      * @return The HL7v22PatientRetriever hostname string.
      */
-    private String getHL7v22PatientInformationRetrieverHostname() {
+    private String getHL7v22PatientInformationRetrieverHostname(Clinic clinic) {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            hostnameProperty, className);
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinic.getId(), hostnameProperty, className, usePatientDataLookupGroupName);
         return configuration.getValue();
     }
 
@@ -353,11 +355,11 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
      *
      * @return The HL7v22PatientRetriever port number.
      */
-    private Integer getHL7v22PatientInformationRetrieverPort() {
+    private Integer getHL7v22PatientInformationRetrieverPort(Clinic clinic) {
         ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
             .getBean(ConfigurationDao.class);
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            portProperty, className);
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinic.getId(), portProperty, className, usePatientDataLookupGroupName);
         return Integer.parseInt(configuration.getValue());
     }
 }
