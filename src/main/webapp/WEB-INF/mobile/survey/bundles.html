@@ -3,7 +3,7 @@
 */-->
 <th:block
 	layout:decorate="~{layout/mobile}"
-	th:with="contenttype='content'"
+	th:with="contenttype='content', title=__${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}__"
 >
 	<th:block layout:fragment="content">
 		<form
@@ -13,6 +13,12 @@
 			action="select"
 			data-ajax="false"
 		>
+			<input 
+				name="activeClinicId" 
+				th:value="${activeClinicDTO.id}" 
+				hidden="true"
+			/>
+
 			<div class="mb-3">
 				<h4>
 				<b>
@@ -281,9 +287,6 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
-		$("#title").html(
-			/*[[${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}]]*/ "Select bundle"
-		);
 		/*[- Remove the help button on the bundle selection page -]*/
 		$("#helpButton").remove();
 	</script>

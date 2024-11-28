@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
-import de.imi.mopat.model.dto.QuestionDTO;
-import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
 
@@ -16,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +31,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -133,6 +131,13 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @OneToMany(mappedBy = "questionnaire", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Score> scores = new HashSet<Score>();
 
+    @Column(name = "version", nullable = false)
+    private Integer version = 1;
+    
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "version_group_id")
+    private QuestionnaireVersionGroup questionnaireVersionGroup;
+    
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
@@ -814,5 +819,42 @@ public class Questionnaire implements ConditionTarget, Serializable {
         availableScores.removeAll(dependingScores);
         availableScores.remove(score);
         return new ArrayList<>(availableScores);
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public void setQuestions(Set<Question> questions) {
+        this.questions = questions;
+    }
+
+    public boolean isModifiable() {
+        for (Question question : this.getQuestions()) {
+            if (!question.isModifiable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isOriginal() {
+        return version == 1;
+    }
+
+    public QuestionnaireVersionGroup getQuestionnaireVersionGroup() {
+        return questionnaireVersionGroup;
+    }
+    
+    public void setQuestionnaireVersionGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
+        this.questionnaireVersionGroup = questionnaireVersionGroup;
+    }
+
+    public Long getQuestionnaireVersionGroupId() {
+        return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
     }
 }

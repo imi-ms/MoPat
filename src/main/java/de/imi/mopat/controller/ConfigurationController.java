@@ -3,6 +3,7 @@ package de.imi.mopat.controller;
 import com.mchange.v1.db.sql.UnsupportedTypeException;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.helper.controller.ConfigurationService;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.MultiPartFileUploadBean;
 import de.imi.mopat.helper.controller.StringUtilities;
@@ -70,6 +71,9 @@ public class ConfigurationController {
     @Autowired
     private MailSender mailSender;
 
+    @Autowired
+    private ConfigurationService configurationService;
+
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         ConfigurationController.class);
 
@@ -104,7 +108,7 @@ public class ConfigurationController {
 
                     if (configuration.getChildren() != null && !configuration.getChildren()
                         .isEmpty()) {
-                        processChildrenElements(configuration, configurationDTO);
+                        configurationService.processChildrenElements(configuration, configurationDTO);
                     }
                     configurationDTOs.add(configurationDTO);
                 }
@@ -153,28 +157,7 @@ public class ConfigurationController {
         return null;
     }
 
-    /**
-     * Function that recursively processes all children elements to allow the use of multiple nested
-     * elements
-     *
-     * @param configuration    The configuration element
-     * @param configurationDTO The currently processed DTO
-     */
-    private void processChildrenElements(final Configuration configuration,
-        final ConfigurationDTO configurationDTO) {
-        //Set the children DTOs
-        configurationDTO.setChildren(new ArrayList<>());
-        for (Configuration child : configuration.getChildren()) {
-            ConfigurationDTO childDTO = child.toConfigurationDTO();
 
-            if (child.getChildren() != null && !child.getChildren().isEmpty()) {
-                processChildrenElements(child, childDTO);
-            }
-            //Add dto after processing its children
-            configurationDTO.getChildren().add(childDTO);
-
-        }
-    }
 
     /**
      * Helper function to restore the references for every ConfigurationDTO in the
@@ -524,6 +507,9 @@ public class ConfigurationController {
         configurationDTO.setParent(parentDTO);
         configurationDTO.setTestMethod(referringConfiguration.getTestMethod());
         configurationDTO.setUpdateMethod(referringConfiguration.getUpdateMethod());
+        if(referringConfiguration.getClass() == SelectConfiguration.class){
+            configurationDTO.setOptions(((SelectConfiguration) referringConfiguration).getOptions());
+        }
     }
 
     private void createNewConfigurationGroupForConfigurationGroupDTO(
@@ -547,30 +533,51 @@ public class ConfigurationController {
         List<Configuration> resultList = new ArrayList<>();
 
         for (ConfigurationDTO configurationDTO : configurationDTOs) {
-            Configuration newConfiguration = new Configuration(configurationDTO.getEntityClass(),
-                configurationDTO.getAttribute(), configurationDTO.getConfigurationType(),
-                configurationDTO.getLabelMessageCode(),
-                configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
-                configurationDTO.getUpdateMethod(), configurationDTO.getPosition(),
-                referenceConfigurationGroup);
+            Configuration newConfiguration;
+            //Handle Select-, Pattern- and usual Configuration cases
+            if (configurationDTO.getOptions() != null) {
+                newConfiguration = new SelectConfiguration(
+                    configurationDTO.getOptions(),
+                    null,
+                    configurationDTO.getEntityClass(),
+                    configurationDTO.getAttribute(),configurationDTO.getValue(), configurationDTO.getConfigurationType(),
+                    configurationDTO.getLabelMessageCode(),
+                    configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
+                    configurationDTO.getUpdateMethod(),
+                    configurationDTO.getPosition(),
+                    referenceConfigurationGroup
+                );
+            } else if (configurationDTO.getPattern() != null &&
+                        !configurationDTO.getPattern().equalsIgnoreCase("")) {
+                newConfiguration = new PatternConfiguration(
+                    configurationDTO.getPattern(),
+                    null,
+                    configurationDTO.getEntityClass(),
+                    configurationDTO.getAttribute(),configurationDTO.getValue(), configurationDTO.getConfigurationType(),
+                    configurationDTO.getLabelMessageCode(),
+                    configurationDTO.getDescriptionMessageCode(), configurationDTO.getTestMethod(),
+                    configurationDTO.getUpdateMethod(),configurationDTO.getPosition(),
+                    referenceConfigurationGroup
+                );
+            } else {
+                newConfiguration = new Configuration(
+                    configurationDTO.getEntityClass(),
+                    configurationDTO.getAttribute(),
+                    configurationDTO.getConfigurationType(),
+                    configurationDTO.getLabelMessageCode(),
+                    configurationDTO.getDescriptionMessageCode(),
+                    configurationDTO.getTestMethod(),
+                    configurationDTO.getUpdateMethod(),
+                    configurationDTO.getPosition(),
+                    referenceConfigurationGroup
+                );
+            }
+            
             newConfiguration.setValue(configurationDTO.getValue());
+            resultList.add(newConfiguration);
 
             if (parent != null) {
                 newConfiguration.setParent(parent);
-            }
-
-            //Handle Select-, Pattern- and usual Configuration cases
-            if (configurationDTO.getOptions() != null) {
-                SelectConfiguration selectConfiguration = (SelectConfiguration) newConfiguration;
-                selectConfiguration.setOptions(configurationDTO.getOptions());
-                resultList.add(selectConfiguration);
-            } else if (configurationDTO.getPattern() != null && !configurationDTO.getPattern()
-                .equalsIgnoreCase("")) {
-                PatternConfiguration patternConfiguration = (PatternConfiguration) newConfiguration;
-                patternConfiguration.setPattern(configurationDTO.getPattern());
-                resultList.add(patternConfiguration);
-            } else {
-                resultList.add(newConfiguration);
             }
 
             if (configurationDTO.getChildren() != null && !configurationDTO.getChildren()

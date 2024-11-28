@@ -8,9 +8,9 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.EncounterScheduledService;
-import de.imi.mopat.helper.controller.EncounterService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
+import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -84,11 +84,11 @@ public class EncounterController {
     @Autowired
     private MessageSource messageSource;
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
     @Autowired
-    private EncounterScheduledService encounterScheduledService;
+    private EncounterScheduledDTOMapper encounterScheduledDTOMapper;
     @Autowired
-    private EncounterService encounterService;
+    private EncounterDTOMapper encounterDTOMapper;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -163,13 +163,13 @@ public class EncounterController {
             bundle.getEncounters().forEach(encounter -> {
                 caseNumbers.add(encounter.getCaseNumber());
                 if (encounter.getEncounterScheduled() == null) {
-                    encounterDTOs.add(encounterService.toEncounterDTO(false, encounter));
+                    encounterDTOs.add(encounterDTOMapper.apply(false, encounter));
                 }
             });
 
             // Add EncounterScheduled to DTOs based on already grouped data by bundle
             encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
-                .map(encounterScheduledService::toEncounterScheduledDTO)
+                .map(encounterScheduledDTOMapper)
                 .forEach(dto -> {
                     encounterScheduledDTOs.add(dto);
                     encounterScheduledJSONSet.add(dto.getJSON());
@@ -265,7 +265,7 @@ public class EncounterController {
         if (id != null && id > 0) {
             EncounterScheduled encounterScheduled = encounterScheduledDao.getElementById(id);
             if (encounterScheduled != null) {
-                encounterScheduledDTO = encounterScheduledService.toEncounterScheduledDTO(
+                encounterScheduledDTO = encounterScheduledDTOMapper.apply(
                     encounterScheduled);
                 Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
                 patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
@@ -291,7 +291,7 @@ public class EncounterController {
         List<BundleDTO> bundleDTOs = new ArrayList<>();
 
         for (Bundle bundle : bundles) {
-            BundleDTO bundleDTO = bundleService.toBundleDTO(false, bundle);
+            BundleDTO bundleDTO = bundleDTOMapper.apply(false, bundle);
             // Add only those bundles which are published
             // and assigned to at least one clinic
             if (bundle.getIsPublished() && bundle.usedInClinics()) {
@@ -356,7 +356,7 @@ public class EncounterController {
             List<Bundle> bundles = bundleDao.getAllElements();
             List<BundleDTO> bundleDTOs = new ArrayList<>();
             for (Bundle bundle : bundles) {
-                bundleDTOs.add(bundleService.toBundleDTO(true, bundle));
+                bundleDTOs.add(bundleDTOMapper.apply(true, bundle));
             }
             model.addAttribute("bundleDTOs", bundleDTOs);
             model.addAttribute("encounterScheduledSerialTypeList",

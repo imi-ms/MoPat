@@ -3,9 +3,53 @@
 */-->
 <th:block
 	layout:decorate="~{layout/mobile}"
-	th:with="contenttype='content'"
+	th:with="contenttype='content', title=${messages.get(#locale, 'survey.title.selectClinic', 'Select Clinic')}"
 >
 	<th:block layout:fragment="content">
+		<form
+			name="survey"
+			enctype="application/x-www-form-urlencoded"
+			method="POST"
+			action="clinicSelect"
+			th:object="${activeClinicDTO}"
+			data-ajax="false"
+		>
+		<div
+			class="mb-3"
+			data-role="fieldcontain"
+		>
+			<div class="select-wrapper w-100">
+				<select
+					th:field="*{id}"
+					class="btn select-mobile w-100"
+					onchange="this.form.submit()"
+					th:disabled="${registerSuccess == true || #lists.size(clinicDTOs) == 1}"
+				>
+					<option
+						th:each="i: ${clinicDTOs}"
+						th:value="${i.id}"
+						th:text="${i.name}"
+						th:selected="${activeClinicDTO.id == i.id}"
+					></option>
+				</select>
+			</div>
+		</div>
+		</form>
+
+		<div
+			class="d-flex py-1 titleHeader"
+			th:classappend="|${#bools.isTrue(isLogin) ? 'header login-header' : ''} ${#bools.isTrue(hideTitle) ? 'd-none' : ''}|"
+		>
+			<th:block sec:authorize="isFullyAuthenticated()">
+				<div role="heading">
+					<b class="titleContent">
+						<th:block
+							th:text="${messages.get(#locale, 'survey.label.chooseService', 'Choose service to determine patient data')}" 
+						/>
+					</b>
+				</div>
+			</th:block>
+		</div>
 		<form
 			name="survey"
 			th:object="${encounterDTO}"
@@ -42,21 +86,19 @@
 					type="hidden"
 					th:value="${patientDataService}"
 				/>
+				<input
+					name="activeClinicId"
+					id="activeClinicId"
+					th:value="${activeClinicDTO.id}"
+					type="hidden"
+				/>
+
 				<!--/* if at least two services are activated show the radio button group */-->
 				<th:block
 					th:if="${(register and searchHIS) or (register and pseudonym) or (searchHIS and pseudonym)}"
 				>
 					<div class="isHISContainer">
 						<div>
-							<label for="radioSelectHIS">
-								<h4>
-									<b>
-										<th:block
-											th:text="${messages.get(#locale, 'survey.label.chooseService', 'Choose service to determine patient data')}" 
-										/>
-									</b>
-								</h4>
-							</label>
 							<fieldset
 								id="radioSelectHIS"
 								data-role="controlgroup"
@@ -124,7 +166,12 @@
 					>
 						<b>
 							<th:block
+								th:if="${searchHISType == 'CASE_NUMBER'}"
 								th:text="|${messages.get(#locale, 'survey.label.caseNumber', 'Case number:')}:|"
+							/>
+							<th:block
+								th:if="${searchHISType == 'PID'}"
+								th:text="|${messages.get(#locale, 'survey.label.pid', 'Patient ID:')}:|"
 							/>
 						</b>
 					</label>
@@ -144,7 +191,9 @@
 							</a>
 
 							<input
-								th:placeholder="${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}"
+								th:placeholder="${searchHISType == 'PID'} ? 
+												${messages.get(#locale, 'survey.label.pid', 'Patient ID')} : 
+												${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}"
 								value=""
 								th:type="${not #strings.isEmpty(caseNumberType)} ? ${caseNumberType} : 'text'"
 								autocomplete="off"
@@ -153,7 +202,7 @@
 								spellcheck="false"
 								class="form-control"
 								th:field="*{caseNumber}"
-								onchange="checkCaseNumber($(this));"
+								oninput="checkCaseNumber($(this));"
 							/>
 						</div>
 					</div>
@@ -163,6 +212,7 @@
 							class="btn-mobile form-control v-space"
 							id="checkButton"
 							value="register"
+							disabled="true"
 							type="submit"
 							data-inline="true"
 							th:text="${messages.get(#locale, 'survey.check.button.register', 'Register')}"
@@ -294,6 +344,7 @@
 						<div
 							class="mt-3"
 							id="patientData"
+							style="display: none;"
 						>
 							<div id="patientDataLabel">
 								<div class="row mb-3">
@@ -500,6 +551,13 @@
 						type="hidden"
 						th:value="${patientDataService}"
 					/>
+
+					<input
+						name="activeClinicId"
+						id="activeClinicId"
+						type="hidden"
+						th:value="${activeClinicDTO.id}"
+					/>
 					<!--/* show enabled button if patient id found or his is disabled and a casenumber is given */-->
 					<th:block
 						th:if="${(not vars['emptyPatientID'] || not vars['emptyCaseNumber']) && not vars['hasAnyErrors']}"
@@ -539,14 +597,22 @@
 		type="text/javascript"
 	>
         var contextPath = /*[[${contextPath}]]*/ '/';
+		var searchHISType = /*[[${searchHISType}]]*/ 'CASE_NUMBER'; 
 
         var caseNumberType = /*[[${caseNumberType}]]*/ "";
-		var labelCaseNumber =
-			/*[[${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}]]*/ "Case number";
+		var labelCaseNumber;
+		if (searchHISType == "CASE_NUMBER") {
+			labelCaseNumber=
+				/*[[${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}]]*/ "Case number";
+		} else {
+			labelCaseNumber=
+				/*[[${messages.get(#locale, 'survey.label.pid', 'Patient ID')}]]*/ "Patient ID";
+		}
 		var labelPseudonym =
 			/*[[${messages.get(#locale, 'survey.label.pseudonym', 'Pseudonym')}]]*/ "Pseudonym";
 
 		var codeReader;
+
 
 		var videoDeviceIndex = 0;
 		var videoDeviceId = ""; 
@@ -595,11 +661,10 @@
 		/*[- Run after page is ready (fully loaded) -]*/
 		/*[- Make a autofocus if the browser does not support touch -]*/
 		$(document).ready(function () {
-			/*[- Set the heading of the page -]*/
-			$("#title").html(
-				/*[[${messages.get(#locale, 'survey.title.searchCaseNumber', 'Search for case number')}]]*/ "Search for case number"
-			);
+			/*[- Set the current registration service -]*/
+			handleRegistrationServiceChange($("#patientDataService").val(), true);
 
+			checkCaseNumber($("#caseNumber")); 
 			/*[- Register the code reader and the onclick event of the scanButton -]*/
 			if (Modernizr.getusermedia === true) {
 				codeReader = new ZXing.BrowserBarcodeReader();
@@ -696,20 +761,20 @@
 				}
 			}
 
-			/*[- Set the current registration service -]*/
-			handleRegistrationServiceChange($("#patientDataService").val(), true);
 		});
 
 		function checkCaseNumber(element) {
-			if (
-				element.val().match(/(\s|&nbsp;|<br>)+/) &&
-				!element.val().match(/[\w]+/)
-			) {
-				$("#caseNumberEmptyError").show();
+			if (element.val().length === 0) {
 				$("#checkButton").prop("disabled", true);
-			} else {
 				$("#caseNumberEmptyError").hide();
-				$("#checkButton").prop("disabled", false);
+			} else {
+				if (element.val().match(/(\s|&nbsp;|<br>)+/) && !element.val().match(/[\w]+/) ) {
+					$("#caseNumberEmptyError").show();
+					$("#checkButton").prop("disabled", true);
+				} else {
+					$("#caseNumberEmptyError").hide();
+					$("#checkButton").prop("disabled", false);
+				}
 			}
 		}
 
@@ -741,16 +806,23 @@
 			/*[- Enable caseNumber and change its placeholder and label to default value -]*/
 			$("#caseNumber").prop("disabled", false);
 			$("#caseNumber").prop("placeholder", labelCaseNumber);
-			$("#caseNumberLabel").html("<b>" + labelCaseNumber + "</b>");
-			$("#checkButton").prop("disabled", false);
+			$("#caseNumberLabel").html("<b>" + labelCaseNumber + ":" + "</b>");
+			$("#checkButton").prop("disabled", true);
 			$(".personalDataInput").attr("disabled", true);
 
 			switch (value) {
 				case "searchHIS":
 					$("#patientData").show();
+					var buttonLabel; 
+					if (searchHISType == "CASE_NUMBER") {
+						buttonLabel = /*[[${messages.get(#locale, 'survey.check.button.search', 'Search')}]]*/ "Search"
+					} else {
+						buttonLabel = /*[[${messages.get(#locale, 'survey.check.button.search2', 'Search')}]]*/ "Search"
+					}
+
 					customizeCheckButton(
 						"searchHIS",
-						/*[[${messages.get(#locale, 'survey.check.button.search', 'Search')}]]*/ "Search",
+						buttonLabel,
 						null,
 						"submit"
 					);
@@ -856,18 +928,20 @@
 					var birthYear = /\d\d\d\d/.exec(birthDate);
 					birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
 				}
+				var clinicId = $('#activeClinicDTO').val()
 
 				var pseudonym = PseudonymizationService.getPseudonym(
 					$("#firstname").val(),
 					$("#lastname").val(),
-					birthDate
+					birthDate,
+					clinicId
 				);
-				$("#caseNumber").val(pseudonym);
 
+				$("#caseNumber").val(pseudonym);
 				if (pseudonym) {
 					$.ajax({
 						url:
-							contextPath + "/mobile/survey/pseudonym?pseudonym=" + pseudonym,
+							contextPath + "/mobile/survey/pseudonym?pseudonym=" + pseudonym+"&activeClinicId="+clinicId,
 						type: "POST",
 						error: function (jqXHR, textStatus, errorThrown) {
 							alert(

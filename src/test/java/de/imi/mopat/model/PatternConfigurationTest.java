@@ -53,7 +53,7 @@ public class PatternConfigurationTest {
 
         PatternConfiguration patternConfiguration = new PatternConfiguration(pattern, id,
             entityClass, attribute, value, configurationType, labelMessageCode,
-            descriptionMessageCode, testMethod, updateMethod, name, position, configurationGroup);
+            descriptionMessageCode, testMethod, updateMethod, position, configurationGroup);
 
         return patternConfiguration;
     }

@@ -8,6 +8,8 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  *
  */
@@ -24,6 +26,19 @@ public class BundleQuestionnaireDaoImpl extends MoPatDaoImpl<BundleQuestionnaire
                     + " " + "and bs" + ".questionnaire.id = " + questionnaire.getId(),
                 getEntityClass());
             return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<BundleQuestionnaire> findByQuestionnaire(Long questionnaireId) {
+        try {
+            TypedQuery<BundleQuestionnaire> query = moPatEntityManager.createQuery(
+                    "SELECT bq FROM BundleQuestionnaire bq WHERE bq.questionnaire.id = :questionnaireId",
+                    BundleQuestionnaire.class);
+            query.setParameter("questionnaireId", questionnaireId);
+            return query.getResultList();
         } catch (NoResultException e) {
             return null;
         }

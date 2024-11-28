@@ -312,7 +312,7 @@
 										<th:block
 											th:each="bundleQuestionnaireDTO: ${bundleDTO.bundleQuestionnaireDTOs}"
 										>
-											<div class="row removableFlex list-group-item draggable">
+											<div class="row removableFlex list-group-item draggable questionnaire-element" th:attr="data-questionnaire-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.getQuestionnaireVersionGroupId()}">
 												<div class="col-1 position">
 													<span
 														th:text="|${bundleQuestionnaireDTO.position}.|"
@@ -413,11 +413,23 @@
 												</div>
 												<div class="col-1">
 													<a
-														data-bs-toggle="collapse"
-														onClick="move($(this))"
+															data-bs-toggle="collapse"
+															onClick="moveItem($(this))"
 													>
 														<span class="bi bi-chevron-right"></span>
 													</a>
+												</div>
+												<div class="col-5 toggle-questionnaire-version-group">
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-down chevron-icon-down"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
+													</i>
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-up chevron-icon-up"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
+													</i>
 												</div>
 												<input
 													type="hidden"
@@ -462,7 +474,7 @@
 										<input
 											class="form-control input-sm"
 											id="availableQuestionnairesFilter"
-											onkeyup="DragNDropList.filter($(this), '#availableQuestionnairesTable')"
+											onkeyup="filterTable($(this), '#availableQuestionnairesTable')"
 											type="text"
 											th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
 										/>
@@ -567,11 +579,16 @@
 										<th:block
 											th:each="availableQuestionnaireDTO, index: ${availableQuestionnaireDTOs}"
 										>
-											<div class="row removableFlex list-group-item draggable">
+											<th:block th:if="${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()}">
+												<div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="display: none"></div>
+											</th:block>
+											<div class="row removableFlex list-group-item draggable questionnaire-element" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="cursor: pointer;"
+												 th:classappend="	${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? 'default-item' : ''"
+												 th:style="			${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? '' : 'display:none;'">
 												<div class="col-1">
 													<a
 														data-bs-toggle="collapse"
-														onClick="move($(this))"
+														onClick="moveItem($(this))"
 													>
 														<span class="bi bi-chevron-left"></span>
 													</a>
@@ -651,7 +668,22 @@
 													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
 													th:value="${availableQuestionnaireDTO.id}"
 												/>
+												<div class="col-5 toggle-questionnaire-version-group">
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-down chevron-icon-down"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
+													</i>
+													<i onClick="toggleGroupItems($(this))"
+													   class="bi bi-chevron-up chevron-icon-up"
+													   style="cursor: pointer;"
+													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
+													</i>
+												</div>
 											</div>
+											<th:block th:if="${index.index == availableQuestionnaireDTOs.size() - 1 || (availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index + 1].getQuestionnaireVersionGroupId())}">
+												<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="display: none"></div>
+											</th:block>
 											<!--/* Increment the index */-->
 											<th:block th:text="${counter.increment()}" />
 										</th:block>
@@ -694,86 +726,355 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-	<script
-		th:inline="javascript"
-		type="text/javascript"
-	>
-		/*[- Get the current used language -]*/
+	<script th:inline="javascript" type="text/javascript">
 		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+		var startTable, targetTable;
+		let wasElementRemoved = false, isAssignedFormat = false;
+		let debouncedSearchTimeout;
 
-		var targetTable;
+		const ACTIONS = {
+			EXPAND: 'expand',
+			MINIMIZE: 'minimize',
+			HIDE: 'hide'
+		};
 
-		$(function () {
-			/*[- Initialize the multilingual language visualisation of the question -]*/
-			Localization.initShowLocalizedPage(
-				currentLanguage, /*[[${vars['persistedOrErrors']}]]*/
-			);
+		const tables = {
+			availableTable: $('#availableQuestionnairesTable'),
+			assignedTable: $('#assignedQuestionnairesTable')
+		};
+
+		const commonSortableOptions = {
+			group: { name: 'shared', put: 'shared'},
+			animation: 150,
+			easing: "cubic-bezier(1, 0, 0, 1)",
+			draggable: ".list-group-item",
+			filter: ".notDraggable",
+		};
+
+		// Document ready initialization
+		$(() => {
+			Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/);
+			initializeSortableTable(tables.availableTable);
+			initializeSortableTable(tables.assignedTable);
 			checkPublishingState();
+			initBundleVisibility();
+			initializeQuestionnaireVersionGroupChevronAndSpacer();
 		});
 
-		/*[- hide if edit existing bundle -]*/
-		if ($("#bundleId").val() > 0) {
-			$(".collapsable").hide();
-		} else {
-			$(".bi-plus-lg").hide();
-			$(".bi-dash-lg").show();
-		}
-		/*[- checks if publishing checkbox must be (de)activated -]*/
+		/** ---------------------------------------
+		 * 1. INITIALIZATION FUNCTIONS
+		 * --------------------------------------- */
 
+		/** Initializes sortable functionality for the table. */
+		function initializeSortableTable(table) {
+			const isAssignedTable = table.is(tables.assignedTable);
+			const sortableOptions = {
+				...commonSortableOptions,
+				sort: isAssignedTable,  // Allow sorting for the assigned table only.
+				onStart: (e) => onDragStart(e, isAssignedTable),
+				onChange: (e) => onDragChange(e, isAssignedTable),
+				onEnd: (e) => onDragEnd(e),
+				onRemove: () => wasElementRemoved = true
+			};
+
+			Sortable.create(table[0], sortableOptions);
+		}
+
+		/** Initializes bundle visibility based on the bundleId value. */
+		function initBundleVisibility() {
+			if ($("#bundleId").val() > 0) {
+				$(".collapsable").hide();
+			} else {
+				$(".bi-plus-lg").hide();
+				$(".bi-dash-lg").show();
+			}
+		}
+
+		/** Initializes group chevron and spacer based on the assigned and available tables. */
+		function initializeQuestionnaireVersionGroupChevronAndSpacer() {
+			const assignedGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.assignedTable);
+			const availableGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable);
+
+			// Add missing group gaps to available table
+			assignedGroupIds.forEach(groupId => {
+				if (!availableGroupIds.has(groupId)) {
+					const spacerHtml = generateQuestionnaireVersionGroupSpacerHtml(groupId);
+					tables.availableTable.append(spacerHtml);
+				}
+			});
+
+			// If the group has only one item, hide chevrons, otherwise set to minimize
+			availableGroupIds.forEach(groupId => {
+				const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
+				const firstItem = groupElements.first();
+				const isSingleElement = groupElements.length === 1;
+				updateGroupChevronAndSpacer(groupId, firstItem, isSingleElement ? ACTIONS.HIDE : ACTIONS.MINIMIZE, false);
+				toggleGroupItems(firstItem); 
+			});
+		}
+
+		/** ---------------------------------------
+		 * 2. DRAG-AND-DROP FUNCTIONS
+		 * --------------------------------------- */
+
+		/** Handles the start of a drag event. */
+		function onDragStart(e, isStartAssignedTable) {
+			wasElementRemoved = false;
+			isAssignedFormat = isStartAssignedTable;
+			startTable = $(e.from);
+			targetTable = startTable;
+		}
+
+		/** Handles the drag event when an item is moved between or within tables. */
+		function onDragChange(e, isAssignedTable) {
+			const draggedItem = $(e.item);
+			if (isAssignedTable && !isAssignedFormat) {
+				targetTable = tables.assignedTable;
+				updateQuestionnaireElementUI(draggedItem, targetTable);
+				isAssignedFormat = true;
+			}
+			if (isAssignedTable) refreshTableUI();
+		}
+
+		/** Handles the end of a drag event. */
+		function onDragEnd(e) {
+			const draggedItem = $(e.item);
+			if (wasElementRemoved) {
+				if (startTable.is(tables.availableTable)) {
+					targetTable = tables.assignedTable;
+				} else {
+					targetTable = tables.availableTable;
+				}
+			} else {
+				targetTable = startTable;
+			}
+
+			// Move to correct Position if target is available Table
+			if (targetTable === tables.availableTable) moveElementToTargetTable(draggedItem, targetTable);
+
+			updateQuestionnaireElementUI(draggedItem, targetTable);
+			refreshTableUI(true);
+		}
+
+		/** Moves an item between available and assigned tables when clicked. */
+		function moveItem(element) {
+			const questionnaireElement = $(element).closest(".questionnaire-element");
+			const isInAvailableTable = tables.availableTable.has(questionnaireElement).length;
+			startTable = isInAvailableTable ? tables.availableTable : tables.assignedTable;
+			targetTable = isInAvailableTable ? tables.assignedTable : tables.availableTable;
+
+			moveElementToTargetTable(questionnaireElement, targetTable);
+			updateQuestionnaireElementUI(questionnaireElement, targetTable);
+			refreshTableUI(true);
+		}
+
+		/** ---------------------------------------
+		 * 3. UI AND TABLE STATE FUNCTIONS
+		 * --------------------------------------- */
+
+		/** Moves an element to the target table and updates its state accordingly. */
+		function moveElementToTargetTable(questionnaireElement, targetTable) {
+			const questionnaireVersionGroupId = questionnaireElement.closest('.questionnaire-element').data('questionnaire-version-group-id');
+			if (targetTable.is(tables.assignedTable)) {
+				questionnaireElement.remove();
+				tables.assignedTable.append(questionnaireElement);
+			} else {
+				if (questionnaireElement.hasClass('default-item')) {
+					const groupHeader = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-header-spacer').first();
+					questionnaireElement.insertAfter(groupHeader);
+				} else {
+					const groupFooter = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-footer-spacer').first();
+					questionnaireElement.insertBefore(groupFooter);
+				}
+			}
+		}
+
+		/** Updates the UI elements of a group based on its assigned or available state. */
+		function updateQuestionnaireElementUI(questionnaireElement, targetTable) {
+			const $moveIcon = questionnaireElement.find('.bi-chevron-left, .bi-chevron-right').first();
+			const $toggleGroup = questionnaireElement.find(".toggle-questionnaire-version-group");
+			const isAssigned = targetTable.is(tables.assignedTable);
+
+			// Update move icon direction
+			$moveIcon.toggleClass("bi-chevron-left", !isAssigned);
+			$moveIcon.toggleClass("bi-chevron-right", isAssigned);
+
+			if (isAssigned) {
+				$toggleGroup.hide();  // Hide toggle questionnaire version group in ASSIGNED_TABLE
+				questionnaireElement.append($moveIcon.parent().parent());
+				// Remove 'show' class from chevrons in ASSIGNED_TABLE
+				const chevronDown = questionnaireElement.find(".chevron-icon-down");
+				const chevronUp = questionnaireElement.find(".chevron-icon-up");
+				chevronDown.removeClass("show");
+				chevronUp.removeClass("show")
+			} else {
+				$toggleGroup.show();  // Show toggle questionnaire version group in AVAILABLE_TABLE
+				questionnaireElement.prepend($moveIcon.parent().parent());
+			}
+		}
+
+		/** Updates both tables' state and sorts the items. */
+		function refreshTableUI(shouldRefreshGroupVisibility = false) {
+			$('.placeholderRow').hide();
+
+			tables.assignedTable.find(":input").removeAttr("disabled");
+			const assignedFields = tables.assignedTable.find(".scores, .templateTypes, .enable");
+			assignedFields.css('display', 'block');
+
+			tables.availableTable.find(":input").attr("disabled", true);
+			const availableFields = tables.availableTable.find(".scores, .templateTypes, .enable");
+			availableFields.css('display', 'none');
+
+			if (shouldRefreshGroupVisibility) refreshGroupVisibilityState(tables.availableTable);
+
+			DragNDropList.checkIfTablesAreEmptyAndShowPlaceholder();
+			checkPublishingState();
+			DragNDropList.sortEntries();
+		}
+
+		/** Checks the publishing state and updates the publish button. */
 		function checkPublishingState() {
-			if (
-				$("#assignedQuestionnairesTable").children(".draggable").length === 0
-			) {
-				$("#isPublished1").attr("disabled", "disabled");
-				$("#isPublished1").attr("checked", false);
+			if (tables.assignedTable.children(".draggable").length === 0) {
+				$("#isPublished1").attr("disabled", "disabled").attr("checked", false);
 			} else {
 				$("#isPublished1").removeAttr("disabled");
 			}
 		}
 
-		function move(element) {
-			if ($.contains($("#availableQuestionnairesTable")[0], $(element)[0])) {
-				startTable = $("#availableQuestionnairesTable");
-				targetTable = $("#assignedQuestionnairesTable");
-				$(element)
-					.parents(".draggable")
-					.find(".enable")
-					.children("input")
-					.attr("disabled", "false");
-			}
+		/** ---------------------------------------------------
+		 * 4. QUESTIONNAIRE VERSION GROUP MANAGEMENT FUNCTIONS
+		 * ---------------------------------------------------- */
 
-			if ($.contains($("#assignedQuestionnairesTable")[0], $(element)[0])) {
-				startTable = $("#assignedQuestionnairesTable");
-				targetTable = $("#availableQuestionnairesTable");
-				$(element)
-					.parents(".draggable")
-					.find(".enable")
-					.children("input")
-					.attr("disabled", "true");
-			}
-
-			DragNDropList.moveElementToTargetList(element, targetTable);
-			checkPublishingState();
+		/** Generates HTML for a group spacer. */
+		function generateQuestionnaireVersionGroupSpacerHtml(groupId) {
+			return `
+				<div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>
+				<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>`;
 		}
 
-		$(".sortable").sortable({
-			group: "questionnaires",
-			sort: true,
-			animation:150,
-			easing: "cubic-bezier(1, 0, 0, 1)",
-			draggable: ".list-group-item",
-			filter: ".notDraggable",
-			onStart: function(e) {
-				startTable = $(e.from);
-				targetTable = $(e.from);
-			},
-			onEnd: function(e) {
-				checkPublishingState();
-			},
-			onChange: function(e) {
-				DragNDropList.onChange(e);
+		/** Toggles the visibility of group items between expanded and minimized states. */
+		function toggleGroupItems(element) {
+			const groupId  = $(element).closest('.questionnaire-element').data('questionnaire-version-group-id');
+			const isExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
+			applyQuestionnaireVersionGroupVisibilityAction(groupId, isExpanded ? ACTIONS.MINIMIZE : ACTIONS.EXPAND, true);
+		}
+
+		/** Applies the visibility action (expand, minimize, hide) to a group. */
+		function applyQuestionnaireVersionGroupVisibilityAction(groupId, action, useSlide = false) {
+			const questionnaireVersionGroupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
+			const firstItem = questionnaireVersionGroupElements.first();
+			const otherItems = questionnaireVersionGroupElements.not(firstItem);
+
+			if (questionnaireVersionGroupElements.length === 1) { // is single Element
+				updateGroupChevronAndSpacer(groupId, firstItem, ACTIONS.HIDE, useSlide);
+			} else {
+				updateGroupChevronAndSpacer(groupId, firstItem, action, useSlide);
 			}
 
-		});
+			if (action === ACTIONS.EXPAND) {
+				useSlide ? questionnaireVersionGroupElements.slideDown() : questionnaireVersionGroupElements.show();
+			} else if (action === ACTIONS.MINIMIZE) {
+				useSlide ? otherItems.slideUp() : otherItems.hide();
+				firstItem.show(); // Ensure the first element is always shown
+			} else if (action === ACTIONS.HIDE) {
+				useSlide ? questionnaireVersionGroupElements.slideUp() : questionnaireVersionGroupElements.hide();
+			}
+		}
+
+		/** Refreshes the visibility state of all groups in the table (expand or minimize). */
+		function refreshGroupVisibilityState(table) {
+			fetchUniqueQuestionnaireVersionGroupIds(table).forEach(groupId => {
+				const groupExpanded = fetchQuestionnaireVersionGroupElementsById(table, groupId, 'questionnaire-version-group-spacer').is(':visible');
+				applyQuestionnaireVersionGroupVisibilityAction(groupId, groupExpanded ? ACTIONS.EXPAND : ACTIONS.MINIMIZE, true);
+			});
+		}
+
+		/** Updates the group chevron and spacer based on the visibility action. */
+		function updateGroupChevronAndSpacer(groupId, firstElement, action, useSlide = false) {
+			const chevronDown = $(firstElement).find(".chevron-icon-down");
+			const chevronUp = $(firstElement).find(".chevron-icon-up");
+			const groupSpacer = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer');
+
+			if (action === ACTIONS.HIDE) {
+				chevronDown.removeClass("show");
+				chevronUp.removeClass("show");
+				useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
+			} else if (action === ACTIONS.MINIMIZE) {
+				chevronUp.removeClass("show");
+				chevronDown.addClass("show");
+				useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
+			} else if (action === ACTIONS.EXPAND) {
+				chevronDown.removeClass("show");
+				chevronUp.addClass("show");
+				useSlide ? groupSpacer.slideDown() : groupSpacer.show();
+			}
+		}
+
+		/** ---------------------------------------
+		 * 5. FILTER AND SEARCH FUNCTIONS
+		 * --------------------------------------- */
+
+		/** Filters the table based on the search input. */
+		function filterTable(input, tableId) {
+			clearTimeout(debouncedSearchTimeout);
+			debouncedSearchTimeout = setTimeout(() => {
+				const searchTerm = input.val().toUpperCase();
+				const table = $(tableId);
+				const nameFields = table.find('.filterName');
+
+				if (searchTerm === "") {
+					fetchUniqueQuestionnaireVersionGroupIds(table).forEach(groupId => applyQuestionnaireVersionGroupVisibilityAction(groupId, ACTIONS.MINIMIZE, true));
+					table.find('#filterEmptyRow').toggle(false);
+					return;
+				}
+
+				table.find('.questionnaire-element, .questionnaire-version-group-spacer').hide();
+				const hiddenCounter = filterTableEntries(nameFields, searchTerm);
+				table.find('#filterEmptyRow').toggle(hiddenCounter === nameFields.length);
+			}, 200); // Debounce delay
+		}
+
+		/** Filters table entries based on the search term. */
+		function filterTableEntries(nameFields, searchTerm) {
+			let hiddenCounter = 0;
+			const matchingGroups = {};
+
+			nameFields.each((_, field) => {
+				const $this = $(field);
+				const groupId = $this.closest('.questionnaire-element').data('questionnaire-version-group-id');
+				matchingGroups[groupId] = matchingGroups[groupId] || $this.val().toUpperCase().includes(searchTerm);
+			});
+
+			$.each(matchingGroups, function (groupId, isMatched) {
+				const groupIdAsNumber = Number(groupId);
+				applyQuestionnaireVersionGroupVisibilityAction(groupIdAsNumber, isMatched ? ACTIONS.EXPAND : ACTIONS.HIDE, false);
+
+				if (!isMatched) {
+					const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupIdAsNumber, 'questionnaire-element');
+					hiddenCounter += groupElements.length;
+				}
+			});
+			return hiddenCounter;
+		}
+
+		/** ---------------------------------------
+		 * 6. HELPER FUNCTIONS
+		 * --------------------------------------- */
+
+		/** Fetch all unique group IDs from the specified table. */
+		function fetchUniqueQuestionnaireVersionGroupIds(table) {
+			const uniqueGroupIds = new Set();
+			table.find('.questionnaire-element').each(function () {
+				uniqueGroupIds.add($(this).data('questionnaire-version-group-id'));
+			});
+			return uniqueGroupIds;
+		}
+
+		/** Fetches group elements by ID and class name. */
+		function fetchQuestionnaireVersionGroupElementsById(table, groupId, className) {
+			return table.find(`.${className}`).filter(function () {
+				return $(this).data('questionnaire-version-group-id') === groupId;
+			});
+		}
 	</script>
 </th:block>

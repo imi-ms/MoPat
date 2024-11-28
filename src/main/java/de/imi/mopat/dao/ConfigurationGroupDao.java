@@ -18,6 +18,15 @@ public interface ConfigurationGroupDao extends MoPatDao<ConfigurationGroup> {
      */
     List<ConfigurationGroup> getConfigurationGroups(String labelMessageCode);
 
+
+    /**
+     * Get configuration group object with the given name.
+     *
+     * @param name The name of the searched configuration group.
+     * @return The configuration group object found by the given name.
+     */
+    ConfigurationGroup getConfigurationGroupByName(String name);
+
     /**
      * Returns whether a {@link ConfigurationGroup} is deletable, that means its {ExportTemplate
      * ExportTemplates} are not used  in any {Encounter}.

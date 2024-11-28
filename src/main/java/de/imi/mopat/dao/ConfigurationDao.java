@@ -19,6 +19,8 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      */
     Configuration getConfigurationByAttributeAndClass(String attribute, String clazz);
 
+    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
+        final String clazz, final String groupName);
     /**
      * Returns the base url of the application.
      *
