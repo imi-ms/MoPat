@@ -66,6 +66,10 @@
     <class>de.imi.mopat.model.score.Multiply</class>
     <class>de.imi.mopat.model.PointOnImage</class>
     <class>de.imi.mopat.model.ImageAnswer</class>
+    <class>de.imi.mopat.model.ClinicConfiguration</class>
+    <class>de.imi.mopat.model.ClinicConfigurationMapping</class>
+    <class>de.imi.mopat.model.SelectClinicConfiguration</class>
+    <class>de.imi.mopat.model.ClinicConfigurationGroupMapping</class>
     <class>de.imi.mopat.model.QuestionnaireVersionGroup</class>
     <class>de.imi.mopat.model.ExportRuleQuestion</class><exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
