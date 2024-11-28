@@ -53,13 +53,12 @@ public class SelectConfigurationTest {
         String descriptionMessageCode = Helper.getRandomAlphanumericString(random.nextInt(50) + 1);
         String testMethod = Helper.getRandomAlphanumericString(random.nextInt(50) + 1);
         String updateMethod = Helper.getRandomAlphanumericString(random.nextInt(50) + 1);
-        String name = Helper.getRandomAlphanumericString(random.nextInt(50) + 1);
         Integer position = Math.abs(random.nextInt()) + 1;
         ConfigurationGroup configurationGroup = ConfigurationGroupTest.getNewValidConfigurationGroup();
 
         SelectConfiguration selectConfiguration = new SelectConfiguration(options, id, entityClass,
             attribute, value, configurationType, labelMessageCode, descriptionMessageCode,
-            testMethod, updateMethod, name, position, configurationGroup);
+            testMethod, updateMethod, position, configurationGroup);
 
         return selectConfiguration;
     }

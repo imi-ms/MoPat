@@ -16,5 +16,7 @@ public interface QuestionnaireDao extends MoPatDao<Questionnaire> {
      * @param id   The id of the questionniare which should be saved
      * @return true if the name is free for usage and false otherwise
      */
-    boolean isQuestionnaireNameUnused(String name, Long id);
+    boolean isQuestionnaireNameUnique(String name, Long id);
+
+    boolean isQuestionnaireNameUsed(String name);
 }

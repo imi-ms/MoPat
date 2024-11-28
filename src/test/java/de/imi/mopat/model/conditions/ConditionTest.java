@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
+import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.AnswerTest;
 import de.imi.mopat.model.Bundle;
@@ -34,6 +35,8 @@ public class ConditionTest {
 
     private static final Random random = new Random();
     private Condition testCondition;
+    
+    private ConditionDTOMapper conditionDTOMapper = new ConditionDTOMapper(); 
 
     public ConditionTest() {
     }
@@ -211,7 +214,7 @@ public class ConditionTest {
     }
 
     /**
-     * Test of {@link Condition#toConditionDTO}.<br> Valid input: Either a
+     * Test of {@link ConditionDTOMapper#apply(Condition)}.<br> Valid input: Either a
      * {@link SelectAnswerCondition} or a {@link SliderAnswerThresholdCondition}
      */
     @Test
@@ -230,7 +233,7 @@ public class ConditionTest {
         spyCondition.setTargetAnswerQuestion(spyQuestion);
         spyCondition.setBundle(null);
 
-        ConditionDTO testConditionDTO = spyCondition.toConditionDTO();
+        ConditionDTO testConditionDTO = conditionDTOMapper.apply(spyCondition); 
         assertEquals("The getting Id was not the expected one", spyCondition.getId(),
             testConditionDTO.getId());
         assertEquals("The getting Action was not the expected one", spyCondition.getAction().name(),
@@ -258,7 +261,7 @@ public class ConditionTest {
         Mockito.when(spyBundle.getId()).thenReturn(Math.abs(random.nextLong()));
         spyCondition.setBundle(spyBundle);
 
-        testConditionDTO = spyCondition.toConditionDTO();
+        testConditionDTO = conditionDTOMapper.apply(spyCondition);
         assertEquals("The getting BundleId was not the expected one", spyBundle.getId(),
             testConditionDTO.getBundleId());
     }

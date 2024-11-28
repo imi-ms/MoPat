@@ -34,11 +34,25 @@ public interface UserDao extends UserManagementDao<User> {
     void setPassword(User user);
 
     /**
+     * Set the pin for an user
+     * @param user User, whose pin will be set
+     */
+    void setPin(User user);
+
+    /**
      * @param user     User, whose password will be checked.
      * @param password Given password for this user.
      * @return True if the password is correct for the given user, otherwise false.
      */
     boolean isCorrectPassword(User user, String password);
+
+    /**
+     * Checks the pin with the value in the db by using the password encryptor
+     * @param user User, whose password will be checked
+     * @param pin Given pin for this user.
+     * @return True, if pin is correct for the given user, otherwise false.
+     */
+    boolean isCorrectPin(User user, String pin);
 
     /**
      * Returns a distinct set containing email addresses of all users.

@@ -73,7 +73,7 @@ public class UserValidatorTest {
      */
     @Test
     public void testValidate() {
-        String newPassword, oldPassword, message, testErrorMessage;
+        String newPassword, oldPassword, message, testErrorMessage, pin;
         User user;
 
         BindingResult result = new MapBindingResult(new HashMap<>(),
@@ -91,6 +91,9 @@ public class UserValidatorTest {
         //Set new password
         newPassword = Helper.getRandomAlphabeticString(random.nextInt(13) + 8);
 
+        // Set new password
+        pin = String.format("%06d", random.nextInt(999999));
+
         //Just validate the current user from database without changing any data
         userValidator.validate(user, result);
         assertFalse(
@@ -103,6 +106,7 @@ public class UserValidatorTest {
         user.setOldPassword(oldPassword);
         user.setNewPassword(newPassword);
         user.setPasswordCheck(newPassword);
+        user.setPin(pin);
         userValidator.validate(user, result);
         assertFalse(
             "Validation of user failed for valid instance with newPassword is fitting checkPassword. The result has caught errors although it wasn't expected to do.",
@@ -145,6 +149,33 @@ public class UserValidatorTest {
             message, testErrorMessage);
         user.setOldPassword(oldPassword);
 
+        // Test pin not long enough
+        user.setPin(String.valueOf(12));
+        userValidator.validate(user, result);
+
+        assertTrue("Validation of user failed for invalid pin length. The result has not caught any errors, although it was expected to",
+            result.hasErrors());
+
+        user.setPin(pin);
+
+        //Test pin being consecutive numbers
+        user.setPin("123456");
+        userValidator.validate(user, result);
+
+        assertTrue("Validation of user failed for consecutive pin numbers. The result has not caught any errors, although it was expected to",
+            result.hasErrors());
+
+        user.setPin(pin);
+
+        //Test pin being the same number
+        user.setPin("000000");
+        userValidator.validate(user, result);
+
+        assertTrue("Validation of user failed for repeating pin numbers. The result has not caught any errors, although it was expected to",
+            result.hasErrors());
+
+        user.setPin(pin);
+
         //new user with valid username
         result = new MapBindingResult(new HashMap<>(),
             Helper.getRandomAlphabeticString(random.nextInt(13)));
@@ -153,6 +184,8 @@ public class UserValidatorTest {
         newUser.setPassword(newPassword);
         newUser.setNewPassword(newPassword);
         newUser.setPasswordCheck(newPassword);
+        newUser.setUsePin(true);
+        newUser.setPin(pin);
         newUser.setSalt(((Integer) Math.abs(random.nextInt())).toString());
         newUser.setEmail(Helper.getRandomMailAddress());
         newUser.setFirstname(Helper.getRandomString(random.nextInt(10) + 3));
@@ -303,10 +336,13 @@ public class UserValidatorTest {
     public void testValidateLDAPUser() {
         User user = new User();
         String password = UUIDGenerator.createUUID();
+        String pin = "122334";
         user.setUsername(password);
         user.setEmail(Helper.getRandomMailAddress());
         user.setFirstname(password);
         user.setLastname(password);
+        user.setUsePin(true);
+        user.setPin(pin);
         user.setPrincipal(false);
         user.setOldPassword(password);
         user.setNewPassword(password);

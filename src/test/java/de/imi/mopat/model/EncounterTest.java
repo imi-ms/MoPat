@@ -13,7 +13,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.EncounterService;
+import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
@@ -62,7 +62,7 @@ public class EncounterTest {
     MessageSource messageSource;
     private Encounter testEncounter;
     @Autowired
-    private EncounterService encounterService;
+    private EncounterDTOMapper encounterDTOMapper;
 
     public EncounterTest() {
     }
@@ -803,7 +803,7 @@ public class EncounterTest {
             testActiveQuestionnaireIds.add(Math.abs(random.nextLong()));
         }
         spyEncounter.setActiveQuestionnaires(testActiveQuestionnaireIds);
-        EncounterDTO testEncounterDTO = encounterService.toEncounterDTO(Boolean.FALSE,
+        EncounterDTO testEncounterDTO = encounterDTOMapper.apply(Boolean.FALSE,
             spyEncounter);
         assertEquals("The getting ID was not the expected one", spyEncounter.getId(),
             testEncounterDTO.getId());
@@ -860,7 +860,7 @@ public class EncounterTest {
         Bundle spyBundle = spy(testBundle);
         Mockito.when(spyBundle.getId()).thenReturn(Math.abs(random.nextLong()));
         spyEncounter.setBundle(spyBundle);
-        testEncounterDTO = encounterService.toEncounterDTO(Boolean.FALSE, spyEncounter);
+        testEncounterDTO = encounterDTOMapper.apply(Boolean.FALSE, spyEncounter);
         assertEquals("The getting Bundle was not the expected one", spyBundle.getId(),
             testEncounterDTO.getBundleDTO().getId());
         assertNotEquals("The getting successfulExports was '-' although there is a Bundle", "-",
@@ -878,7 +878,7 @@ public class EncounterTest {
         spyEncounter.setPatientID(Math.abs(random.nextLong()));
         spyEncounter.setLastSeenQuestionId(Math.abs(random.nextLong()));
         spyEncounter.setBundleLanguage(Helper.getRandomLocale());
-        testEncounterDTO = encounterService.toEncounterDTO(Boolean.TRUE, spyEncounter);
+        testEncounterDTO = encounterDTOMapper.apply(Boolean.TRUE, spyEncounter);
         assertEquals("The getting ID was not the expected one", spyEncounter.getId(),
             testEncounterDTO.getId());
         assertEquals("The getting UUID was not the expected one", spyEncounter.getUUID(),
@@ -917,7 +917,7 @@ public class EncounterTest {
         }
         spyEncounter.setBundle(spyBundle);
         spyEncounter.setEncounterScheduled(EncounterScheduledTest.getNewValidEncounterScheduled());
-        testEncounterDTO = encounterService.toEncounterDTO(Boolean.TRUE, spyEncounter);
+        testEncounterDTO = encounterDTOMapper.apply(Boolean.TRUE, spyEncounter);
         assertEquals("The size of the Responses was not the same",
             spyEncounter.getResponses().size(), testEncounterDTO.getResponses().size());
         assertEquals("The getting bundle was not the expected one", spyBundle.getId(),
@@ -981,6 +981,8 @@ public class EncounterTest {
         testJSON.append("],\"lastSeenQuestionId\":").append(testEncounter.getLastSeenQuestionId());
         testJSON.append(",\"lastReminderDate\":")
             .append(testEncounter.getLastReminderDate().getTime());
+        testJSON.append(",\"clinic\":")
+            .append("null");
         testJSON.append("}");
 
         assertEquals("The getting JSON was not the expected one", testJSON.toString(),

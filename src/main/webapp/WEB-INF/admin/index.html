@@ -6,11 +6,31 @@
     th:with="title=${messages.get(#locale, 'admin.title', 'Admin')}"
 >
     <th:block layout:fragment="content">
+        <div class="mt-3"
+             sec:authorize="hasRole('ROLE_ADMIN')"
+        >
+            <div th:if="${gitRepositoryMetadata.updateAvailable}">
+                <div class="alert alert-warning">
+                    <strong th:text="${messages.get(#locale, 'update.available', 'Update Available!')}"></strong>
+                    <span th:with="message=${messages.get(
+                        #locale,
+                        'update.message',
+                        messages.buildArguments(gitRepositoryMetadata.latestReleaseVersion, gitRepositoryMetadata.buildVersion),
+                        '')}"
+                          th:utext="${message}">
+                    </span>
+                    <a th:href="${gitRepositoryMetadata.latestReleaseUrl}"
+                       class="alert-link" target="_blank"
+                       th:text="${messages.get(#locale, 'update.click.here', 'Click here')}">
+                    </a>
+                </div>
+            </div>
+        </div>
         <div
-            sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN')"
-            class="panel-body"
-            th:with="message=${messages.get(#locale,
-                'encountermanager.welcome', 
+                sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN')"
+                class="panel-body"
+                th:with="message=${messages.get(#locale,
+                'editor.welcome',
                 messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
                 'Welcome Text')}"
             th:utext="${message}"
@@ -59,24 +79,34 @@
                         </div>
                         <div class="modal-body">
                             <table>
+                                <!-- Git Properties -->
+                                <h6
+                                        th:text="${messages.get(#locale, 'admin.information.git.title', 'Git Repository Information')}"
+                                ></h6>
                                 <tr>
-                                    <td class="w-25">
-										[[${messages.get(#locale, 'admin.information.cache',
-                                        'Timestamp of last cache reset')}]]:
-									</td>
-                                    <td class="w-25">[[${cacheTimestamp}]]</td>
-                                    <td class="w-25">
-                                        <form
-                                            method="POST"
-                                            action="clearCache"
-                                        >
-                                            <button
-                                                class="btn btn-primary"
-                                                type="submit"
-                                                th:text="${messages.get(#locale, 'admin.information.cache.action', 'Clear cache')}"
-                                            ></button>
-                                        </form>
+                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.build.version', 'Build Version')}"></td>
+                                    <td class="w-50" th:text="${gitRepositoryMetadata.buildVersion}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.branch', 'Branch')}"></td>
+                                    <td class="w-50" th:text="${gitRepositoryMetadata.branch}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.id', 'Commit ID')}"></td>
+                                    <td class="w-50">
+                                        <a class="link" target="_blank"
+                                           th:href="${gitRepositoryMetadata.latestCommitUrl}"
+                                           th:text="${gitRepositoryMetadata.commitId}">
+                                        </a>
                                     </td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.message', 'Commit Message')}"></td>
+                                    <td class="w-50" th:text="${gitRepositoryMetadata.commitMessageShort}"></td>
+                                </tr>
+                                <!-- End of Git Properties -->
+                                <tr>
+                                    <td colspan="4"><hr></td>
                                 </tr>
                             </table>
                         </div>

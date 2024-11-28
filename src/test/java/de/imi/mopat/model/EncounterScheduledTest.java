@@ -11,8 +11,8 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.EncounterScheduledService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
@@ -57,10 +57,10 @@ public class EncounterScheduledTest {
     private EncounterScheduled testEncounterScheduled;
 
     @Autowired
-    private EncounterScheduledService encounterScheduledService;
+    private EncounterScheduledDTOMapper encounterScheduledDTOMapper;
 
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
 
     public EncounterScheduledTest() {
     }
@@ -379,7 +379,7 @@ public class EncounterScheduledTest {
 
     /**
      * Test of {@link EncounterScheduled#getMailStatus} and
-     * {@link EncounterScheduled#sSetMailStatus}.<br> Valid input: random
+     * {@link EncounterScheduled#setMailStatus}.<br> Valid input: random
      * {@link EncounterScheduledMailStatus}
      */
     @Test
@@ -427,7 +427,7 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#toEncounterScheduledDTO}.<br> Valid input: random
+     * Test of {@link EncounterScheduledDTOMapper#apply(EncounterScheduled)}.<br> Valid input: random
      * {@link EncounterScheduled} with random number of {@link Encounter Encounters}
      */
     @Test
@@ -452,7 +452,7 @@ public class EncounterScheduledTest {
             testEncounterScheduled.addEncounter(spyEncounter);
         }
 
-        EncounterScheduledDTO testEncounterScheduledDTO = encounterScheduledService.toEncounterScheduledDTO(
+        EncounterScheduledDTO testEncounterScheduledDTO = encounterScheduledDTOMapper.apply(
             spyEncounterScheduled);
 
         assertEquals("The getting startDate was not the expected one",
@@ -479,7 +479,7 @@ public class EncounterScheduledTest {
             spyEncounterScheduled.getEncounters().size(),
             testEncounterScheduledDTO.getEncounterDTOs().size());
         assertEquals("The getting  was not the expected one",
-            bundleService.toBundleDTO(true, spyEncounterScheduled.getBundle()),
+            bundleDTOMapper.apply(true, spyEncounterScheduled.getBundle()),
             testEncounterScheduledDTO.getBundleDTO());
     }
 
