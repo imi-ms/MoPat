@@ -1,122 +1,116 @@
 <th:block
-	layout:fragment="processClinicConfigurations(configurationList, selectionPath, idPath, parent)"
+    layout:fragment="processClinicConfigurations(configurationList, selectionPath, idPath, parent)"
 >
-	<th:block
-		th:each="configurationDTO, configurationIndex: ${configurationList}"
-	>
-		<li
-			class="list-group-item"
-			th:classappend="${parent != null} ? |children| : ''"
-			th:attr="configurationId=${configurationDTO.id},parentId=${parent != null} ? ${parent.clinicConfigurationId} : ''"
-		>
-			<div class="configuration">
-				<!--/* Put the configuration id into a hidden field */-->
-				<input
-					type="hidden"
-					class="configurationId"
-					th:name="|${selectionPath}[${configurationIndex.index}].id|"
-					th:id="|${idPath}${configurationIndex.index}.id|"
-					th:value="${configurationDTO.id}"
-				/>
-				<input
-				type="hidden"
-				class="configurationId"
-				th:name="|${selectionPath}[${configurationIndex.index}].clinicConfigurationId|"
-				th:id="|${idPath}${configurationIndex.index}.clinicConfigurationId|"
-				th:value="${configurationDTO.clinicConfigurationId}"
-				/>
-				<th:block
-					th:switch="${configurationDTO?.configurationType?.toString()}"
-				>
-					<th:block th:case="STRING">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
-						/>
-					</th:block>
-					<th:block th:case="LOCAL_PATH">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
-						/>
-					</th:block>
-					<th:block th:case="PATTERN">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
-						/>
-					</th:block>
-					<th:block th:case="LONG">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
-						/>
-					</th:block>
-					<th:block th:case="INTEGER">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
-						/>
-					</th:block>
-					<th:block th:case="*">
-						<th:block
-							layout:insert="~{helper/var :: add(key='formType', value=${configurationDTO?.configurationType?.toString()})}"
-						/>
-					</th:block>
-				</th:block>
+    <th:block th:each="configurationDTO, configurationIndex: ${configurationList}">
+        <li
+            class="list-group-item"
+            th:classappend="${parent != null} ? |children| : ''"
+            th:attr="configurationId=${configurationDTO.id},parentId=${parent != null} ? ${parent.clinicConfigurationId} : ''"
+        >
+            <div class="configuration">
+                <!--/* Put the configuration id into a hidden field */-->
+                <input
+                    type="hidden"
+                    class="configurationId"
+                    th:name="|${selectionPath}[${configurationIndex.index}].id|"
+                    th:id="|${idPath}${configurationIndex.index}.id|"
+                    th:value="${configurationDTO.id}"
+                />
+                <input
+                    type="hidden"
+                    class="configurationId"
+                    th:name="|${selectionPath}[${configurationIndex.index}].clinicConfigurationId|"
+                    th:id="|${idPath}${configurationIndex.index}.clinicConfigurationId|"
+                    th:value="${configurationDTO.clinicConfigurationId}"
+                />
+                <th:block th:switch="${configurationDTO?.configurationType?.toString()}">
+                    <th:block th:case="STRING">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+                        />
+                    </th:block>
+                    <th:block th:case="LOCAL_PATH">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+                        />
+                    </th:block>
+                    <th:block th:case="PATTERN">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value='TEXT')}"
+                        />
+                    </th:block>
+                    <th:block th:case="LONG">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+                        />
+                    </th:block>
+                    <th:block th:case="INTEGER">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
+                        />
+                    </th:block>
+                    <th:block th:case="*">
+                        <th:block
+                            layout:insert="~{helper/var :: add(key='formType', value=${configurationDTO?.configurationType?.toString()})}"
+                        />
+                    </th:block>
+                </th:block>
 
-				<div
-					layout:replace="~{fragments/clinicConfigurationTypes :: __${vars['formType']}__(
+                <div
+                    layout:replace="~{fragments/clinicConfigurationTypes :: __${vars['formType']}__(
                                     configuration=${configurationDTO},
                                     selectionPath=|${selectionPath}[${configurationIndex.index}]|,
                                     idPath=|${idPath}${configurationIndex.index}|
                 )}"
-				>
-				</div>
+                >
+                </div>
 
-				<div
-					th:if="${#fields.hasErrors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
-					th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
-					th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
-					style="color: red"
-				>
-				</div>
-			</div>
-		</li>
+                <div
+                    th:if="${#fields.hasErrors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+                    th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
+                    th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
+                    style="color: red"
+                >
+                </div>
+            </div>
+        </li>
 
-		<th:block
-			th:if="${configurationDTO.children != null && not #lists.isEmpty(configurationDTO.children)}"
-		>
-			<th:block
-				layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
+        <th:block
+            th:if="${configurationDTO.children != null && not #lists.isEmpty(configurationDTO.children)}"
+        >
+            <th:block
+                layout:replace="~{fragments/processClinicConfigurations :: processClinicConfigurations(
                                         configurationList=${configurationDTO.children},
                                         selectionPath=|${selectionPath}[${configurationIndex.index}].children|,
                                         idPath=|${idPath}${configurationIndex.index}.children|,
                                         parent=${configurationDTO}
             )}"
-			/>
-		</th:block>
+            />
+        </th:block>
 
-
-		<th:block
-			th:if="${configurationDTO.mappedConfigurationGroupDTOS != null && not #lists.isEmpty(configurationDTO.mappedConfigurationGroupDTOS)}"
-		>
-		<li
-			class="list-group-item"
-			th:classappend="children"
-			th:attr="parentId=${configurationDTO.clinicConfigurationId}"
-		>
-			<div class="form-group select">
-		
-				<select
-					class="form-control"
-					th:name="|${selectionPath}[${configurationIndex.index}].mappedConfigurationGroup|"
-					th:id="|${idPath}${configurationIndex.index}.mappedConfigurationGroup|"
-				>
-					<option
-						th:each="i: ${configurationDTO.mappedConfigurationGroupDTOS}"
-						th:value="${i.configurationGroupDTO.name}"
-						th:text="${i.infoName}"
-						th:selected="${configurationDTO.mappedConfigurationGroup == i.configurationGroupDTO.name}"
-					></option>
-				</select>
-			</div>
-		</li>
-		</th:block>
-	</th:block>
+        <th:block
+            th:if="${configurationDTO.mappedConfigurationGroupDTOS != null && not #lists.isEmpty(configurationDTO.mappedConfigurationGroupDTOS)}"
+        >
+            <li
+                class="list-group-item"
+                th:classappend="children"
+                th:attr="parentId=${configurationDTO.clinicConfigurationId}"
+            >
+                <div class="form-group select">
+                    <select
+                        class="form-control"
+                        th:name="|${selectionPath}[${configurationIndex.index}].mappedConfigurationGroup|"
+                        th:id="|${idPath}${configurationIndex.index}.mappedConfigurationGroup|"
+                    >
+                        <option
+                            th:each="i: ${configurationDTO.mappedConfigurationGroupDTOS}"
+                            th:value="${i.configurationGroupDTO.name}"
+                            th:text="${i.infoName}"
+                            th:selected="${configurationDTO.mappedConfigurationGroup == i.configurationGroupDTO.name}"
+                        ></option>
+                    </select>
+                </div>
+            </li>
+        </th:block>
+    </th:block>
 </th:block>

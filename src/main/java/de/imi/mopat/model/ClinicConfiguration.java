@@ -104,49 +104,6 @@ public class ClinicConfiguration implements Serializable {
     }
 
     /**
-     * Converts the {@link Configuration} object to a {@link ConfigurationDTO} object.
-     *
-     * @return ConfigurationDTO The configurationDTO object based on this configuration object.
-     */
-    public ClinicConfigurationDTO toClinicConfigurationDTO() {
-        ClinicConfigurationDTO clinicConfigurationDTO = new ClinicConfigurationDTO();
-
-        clinicConfigurationDTO.setId(this.getId());
-        clinicConfigurationDTO.setEntityClass(this.getEntityClass());
-        clinicConfigurationDTO.setAttribute(this.getAttribute());
-        clinicConfigurationDTO.setValue(this.getValue());
-        clinicConfigurationDTO.setConfigurationType(this.getConfigurationType());
-        clinicConfigurationDTO.setLabelMessageCode(this.getLabelMessageCode());
-        clinicConfigurationDTO.setDescriptionMessageCode(this.getDescriptionMessageCode());
-        clinicConfigurationDTO.setTestMethod(this.getTestMethod());
-        clinicConfigurationDTO.setUpdateMethod(this.getUpdateMethod());
-        clinicConfigurationDTO.setPosition(this.getPosition());
-        clinicConfigurationDTO.setMappedConfigurationGroup(this.getMappedConfigurationGroup());
-
-        //If parent not null set the DTO's parent
-        if (this.parent != null) {
-            ClinicConfigurationDTO parentDTO = new ClinicConfigurationDTO();
-            parentDTO.setId(this.getParent().getId());
-            parentDTO.setValue(this.getParent().getValue());
-            clinicConfigurationDTO.setParent(parentDTO);
-        }
-
-        //If children not empty or null set the DTO's children
-        if (this.getChildren() != null && !this.getChildren().isEmpty()) {
-            List<ClinicConfigurationDTO> childrenDTOs = new ArrayList<>();
-            for (ClinicConfiguration child : this.getChildren()) {
-                ClinicConfigurationDTO childDTO = new ClinicConfigurationDTO();
-                childDTO.setId(child.getId());
-                childDTO.setParent(clinicConfigurationDTO);
-                childrenDTOs.add(childDTO);
-            }
-            clinicConfigurationDTO.setChildren(childrenDTOs);
-        }
-
-        return clinicConfigurationDTO;
-    }
-
-    /**
      * Returns the id of the current configuration object.
      *
      * @return The current id of this configuration object. Might be

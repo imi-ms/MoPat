@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.helper.model.ClinicConfigurationDTOMapper;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.ClinicConfigurationDTO;
 import de.imi.mopat.model.dto.ClinicConfigurationGroupMappingDTO;
@@ -36,6 +37,9 @@ public class ClinicConfigurationMappingService {
 
     @Autowired
     private ConfigurationService configurationService;
+
+    @Autowired
+    private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
 
     /**
      * Initializes ClinicConfigurationMappingDTO using {@link ClinicConfigurationDTO} with default values.
@@ -80,8 +84,7 @@ public class ClinicConfigurationMappingService {
     public ClinicConfigurationMappingDTO toClinicConfigurationMappingDTO(
         ClinicConfigurationMapping clinicConfigurationMapping) {
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = new ClinicConfigurationMappingDTO();
-        ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationMapping.getClinicConfiguration()
-            .toClinicConfigurationDTO();
+        ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationDTOMapper.apply(clinicConfigurationMapping.getClinicConfiguration());
 
         clinicConfigurationMappingDTO.setId(clinicConfigurationMapping.getId());
         clinicConfigurationMappingDTO.setValue(clinicConfigurationMapping.getValue());
@@ -200,8 +203,9 @@ public class ClinicConfigurationMappingService {
     @JsonIgnore
     public ClinicConfigurationMappingDTO processClinicConfigurationMappingDTO(
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
-        ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationDao.getElementById(
-            clinicConfigurationMappingDTO.getClinicConfigurationId()).toClinicConfigurationDTO();
+        ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationDTOMapper.apply(
+            clinicConfigurationDao.getElementById(
+                clinicConfigurationMappingDTO.getClinicConfigurationId()));
 
         List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
         for (ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(

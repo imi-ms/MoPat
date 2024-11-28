@@ -4,6 +4,7 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.helper.model.ClinicConfigurationDTOMapper;
 import de.imi.mopat.model.dto.ClinicConfigurationDTO;
 import de.imi.mopat.model.dto.ConfigurationDTO;
 import de.imi.mopat.model.enumeration.ConfigurationType;
@@ -278,8 +279,8 @@ public class ClinicConfigurationTest {
         Mockito.when(parent.getId()).thenReturn(Math.abs(random.nextLong()));
         spyConfiguration.setParent(parent);
         spyConfiguration.setChildren(new ArrayList<>());
-
-        ClinicConfigurationDTO configurationDTO = spyConfiguration.toClinicConfigurationDTO();
+        ClinicConfigurationDTOMapper clinicConfigurationDTOMapper = new ClinicConfigurationDTOMapper();
+        ClinicConfigurationDTO configurationDTO = clinicConfigurationDTOMapper.apply(spyConfiguration);
         assertNotNull(
             "toClinicConfigurationDTO method failed. The returned value was null although not-null was expected.",
             configurationDTO);
@@ -326,7 +327,8 @@ public class ClinicConfigurationTest {
             children.add(child);
         }
         spyConfiguration.setChildren(children);
-        configurationDTO = spyConfiguration.toClinicConfigurationDTO();
+        configurationDTO = clinicConfigurationDTOMapper.apply(spyConfiguration);
+
         assertEquals(
             "ToConfigurationDTO method failed. The returned list of children didn't match the expected value.",
             children.size(), configurationDTO.getChildren().size());

@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.helper.model.ClinicConfigurationDTOMapper;
 import de.imi.mopat.model.ClinicConfiguration;
 import de.imi.mopat.model.ConfigurationGroup;
 import de.imi.mopat.model.dto.ClinicConfigurationDTO;
@@ -16,6 +17,8 @@ public class ClinicConfigurationService {
     @Autowired
     private ConfigurationGroupDao configurationGroupDao;
 
+    @Autowired
+    private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
     /**
      * Function that recursively processes all children elements to allow the use of multiple nested elements
      *
@@ -27,7 +30,7 @@ public class ClinicConfigurationService {
         //Set the children DTOs
         clinicConfigurationDTO.setChildren(new ArrayList<>());
         for (ClinicConfiguration child : clinicConfiguration.getChildren()) {
-            ClinicConfigurationDTO childDTO = child.toClinicConfigurationDTO();
+            ClinicConfigurationDTO childDTO = clinicConfigurationDTOMapper.apply(child);
             List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
             for(ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(childDTO.getMappedConfigurationGroup())){
                 configurationGroupDTOS.add(configurationGroup.toConfigurationGroupDTO());

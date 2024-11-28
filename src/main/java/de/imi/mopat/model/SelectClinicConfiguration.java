@@ -8,9 +8,11 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * The database table model for table <i>configuration</i> join together with the table
+ * The database table model for table <i>clinic configuration</i> join together with the table
  * <i>SelectClinicConfiguration_OPTIONS</i>. The select configuration object is a configuration object
  * with the type= 'SELECT' and configurationType = 'SELECT'.
+ *
+ * This model can be used to create 'Select' type clinic configurations.
  */
 @Entity
 @DiscriminatorValue("SELECT")
@@ -39,14 +41,6 @@ public class SelectClinicConfiguration extends ClinicConfiguration implements Se
         super(entityClass, attribute, configurationType, labelMessageCode, descriptionMessageCode,
             testMethod, updateMethod, position);
         this.options = options;
-    }
-
-    @Override
-    public ClinicConfigurationDTO toClinicConfigurationDTO() {
-        ClinicConfigurationDTO configurationDTO = super.toClinicConfigurationDTO();
-        configurationDTO.setOptions(this.options);
-
-        return configurationDTO;
     }
 
     /**
