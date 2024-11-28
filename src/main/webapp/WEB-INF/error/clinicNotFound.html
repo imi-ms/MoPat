@@ -1,0 +1,21 @@
+<!--/*
+    * Error page that shows, survey is started using a user that doesnot have any clinic assigned
+*/-->
+
+<th:block layout:decorate="~{layout/error}">
+    <th:block layout:fragment="content">
+        <div class="d-flex flex-column accessDenied centeredContent">
+            <i class="bi bi-person-x-fill icon-red"></i>
+            <span
+                class="errorText"
+                th:text="${messages.get(#locale, 'error.heading.clinicNotFound', 'You are currently not assigned to any clinic. Please contact the MoPat Support')}"
+            >
+            </span>
+            <span
+                class="errorText"
+                th:text="${supportEmail}"
+            ></span>
+            <br />
+        </div>
+    </th:block>
+</th:block>
