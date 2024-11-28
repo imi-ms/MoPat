@@ -403,7 +403,11 @@ public class EncounterController {
 
         // If the scheduled encounter is scheduled for today,
         // possibly send the notification mail immediately
-        if (startDay.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH)) {
+        
+        if (startDay.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) &&
+            startDay.get(Calendar.MONTH) == now.get(Calendar.MONTH) &&
+            startDay.get(Calendar.YEAR) == now.get(Calendar.YEAR)
+        ) {
             Calendar lastExecutionTime = Calendar.getInstance();
 
             if (encounterScheduledExecutor.getLastExecutionTime() != null) {
