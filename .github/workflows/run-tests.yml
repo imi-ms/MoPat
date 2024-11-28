@@ -51,8 +51,8 @@ jobs:
           report_paths: '**/target/surefire-reports/*.xml'
 
       - name: Post PR comment with Test Results
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v1
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
