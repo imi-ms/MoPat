@@ -14,7 +14,7 @@ function PseudonymizationService() {
  * 
  * @returns {String} The pseudonym for the given data.
  */
-PseudonymizationService.getPseudonym = function (firstname, lastname, birthdate) {
+PseudonymizationService.getPseudonym = function (firstname, lastname, birthdate, clinicId) {
     var birthDate = new Date(birthdate);
     var pseudonym;
     $.ajax({
@@ -23,7 +23,7 @@ PseudonymizationService.getPseudonym = function (firstname, lastname, birthdate)
         type: "GET",
         contentType: "application/json; charset=utf-8",
         error: function (jqXHR, textStatus, errorThrown) {
-            var requestData = "vorname=" + firstname + "&nachname=" + lastname + "&geburtstag=" + birthDate.getDate() + "&geburtsmonat=" + birthDate.getMonth() + "&geburtsjahr=" + birthDate.getFullYear() + "&geburtsname=&plz=&ort=&sureness=true&anlegen=%2BPID%2Banfordern%2B";
+            var requestData = "clinicId="+clinicId+"&vorname=" + firstname + "&nachname=" + lastname + "&geburtstag=" + birthDate.getDate() + "&geburtsmonat=" + birthDate.getMonth() + "&geburtsjahr=" + birthDate.getFullYear() + "&geburtsname=&plz=&ort=&sureness=true&anlegen=%2BPID%2Banfordern%2B";
             $.ajax({
                 async: false,
                 url: contextPath + "/pseudonymization/pseudonym",
@@ -46,7 +46,7 @@ PseudonymizationService.getPseudonym = function (firstname, lastname, birthdate)
                 birthMonth = "0" + birthMonth;
             }
             
-            var requestData = "vorname=" + firstname + "&nachname=" + lastname + "&geburtstag=" + birthDay + "&geburtsmonat=" + birthMonth + "&geburtsjahr=" + birthDate.getFullYear() + "&geburtsname=&plz=&ort=&sureness=true&anlegen=%2BPID%2Banfordern%2B";
+            var requestData = "clinicId="+clinicId+"&vorname=" + firstname + "&nachname=" + lastname + "&geburtstag=" + birthDay + "&geburtsmonat=" + birthMonth + "&geburtsjahr=" + birthDate.getFullYear() + "&geburtsname=&plz=&ort=&sureness=true&anlegen=%2BPID%2Banfordern%2B";
             $.ajax({
                 async: false,
                 url: data,

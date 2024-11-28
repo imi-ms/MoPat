@@ -1,16 +1,22 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.dao.ConfigurationDao;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class ErrorController {
+
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ErrorController.class);
 
@@ -69,5 +75,18 @@ public class ErrorController {
                 (Throwable) request.getAttribute("jakarta.servlet" + ".error" + ".exception"));
             return "error/internalservererror";
         }
+    }
+
+
+    /**
+     * Controls the HTTP requests for the URL /error/clinicNotFound.Error page that shows,
+     * survey is started using a user that does not have any clinic assigned
+     *
+     * @return The website, which was requested.
+     */
+    @RequestMapping(value = "/error/clinicNotFound")
+    public String clinicNotFoundPage(final Model model) {
+        model.addAttribute("supportEmail", configurationDao.getSupportEMail());
+        return "error/clinicNotFound";
     }
 }

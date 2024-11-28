@@ -65,11 +65,6 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (28, 'GENERAL', 8, 21, 4, 'mailSenderStartTLS', 'BOOLEAN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.mailSender.startTLS', NULL, '', '9836b4e0-c62c-4ce4-97f5-b3d89e00046b', 'false', ''),
 (29, 'PATTERN', 8, 21, 9, 'mailFooterMail', 'PATTERN', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.applicationMailer.eMailFooter', NULL, '', '2b1bead5-28a6-407f-94c0-42c02eb28b98', '', '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'),
 (30, 'GENERAL', 8, 21, 10, 'mailFooterPhone', 'STRING', NULL, 'de.imi.mopat.helper.controller.MailSender', 'configuration.label.applicationMailer.phoneFooter', NULL, '', '39348db8-c551-4ee0-b3c1-cd84278839d5', '', ''),
-(31, 'GENERAL', 3, NULL, 1, 'usePatientDataLookup', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.usePatientDataLookup', NULL, '', 'ea896f07-7666-4d20-ad2d-9e2e65cbca89', 'false', ''),
-(32, 'GENERAL', 3, 31, 2, 'activateHisToggle', 'BOOLEAN', NULL, 'de.imi.mopat.controller.SurveyController', 'configuration.label.survey.activateHisToggle', NULL, '', '8c75cd85-fe2d-43d0-bf20-d1f4509f868b', 'false', ''),
-(33, 'SELECT', 3, 31, 3, 'patientDataRetrieverClass', 'SELECT', NULL, 'de.imi.mopat.helper.controller.PatientDataRetrieverFactoryBean', 'configuration.label.patientRetrieverClass', NULL, '', '7ff58798-b41f-42a2-b170-b2350fdeb70e', 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImp', ''),
-(34, 'GENERAL', 3, 31, 4, 'HL7v22PatientInformationRetrieverHostname', 'STRING', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverHostname', NULL, '', '82957ee9-2409-4978-84af-c3cf0edb9293', '', ''),
-(35, 'GENERAL', 3, 31, 5, 'HL7v22PatientInformationRetrieverPort', 'INTEGER', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverPort', NULL, '', 'b6410c08-fc15-4f67-9601-9ccee136898d', '', ''),
 (36, 'GENERAL', 2, NULL, 1, 'activeDirectoryLdapAuthenticationProviderActivated', 'BOOLEAN', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderActivated', NULL, '', '6024666a-df73-46db-b0a3-50e1c973adfb', 'false', ''),
 (37, 'GENERAL', 2, 36, 3, 'activeDirectoryLdapAuthenticationProviderDomain', 'STRING', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderDomain', NULL, '', '010754f6-fe1f-42a5-9024-4bffcde7f6f7', '', ''),
 (38, 'SELECT', 2, 36, 4, 'activeDirectoryLdapAuthenticationProviderDefaultLanguage', 'SELECT', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderDefaultLanguage', NULL, '', '3a346f60-48ca-4591-b36d-22efea480126', 'de_DE', ''),
@@ -77,10 +72,6 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (40, 'GENERAL', 2, 36, 5, 'activeDirectoryLdapAuthenticationProviderSupportPhone', 'STRING', NULL, 'de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider', 'configuration.label.activeDirectoryLdapAuthenticationProviderSupportPhone', NULL, '', 'b17b097e-7519-4d61-9480-18758696bd1f', '', ''),
 (41, 'PATTERN', 9, NULL, 1, 'supportMail', 'PATTERN', NULL, 'GLOBAL', 'configuration.label.support.mail', NULL, '', '44d444ea-7d0b-4de7-be16-6b9b9d54e44f', '', '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'),
 (42, 'GENERAL', 9, NULL, 2, 'supportPhone', 'STRING', NULL, 'GLOBAL', 'configuration.label.support.phone', NULL, '', '86c25785-be69-4e69-abda-7cec26328273', '', ''),
-(43, 'GENERAL', 3, NULL, 1, 'registerPatientData', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.registerPatientData', NULL, '', '92ddfc6f-5e16-426a-8203-4edf22fec17c', 'true', ''),
-(44, 'GENERAL', 3, NULL, 6, 'usePseudonymizationService', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.pseudonymizationService', NULL, '', '0f64ebe5-40e6-4d0d-8a3a-3af7274aa9c8', 'false', ''),
-(45, 'GENERAL', 3, 44, 7, 'pseudonymizationServiceUrl', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationService.path', NULL, '', '59ef4f9c-b298-44e0-b9b4-d372e9f8a066', '', ''),
-(46, 'GENERAL', 3, 44, 8, 'pseudonymizationServiceApiKey', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationServiceApiKey', NULL, '', '75694313-f767-4107-b26f-6f5406484bb8', '', ''),
 (47, 'GENERAL', 1, NULL, 5, 'baseUrl', 'STRING', 'configuration.description.baseUrl', 'GLOBAL', 'configuration.label.baseUrl', NULL, '', '3e227a5c-53fc-483b-8c6d-ae0b863cdd2f', 'http://localhost:8080', ''),
 (48, 'GENERAL', 7, NULL, 3, 'finishedEncounterMailaddressTimeWindowInMillis', 'LONG', 'configuration.description.finishedEncounterMailaddressTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.finishedEncounterMailaddressTimeWindowInMillis', NULL, '', '504f512e-321d-49cd-a5b6-397ae1cc8438', '2592000000', ''),
 (49, 'GENERAL', 10, NULL, 1, 'metadataExporterODMOID', 'STRING', 'configuration.description.metadataExporterODMOID', 'GLOBAL', 'configuration.label.metadataExporterODMOID', NULL, NULL, '325a0e07-76e8-427a-be4b-c7abcbc46bc0', '', ''),
@@ -111,7 +102,56 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (75, 'GENERAL', 1, NULL, 12, 'imageUploadPath', 'LOCAL_PATH', NULL, 'GLOBAL', 'configuration.label.imageUploadPath', NULL, NULL, 'fb1db996-4538-47e3-bd7b-7c5ce4f03264', '/var/lib/tomcat10/images', NULL),
 (76, 'GENERAL', 10, NULL, 3, 'FHIRsystemURI', 'STRING', NULL, 'GLOBAL', 'configuration.label.FHIRsystemURI', NULL, NULL, 'cbd13c7f-a41b-42fa-9f87-7f78bc7e8a5d', 'https://mopat.uni-muenster.de/FHIR/', NULL),
 (77, 'GENERAL', 1, NULL, 14, 'webappRootPath', 'STRING', NULL, 'GLOBAL', 'configuration.label.webappRootPath', NULL, NULL, 'b35db8b1-f143-4e5d-a423-37660b981319', '/var/lib/tomcat10/webapps/ROOT', NULL),
-(78, 'GENERAL', 1, NULL, 15, 'enableGlobalPinAuth', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.enableGlobalPinAuth', NULL, NULL, '5c4ca0df-fe5e-4582-8e9e-e290e1ed8efe', 'true', NULL);
+(78, 'GENERAL', 1, NULL, 15, 'enableGlobalPinAuth', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.enableGlobalPinAuth', NULL, NULL, '5c4ca0df-fe5e-4582-8e9e-e290e1ed8efe', 'true', NULL),
+(80, 'GENERAL', 13, NULL, 2, 'activateHisToggle', 'BOOLEAN', NULL, 'de.imi.mopat.controller.SurveyController', 'configuration.label.survey.activateHisToggle', NULL, '', '8c75cd85-fe2d-43d0-bf20-d1f4509f868b', 'false', ''),
+(81, 'SELECT', 13, NULL, 3, 'patientDataRetrieverClass', 'SELECT', NULL, 'de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean', 'configuration.label.patientRetrieverClass', NULL, '', '7ff58798-b41f-42a2-b170-b2350fdeb70e', 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', ''),
+(82, 'GENERAL', 13, NULL, 4, 'HL7v22PatientInformationRetrieverHostname', 'STRING', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverHostname', NULL, '', '82957ee9-2409-4978-84af-c3cf0edb9293', '', ''),
+(83, 'GENERAL', 13, NULL, 5, 'HL7v22PatientInformationRetrieverPort', 'INTEGER', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverPort', NULL, '', 'b6410c08-fc15-4f67-9601-9ccee136898d', '', ''),
+(84, 'GENERAL', 14, NULL, 7, 'pseudonymizationServiceUrl', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationService.path', NULL, '', '59ef4f9c-b298-44e0-b9b4-d372e9f8a066', '', ''),
+(85, 'GENERAL', 14, NULL, 8, 'pseudonymizationServiceApiKey', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationServiceApiKey', NULL, '', '75694313-f767-4107-b26f-6f5406484bb8', '', '');
+
+
+CREATE TABLE IF NOT EXISTS `clinic_configuration` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `type` varchar(31) DEFAULT NULL,
+  `attribute` varchar(255) NOT NULL,
+  `configuration_type` varchar(255) NOT NULL,
+  `description_message_code` varchar(255) DEFAULT NULL,
+  `class` varchar(255) NOT NULL,
+  `label_message_code` varchar(255) NOT NULL,
+  `position` int NOT NULL,
+  `test_method` varchar(255) DEFAULT NULL,
+  `update_method` varchar(255) DEFAULT NULL,
+  `uuid` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  `parent` bigint DEFAULT NULL,
+  `mapped_configuration_group` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_clinic_configuration_parent` (`parent`)
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb3;
+
+ALTER TABLE `clinic_configuration`
+	ADD CONSTRAINT `fk_clinic_configuration_parent` FOREIGN KEY (`parent`) REFERENCES `clinic_configuration` (`id`) ON DELETE CASCADE;
+
+INSERT INTO clinic_configuration (`id`,`type`,`attribute`,configuration_type,description_message_code,class,label_message_code,`position`,test_method,update_method,uuid,value,parent,mapped_configuration_group) VALUES
+	 (1,'GENERAL','usePatientDataLookup','BOOLEAN',NULL,'GLOBAL','configuration.label.usePatientDataLookup',1,NULL,'','ea896f07-7666-4d20-ad2d-9e2e65cbca89','false',NULL,'configurationGroup.label.usePatientLookUp'),
+	 (2,'GENERAL','registerPatientData','BOOLEAN',NULL,'GLOBAL','configuration.label.registerPatientData',9,NULL,'','92ddfc6f-5e16-426a-8203-4edf22fec17c','false',NULL,NULL),
+	 (3,'GENERAL','usePseudonymizationService','BOOLEAN',NULL,'GLOBAL','configuration.label.pseudonymizationService',6,NULL,'','0f64ebe5-40e6-4d0d-8a3a-3af7274aa9c8','false',NULL,'configurationGroup.label.pseudonymization');
+
+-- moPat.clinic_configuration_mapping definition
+
+CREATE TABLE IF NOT EXISTS `clinic_configuration_mapping` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `value` varchar(255) DEFAULT NULL,
+  `clinic_id` bigint DEFAULT NULL,
+  `clinic_configuration_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_clinic_id` (`clinic_id`),
+  KEY `fk_clinic_configuration_id` (`clinic_configuration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+ALTER TABLE `clinic_configuration_mapping`
+    ADD CONSTRAINT FK_clinic_configuration_id FOREIGN KEY (clinic_configuration_id) REFERENCES clinic_configuration(id) ON DELETE CASCADE;
 
 --
 -- Tabellenstruktur für Tabelle `Configuration_Group`
@@ -134,16 +174,18 @@ PRIMARY KEY (`id`)
 INSERT INTO `configuration_group` (`id`, `uuid`, `position`, `name`, `label_message_code`, `repeating`) VALUES
 (1, '2ec9135e-f690-44ed-8984-d9165aa35a42', 1, 'name', 'configurationGroup.label.general', 0),
 (2, 'b17f4076-acfc-4000-a9cd-ffaa245674d2', 2, 'name', 'configurationGroup.label.activeDirectoryAuthentication', 0),
-(3, '46a1c0ad-09d2-4634-98b7-3fdaf8c84c3d', 3, 'name', 'configurationGroup.label.patientDataRetriever', 0),
-(4, '8febaeec-8319-4a42-8560-4fa102004df0', 5, 'name', 'configurationGroup.label.ORBIS', 1),
-(5, '8721ce9d-4e48-4b8e-98a3-7dd55c9314f2', 6, 'name', 'configurationGroup.label.HLSeven', 1),
-(6, '0f1ce478-0302-42b8-9cb0-902821ebcdf4', 7, 'name', 'configurationGroup.label.ODM', 1),
-(7, '3f3e368b-b2f8-44a5-ab30-92c49fb7d1a9', 10, 'name', 'configurationGroup.label.encounter', 0),
-(8, '19b19f2f-8373-4ff0-beba-0a0c64b7ee86', 11, 'name', 'configurationGroup.label.mail', 0),
-(9, 'f2bca53d-b533-41d5-8acb-52e011e6332e', 12, 'name', 'configurationGroup.label.support', 0),
-(10, '95ec39c7-98ae-4f7d-b3e5-57416d01a2b0', 4, 'name', 'configurationGroup.label.metadataExporter', 0),
-(11, '9a66d5da-023b-4248-a0d5-96c408c3fa34', 8, 'name', 'configurationGroup.label.FHIR', 1),
-(12, 'c8f38a0d-f6e9-4a70-a34f-d6db8ce58479', 9, 'name', 'configurationGroup.label.REDCap', 1);
+(4, '8febaeec-8319-4a42-8560-4fa102004df0', 6, 'name', 'configurationGroup.label.ORBIS', 1),
+(5, '8721ce9d-4e48-4b8e-98a3-7dd55c9314f2', 7, 'name', 'configurationGroup.label.HLSeven', 1),
+(6, '0f1ce478-0302-42b8-9cb0-902821ebcdf4', 8, 'name', 'configurationGroup.label.ODM', 1),
+(7, '3f3e368b-b2f8-44a5-ab30-92c49fb7d1a9', 11, 'name', 'configurationGroup.label.encounter', 0),
+(8, '19b19f2f-8373-4ff0-beba-0a0c64b7ee86', 12, 'name', 'configurationGroup.label.mail', 0),
+(9, 'f2bca53d-b533-41d5-8acb-52e011e6332e', 13, 'name', 'configurationGroup.label.support', 0),
+(10, '95ec39c7-98ae-4f7d-b3e5-57416d01a2b0', 5, 'name', 'configurationGroup.label.metadataExporter', 0),
+(11, '9a66d5da-023b-4248-a0d5-96c408c3fa34', 9, 'name', 'configurationGroup.label.FHIR', 1),
+(12, 'c8f38a0d-f6e9-4a70-a34f-d6db8ce58479', 10, 'name', 'configurationGroup.label.REDCap', 1),
+(13, '99f1e2d6-a7b9-4c12-8cbf-0e38dec7a8e8', 3, 'patient lookup 1', 'configurationGroup.label.usePatientLookUp', 1),
+(14, '897e23cf-4155-4e82-b56f-a58a9aaef431', 4, 'pseudonymization 1', 'configurationGroup.label.pseudonymization', 1);
+
 
 --
 -- Constraints für die Tabelle `configuration`
@@ -171,11 +213,32 @@ INSERT INTO `SelectConfiguration_OPTIONS` (`SelectConfiguration_id`, `options`) 
 (1, 'en_GB'),
 (3, 'number'),
 (3, 'text'),
-(33, 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImpl'),
-(33, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever'),
-(33, 'de.imi.mopat.helper.controller.DummyPatientDataRetrieverImpl'),
+(81, 'de.imi.mopat.helper.controller.RandomPatientDataRetrieverImpl'),
+(81, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever'),
+(81, 'de.imi.mopat.helper.controller.DummyPatientDataRetrieverImpl'),
+(81, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetrieverByPID'),
 (38, 'de_DE'),
 (38, 'en_GB');
+
+CREATE TABLE IF NOT EXISTS `SelectClinicConfiguration_OPTIONS` (
+  `SelectClinicConfiguration_id` bigint(20) DEFAULT NULL,
+  `options` varchar(255) NOT NULL,
+  KEY `SelectClinicConfiguration_OPTIONS_SelectClinicConfiguration_id` (`SelectClinicConfiguration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- moPat.clinic_configuration_group_mapping definition
+
+CREATE TABLE IF NOT EXISTS `clinic_configuration_group_mapping` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `clinic_configuration_mapping_id` bigint DEFAULT NULL,
+  `configuration_group_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb3;
+
+ALTER TABLE `clinic_configuration_group_mapping` ADD CONSTRAINT `clinic_configuration_group_mapping_fk1` FOREIGN KEY (`clinic_configuration_mapping_id`) REFERENCES `clinic_configuration_mapping` (`id`);
+ALTER TABLE `clinic_configuration_group_mapping` ADD CONSTRAINT `clinic_configuration_group_mapping_fk2` FOREIGN KEY (`configuration_group_id`) REFERENCES `configuration_group` (`id`);
+
 
 CREATE TABLE IF NOT EXISTS `operator` (
   `id` bigint(20) NOT NULL,
@@ -206,15 +269,17 @@ INSERT INTO `operator` (`id`, `operator_type`, `display_sign`, `uuid`) VALUES
 ('18', 'Minimum', 'minimum', '4f6898e7-b711-4c3a-b678-71200959f8f9');
 
 
---
--- Constraints der exportierten Tabellen
---
 
 --
 -- Constraints der Tabelle `SelectConfiguration_OPTIONS`
 --
 ALTER TABLE `SelectConfiguration_OPTIONS`
   ADD CONSTRAINT `SelectConfiguration_OPTIONS_SelectConfiguration_id` FOREIGN KEY (`SelectConfiguration_id`) REFERENCES `configuration` (`id`);
+
+-- Constraints der Tabelle `SelectClinicConfiguration_OPTIONS`
+
+ALTER TABLE `SelectClinicConfiguration_OPTIONS`
+  ADD CONSTRAINT `SelectClinicConfiguration_OPTIONS_SelectClinicConfiguration_id` FOREIGN KEY (`SelectClinicConfiguration_id`) REFERENCES `clinic_configuration` (`id`);
 
 --
 -- Datenbank: `moPat_user`
@@ -300,6 +365,7 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
   `firstname` varchar(255) NOT NULL,
   `lastname` varchar(255) NOT NULL,
   `is_enabled` tinyint(1) NOT NULL,
+  `last_selected_clinic_id` BIGINT NULL,
   `use_pin` tinyint(1),
   `pin` varchar(255),
   PRIMARY KEY (`id`)

@@ -14,14 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -57,6 +51,9 @@ public class Clinic implements Serializable {
     @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
     private Set<BundleClinic> bundleClinics = new HashSet<>();
+
+    @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL)
+    private List<ClinicConfigurationMapping> clinicConfigurationMappings;
 
     public Clinic() { //default constructor (in protected state), should not
         // be accessible to anything else but the JPA implementation (here:
@@ -246,6 +243,15 @@ public class Clinic implements Serializable {
             removeBundleClinic(bundleClinic);
         }
         this.bundleClinics.clear();
+    }
+
+
+    public List<ClinicConfigurationMapping> getClinicConfigurationMappings() {
+        return clinicConfigurationMappings;
+    }
+
+    public void setClinicConfigurationMappings(List<ClinicConfigurationMapping> clinicConfigurationMappings) {
+        this.clinicConfigurationMappings = clinicConfigurationMappings;
     }
 
     @Override

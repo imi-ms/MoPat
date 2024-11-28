@@ -73,6 +73,8 @@ public class User implements Serializable, UserDetails {
     private Boolean usePin = Boolean.FALSE;
     @Column(name="pin")
     private String pin;
+    @Column(name = "last_selected_clinic_id")
+    private Long lastSelectedClinicId;
 
     public User() {
         //default constructor (in protected state), should not be accessible
@@ -81,8 +83,8 @@ public class User implements Serializable, UserDetails {
     }
 
     /**
-     * Constructor for new user object with given username and password.Uses the setters to set the
-     * attributes. See setters for constraints.
+     * Constructor for new user object with given username and password.Uses the setters to set the attributes. See
+     * setters for constraints.
      *
      * @param username The username of the new user object.
      * @param password The password of the new user object.
@@ -97,8 +99,8 @@ public class User implements Serializable, UserDetails {
     /**
      * Returns the id of the current user object.
      *
-     * @return The current id of this user object. Might be <code>null</code> for newly created
-     * objects. Is not <code> &lt;=0 </code>.
+     * @return The current id of this user object. Might be <code>null</code> for newly created objects. Is not <code>
+     * &lt;=0 </code>.
      */
     public Long getId() {
         return id;
@@ -110,8 +112,8 @@ public class User implements Serializable, UserDetails {
 
     /**
      * from http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs
-     * /org/springframework/security/core/userdetails/UserDetails# getAuthorities%28%29: Returns the
-     * authorities granted to the user. Cannot return <code>null</code>.
+     * /org/springframework/security/core/userdetails/UserDetails# getAuthorities%28%29: Returns the authorities granted
+     * to the user. Cannot return <code>null</code>.
      *
      * @return the authorities, sorted by natural key (never <code>null</code>). Is unmodifiable.
      */
@@ -178,8 +180,8 @@ public class User implements Serializable, UserDetails {
     }
 
     /**
-     * Adds a new authority to the corresponding set of authorities.Takes care that the
-     * {@link Authority} object refers to this one, too.
+     * Adds a new authority to the corresponding set of authorities.Takes care that the {@link Authority} object refers
+     * to this one, too.
      *
      * @param userRole The authority, which will be added to this user. Must not be
      *                 <code>null</code>.
@@ -517,4 +519,14 @@ public class User implements Serializable, UserDetails {
     public void setPin(String pin) {
         this.pin = pin;
     }
+
+
+    public Long getLastSelectedClinicId() {
+        return lastSelectedClinicId;
+    }
+
+    public void setLastSelectedClinicId(Long lastSelectedClinicId) {
+        this.lastSelectedClinicId = lastSelectedClinicId;
+    }
+
 }

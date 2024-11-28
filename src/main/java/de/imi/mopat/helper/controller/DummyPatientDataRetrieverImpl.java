@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.enumeration.Gender;
 
@@ -183,7 +184,7 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
     }
 
     @Override
-    public EncounterDTO retrievePatientData(final String caseNumber) {
+    public EncounterDTO retrievePatientData(final Clinic clinic, final String caseNumber) {
         LOGGER.debug("Case number is: {}", caseNumber);
         assert caseNumber != null : "The given caseNumber was null";
         EncounterDTO result = new EncounterDTO();

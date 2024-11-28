@@ -37,7 +37,7 @@ public class PatternConfiguration extends Configuration implements Serializable 
     public PatternConfiguration(final String pattern, final Long id, final String entityClass,
         final String attribute, final String value, final ConfigurationType configurationType,
         final String labelMessageCode, final String descriptionMessageCode, final String testMethod,
-        final String updateMethod, final String name, final Integer position,
+        final String updateMethod, final Integer position,
         final ConfigurationGroup configurationGroup) {
         super(entityClass, attribute, configurationType, labelMessageCode, descriptionMessageCode,
             testMethod, updateMethod, position, configurationGroup);

@@ -30,14 +30,34 @@ public class ConfigurationGroupDaoImpl extends MoPatDaoImpl<ConfigurationGroup> 
     }
 
     @Override
+    public ConfigurationGroup getConfigurationGroupByName(final String name) {
+        try {
+            Query query = moPatEntityManager.createQuery("SELECT c FROM "
+                + "ConfigurationGroup c where c.name = :name");
+            query.setParameter("name", name);
+            return (ConfigurationGroup) query.getSingleResult();
+        } catch (PersistenceException e) {
+            return null;
+        }
+    }
+
+    @Override
     public boolean isConfigurationGroupDeletable(final Long configurationGroupId) {
-        TypedQuery<Long> query = moPatEntityManager.createQuery(
+        TypedQuery<Long> existingEncounterExportTemplatesQuery = moPatEntityManager.createQuery(
             "SELECT count(c) FROM EncounterExportTemplate c WHERE c"
                 + ".exportTemplate.id IN (SELECT e.id FROM "
                 + "ExportTemplate e WHERE e.configurationGroup.id = " + ":configurationGroupId)",
             Long.class);
-        query.setParameter("configurationGroupId", configurationGroupId);
-        Long countUsedExportTemplates = query.getSingleResult();
-        return countUsedExportTemplates == 0;
+        existingEncounterExportTemplatesQuery.setParameter("configurationGroupId", configurationGroupId);
+        Long countUsedExportTemplates = existingEncounterExportTemplatesQuery.getSingleResult();
+        
+        TypedQuery<Long> existingClinicConfigurationMappingsQuery = moPatEntityManager.createQuery(
+            "SELECT count (ccgm) FROM ClinicConfigurationGroupMapping ccgm WHERE ccgm" +
+            ".configurationGroup.id = " + ":configurationGroupId",
+            Long.class);
+        existingClinicConfigurationMappingsQuery.setParameter("configurationGroupId", configurationGroupId);
+        Long countExistingClinicConfigurationGroupMappings = existingClinicConfigurationMappingsQuery.getSingleResult();
+        
+        return countUsedExportTemplates == 0 && countExistingClinicConfigurationGroupMappings == 0;
     }
 }

@@ -981,6 +981,8 @@ public class EncounterTest {
         testJSON.append("],\"lastSeenQuestionId\":").append(testEncounter.getLastSeenQuestionId());
         testJSON.append(",\"lastReminderDate\":")
             .append(testEncounter.getLastReminderDate().getTime());
+        testJSON.append(",\"clinic\":")
+            .append("null");
         testJSON.append("}");
 
         assertEquals("The getting JSON was not the expected one", testJSON.toString(),
