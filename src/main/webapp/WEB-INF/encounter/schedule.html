@@ -2,752 +2,770 @@
     * View to create a new encounter for a specific bundle     
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'encounterScheduled.heading.editEncounterScheduled', 'Edit encounter scheduled')}"
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'encounterScheduled.heading.editEncounterScheduled', 'Edit encounter scheduled')}"
 >
-	<th:block layout:fragment="content">
-		<div class="panel-body">
-			<form
-				th:object="${encounterScheduledDTO}"
-				enctype="application/x-www-form-urlencoded"
-				method="POST"
-				action="schedule"
-			>
-				<input
-					type="hidden"
-					th:field="*{id}"
-				/>
-				<input
-					hidden="true"
-					id="encounterScheduled"
-					th:value="${encounterScheduled?.id}"
-				/>
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+    <th:block layout:fragment="content">
+        <div class="panel-body">
+            <form
+                th:object="${encounterScheduledDTO}"
+                enctype="application/x-www-form-urlencoded"
+                method="POST"
+                action="schedule"
+            >
+                <input
+                    type="hidden"
+                    th:field="*{id}"
+                />
+                <input
+                    hidden="true"
+                    id="encounterScheduled"
+                    th:value="${encounterScheduled?.id}"
+                />
+                <div class="form-group">
+                    <input
+                        layout:replace="~{fragments/forms :: inputWithLabel(
                         for='caseNumber', required=true, path='caseNumber',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'encounter.label.caseNumber', 'Casenumber')})}"
+                    />
+                </div>
 
-					/>
-				</div>
-				<th:block th:if="${pseudonymizationIsActive == true}">
-					<div class="panel panel-default multipleChoiceAnswerPanel">
-						<div
-							id="patientDataHeading"
-							class="panel-heading"
-							data-bs-toggle="collapsed"
-							onclick="togglePatientData();"
-							style="cursor: hand; cursor: pointer"
-						>
-							<b>
-								<th:block
-									th:text="${messages.get(#locale, 'encounterScheduled.heading.pseudonym', 'Declaration of patientdata to generate pseudonym')}"
-								/>
-							</b>
-						</div>
-						<div
-							id="patientDataInput"
-							class="panel-body"
-							style="display: none"
-						>
-							<div
-								id="firstname"
-								class="form-group"
-							>
-								<label
-									><b
-										th:text="${messages.get(#locale, 'encounterScheduled.label.firstname', 'Firstname')}"
-									></b
-								></label>
-								<input
-									class="form-control"
-									onchange="isValidName($(this));"
-								/>
-								<span
-									class="error"
-									style="display: none; color: red"
-									th:text="${messages.get(#locale, 'survey.patient.nameError', 'The pre- and postname''s inputs accept only the characters ''a-z'', ''A-Z'' and ''-''.')}"
-								>
-								</span>
-							</div>
-							<div
-								id="lastname"
-								class="form-group"
-							>
-								<label for="lastname"
-									><b
-										th:text="${messages.get(#locale, 'encounterScheduled.label.lastname', 'Lastname')}"
-									></b
-								></label>
-								<input
-									class="form-control"
-									onchange="isValidName($(this));"
-								/>
-								<span
-									class="error"
-									style="display: none; color: red"
-									th:text="${messages.get(#locale, 'survey.patient.nameError', 'The pre- and postname''s inputs accept only the characters ''a-z'', ''A-Z'' and ''-''.')}"
-								>
-								</span>
-							</div>
-							<div
-								id="birthdate"
-								class="form-group"
-							>
-								<label for="birthdate"
-									><b
-										th:text="${messages.get(#locale, 'encounterScheduled.label.born', 'Born')}"
-									></b
-								></label>
-								<input
-									id="pseudonymDate"
-									type="date"
-									class="form-control"
-								/>
-								<span
-									id="dateError"
-									class="error"
-									for="birthdate"
-									style="display: none; color: red"
-									th:text="${messages.get(#locale, 'survey.error.date', 'Specified date doesn''t accord with the given formats dd.MM.yyyy or MM/dd/yyyy')}"
-								>
-								</span>
-							</div>
-							<div class="form-group">
-								<span
-									id="incompleteDataError"
-									class="error"
-									style="color: red; display: none"
-									th:text="${messages.get(#locale, 'survey.pseudonym.missingData', 'Missing patient data to create pseudonym, please complete your input.')}"
-								>
-								</span>
-							</div>
-							<button
-								id="generatePseudonym"
-								class="from-control btn btn-primary"
-								type="button"
-								th:text="${messages.get(#locale, 'survey.check.button.generatePseudonym', 'Generate pseudonym')}"
-							>
-							</button>
-						</div>
-					</div>
-				</th:block>
-				<div class="form-group">
-					<label
-						class="required"
-						for="bundleDTO"
-						th:text="${messages.get(#locale, 'encounter.label.bundle', 'Bundle')}"
-					></label>
-					<select
-						th:field="*{bundleDTO.id}"
-						class="form-control"
-						onChange="selectMails($(this).val());"
-					>
-						<option
-							th:each="item: ${bundleDTOs}"
-							th:value="${item.id}"
-							th:text="${item.name}"
-						></option>
-					</select>
-				</div>
-				<div class="form-group">
-					<emailInput
-						layout:replace="~{fragments/forms :: emailWithLabel(
+                <div class="select-wrapper form-group">
+                    <label for="lastname"
+                        ><b
+                            th:text="${messages.get(#locale, 'encounterScheduled.label.clinic', 'Clinic')}"
+                        ></b
+                    ></label>
+
+                    <select
+                        th:field="*{id}"
+                        id="activeClinicDTO"
+                        class="form-control"
+                        onchange="findPseudonymization(this)"
+                    >
+                        <option
+                            th:each="i: ${clinicDTOs}"
+                            th:value="${i.id}"
+                            th:text="${i.name}"
+                        ></option>
+                    </select>
+                </div>
+
+                <div
+                    class="panel panel-default multipleChoiceAnswerPanel form-group"
+                    id="pseudonymizationDiv"
+                >
+                    <div
+                        class="accordion"
+                        id="accordionExample"
+                    >
+                        <div class="accordion-item">
+                            <h2
+                                class="accordion-header"
+                                id="headingOne"
+                            >
+                                <button
+                                    class="accordion-button"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapseOne"
+                                    aria-expanded="false"
+                                    aria-controls="collapseOne"
+                                >
+                                    <th:block
+                                        th:text="${messages.get(#locale, 'encounterScheduled.heading.pseudonym', 'Declaration of patientdata to generate pseudonym')}"
+                                    />
+                                </button>
+                            </h2>
+                            <div
+                                id="collapseOne"
+                                class="accordion-collapse collapse show"
+                                aria-labelledby="headingOne"
+                                data-bs-parent="#accordionExample"
+                            >
+                                <div
+                                    id="patientDataInput"
+                                    class="panel-body m-2"
+                                >
+                                    <div
+                                        id="firstname"
+                                        class="form-group"
+                                    >
+                                        <label
+                                            ><b
+                                                th:text="${messages.get(#locale, 'encounterScheduled.label.firstname', 'Firstname')}"
+                                            ></b
+                                        ></label>
+                                        <input
+                                            class="form-control"
+                                            onchange="isValidName($(this));"
+                                        />
+                                        <span
+                                            class="error"
+                                            style="display: none; color: red"
+                                            th:text="${messages.get(#locale, 'survey.patient.nameError', 'The pre- and postname''s inputs accept only the characters ''a-z'', ''A-Z'' and ''-''.')}"
+                                        >
+                                        </span>
+                                    </div>
+                                    <div
+                                        id="lastname"
+                                        class="form-group"
+                                    >
+                                        <label for="lastname"
+                                            ><b
+                                                th:text="${messages.get(#locale, 'encounterScheduled.label.lastname', 'Lastname')}"
+                                            ></b
+                                        ></label>
+                                        <input
+                                            class="form-control"
+                                            onchange="isValidName($(this));"
+                                        />
+                                        <span
+                                            class="error"
+                                            style="display: none; color: red"
+                                            th:text="${messages.get(#locale, 'survey.patient.nameError', 'The pre- and postname''s inputs accept only the characters ''a-z'', ''A-Z'' and ''-''.')}"
+                                        >
+                                        </span>
+                                    </div>
+                                    <div
+                                        id="birthdate"
+                                        class="form-group"
+                                    >
+                                        <label for="birthdate"
+                                            ><b
+                                                th:text="${messages.get(#locale, 'encounterScheduled.label.born', 'Born')}"
+                                            ></b
+                                        ></label>
+                                        <input
+                                            id="pseudonymDate"
+                                            type="date"
+                                            class="form-control"
+                                        />
+                                        <span
+                                            id="dateError"
+                                            class="error"
+                                            for="birthdate"
+                                            style="display: none; color: red"
+                                            th:text="${messages.get(#locale, 'survey.error.date', 'Specified date doesn''t accord with the given formats dd.MM.yyyy or MM/dd/yyyy')}"
+                                        >
+                                        </span>
+                                    </div>
+                                    <div class="form-group">
+                                        <span
+                                            id="incompleteDataError"
+                                            class="error"
+                                            style="color: red; display: none"
+                                            th:text="${messages.get(#locale, 'survey.pseudonym.missingData', 'Missing patient data to create pseudonym, please complete your input.')}"
+                                        >
+                                        </span>
+                                    </div>
+                                    <button
+                                        id="generatePseudonym"
+                                        class="from-control btn btn-primary"
+                                        type="button"
+                                        th:text="${messages.get(#locale, 'survey.check.button.generatePseudonym', 'Generate pseudonym')}"
+                                    >
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label
+                        class="required"
+                        for="bundleDTO"
+                        th:text="${messages.get(#locale, 'encounter.label.bundle', 'Bundle')}"
+                    ></label>
+                    <select
+                        th:field="*{bundleDTO.id}"
+                        class="form-control"
+                        onChange="selectMails($(this).val());"
+                    >
+                        <option
+                            th:each="item: ${bundleDTOs}"
+                            th:value="${item.id}"
+                            th:text="${item.name}"
+                        ></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <emailInput
+                        layout:replace="~{fragments/forms :: emailWithLabel(
                         for='email', required=true, path='email',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'encounterScheduled.label.email', 'Email')})}"
-					>
-					</emailInput>
-				</div>
-				<div class="form-group">
-					<label
-						for="replyMail"
-						th:text="${messages.get(#locale, 'encounterScheduled.label.replyMail', 'Reply mail')}"
-					>
-					</label>
-					<select
-						th:field="*{replyMail}"
-						class="form-control"
-					>
-						<option
-							value=""
-							th:text="${messages.get(#locale, 'encounterScheduled.label.noReplyMailSelected', 'None')}"
-						></option>
-						<th:block th:each="entry: ${encounterScheduledDTO.replyMails}">
-							<option
-								th:each="value: ${entry.value}"
-								th:value="${value}"
-								th:class="|bundle${entry.key}|"
-								th:text="${value}"
-							></option>
-						</th:block>
-					</select>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='replyMail')}"
-					/>
-				</div>
-				<div class="form-group">
-					<label
-						for="encounterScheduledSerialType"
-						class="required"
-						th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledSerialType', 'Role:')}"
-					>
-					</label>
-					<selectOption
-						layout:replace="~{fragments/selectOptions :: selectOptions(
+                    >
+                    </emailInput>
+                </div>
+                <div class="form-group">
+                    <label
+                        for="replyMail"
+                        th:text="${messages.get(#locale, 'encounterScheduled.label.replyMail', 'Reply mail')}"
+                    >
+                    </label>
+                    <select
+                        th:field="*{replyMail}"
+                        class="form-control"
+                    >
+                        <option
+                            value=""
+                            th:text="${messages.get(#locale, 'encounterScheduled.label.noReplyMailSelected', 'None')}"
+                        ></option>
+                        <th:block th:each="entry: ${encounterScheduledDTO.replyMails}">
+                            <option
+                                th:each="value: ${entry.value}"
+                                th:value="${value}"
+                                th:class="|bundle${entry.key}|"
+                                th:text="${value}"
+                            ></option>
+                        </th:block>
+                    </select>
+                    <error layout:replace="~{fragments/forms :: errorField(path='replyMail')}" />
+                </div>
+                <div class="form-group">
+                    <label
+                        for="encounterScheduledSerialType"
+                        class="required"
+                        th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledSerialType', 'Role:')}"
+                    >
+                    </label>
+                    <selectOption
+                        layout:replace="~{fragments/selectOptions :: selectOptions(
                         clazz='form-control', path='encounterScheduledSerialType', 
                         id='encounterScheduledSerialType', items=${encounterScheduledSerialTypeList},
                         itemLabel='textValue', itemValue='textValue', localize=true,
                         onChangeFunction='displayPeriod($(this).val()),checkWarning()')}"
-					>
-					</selectOption>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='encounterScheduledSerialType')}"
-					/>
-				</div>
-				<div class="form-group">
-					<label
-						for="startDate"
-						class="required"
-						id="labeldate"
-						th:text="${messages.get(#locale, 'encounter.label.startDate', 'Startdate:')}"
-					>
-					</label>
-					<input
-						th:field="*{startDate}"
-						type="date"
-						class="form-control"
-						onChange="checkWarning()"
-					/>
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='startDate')}"
-					/>
-				</div>
-				<div class="form-group">
-					<div>
-						<label
-							for="repeatPeriod"
-							th:text="${messages.get(#locale, 'encounterScheduled.label.repeatPeriod', 'Repeat period:')}"
-						>
-						</label>
-						<input
-							class="form-control"
-							th:field="*{repeatPeriod}"
-							type="number"
-							onChange="checkWarning()"
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='repeatPeriod')}"
-						/>
-					</div>
-					<div>
-						<label
-							for="endDate"
-							th:text="${messages.get(#locale, 'encounter.label.endDate', 'End of the period:')}"
-						>
-						</label>
-						<input
-							th:field="*{endDate}"
-							type="date"
-							class="form-control"
-							onChange="checkWarning()"
-						/>
-						<error
-							layout:replace="~{fragments/forms :: errorField(path='endDate')}"
-						/>
-					</div>
-				</div>
-				<div class="form-group">
-					<label
-						for="language"
-						th:text="${messages.get(#locale, 'user.label.language', 'Language')}"
-					>
-					</label>
-					<select
-						th:value="${#locale}"
-						th:field="*{locale}"
-						class="form-control"
-					>
-						<option value="de_DE">
-							<label
-								for="german"
-								th:text="|${messages.get(#locale, 'localization.languageCode.de', 'Missing language code')}
+                    >
+                    </selectOption>
+                    <error
+                        layout:replace="~{fragments/forms :: errorField(path='encounterScheduledSerialType')}"
+                    />
+                </div>
+                <div class="form-group">
+                    <label
+                        for="startDate"
+                        class="required"
+                        id="labeldate"
+                        th:text="${messages.get(#locale, 'encounter.label.startDate', 'Startdate:')}"
+                    >
+                    </label>
+                    <input
+                        th:field="*{startDate}"
+                        type="date"
+                        class="form-control"
+                        onChange="checkWarning()"
+                    />
+                    <error layout:replace="~{fragments/forms :: errorField(path='startDate')}" />
+                </div>
+                <div class="form-group">
+                    <div>
+                        <label
+                            for="repeatPeriod"
+                            th:text="${messages.get(#locale, 'encounterScheduled.label.repeatPeriod', 'Repeat period:')}"
+                        >
+                        </label>
+                        <input
+                            class="form-control"
+                            th:field="*{repeatPeriod}"
+                            type="number"
+                            onChange="checkWarning()"
+                        />
+                        <error
+                            layout:replace="~{fragments/forms :: errorField(path='repeatPeriod')}"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="endDate"
+                            th:text="${messages.get(#locale, 'encounter.label.endDate', 'End of the period:')}"
+                        >
+                        </label>
+                        <input
+                            th:field="*{endDate}"
+                            type="date"
+                            class="form-control"
+                            onChange="checkWarning()"
+                        />
+                        <error layout:replace="~{fragments/forms :: errorField(path='endDate')}" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label
+                        for="language"
+                        th:text="${messages.get(#locale, 'user.label.language', 'Language')}"
+                    >
+                    </label>
+                    <select
+                        th:value="${#locale}"
+                        th:field="*{locale}"
+                        class="form-control"
+                    >
+                        <option value="de_DE">
+                            <label
+                                for="german"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.de', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.DE', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="en_GB">
-							<label
-								for="english"
-								th:text="|${messages.get(#locale, 'localization.languageCode.en', 'Missing language code')}
+                        <option value="en_GB">
+                            <label
+                                for="english"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.en', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.GB', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="es_ES">
-							<label
-								for="spanish"
-								th:text="|${messages.get(#locale, 'localization.languageCode.es', 'Missing language code')}
+                        <option value="es_ES">
+                            <label
+                                for="spanish"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.es', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.ES', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="fr_FR">
-							<label
-								for="french"
-								th:text="|${messages.get(#locale, 'localization.languageCode.fr', 'Missing language code')}
+                        <option value="fr_FR">
+                            <label
+                                for="french"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.fr', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.FR', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="hi_IN">
-							<label
-								for="hindi"
-								th:text="|${messages.get(#locale, 'localization.languageCode.hi', 'Missing language code')}
+                        <option value="hi_IN">
+                            <label
+                                for="hindi"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.hi', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.IN', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="it_IT">
-							<label
-								for="italian"
-								th:text="|${messages.get(#locale, 'localization.languageCode.it', 'Missing language code')}
+                        <option value="it_IT">
+                            <label
+                                for="italian"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.it', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.IT', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="nl_NL">
-							<label
-								for="dutch"
-								th:text="|${messages.get(#locale, 'localization.languageCode.nl', 'Missing language code')}
+                        <option value="nl_NL">
+                            <label
+                                for="dutch"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.nl', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.NL', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="no_NO">
-							<label
-								for="norwegian"
-								th:text="|${messages.get(#locale, 'localization.languageCode.no', 'Missing language code')}
+                        <option value="no_NO">
+                            <label
+                                for="norwegian"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.no', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.NO', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="pl_PL">
-							<label
-								for="polish"
-								th:text="|${messages.get(#locale, 'localization.languageCode.pl', 'Missing language code')}
+                        <option value="pl_PL">
+                            <label
+                                for="polish"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.pl', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.PL', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="pt_PT">
-							<label
-								for="portuguese"
-								th:text="|${messages.get(#locale, 'localization.languageCode.pt', 'Missing language code')}
+                        <option value="pt_PT">
+                            <label
+                                for="portuguese"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.pt', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.PT', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="ru_RU">
-							<label
-								for="russian"
-								th:text="|${messages.get(#locale, 'localization.languageCode.ru', 'Missing language code')}
+                        <option value="ru_RU">
+                            <label
+                                for="russian"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.ru', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.RU', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="sv_SE">
-							<label
-								for="swedish"
-								th:text="|${messages.get(#locale, 'localization.languageCode.sv', 'Missing language code')}
+                        <option value="sv_SE">
+                            <label
+                                for="swedish"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.sv', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.SE', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="tr_TR">
-							<label
-								for="turkish"
-								th:text="|${messages.get(#locale, 'localization.languageCode.tr', 'Missing language code')}
+                        <option value="tr_TR">
+                            <label
+                                for="turkish"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.tr', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.TR', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="ar">
-							<label
-								for="arabic"
-								th:text="|${messages.get(#locale, 'localization.languageCode.ar', 'Missing language code')}|"
-							>
-							</label>
-						</option>
+                        <option value="ar">
+                            <label
+                                for="arabic"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.ar', 'Missing language code')}|"
+                            >
+                            </label>
+                        </option>
 
-						<option value="fa_IR">
-							<label
-								for="farsi"
-								th:text="|${messages.get(#locale, 'localization.languageCode.fa', 'Missing language code')}
+                        <option value="fa_IR">
+                            <label
+                                for="farsi"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.fa', 'Missing language code')}
                                             (${messages.get(#locale, 'localization.countryCode.IR', 'Missing country code')})|"
-							>
-							</label>
-						</option>
+                            >
+                            </label>
+                        </option>
 
-						<option value="dari">
-							<label
-								for="dari"
-								th:text="|${messages.get(#locale, 'localization.languageCode.dari', 'Missing language code')}|"
-							>
-							</label>
-						</option>
+                        <option value="dari">
+                            <label
+                                for="dari"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.dari', 'Missing language code')}|"
+                            >
+                            </label>
+                        </option>
 
-						<option value="ku">
-							<label
-								for="kurdish"
-								th:text="|${messages.get(#locale, 'localization.languageCode.ku', 'Missing language code')}|"
-							>
-							</label>
-						</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label
-						for="personalText"
-						th:text="${messages.get(#locale, 'user.label.message', 'Message')}"
-					>
-					</label>
-					<textarea
-						cols="40"
-						rows="10"
-						class="form-control"
-						th:value="${personalText}"
-						th:field="*{personalText}"
-					></textarea>
-				</div>
-				<div
-					id="warnings"
-					class="alert alert-warning"
-				>
-					<th:block th:text="${warning}" />
-				</div>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="save"
-					id="saveButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.save', 'Save')}"
-				>
-				</button>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="cancel"
-					id="cancelButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
-				>
-				</button>
-			</form>
-		</div>
-	</th:block>
+                        <option value="ku">
+                            <label
+                                for="kurdish"
+                                th:text="|${messages.get(#locale, 'localization.languageCode.ku', 'Missing language code')}|"
+                            >
+                            </label>
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label
+                        for="personalText"
+                        th:text="${messages.get(#locale, 'user.label.message', 'Message')}"
+                    >
+                    </label>
+                    <textarea
+                        cols="40"
+                        rows="10"
+                        class="form-control"
+                        th:value="${personalText}"
+                        th:field="*{personalText}"
+                    ></textarea>
+                </div>
+                <div
+                    id="warnings"
+                    class="alert alert-warning"
+                >
+                    <th:block th:text="${warning}" />
+                </div>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    value="save"
+                    id="saveButton"
+                    name="action"
+                    th:text="${messages.get(#locale, 'button.save', 'Save')}"
+                >
+                </button>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    value="cancel"
+                    id="cancelButton"
+                    name="action"
+                    th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+                >
+                </button>
+            </form>
+        </div>
+    </th:block>
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-	<script
-		th:inline="javascript"
-		type="text/javascript"
-	>
-		var warningDaysShorterThanThePeriod =
-			/*[[${messages.get(#locale, 'encounterScheduled.warning.daysShorterThanThePeriod', 'The days between the start and the end date are shorter than the time between surveys')}]]*/ "The days between the start and the end date are shorter than the time between surveys";
-		var encounterScheduledSerialTypeDate =
-			/*[[${messages.get(#locale, 'encounterScheduled.label.date', 'Date')}]]*/ "Date";
-		var encounterScheduledSerialTypeStartdate =
-			/*[[${messages.get(#locale, 'encounter.label.startDate', 'Startdate:')}]]*/ "Startdate:";
-		var warningEnddateMustBeAfterTheStart =
-			/*[[${messages.get(#locale, 'encounterScheduled.validator.enddateMustBeAfterStartdate', 'Enddate must be after the start')}]]*/ "Enddate must be after the start";
+    <script
+        th:inline="javascript"
+        type="text/javascript"
+    >
+        var warningDaysShorterThanThePeriod =
+            /*[[${messages.get(#locale, 'encounterScheduled.warning.daysShorterThanThePeriod', 'The days between the start and the end date are shorter than the time between surveys')}]]*/ "The days between the start and the end date are shorter than the time between surveys";
+        var encounterScheduledSerialTypeDate =
+            /*[[${messages.get(#locale, 'encounterScheduled.label.date', 'Date')}]]*/ "Date";
+        var encounterScheduledSerialTypeStartdate =
+            /*[[${messages.get(#locale, 'encounter.label.startDate', 'Startdate:')}]]*/ "Startdate:";
+        var warningEnddateMustBeAfterTheStart =
+            /*[[${messages.get(#locale, 'encounterScheduled.validator.enddateMustBeAfterStartdate', 'Enddate must be after the start')}]]*/ "Enddate must be after the start";
 
-		var contextPath = /*[[${contextPath}]]*/ "/";
-		var encounterScheduledSerialType =
-			/*[[${encounterScheduledDTO.encounterScheduledSerialType}]]*/ "";
+        var contextPath = /*[[${contextPath}]]*/ "/";
+        var encounterScheduledSerialType =
+            /*[[${encounterScheduledDTO.encounterScheduledSerialType}]]*/ "";
 
-		var currentLanguage = /*[[${#locale.toString()}]]*/ "en_GB";
+        var currentLanguage = /*[[${#locale.toString()}]]*/ "en_GB";
 
-		$(document).ready(function () {
-			displayPeriod(encounterScheduledSerialType);
-			$("#warnings").hide();
-			$("#warnings").html(warningDaysShorterThanThePeriod);
+        var clinicDTOs = /*[[${clinicDTOs}]]*/ [];
 
-			/*[- select initial values for the replymail selection -]*/
-			selectMails($("[name='bundleDTO.id'").val());
+        $(document).ready(function () {
+            displayPeriod(encounterScheduledSerialType);
+            $("#warnings").hide();
+            $("#warnings").html(warningDaysShorterThanThePeriod);
 
-			/*[- Check if the browser has no native datepicker -]*/
-			if (Modernizr.inputtypes.date === false) {
-				var dateFormat = "yy-mm-dd";
+            findPseudonymization($("#activeClinicDTO").val());
 
-				/*[- If german language is selected use german date format -]*/
-				if (currentLanguage == "de_DE") {
-					dateFormat = "dd.mm.yy";
-				}
-				$("#pseudonymDate").datepicker({
-					dateFormat: dateFormat,
-				});
-				$("#startDate").datepicker({
-					dateFormat: dateFormat,
-					minDate: 0,
-				});
-				$("#endDate").datepicker({
-					dateFormat: dateFormat,
-					minDate: 1,
-				});
+            /*[- select initial values for the replymail selection -]*/
+            selectMails($("[name='bundleDTO.id'").val());
 
-				/*[- If the german language is selected -]*/
-				if (currentLanguage == "de_DE") {
-					/*[- Set the german date format -]*/
-					$(".hasDatepicker").each(function (index, datepicker) {
-						$(datepicker).val(
-							$.datepicker.formatDate(
-								"dd.mm.yy",
-								$.datepicker.parseDate("yy-mm-dd", $(datepicker).val())
-							)
-						);
-					});
-				}
-			} else {
-				/*[- Set min startdate to today -]*/
-				$("#startDate").prop("min", function () {
-					return new Date().toJSON().split("T")[0];
-				});
-				/*[- Set min enddate to tomorrow -]*/
-				$("#endDate").prop("min", function () {
-					var tomorrow = new Date();
-					tomorrow.setTime(tomorrow.getTime() + 1 * 86400000);
-					return tomorrow.toJSON().split("T")[0];
-				});
-			}
-		});
+            /*[- Check if the browser has no native datepicker -]*/
+            if (Modernizr.inputtypes.date === false) {
+                var dateFormat = "yy-mm-dd";
 
-		/*[-
+                /*[- If german language is selected use german date format -]*/
+                if (currentLanguage == "de_DE") {
+                    dateFormat = "dd.mm.yy";
+                }
+                $("#pseudonymDate").datepicker({
+                    dateFormat: dateFormat,
+                });
+                $("#startDate").datepicker({
+                    dateFormat: dateFormat,
+                    minDate: 0,
+                });
+                $("#endDate").datepicker({
+                    dateFormat: dateFormat,
+                    minDate: 1,
+                });
+
+                /*[- If the german language is selected -]*/
+                if (currentLanguage == "de_DE") {
+                    /*[- Set the german date format -]*/
+                    $(".hasDatepicker").each(function (index, datepicker) {
+                        $(datepicker).val(
+                            $.datepicker.formatDate(
+                                "dd.mm.yy",
+                                $.datepicker.parseDate("yy-mm-dd", $(datepicker).val())
+                            )
+                        );
+                    });
+                }
+            } else {
+                /*[- Set min startdate to today -]*/
+                $("#startDate").prop("min", function () {
+                    return new Date().toJSON().split("T")[0];
+                });
+                /*[- Set min enddate to tomorrow -]*/
+                $("#endDate").prop("min", function () {
+                    var tomorrow = new Date();
+                    tomorrow.setTime(tomorrow.getTime() + 1 * 86400000);
+                    return tomorrow.toJSON().split("T")[0];
+                });
+            }
+        });
+
+        /*[-
             * Disables or enables the fields endDate and repeatPeriod depending on encounterScheduledSerialType
             * 
             * @param {type} encounterScheduledSerialType the selected serialtype for this encounterScheduled 
         -]*/
-		function displayPeriod(encounterScheduledSerialType) {
-			if (encounterScheduledSerialType === "UNIQUELY") {
-				$("#endDate").attr("disabled", "");
-				$("#repeatPeriod").attr("disabled", "");
-				$("#labeldate").html(encounterScheduledSerialTypeDate);
-			} else if (encounterScheduledSerialType === "REPEATEDLY") {
-				$("#endDate").removeAttr("disabled");
-				$("#repeatPeriod").removeAttr("disabled");
-				$("#labeldate").html(encounterScheduledSerialTypeStartdate);
-			} else if (encounterScheduledSerialType === "WEEKLY") {
-				$("#endDate").removeAttr("disabled");
-				$("#repeatPeriod").attr("disabled", "");
-				$("#repeatPeriod").val(7);
-				$("#labeldate").html(encounterScheduledSerialTypeStartdate);
-			} else if (encounterScheduledSerialType === "MONTHLY") {
-				$("#endDate").removeAttr("disabled");
-				$("#repeatPeriod").attr("disabled", "");
-				$("#repeatPeriod").val(30);
-				$("#labeldate").html(encounterScheduledSerialTypeStartdate);
-			}
-		}
+        function displayPeriod(encounterScheduledSerialType) {
+            if (encounterScheduledSerialType === "UNIQUELY") {
+                $("#endDate").attr("disabled", "");
+                $("#repeatPeriod").attr("disabled", "");
+                $("#labeldate").html(encounterScheduledSerialTypeDate);
+            } else if (encounterScheduledSerialType === "REPEATEDLY") {
+                $("#endDate").removeAttr("disabled");
+                $("#repeatPeriod").removeAttr("disabled");
+                $("#labeldate").html(encounterScheduledSerialTypeStartdate);
+            } else if (encounterScheduledSerialType === "WEEKLY") {
+                $("#endDate").removeAttr("disabled");
+                $("#repeatPeriod").attr("disabled", "");
+                $("#repeatPeriod").val(7);
+                $("#labeldate").html(encounterScheduledSerialTypeStartdate);
+            } else if (encounterScheduledSerialType === "MONTHLY") {
+                $("#endDate").removeAttr("disabled");
+                $("#repeatPeriod").attr("disabled", "");
+                $("#repeatPeriod").val(30);
+                $("#labeldate").html(encounterScheduledSerialTypeStartdate);
+            }
+        }
 
-		function checkWarning() {
-			if ($("#repeatPeriod").val().match(/^\d+$/)) {
-				if (
-					isValidDate($("#startDate").val()) &&
-					isValidDate($("#endDate").val())
-				) {
-					if (
-						"${pageContext.response.locale.toString()}" === "de_DE" &&
-						Modernizr.inputtypes.date === false
-					) {
-						var startDate = $.datepicker.parseDate(
-							"dd.mm.yy",
-							$("#startDate").val()
-						);
-						var endDate = $.datepicker.parseDate(
-							"dd.mm.yy",
-							$("#endDate").val()
-						);
-					} else {
-						var startDate = $.datepicker.parseDate(
-							"yy-mm-dd",
-							$("#startDate").val()
-						);
-						var endDate = $.datepicker.parseDate(
-							"yy-mm-dd",
-							$("#endDate").val()
-						);
-					}
-					var repeatPeriod = $("#repeatPeriod").val();
-					var daysBetweenDates = Math.abs(
-						Math.round((endDate.getTime() - startDate.getTime()) / 86400000)
-					);
-					var showMessage = false;
-					var message;
-					if (startDate.getTime() < endDate.getTime()) {
-						if ($("#encounterScheduledSerialType").val() === "REPEATEDLY") {
-							if (repeatPeriod && daysBetweenDates < repeatPeriod) {
-								showMessage = true;
-								message = warningDaysShorterThanThePeriod;
-							} else {
-								showMessage = false;
-							}
-						}
-						if ($("#encounterScheduledSerialType").val() === "WEEKLY") {
-							if (daysBetweenDates < 7) {
-								showMessage = true;
-								message = warningDaysShorterThanThePeriod;
-							} else {
-								showMessage = false;
-							}
-						}
-						if ($("#encounterScheduledSerialType").val() === "MONTHLY") {
-							startDate.setMonth(startDate.getMonth() + 1);
-							if (startDate.getTime() > endDate.getTime()) {
-								showMessage = true;
-								message = warningDaysShorterThanThePeriod;
-							} else {
-								showMessage = false;
-							}
-						}
-					} else {
-						showMessage = true;
-						message = warningEnddateMustBeAfterTheStart;
-					}
-				}
-			}
-			if (showMessage === true) {
-				$("#warnings").show();
-				$("#warnings").html(message);
-			} else {
-				$("#warnings").hide();
-			}
-		}
+        function checkWarning() {
+            if ($("#repeatPeriod").val().match(/^\d+$/)) {
+                if (isValidDate($("#startDate").val()) && isValidDate($("#endDate").val())) {
+                    if (
+                        "${pageContext.response.locale.toString()}" === "de_DE" &&
+                        Modernizr.inputtypes.date === false
+                    ) {
+                        var startDate = $.datepicker.parseDate("dd.mm.yy", $("#startDate").val());
+                        var endDate = $.datepicker.parseDate("dd.mm.yy", $("#endDate").val());
+                    } else {
+                        var startDate = $.datepicker.parseDate("yy-mm-dd", $("#startDate").val());
+                        var endDate = $.datepicker.parseDate("yy-mm-dd", $("#endDate").val());
+                    }
+                    var repeatPeriod = $("#repeatPeriod").val();
+                    var daysBetweenDates = Math.abs(
+                        Math.round((endDate.getTime() - startDate.getTime()) / 86400000)
+                    );
+                    var showMessage = false;
+                    var message;
+                    if (startDate.getTime() < endDate.getTime()) {
+                        if ($("#encounterScheduledSerialType").val() === "REPEATEDLY") {
+                            if (repeatPeriod && daysBetweenDates < repeatPeriod) {
+                                showMessage = true;
+                                message = warningDaysShorterThanThePeriod;
+                            } else {
+                                showMessage = false;
+                            }
+                        }
+                        if ($("#encounterScheduledSerialType").val() === "WEEKLY") {
+                            if (daysBetweenDates < 7) {
+                                showMessage = true;
+                                message = warningDaysShorterThanThePeriod;
+                            } else {
+                                showMessage = false;
+                            }
+                        }
+                        if ($("#encounterScheduledSerialType").val() === "MONTHLY") {
+                            startDate.setMonth(startDate.getMonth() + 1);
+                            if (startDate.getTime() > endDate.getTime()) {
+                                showMessage = true;
+                                message = warningDaysShorterThanThePeriod;
+                            } else {
+                                showMessage = false;
+                            }
+                        }
+                    } else {
+                        showMessage = true;
+                        message = warningEnddateMustBeAfterTheStart;
+                    }
+                }
+            }
+            if (showMessage === true) {
+                $("#warnings").show();
+                $("#warnings").html(message);
+            } else {
+                $("#warnings").hide();
+            }
+        }
 
-		/*[-
+        /*[-
             * Checks if the given value is a valid date
             * @param {String} value date value to check
             * @returns {boolean} True if it is a valid date, false otherwise
         -]*/
-		function isValidDate(value) {
-			return (
-				value.match(/^(0?[1-9]|[12][0-9]|3[0-1]).(0?[1-9]|1[0-2]).\d{4}$/) ||
-				value.match(/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[0-1])$/)
-			);
-		}
+        function isValidDate(value) {
+            return (
+                value.match(/^(0?[1-9]|[12][0-9]|3[0-1]).(0?[1-9]|1[0-2]).\d{4}$/) ||
+                value.match(/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[0-1])$/)
+            );
+        }
 
-		/*[- Used to generate a pseudonym with PseudonymizationService by clicking the generate button. Converts and converts the birthdate -]*/
-		$("#generatePseudonym").click(function () {
-			if (
-				$("#firstname").find("input").val() !== "" &&
-				$("#lastname").find("input").val() !== "" &&
-				$("#birthdate").find("input").val() !== ""
-			) {
-				$(".error").hide();
-				var birthDate = $("#birthdate").find("input").val();
+        /*[- Used to generate a pseudonym with PseudonymizationService by clicking the generate button. Converts and converts the birthdate -]*/
+        $("#generatePseudonym").click(function () {
+            if (
+                $("#firstname").find("input").val() !== "" &&
+                $("#lastname").find("input").val() !== "" &&
+                $("#birthdate").find("input").val() !== ""
+            ) {
+                $(".error").hide();
+                var birthDate = $("#birthdate").find("input").val();
 
-				/*[- Convert the birthdate from german to conventional format -]*/
-				if (
-					birthDate.match(/^(0?[1-9]|[12][0-9]|3[0-1]).(0?[1-9]|1[0-2]).\d{4}$/)
-				) {
-					var birthDay = /\d\d/.exec(birthDate);
-					var birthMonth = /\d\d/.exec(/.\d\d./.exec(birthDate));
-					var birthYear = /\d\d\d\d/.exec(birthDate);
-					birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
-				}
+                /*[- Convert the birthdate from german to conventional format -]*/
+                if (birthDate.match(/^(0?[1-9]|[12][0-9]|3[0-1]).(0?[1-9]|1[0-2]).\d{4}$/)) {
+                    var birthDay = /\d\d/.exec(birthDate);
+                    var birthMonth = /\d\d/.exec(/.\d\d./.exec(birthDate));
+                    var birthYear = /\d\d\d\d/.exec(birthDate);
+                    birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
+                }
+				var clinicId = $('#activeClinicDTO').val()
+                console.log(clinicId);
+                var pseudonym = PseudonymizationService.getPseudonym(
+                    $("#firstname").find("input").val(),
+                    $("#lastname").find("input").val(),
+                    birthDate,
+                    clinicId
+                );
+                $("#caseNumber").val(pseudonym);
+            } else {
+                $("#incompleteDataError").show();
+            }
+        });
 
-				var pseudonym = PseudonymizationService.getPseudonym(
-					$("#firstname").find("input").val(),
-					$("#lastname").find("input").val(),
-					birthDate
-				);
-				$("#caseNumber").val(pseudonym);
-			} else {
-				$("#incompleteDataError").show();
-			}
-		});
+        function isValidName(elem) {
+            if (elem.val().match(/^[a-z|A-Z|\-]*$/)) {
+                elem.siblings(".error").hide();
+                $("#generatePseudonym").attr("disabled", false);
+            } else {
+                elem.siblings(".error").show();
+                $("#generatePseudonym").attr("disabled", true);
+            }
+        }
 
-		/*[- Toggles the display of the patient data input fields used to generate a pseudonym -]*/
-		function togglePatientData() {
-			/*[- expand data panel -]*/
-			if ($("#patientDataHeading").attr("data-bs-toggle") === "collapsed") {
-				$("#patientDataHeading").attr("data-bs-toggle", "expanded");
-				$("#patientDataToggle").switchClass(
-					"bi-plus-lg",
-					"bi-dash-lg"
-				);
-				$("#patientDataInput").slideDown();
-			} else {
-			/*[- collapse data panel -]*/
-				$("#patientDataHeading").attr("data-bs-toggle", "collapsed");
-				$("#patientDataToggle").switchClass(
-					"bi-dash-lg",
-					"bi-plus-lg"
-				);
-				$("#patientDataInput").slideUp();
-			}
-		}
+        $("form").submit(function () {
+            if ("${pageContext.response.locale.toString()}" === "de_DE") {
+                $(".hasDatepicker").each(function (index, datepicker) {
+                    $(datepicker).val(
+                        $.datepicker.formatDate(
+                            "yy-mm-dd",
+                            $.datepicker.parseDate("dd.mm.yy", $(datepicker).val())
+                        )
+                    );
+                });
+            }
+            return true;
+        });
 
-		function isValidName(elem) {
-			if (elem.val().match(/^[a-z|A-Z|\-]*$/)) {
-				elem.siblings(".error").hide();
-				$("#generatePseudonym").attr("disabled", false);
-			} else {
-				elem.siblings(".error").show();
-				$("#generatePseudonym").attr("disabled", true);
-			}
-		}
-
-		$("form").submit(function () {
-			if ("${pageContext.response.locale.toString()}" === "de_DE") {
-				$(".hasDatepicker").each(function (index, datepicker) {
-					$(datepicker).val(
-						$.datepicker.formatDate(
-							"yy-mm-dd",
-							$.datepicker.parseDate("dd.mm.yy", $(datepicker).val())
-						)
-					);
-				});
-			}
-			return true;
-		});
-
-		/*[-
+        /*[-
             * Toggles the mail selection. As soon as a new
             * bundle is selected at the appropriate select element
             * the emails get assimilated.
             * 
             * @param bundleId The bundleId of the bundle that has been selected
         -]*/
-		function selectMails(bundleId) {
-			/*[- hide all select options -]*/
-			$("#replyMail")
-				.find("option")
-				.each(function () {
-					if ($(this).val() !== "") {
-						$(this).hide();
-					}
-				});
-			/*[- then show all select options that belong to the selected bundle -]*/
-			$("#replyMail")
-				.find(".bundle" + bundleId)
-				.each(function () {
-					$(this).show();
-				});
-		}
-	</script>
+        function selectMails(bundleId) {
+            /*[- hide all select options -]*/
+            $("#replyMail")
+                .find("option")
+                .each(function () {
+                    if ($(this).val() !== "") {
+                        $(this).hide();
+                    }
+                });
+            /*[- then show all select options that belong to the selected bundle -]*/
+            $("#replyMail")
+                .find(".bundle" + bundleId)
+                .each(function () {
+                    $(this).show();
+                });
+        }
+
+        function findPseudonymization(element) {
+            var clinic = clinicDTOs.find((clinic) => clinic.id == $(element).val());
+            console.log(clinic);
+            var clinicPseudonymization = clinic.clinicConfigurationMappingDTOS.find(
+                (configMapping) =>
+                    configMapping.attribute == "usePseudonymizationService" &&
+                    configMapping.value == "true"
+            );
+            console.log(clinicPseudonymization);
+            if (clinicPseudonymization) {
+                $("#pseudonymizationDiv").show();
+            } else {
+                $("#pseudonymizationDiv").hide();
+            }
+        }
+    </script>
 </th:block>
