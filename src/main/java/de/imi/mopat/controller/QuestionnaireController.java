@@ -813,6 +813,12 @@ public class QuestionnaireController {
                                                 calendar.getTime()));
                                     }
                                     questionnaireDao.merge(questionnaire);
+
+                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                                    questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
+                                    questionnaireVersionGroup.addQuestionnaire(questionnaire);
+                                    questionnaireVersionGroupService.add(questionnaireVersionGroup);
+
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         exportTemplate.setQuestionnaire(questionnaire);
                                         exportTemplate.setName(questionnaire.getName());
@@ -987,6 +993,11 @@ public class QuestionnaireController {
 
                 // Merge questionnaire
                 questionnaireDao.merge(questionnaire);
+
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
+                questionnaireVersionGroup.addQuestionnaire(questionnaire);
+                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 // Merge the export templates
                 for (ExportTemplate exportTemplate : exportTemplates) {
