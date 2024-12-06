@@ -195,14 +195,15 @@ public class QuestionnaireVersionGroupService {
             return;
         }
 
+        // Unlink the questionnaire from the group
+        questionnaire.setQuestionnaireVersionGroup(null);
+        questionnaireDao.merge(questionnaire);
+
         if (questionnairesInGroup.isEmpty()){
             //If there would be no questionnaire left, delete the group
             questionnaireVersionGroupDao.remove(questionnaireVersionGroup);
         } else {
-            //Relationship between version group and questionnaire is controlled
-            //by the questionnaire, so it has to be removed there
-            questionnaire.setQuestionnaireVersionGroup(null);
-            questionnaireDao.merge(questionnaire);
+            questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
         }
     }
 }
