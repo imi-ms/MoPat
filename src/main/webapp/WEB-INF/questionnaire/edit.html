@@ -82,6 +82,7 @@
 						id="file"
 						data-preview-file-type="text"
 						th:attr="data-path=${questionnaireDTO.logoBase64}"
+						onchange="validateImageUpload(this)"
 					/>
 					<input
 						type="hidden"
