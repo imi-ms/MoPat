@@ -523,7 +523,7 @@
             displayPeriod(encounterScheduledSerialType);
             $("#warnings").hide();
             $("#warnings").html(warningDaysShorterThanThePeriod);
-
+            $("#pseudonymizationDiv").hide();
             findPseudonymization($("#activeClinicDTO").val());
 
             /*[- select initial values for the replymail selection -]*/
@@ -690,7 +690,7 @@
                     var birthYear = /\d\d\d\d/.exec(birthDate);
                     birthDate = birthMonth + "/" + birthDay + "/" + birthYear;
                 }
-				var clinicId = $('#activeClinicDTO').val()
+                var clinicId = $("#activeClinicDTO").val();
                 console.log(clinicId);
                 var pseudonym = PseudonymizationService.getPseudonym(
                     $("#firstname").find("input").val(),
@@ -754,17 +754,31 @@
 
         function findPseudonymization(element) {
             var clinic = clinicDTOs.find((clinic) => clinic.id == $(element).val());
-            console.log(clinic);
-            var clinicPseudonymization = clinic.clinicConfigurationMappingDTOS.find(
-                (configMapping) =>
-                    configMapping.attribute == "usePseudonymizationService" &&
-                    configMapping.value == "true"
-            );
-            console.log(clinicPseudonymization);
-            if (clinicPseudonymization) {
-                $("#pseudonymizationDiv").show();
+            if (clinic) {
+                var clinicPseudonymization = clinic.clinicConfigurationMappingDTOS.find(
+                    (configMapping) =>
+                        configMapping.attribute == "usePseudonymizationService" &&
+                        configMapping.value == "true"
+                );
+                if (clinicPseudonymization) {
+                    $("#pseudonymizationDiv").show();
+                } else {
+                    $("#pseudonymizationDiv").hide();
+                }
             } else {
-                $("#pseudonymizationDiv").hide();
+                if (clinicDTOs.length > 0) {
+                    clinic = clinicDTOs[0];
+                    var clinicPseudonymization = clinic.clinicConfigurationMappingDTOS.find(
+                        (configMapping) =>
+                            configMapping.attribute == "usePseudonymizationService" &&
+                            configMapping.value == "true"
+                    );
+                    if (clinicPseudonymization) {
+                        $("#pseudonymizationDiv").show();
+                    } else {
+                        $("#pseudonymizationDiv").hide();
+                    }
+                }
             }
         }
     </script>
