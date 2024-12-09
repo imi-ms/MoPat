@@ -98,7 +98,7 @@ public class Encounter implements Serializable {
     @Column(name = "last_reminder_date")
     private Timestamp lastReminderDate;
     @ManyToOne
-    @JoinColumn(name = "preselected_clinic_id", referencedColumnName = "id")
+    @JoinColumn(name = "clinic_id", referencedColumnName = "id")
     private Clinic clinic;
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationMailer.class);
