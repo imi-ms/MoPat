@@ -30,9 +30,9 @@ public class ClinicService {
     @Autowired
     private ClinicConfigurationMappingService clinicConfigurationMappingService;
 
-    public List<ClinicDTO> getAllClinics() {
+    public List<ClinicDTO> getAllClinicsWithoutBundle() {
         return clinicDao.getAllElements().stream()
-            .map(clinicDTOMapper)
+            .map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic))
             .toList();
     }
     
@@ -50,8 +50,11 @@ public class ClinicService {
         ));
     }
     
-    public List<ClinicDTO> transformClinicsToDTOs(List<Clinic> clinics) {
-        return clinics.stream().map(clinic -> clinicDTOMapper.apply(clinic)).toList();
+    public List<ClinicDTO> transformClinicsToDTOs(Boolean fullVersion, List<Clinic> clinics) {
+        if(fullVersion){
+            return clinics.stream().map(clinic -> clinicDTOMapper.apply(clinic)).toList();
+        }
+        return clinics.stream().map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic)).toList();
     }
     
     public Clinic getClinicByIdFromList(List<Clinic> clinics, Long id) {
