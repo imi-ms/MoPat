@@ -27,4 +27,9 @@ public class SelectAnswerCondition extends Condition implements Serializable {
         final ConditionActionType action, final Bundle bundle) {
         super(trigger, target, action, bundle);
     }
+
+    @Override
+    public Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target){
+        return new SelectAnswerCondition(trigger,target, this.getAction(), this.getBundle());
+    }
 }

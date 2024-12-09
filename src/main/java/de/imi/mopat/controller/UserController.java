@@ -1,43 +1,46 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
+import de.imi.mopat.auth.PinAuthorizationService;
+import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
-import de.imi.mopat.dao.ClinicDao;
-import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
+import de.imi.mopat.dao.user.PinAuthorizationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.CacheService;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.model.Clinic;
+import de.imi.mopat.model.enumeration.PermissionType;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.Authority;
-import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.user.ForgotPasswordToken;
 import de.imi.mopat.model.user.Invitation;
-import de.imi.mopat.model.enumeration.PermissionType;
+import de.imi.mopat.model.user.PinAuthorization;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.UserValidator;
-
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-
-import org.slf4j.Logger;
-
-import java.util.List;
-import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,6 +50,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * The Controller servlet communicates with the front end of the model and loads the
@@ -58,9 +62,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("hideProfile")
 public class UserController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserController.class);
     public static final String LAST_USERNAME_KEY = "LAST_USERNAME";
-
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserController.class);
     @Autowired
     private AclEntryDao aclEntryDao;
     @Autowired
@@ -83,11 +86,16 @@ public class UserController {
     private ApplicationMailer applicationMailer;
     @Autowired
     private ConfigurationDao configurationDao;
-
     @Autowired
-    private CacheService cacheService;
+    private UserService userService;
     @Autowired
     private MoPatActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider;
+    @Autowired
+    private PinAuthorizationService pinAuthorizationService;
+    @Autowired
+    private PinAuthorizationDao pinAuthorizationDao;
+    @Autowired
+    private AuthService authService;
 
     /**
      * @param id (<i>optional</i>) Id of the {@link User User} object
@@ -131,7 +139,10 @@ public class UserController {
      */
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String showUsers(final Model model) {
+    public String showUsers(
+        @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError,
+        final Model model
+    ) {
         model.addAttribute("allUsers", userDao.getAllElements());
         return "user/list";
     }
@@ -202,6 +213,7 @@ public class UserController {
                     user.setPassword(newPassword);
                     userDao.setPassword(user);
                 }
+                userDao.setPin(user);
                 userDao.merge(user);
             }
         }
@@ -443,10 +455,16 @@ public class UserController {
             user.setNewPassword(newPassword);
             userValidator.validate(user, result);
             if (!result.hasErrors()) {
+
                 if (!isLdap) {
                     userDao.setPassword(user);
                 }
+
+                if (user.getUsePin()) {
+                    userDao.setPin(user);
+                }
                 userDao.merge(user);
+
                 // get newly persisted user
                 User persistedUser = userDao.loadUserByUsername(user.getUsername());
                 // grant clinic rights
@@ -477,8 +495,6 @@ public class UserController {
         Collection<Clinic> assignedClinics = clinicDao.getClinicsFromAclObjectIdentitys(
             currentInvitation.getAssignedClinics());
         model.addAttribute("clinics", assignedClinics);
-        //Reset caches so users can directly access assigned questionnaires
-        cacheService.evictAllCaches();
         return "mobile/user/register";
     }
 
@@ -491,13 +507,25 @@ public class UserController {
      */
     @RequestMapping(value = "/user/toggleenabled")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String removeUser(@RequestParam(value = "id", required = true) final Long id) {
-        User user = userDao.getElementById(id);
-        if (user != null) {
-            // enable / disable the user
-            user.setIsEnabled(!user.getIsEnabled());
-            userDao.merge(user);
+    public String removeUser(
+        @RequestParam(value = "id", required = true) final Long id,
+        RedirectAttributes redirectAttributes
+    ) {
+        User currentUser = getCurrentUser();
+        User userToDelete = userDao.getElementById(id);
+
+        if (userToDelete != null && userToDelete.getId().equals(currentUser.getId())) {
+            // If the user want to delete himself, redirect with error
+            redirectAttributes.addFlashAttribute("userDeleteError", true);
+            return "redirect:/user/list";
         }
+
+        if (userToDelete != null) {
+            // enable / disable the user
+            userToDelete.setIsEnabled(!userToDelete.getIsEnabled());
+            userDao.merge(userToDelete);
+        }
+
         return "redirect:/user/list";
     }
 
@@ -513,8 +541,13 @@ public class UserController {
     @RequestMapping(value = "/mobile/user/login", method = RequestMethod.GET)
     public String login(@RequestParam(value = "message", required = false) final String message,
         final Model model, final HttpSession httpSession) {
-        // Logout first!
-        SecurityContextHolder.getContext().setAuthentication(null);
+        // Logout or redirect to Pin Auth first!
+        if (pinAuthorizationService.isPinLoginApplicable()) {
+            return "mobile/user/pinlogin";
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(null);
+        }
+
         if (message != null && !message.isEmpty()) {
             switch (message) {
                 case "InsufficientAuthenticationException":
@@ -548,34 +581,123 @@ public class UserController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/user/clinicrights</i>. Shows the page
+     * Control the HTTP GET requests for the URL <i>/mobile/user/pinlogin</i> Shows the pin login
+     * page
+     *
+     * @return The <i>/mobile/user/login</i> view
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @RequestMapping(value = "mobile/user/pinlogin", method = RequestMethod.GET)
+    public String pinLogin(final Model model) {
+        return "mobile/user/pinlogin";
+    }
+
+    /**
+     * Control the HTTP POST requests for the URL <i>/mobile/user/pinlogin</i> Checks if the entered
+     * PIN for a logged in user matches with the stored hash in the database. If it matches, the
+     * flags for the pin login are removed from the database Performs a manaual role based redirect
+     * afterwards
+     *
+     * @return <i>/admin/index</i> for ROLE_ADMIN, <i>/mobile/survey/index</i> else
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @RequestMapping(value = "mobile/user/pinlogin", method = RequestMethod.POST)
+    public String pinLogin(@RequestParam("pin") String pin, HttpServletRequest httpServletRequest,
+        final Model model) {
+        //Get the current user
+        User user;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+            && !(authentication.getPrincipal() instanceof String)) {
+            user = userDao.loadUserByUsername(authentication.getName());
+        } else {
+            //If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal login
+            SecurityContextHolder.getContext().setAuthentication(null);
+            return "mobile/user/login";
+        }
+
+        if (userDao.isCorrectPin(user, pin)) {
+            //If pin is entered correctly, the filter has to be stopped by removing all entries from db
+            pinAuthorizationService.removePinAuthForUser(user);
+        } else {
+            pinAuthorizationService.decreaseRemainingTriesForUser(user);
+            //Refetch the entry
+            PinAuthorization pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
+                .toList().get(0);
+
+            model.addAttribute("message",
+                messageSource.getMessage("user.error.badPin", new Object[]{
+                    String.valueOf(pinAuthorization.getRemainingTries())
+                }, LocaleContextHolder.getLocale()));
+            return "mobile/user/pinlogin";
+        }
+
+        //Handle Role based redirect manually here
+        if (httpServletRequest.isUserInRole("ROLE_ADMIN")) {
+            return "redirect:/admin/index";
+        } else {
+            return "redirect:/mobile/survey/index";
+        }
+    }
+
+    /**
+     * Control the HTTP GET requests for the URL <i>/mobile/user/pinlogout</i> Clears the current
+     * session, removes the pin login flag for a user and redirects to the login page
+     *
+     * @return The <i>/mobile/user/login</i> view
+     */
+    @RequestMapping(value = "/mobile/user/pinlogout", method = RequestMethod.GET)
+    public String deactivatePinLoginAndLogout() {
+        //Get the current user
+        User user;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+            && !(authentication.getPrincipal() instanceof String)) {
+            user = userDao.loadUserByUsername(authentication.getName());
+        } else {
+            //If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal login
+            SecurityContextHolder.getContext().setAuthentication(null);
+            return "mobile/user/login";
+        }
+
+        pinAuthorizationService.removePinAuthForUser(user);
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return "mobile/user/login";
+
+    }
+
+    /**
+     * Controls the HTTP GET requests for the URL <i>/user/rights</i>. Shows the page
      * containing the form fields for granting or revoking rights for clinics to a
      * {@link User User}.
      *
      * @param model The model, which holds the information for the view.
      * @return The <i>user/edit</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/rights", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String editClinicRights(final Model model) {
+    public String editUserRights(final Model model) {
 
         if (model.asMap().get("user") == null) {
             model.addAttribute("user", null);
             return "redirect:/user/list";
         }
 
+        User user = (User) model.asMap().get("user");
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                (User) model.asMap().get("user"), PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
+                        user, PermissionType.READ));
         Collection<Clinic> availableClinics = clinicDao.getAllElements();
         availableClinics.removeAll(assignedClinics);
         model.addAttribute("availableClinics", availableClinics);
         model.addAttribute("assignedClinics", assignedClinics);
-        return "user/clinicrights";
+        model.addAttribute("roleList", new ArrayList<>(Arrays.asList(UserRole.values())));
+        model.addAttribute("userRole", userService.getHighestRole(user));
+        return "user/rights";
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/user/clinicrights</i>. Provides the ability
+     * Controls the HTTP POST requests for the URL <i>/user/rights</i>. Provides the ability
      * to grant or revoke rights for clinics to a {@link User User}.
      *
      * @param clinicIDs The {@link Clinic clinic} object IDs, which are assigned to the
@@ -585,40 +707,19 @@ public class UserController {
      *                  edited.
      * @param result    The result for validation of the bundle object.
      * @param model     The model, which holds the information for the view.
-     * @return The <i>/user/clinicrights</i> website.
+     * @return The <i>/user/rights</i> website.
      */
-    @RequestMapping(value = "/user/clinicrights", method = RequestMethod.POST)
-    public String editClinicRights(
-        @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
-        @RequestParam(value = "action", required = true) final String action,
-        @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
+    @RequestMapping(value = "/user/rights", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String updateUserRights(
+            @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
+            @RequestParam(value = "action", required = true) final String action,
+            @RequestParam(value = "role") final UserRole role,
+            @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
         if (action.equalsIgnoreCase("save")) {
-            Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user,
-                    PermissionType.READ));
-            Collection<Clinic> currentClinics = new ArrayList<>();
-            if (clinicIDs != null && !clinicIDs.isEmpty()) {
-                currentClinics = clinicDao.getElementsById(clinicIDs);
-            }
-            assignedClinics.removeAll(currentClinics);
-            currentClinics.removeAll(assignedClinics);
-            for (Clinic clinic : currentClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry == null) {
-                    clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
-            for (Clinic clinic : assignedClinics) {
-                AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user,
-                    PermissionType.READ);
-                if (clinicACLEntry != null) {
-                    clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
-                }
-            }
+            userService.updateUserClinicRights(user, clinicIDs);
+            userService.replaceUserRoles(user, role);
         }
-        //Delete ACL caches to make changes directly visible
-        cacheService.evictAllCaches();
         return "redirect:/user/list";
     }
 

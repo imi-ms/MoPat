@@ -14,6 +14,8 @@ public abstract class Constants {
     public static final String IMAGE_QUESTIONNAIRE = "questionnaire";
     public static final int PASSWORD_MINIMUM_SIZE = 8;
     public static final int PASSWORD_MAXIMUM_SIZE = 255;
+    public static final int PIN_MINIMUM_SIZE = 6;
+    public static final int PIN_MAX_TRIES = 3;
 
     // Decimal format. Matches for eg.: 100; 1,1; 1,1; 321,2
     public static final String DECIMAL_FORMAT = "\\d+[,|\\.]{0,1}\\d{0,1}";
@@ -83,4 +85,6 @@ public abstract class Constants {
     public static final String FHIR_SYSTEM_URL= "FHIRsystemURI";
 
     public static final String WEBBAPP_ROOT_PATH = "webappRootPath";
+
+    public static final String ENABLE_GLOBAL_PIN_AUTH = "enableGlobalPinAuth";
 }

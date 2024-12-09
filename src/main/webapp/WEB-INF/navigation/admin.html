@@ -14,7 +14,7 @@
 					id="adminNavLeft"
 					class="navbar-nav me-auto mb-2 mb-lg-0"
 				>
-					<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+					<th:block sec:authorize="hasRole('ROLE_EDITOR')">
 						<li class="nav-item dropdown">
 							<a
 								class="nav-link d-flex align-items-center"
@@ -59,6 +59,8 @@
 								>Bundles</a
 							>
 						</li>
+					</th:block>
+					<th:block sec:authorize="hasRole('ROLE_ADMIN')">
 						<li class="nav-item">
 							<a
 								class="nav-link"
@@ -111,7 +113,7 @@
 						</li>
 					</th:block>
 					<li
-						sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') or hasRole('ROLE_ADMIN')"
+						sec:authorize="hasRole('ROLE_EDITOR')"
 						class="nav-item dropdown"
 					>
 						<a

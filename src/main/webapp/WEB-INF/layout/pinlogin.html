@@ -1,0 +1,231 @@
+<!--/*
+    Page layout for mobile / survey view
+    
+    Basic HTML grid filled up with metadata and basic HTML5 component layout.
+
+    Can be extended with parameters for further scripts and links
+*/-->
+<!DOCTYPE html>
+<html
+	th:lang="${#locale.getLanguage()}"
+	th:with="queryString=${queryString}"
+>
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, target-densityDpi=device-dpi"
+		/>
+		<meta
+			name="format-detection"
+			content="telephone=no"
+		/>
+
+		<!--/* Basics */-->
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.0}"
+		/>
+		<link
+			rel="stylesheet"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.0}"
+		/>
+
+		<th:block
+			layout:replace="~{fragments/resourceFragment :: mobileCSS}"
+		></th:block>	
+
+		<th:block layout:fragment="addLinks"></th:block>
+
+		<!--[if lte IE 8]>
+			<link
+				rel="stylesheet"
+				type="text/css"
+				th:href="@{/css/ie/ie8.css}"
+			/>
+		<![endif]-->
+
+		<!--/* JQuery Basics */-->
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.0}"></script>
+
+		<!--/* Modernizr to query specific device types */-->
+		<script th:src="@{/js/modernizr/modernizr-custom.js?version=3.0}"></script>
+
+		<!--/* Bootstrap */-->
+		<script th:src="@{/js/bootstrap/bootstrap.min.js?version=3.0}"></script>
+
+		<!--/* Always import dialog from non mobile helper directory */-->
+		<script th:src="@{/js/helper/dialog.js?version=3.0}"></script>
+
+		<th:block 
+			layout:replace="~{fragments/resourceFragment :: mobileJS}"
+		></th:block>
+
+		<th:block layout:fragment="addScripts"></th:block>
+
+		<!--/* <c:set var="insertmobileinit" value="true"/> */-->
+
+		<script th:inline="javascript">
+			/*[- Get the context path. -]*/
+			var contextPath = /*[[${contextPath}]]*/ "/";
+		</script>
+
+		<link
+			rel="apple-touch-icon"
+			th:href="@{/images/apple-touch-icon.png}"
+		/>
+		<title>MoPat</title>
+	</head>
+
+	<body th:attr="onload=${onLoad}">
+		<div
+			class="flex-container"
+			data-role="page"
+		>
+			<div
+				th:classappend="${#bools.isTrue(isLogin) ? 'loginContainer' : 'layoutContainer'}"
+			>
+				<div
+					id="content"
+					data-role="content"
+					class="px-5"
+					th:classappend="${contenttype}"
+				>
+					<div
+						class="d-flex py-1 titleHeader"
+						th:classappend="|${#bools.isTrue(isLogin) ? 'header login-header' : ''} ${#bools.isTrue(hideTitle) ? 'd-none' : ''}|"
+					>
+						<th:block sec:authorize="isFullyAuthenticated()">
+							<div role="heading">
+								<b
+									id="title"
+									class="titleContent"
+								></b>
+							</div>
+						</th:block>
+					</div>
+					<th:block layout:fragment="content"></th:block>
+				</div>
+				<div
+					id="footer"
+					class="footer"
+					data-role="footer"
+				>
+					<th:block
+						layout:insert="~{fragments/mobileFooter :: footer}"
+					></th:block>
+				</div>
+			</div>
+		</div>
+
+		<th:block layout:fragment="headerScriptContainer">
+			<th:block
+				layout:insert="~{fragments/mobileHeader :: headerScriptContainer}"
+			/>
+		</th:block>
+		<th:block layout:fragment="scriptContainer"></th:block>
+
+		<!--/* Container for scroll indicator that gets added and animated via css classes */-->
+		<div
+			id="arrowContainer"
+			class="scrollArrowContainer"
+			onclick="scrollDown()"
+		>
+			<span></span>
+			<span></span>
+			<span></span>
+		</div>
+		<div
+			id="shadowIndicator"
+			class="shadowIndicator"
+			aria-hidden="true"
+		></div>
+
+		<!--/* Script to show scroll indicator */-->
+		<script>
+			var arrowTimeout = 0;
+
+			/*[- Check if the content is scrollable -]*/
+			function isScrollable() {
+				return document.body.scrollHeight > window.innerHeight;
+			}
+
+			function viewPaneIsNotAtTheBottom() {
+				return (
+					window.pageYOffset + window.innerHeight < document.body.scrollHeight
+				);
+			}
+
+			function scrollArrowIsNotShown() {
+				return !$("#arrowContainer").hasClass("show");
+			}
+
+			/*[-   the arrow icon based on scroll position and content height -]*/
+			function toggleScrollIndicators() {
+				var arrowElement = document.getElementById("arrowContainer");
+				var shadowElement = document.getElementById("shadowIndicator");
+
+				if (isScrollable() && viewPaneIsNotAtTheBottom()) {
+					if (scrollArrowIsNotShown()) {
+						arrowElement.classList.add("show");
+						shadowElement.classList.add("off-bottom");
+
+						///*[- Disable after 10s (equal to 5 animation cycles) -]*/
+						arrowTimeout = setTimeout(function () {
+							arrowElement.classList.remove("show");
+						}, 10000);
+					}
+				} else {
+					arrowElement.classList.remove("show");
+					shadowElement.classList.remove("off-bottom");
+
+					/*
+					 * Clear timeout so the timeout is only
+					 * triggered if the arrow element is shown nonstop
+					 */
+					clearTimeout(arrowTimeout);
+					arrowTimeout = 0;
+				}
+			}
+
+
+			function scrollDown() {
+				window.scrollBy({
+					top: window.innerHeight / 2,
+					left: 0,
+					behavior: "smooth",
+				});
+			}
+
+			const targetDiv = document.querySelector("#content");
+
+			if (targetDiv) {
+				const observer = new MutationObserver((mutationsList) => {
+					/*[- Toggle scroll check for all dom changes -]*/
+					toggleScrollIndicators();
+				});
+
+				const observerConfig = { childList: true, subtree: true };
+
+				observer.observe(targetDiv, observerConfig);
+			} else {
+				/*[- Catch missing content div -]*/
+			}
+
+			/*[- Scroll event listener -]*/
+			window.addEventListener("scroll", toggleScrollIndicators);
+
+			/*[- Initial check and setup on page load -]*/
+			window.addEventListener("load", function () {
+				toggleScrollIndicators();
+			});
+
+			window.addEventListener("resize", toggleScrollIndicators);
+
+		</script>
+	</body>
+</html>

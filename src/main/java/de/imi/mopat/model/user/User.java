@@ -2,7 +2,6 @@ package de.imi.mopat.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.UserDTO;
 
 import java.io.Serializable;
 import java.util.*;
@@ -64,12 +63,18 @@ public class User implements Serializable, UserDetails {
     @Column(name = "principal")
     private boolean principal;
     @Valid
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Authority> authority = new HashSet<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final Set<AclEntry> rights = new HashSet<>();
     @Column(name = "is_enabled")
     private Boolean isEnabled = Boolean.TRUE;
+    @Column(name="use_pin")
+    private Boolean usePin = Boolean.FALSE;
+    @Column(name="pin")
+    private String pin;
+    @Column(name = "last_selected_clinic_id")
+    private Long lastSelectedClinicId;
 
     public User() {
         //default constructor (in protected state), should not be accessible
@@ -78,8 +83,8 @@ public class User implements Serializable, UserDetails {
     }
 
     /**
-     * Constructor for new user object with given username and password.Uses the setters to set the
-     * attributes. See setters for constraints.
+     * Constructor for new user object with given username and password.Uses the setters to set the attributes. See
+     * setters for constraints.
      *
      * @param username The username of the new user object.
      * @param password The password of the new user object.
@@ -91,28 +96,11 @@ public class User implements Serializable, UserDetails {
         setPassword(password);
     }
 
-    /*
-     * Converts this {@link User} object to an {@link UserDTO} object.
-     *
-     * @return An {@link UserDTO} object based on this {@link Clinic}
-     * object.
-     */
-    public UserDTO toUserDTO() {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(this.id);
-        userDTO.setUsername(this.username);
-        userDTO.setFirstname(this.firstname);
-        userDTO.setLastname(this.lastname);
-        userDTO.setEmail(this.email);
-
-        return userDTO;
-    }
-
     /**
      * Returns the id of the current user object.
      *
-     * @return The current id of this user object. Might be <code>null</code> for newly created
-     * objects. Is not <code> &lt;=0 </code>.
+     * @return The current id of this user object. Might be <code>null</code> for newly created objects. Is not <code>
+     * &lt;=0 </code>.
      */
     public Long getId() {
         return id;
@@ -124,8 +112,8 @@ public class User implements Serializable, UserDetails {
 
     /**
      * from http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs
-     * /org/springframework/security/core/userdetails/UserDetails# getAuthorities%28%29: Returns the
-     * authorities granted to the user. Cannot return <code>null</code>.
+     * /org/springframework/security/core/userdetails/UserDetails# getAuthorities%28%29: Returns the authorities granted
+     * to the user. Cannot return <code>null</code>.
      *
      * @return the authorities, sorted by natural key (never <code>null</code>). Is unmodifiable.
      */
@@ -140,6 +128,34 @@ public class User implements Serializable, UserDetails {
             auth.add(new SimpleGrantedAuthority(userrole.getAuthority()));
         }
         return Collections.unmodifiableCollection(auth);
+    }
+
+    /**
+     * Updates the user's role by removing all existing roles of type {@link UserRole}
+     * from the authority set and adding the specified new role.
+     *
+     * <p>This method will remove any {@link Authority} in the authority set that can be
+     * converted to a {@link UserRole}. It then adds a new {@link Authority} with the
+     * specified {@link UserRole}.
+     *
+     * @param newRole the new role to assign to the user, replacing any existing roles of type {@link UserRole}.
+     */
+    public void replaceRolesWith(UserRole newRole) {
+        // Remove all authorities that are of type UserRole
+        authority.removeIf(auth -> {
+            try {
+                // Attempt to convert the authority string to a UserRole
+                UserRole userRole = UserRole.fromString(auth.getAuthority());
+                // If the conversion is successful, this Authority object will be removed
+                return userRole != null;
+            } catch (IllegalArgumentException e) {
+                // If the conversion fails, it means this Authority is not a UserRole,
+                // so this Authority object will not be removed.
+                return false;
+            }
+        });
+        // Add the new role to the authority set
+        authority.add(new Authority(this, newRole));
     }
 
     /**
@@ -164,8 +180,8 @@ public class User implements Serializable, UserDetails {
     }
 
     /**
-     * Adds a new authority to the corresponding set of authorities.Takes care that the
-     * {@link Authority} object refers to this one, too.
+     * Adds a new authority to the corresponding set of authorities.Takes care that the {@link Authority} object refers
+     * to this one, too.
      *
      * @param userRole The authority, which will be added to this user. Must not be
      *                 <code>null</code>.
@@ -487,4 +503,30 @@ public class User implements Serializable, UserDetails {
     public Set<AclEntry> getRights() {
         return Collections.unmodifiableSet(this.rights);
     }
+
+    public Boolean getUsePin() {
+        return usePin;
+    }
+
+    public void setUsePin(Boolean usePin) {
+        this.usePin = usePin;
+    }
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
+    }
+
+
+    public Long getLastSelectedClinicId() {
+        return lastSelectedClinicId;
+    }
+
+    public void setLastSelectedClinicId(Long lastSelectedClinicId) {
+        this.lastSelectedClinicId = lastSelectedClinicId;
+    }
+
 }

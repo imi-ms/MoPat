@@ -1,8 +1,10 @@
 package de.imi.mopat.validator;
 
 import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.model.dto.ClinicConfigurationMappingDTO;
 import de.imi.mopat.model.dto.ClinicDTO;
 
+import de.imi.mopat.model.enumeration.ClinicConfigurationsPatientRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -20,6 +22,8 @@ public class ClinicDTOValidator implements Validator {
     private MessageSource messageSource;
     @Autowired
     private ClinicDao clinicDao;
+    @Autowired
+    private ClinicConfigurationMappingDTOValidator clinicConfigurationMappingDTOValidator;
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -49,5 +53,53 @@ public class ClinicDTOValidator implements Validator {
                 messageSource.getMessage("clinic.error.nameInUse", new Object[]{},
                     LocaleContextHolder.getLocale()));
         }
+        if (!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)) {
+            errors.rejectValue("clinicConfigurationMappingDTOS[0].value", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                messageSource.getMessage("clinic.error.noConfiguration",
+                    new Object[]{}, LocaleContextHolder.getLocale()));
+        }
+        int indexOfConfiguration = 0;
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
+            if (clinicConfigurationMappingDTO.getParent() == null) {
+                errors.pushNestedPath("clinicConfigurationMappingDTOS["
+                    + indexOfConfiguration + "]");
+                clinicConfigurationMappingDTOValidator.validate(clinicConfigurationMappingDTO, errors);
+                errors.popNestedPath();
+                if (clinicConfigurationMappingDTO.getChildren() != null
+                    && clinicConfigurationMappingDTO.getValue().equalsIgnoreCase("true")) {
+                    int indexOfChild = 0;
+                    for (ClinicConfigurationMappingDTO childDTO : clinicConfigurationMappingDTO.getChildren()) {
+                        errors.pushNestedPath("clinicConfigurationMappingDTOS[" + indexOfConfiguration + "]"
+                            + ".children[" + indexOfChild + "]");
+                        clinicConfigurationMappingDTOValidator.validate(childDTO, errors);
+                        errors.popNestedPath();
+                        indexOfChild++;
+                    }
+                }
+                indexOfConfiguration++;
+            }
+        }
+    }
+
+    private static boolean checkIfAnyOnePatientRetrieverIsEnabled(ClinicDTO clinicDTO) {
+        boolean check = false;
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
+            if (clinicConfigurationMappingDTO.getAttribute() != null) {
+                if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.usePseudonymizationService.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO.getAttribute()
+                    .equals(ClinicConfigurationsPatientRetriever.registerPatientData.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                }
+            }
+            if (check) {
+                break;
+            }
+        }
+        return check;
     }
 }

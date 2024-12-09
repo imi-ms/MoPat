@@ -131,33 +131,4 @@ public class ConfigurationDaoImplTest {
             "The getting finished encounter mailaddress time window was not the expected one",
             2592000000L, (long) testConfigurationDao.getFinishedEncounterMailaddressTimeWindow());
     }
-
-    /**
-     * Test of {@link ConfigurationDaoImpl#isRegistryOfPatientActivated}.<br>
-     */
-    @Test
-    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
-    public void testIsRegistryOfPatientActivated() {
-        assertTrue("The getting is registry of patient activated was not the expected one",
-            testConfigurationDao.isRegistryOfPatientActivated());
-    }
-
-    /**
-     * Test of {@link ConfigurationDaoImpl#isUsePatientDataLookupActivated}.<br>
-     */
-    @Test
-    public void testIsUsePatientDataLookupActivated() {
-        assertFalse("The getting is use patient data lookup activated was not the expected one",
-            testConfigurationDao.isUsePatientDataLookupActivated());
-    }
-
-    /**
-     * Test of {@link ConfigurationDaoImpl#isPseudonymizationServiceActivated}.<br>
-     */
-    @Test
-    public void testIsPseudonymizationServiceActivated() {
-        assertTrue(
-            "The getting is pseudonymization service activated activated was not the expected one",
-            testConfigurationDao.isPseudonymizationServiceActivated());
-    }
 }

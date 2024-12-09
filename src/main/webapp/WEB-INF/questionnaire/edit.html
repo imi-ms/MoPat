@@ -161,23 +161,47 @@
 					</localableTextarea>
 				</div>
 
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="save"
-					id="saveButton"
-					name="action"
-					onclick=""
-					th:text="${messages.get(#locale, 'button.save', 'Save')}"
-				></button>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="saveEditButton"
-					id="saveEditButton"
-					name="action"
-					th:text="${messages.get(#locale, 'questionnaire.button.saveAndEdit', 'Save and edit questions')}"
-				></button>
+				<th:block th:if="${infoMessage}">
+					<div class="alert alert-info" role="alert" th:text="${infoMessage}"></div>
+				</th:block>
+
+				<th:block th:if="${canEdit}">
+					<button
+							type="submit"
+							class="btn btn-primary"
+							value="save"
+							id="saveButton"
+							name="action"
+							th:text="${messages.get(#locale, 'button.save', 'Save')}"
+					></button>
+					<button
+							type="submit"
+							class="btn btn-primary"
+							value="saveEditButton"
+							id="saveEditButton"
+							name="action"
+							th:text="${messages.get(#locale, 'questionnaire.button.saveAndEdit', 'Save and edit questions')}"
+					></button>
+				</th:block>
+				<th:block th:unless="${canEdit}">
+					<button
+							type="submit"
+							class="btn btn-primary"
+							value="duplicate"
+							id="duplicateButton"
+							name="action"
+							th:text="${messages.get(#locale, 'button.duplicate', 'Duplicate')}"
+					></button>
+					<button
+							type="submit"
+							class="btn btn-primary"
+							value="duplicateEditButton"
+							id="duplicateEditButton"
+							name="action"
+							th:text="${messages.get(#locale, 'questionnaire.button.duplicateAndEdit', 'Duplicate and edit questions')}"
+					></button>
+				</th:block>
+
 				<button
 					type="submit"
 					class="btn btn-primary"

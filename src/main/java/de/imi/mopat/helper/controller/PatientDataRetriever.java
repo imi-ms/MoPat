@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.dto.EncounterDTO;
 
 /**
@@ -23,5 +24,5 @@ public abstract class PatientDataRetriever {
      * method should check each of the {@link EncounterDTO EncounterDTO's} field for
      * <code>null</code> values before using them.
      */
-    public abstract EncounterDTO retrievePatientData(String caseNumber);
+    public abstract EncounterDTO retrievePatientData(Clinic clinic, String caseNumber);
 }

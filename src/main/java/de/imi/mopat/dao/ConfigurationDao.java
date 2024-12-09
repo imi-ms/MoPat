@@ -19,6 +19,8 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      */
     Configuration getConfigurationByAttributeAndClass(String attribute, String clazz);
 
+    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
+        final String clazz, final String groupName);
     /**
      * Returns the base url of the application.
      *
@@ -165,19 +167,25 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      *
      * @return The path, where images are saved.
      */
-    public String getImageUploadPath();
+    String getImageUploadPath();
 
     /**
      * Returns the system url.
      *
      * @return system url for fhir export.
      */
-    public String getFHIRsystemURI();
+    String getFHIRsystemURI();
 
     /**
      * Returns the deployed webapp ROOT path
      *
      * @return deployed webapp ROOT path.
      */
-    public String getWebappRootPath();
+    String getWebappRootPath();
+
+    /**
+     * Returns the flag, whether Pin Auth should be enabled
+     * @return true, if pin auth is enabled, false otherwise
+     */
+    Boolean isGlobalPinAuthEnabled();
 }
