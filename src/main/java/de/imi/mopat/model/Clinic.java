@@ -54,6 +54,8 @@ public class Clinic implements Serializable {
 
     @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL)
     private List<ClinicConfigurationMapping> clinicConfigurationMappings;
+    @OneToMany(mappedBy = "clinic")
+    private List<Encounter> encounters;
 
     public Clinic() { //default constructor (in protected state), should not
         // be accessible to anything else but the JPA implementation (here:
@@ -272,5 +274,13 @@ public class Clinic implements Serializable {
         }
         Clinic other = (Clinic) obj;
         return getUUID().equals(other.getUUID());
+    }
+
+    public List<Encounter> getEncounters() {
+        return encounters;
+    }
+
+    public void setEncounters(List<Encounter> encounters) {
+        this.encounters = encounters;
     }
 }
