@@ -777,10 +777,10 @@ public class EncounterController {
             }
         }
         if(isAdmin){
-            model.addAttribute("clinicDTOs", clinicService.getAllClinics());
+            model.addAttribute("clinicDTOs", clinicService.getAllClinicsWithoutBundle());
         } else {
             List<Clinic> assignedClinics = clinicService.getAssignedClinics(user);
-            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(assignedClinics);
+            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false, assignedClinics);
             model.addAttribute("clinicDTOs", clinicDTOs);
         }
 
