@@ -444,29 +444,34 @@ public class ClinicController {
     public String removeClinic(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
         Clinic clinic = clinicDao.getElementById(id);
-
         if (clinic != null) {
-            // Revoke all permissions for all users to this clinic
-            // and the inherited bundles, Key = User, Value = Permission
-            for (Map.Entry<User, PermissionType> entry : aclEntryDao.getUserRightsByObject(clinic)
-                .entrySet()) {
-                clinicDao.revokeRight(clinic, entry.getKey(), entry.getValue(), Boolean.TRUE);
-            }
-            // Delete connection to the bundles
-            for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
-                Bundle bundle = bundleClinic.getBundle();
-                bundle.removeBundleClinic(bundleClinic);
-                bundleDao.merge(bundle);
-            }
-            clinic.removeAllBundleClinics();
-            // Delete the corresponding ACL object for the removed clinic
-            aclObjectIdentityDao.remove(aclObjectIdentityDao.getElementByClassAndObjectId(
-                aclClassDao.getElementByClass(Clinic.class.getName()), id));
-            // Delete the clinic
-            clinicDao.remove(clinic);
-            model.addAttribute("messageSuccess",
-                messageSource.getMessage("clinic.message.deleteSuccess",
+            if(!clinic.getEncounters().isEmpty()){
+                model.addAttribute("messageFail", messageSource.getMessage(
+                    "clinic.message.deleteFailure",
                     new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
+            } else {
+                // Revoke all permissions for all users to this clinic
+                // and the inherited bundles, Key = User, Value = Permission
+                for (Map.Entry<User, PermissionType> entry : aclEntryDao.getUserRightsByObject(clinic)
+                    .entrySet()) {
+                    clinicDao.revokeRight(clinic, entry.getKey(), entry.getValue(), Boolean.TRUE);
+                }
+                // Delete connection to the bundles
+                for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
+                    Bundle bundle = bundleClinic.getBundle();
+                    bundle.removeBundleClinic(bundleClinic);
+                    bundleDao.merge(bundle);
+                }
+                clinic.removeAllBundleClinics();
+                // Delete the corresponding ACL object for the removed clinic
+                aclObjectIdentityDao.remove(aclObjectIdentityDao.getElementByClassAndObjectId(
+                    aclClassDao.getElementByClass(Clinic.class.getName()), id));
+                // Delete the clinic
+                clinicDao.remove(clinic);
+                model.addAttribute("messageSuccess",
+                    messageSource.getMessage("clinic.message.deleteSuccess",
+                        new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
+            }
         }
         return showClinics(model);
     }
