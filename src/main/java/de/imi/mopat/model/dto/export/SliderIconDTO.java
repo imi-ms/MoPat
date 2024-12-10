@@ -10,6 +10,16 @@ public class SliderIconDTO {
 
     private Long answerId;
 
+    public SliderIconDTO(String icon, Integer position, Long id) {
+        this.icon = icon;
+        this.position = position;
+        this.id = id;
+    }
+
+    public SliderIconDTO() {
+
+    }
+
     public Long getId() {
         return id;
     }

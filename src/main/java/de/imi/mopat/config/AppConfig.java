@@ -1,5 +1,6 @@
 package de.imi.mopat.config;
 
+import de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.helper.controller.PatientDataRetrieverFactoryBean;
@@ -9,10 +10,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
@@ -45,8 +43,7 @@ import java.util.Set;
 /**
  * The main configuration class defining the view.
  * <p>
- * Includes other configuration classes, e.g. Security Config. Takes over functionality of old
- * spring-servlet.xml.
+ * Includes other configuration classes, e.g. Security Config. Takes over functionality of old spring-servlet.xml.
  */
 
 @Configuration
@@ -57,7 +54,11 @@ import java.util.Set;
     "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
     "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl",
     "de.imi.mopat.model", "de.imi.mopat.validator"})
-@PropertySource("classpath:mopat.properties")
+
+@PropertySources({
+    @PropertySource("classpath:mopat.properties"),
+    @PropertySource("classpath:git.properties")
+})
 @PropertySource(value = "file:${de.imi.mopat.config.path}/${de.imi.mopat.config.name}", ignoreResourceNotFound = true)
 @EnableJpaRepositories(basePackages = {"de.imi.mopat.dao"}, entityManagerFactoryRef = "MoPat")
 @EnableTransactionManagement
@@ -203,9 +204,8 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     /**
      * Adds PatientDataRetriever to servlet depending on whether it is set in the database
      * <p>
-     * Since it is not advised to use NullBeans with java config it is checked whether the
-     * PatientDataRetriever was set in the PatientDataRetrieverFactoryBean by comparing the toString
-     * results
+     * Since it is not advised to use NullBeans with java config it is checked whether the PatientDataRetriever was set
+     * in the PatientDataRetrieverFactoryBean by comparing the toString results
      *
      * @return PatientDataRetriever / null
      * @throws Exception
@@ -213,6 +213,36 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     @Bean
     public PatientDataRetriever patientDataRetriever() throws Exception {
         PatientDataRetriever result = pdrfb().getObject();
+        if (result.toString().equals("null")) {
+            return null;
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * Creates ClinicPatientDataRetrieverFactoryBean
+     *
+     * @return ClinicPatientDataRetrieverFactoryBean
+     */
+    @Bean(name = "clinicPatientDataRetriever")
+    @Scope("prototype")
+    public ClinicPatientDataRetrieverFactoryBean cpdrfb(Long clinicId) {
+        return new ClinicPatientDataRetrieverFactoryBean(clinicId);
+    }
+
+    /**
+     * Adds PatientDataRetriever to servlet depending on whether it is set in the database
+     * <p>
+     * Since it is not advised to use NullBeans with java config it is checked whether the PatientDataRetriever was set
+     * in the ClinicPatientDataRetrieverFactoryBean by comparing the toString results
+     *
+     * @return PatientDataRetriever / null
+     * @throws Exception
+     */
+    @Bean
+    public PatientDataRetriever clinicPatientDataRetriever(Long clinicId) throws Exception {
+        PatientDataRetriever result = cpdrfb(clinicId).getObject();
         if (result.toString().equals("null")) {
             return null;
         } else {
@@ -307,8 +337,7 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     }
 
     /**
-     * Implementation of ViewResolver that resolves a view based on the request file name or Accept
-     * header
+     * Implementation of ViewResolver that resolves a view based on the request file name or Accept header
      *
      * @param contentNegotiationManager ContentNegotiationManager
      * @return ContentNegotiatingViewResolver

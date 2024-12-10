@@ -49,7 +49,7 @@ public class QuestionnaireDTOValidator implements Validator {
         }
 
         if (questionnaireDTO.getName().matches("^[\\p{L}0-9\\s\\-_.:()\\[\\]!+?]+$")
-            && !questionnaireDao.isQuestionnaireNameUnused(questionnaireDTO.getName(),
+            && !questionnaireDao.isQuestionnaireNameUnique(questionnaireDTO.getName(),
             questionnaireDTO.getId())) {
             errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage("questionnaire.error.nameInUse", new Object[]{},

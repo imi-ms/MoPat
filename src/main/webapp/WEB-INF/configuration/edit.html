@@ -278,7 +278,16 @@
 		} else {
 			/*[- If the configuration group is deletable, switch the add button in a remove button and add the onclick function -]*/
 			$(element).attr("onclick", "removeConfigurationGroup(this);");
-			$(element).find("span").switchClass("bi-plus-lg", "bi-dash");
+
+			if ($(element).find("span").hasClass("bi-plus-lg")) {
+				console.log("plus");
+				$(element).find("span").removeClass("bi-plus-lg"); 
+				$(element).find("span").addClass("bi-dash"); 
+			} else if ($(element).find("span").hasClass("bi-dash")) {
+				console.log("dash");
+				$(element).find("span").removeClass("bi-dash"); 
+				$(element).find("span").addClass("bi-plus-lg"); 
+			}
 		}
 
 		if ($(element).siblings().length >= 1) {
@@ -425,7 +434,7 @@
 				}
 
 				$(this)
-					.find("input")
+					.find("input, select")
 					.each(function () {
 						/*[- Prevents the modification of checkbox inputs -]*/
 						if ($(this).attr("type") === "checkbox") {

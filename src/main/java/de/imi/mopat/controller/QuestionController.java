@@ -3,8 +3,7 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.QuestionService;
-import de.imi.mopat.helper.controller.ServletContextInfo;
+import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
@@ -32,7 +31,6 @@ import java.util.*;
 import javax.imageio.ImageIO;
 import java.util.regex.Pattern;
 
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +75,7 @@ public class QuestionController {
     private MessageSource messageSource;
 
     @Autowired
-    private QuestionService questionService;
+    private QuestionDTOMapper questionDTOMapper;
     /**
      * @param id (<i>optional</i>) Id of the {@link Question} object
      * @return Returns a new {@link Question} object to the attribute
@@ -169,7 +167,7 @@ public class QuestionController {
             // a questionDTO
             Question question = questionDao.getElementById(questionId);
             if (question != null) {
-                questionDTO = questionService.toQuestionDTO(question);
+                questionDTO = questionDTOMapper.apply(question);
                 questionDTO.setHasScores(scoreDao.hasScore(question));
                 // If the question is a multiple choice or drop down question
                 // check if there are any conditions associated to the
@@ -240,7 +238,7 @@ public class QuestionController {
             newQuestion);
         model.addAttribute(
             "questionDTO",
-            questionService.toQuestionDTO(newQuestion));
+            questionDTOMapper.apply(newQuestion));
         model.addAttribute(
             "questionnaireId",
             questionnaireId);
