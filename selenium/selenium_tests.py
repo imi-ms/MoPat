@@ -52,15 +52,9 @@ class IMISeleniumBaseTest(ABC):
         """
         
         try:
-            # create folder for driver
-            directory = os.path.join(os.getcwd(), "driver")
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            # init driver
-            self._setLocalDriver(directory)
+            self._setServerDriver()
         except Exception as e:
             print(e)
-
 
         # maximize window to full-screen
         self.driver.maximize_window()
@@ -143,7 +137,9 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
                                                     "videoName": f"{name}.mp4",
                                                     "logName": f"{name}.log"
                                                     })
-        self.driver = webdrive
+        self.driver = webdriver.Remote(options=options,
+                                       command_executor=self.selenium_grid_url)
+
 
     def _setLocalDriver(self, directory):
         # download latest driver
