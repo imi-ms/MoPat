@@ -1,0 +1,101 @@
+name: selenium_tests
+
+on: pull_request
+
+jobs:
+  build-and-test:
+    permissions:
+      checks: write
+      pull-requests: write # only required if `comment: true` was enabled
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up cache for Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Setup Docker-Compose
+      - name: Docker Compose Action
+        uses: hoverkraft-tech/compose-action@v2.0.2
+
+      # Run Selenoid
+      - name: Run Selenoid
+        run: |
+          docker run -d --name selenoid -p 4444:4444 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v ${PWD}/selenium/config/:/etc/selenoid/:ro \
+            aerokube/selenoid:latest-release
+
+      # Wait for the server to be ready before running tests
+      - name: Wait for the application to be ready
+        run: |
+          until curl --output /dev/null --silent --head --fail http://localhost:8080; do
+            echo 'Waiting for the application to be ready...'
+            sleep 5
+          done
+          until curl --output /dev/null --silent --head --fail http://localhost:4444/status; do
+            echo 'Waiting for Selenoid to be ready...'
+            sleep 5
+          done
+
+      # Install Chrome and ChromeDriver
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      # Set up Python and run Selenium tests
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13' # Specify the version of Python you are using
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('selenium/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
+
+      - name: Run Selenium tests
+        run: |
+          python3 selenium/selenium_tests.py > test-results.log
+
+      - name: Save results to env
+        if: always() && github.event_name == 'pull_request'
+        id: test_report
+        run: echo "SELENIUM_TEST_SUMMARY=$(cat test-results.log)" >> $GITHUB_ENV
+
+      # Post the results into a PR comment
+      - name: Comment on Pull Request
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Selenium Test Results
+            ```plaintext
+            ${{ env.SELENIUM_TEST_SUMMARY }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

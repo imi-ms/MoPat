@@ -1,0 +1,11 @@
+{
+  "chrome": {
+    "default": "64.0",
+    "versions": {
+      "64.0": {
+        "image": "selenoid/chrome:90.0",
+        "env" : ["LANG=ru_RU.UTF-8", "LANGUAGE=ru:en", "LC_ALL=ru_RU.UTF-8"]
+      }
+    }
+  }
+}
