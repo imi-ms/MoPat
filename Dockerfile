@@ -3,6 +3,8 @@ FROM maven:3.9.8-eclipse-temurin-17-focal as builder
 
 # Copy the pom.xml and source code
 COPY pom.xml .
+COPY .git .
+
 RUN mvn -B -f pom.xml dependency:go-offline
 COPY src ./src
 
