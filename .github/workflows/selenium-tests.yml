@@ -51,7 +51,10 @@ jobs:
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
-          cat test-results.log
+
+      - name: Save results to env
+        id: test_report
+        run: echo "SELENIUM_TEST_SUMMARY=$(cat test-results.log)" >> $GITHUB_ENV
 
       # Post the results into a PR comment
       - name: Comment on Pull Request
@@ -63,7 +66,7 @@ jobs:
           body: |
             ### Selenium Test Results
             ```plaintext
-            ${{ cat test-results.log }}
+            ${{ env.SELENIUM_TEST_SUMMARY }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
