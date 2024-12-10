@@ -154,6 +154,7 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
         from webdriver_manager.core.driver_cache import DriverCacheManager
         # init driver
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager(cache_manager=DriverCacheManager(directory)).install()))
+        print(self.driver)
 
 
 class CustomChromeTest(CustomTest, IMISeleniumChromeTest, unittest.TestCase):
