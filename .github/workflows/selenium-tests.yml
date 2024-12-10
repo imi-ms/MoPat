@@ -53,6 +53,7 @@ jobs:
           python3 selenium/selenium_tests.py > test-results.log
 
       - name: Save results to env
+        if: always() && github.event_name == 'pull_request'
         id: test_report
         run: echo "SELENIUM_TEST_SUMMARY=$(cat test-results.log)" >> $GITHUB_ENV
 

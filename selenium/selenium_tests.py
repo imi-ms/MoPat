@@ -143,9 +143,7 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
                                                     "videoName": f"{name}.mp4",
                                                     "logName": f"{name}.log"
                                                     })
-        self.driver = webdriver.Remote(options=options,
-                                       command_executor=self.selenium_grid_url)
-
+        self.driver = webdrive
 
     def _setLocalDriver(self, directory):
         # download latest driver
@@ -154,7 +152,6 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
         from webdriver_manager.core.driver_cache import DriverCacheManager
         # init driver
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager(cache_manager=DriverCacheManager(directory)).install()))
-        print(self.driver)
 
 
 class CustomChromeTest(CustomTest, IMISeleniumChromeTest, unittest.TestCase):
