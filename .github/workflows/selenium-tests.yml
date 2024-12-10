@@ -63,12 +63,7 @@ jobs:
           body: |
             ### Selenium Test Results
             ```plaintext
-            $(cat test-results.log)
+            ${{ cat test-results.log }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Tear down the Docker Compose environment after tests have run
-      - name: Tear down Docker Compose
-        if: always()
-        run: docker-compose down
