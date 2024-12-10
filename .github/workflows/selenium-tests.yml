@@ -31,11 +31,23 @@ jobs:
       - name: Docker Compose Action
         uses: hoverkraft-tech/compose-action@v2.0.2
 
+      # Run Selenoid
+      - name: Run Selenoid
+        run: |
+          docker run -d --name selenoid -p 4444:4444 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v ${PWD}/config/:/etc/selenoid/:ro \
+            aerokube/selenoid:latest-release
+
       # Wait for the server to be ready before running tests
       - name: Wait for the application to be ready
         run: |
           until curl --output /dev/null --silent --head --fail http://localhost:8080; do
             echo 'Waiting for the application to be ready...'
+            sleep 5
+          done
+          until curl --output /dev/null --silent --head --fail http://localhost:4444/status; do
+            echo 'Waiting for Selenoid to be ready...'
             sleep 5
           done
 
