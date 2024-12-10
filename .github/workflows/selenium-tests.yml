@@ -1,0 +1,76 @@
+name: selenium_tests
+
+on: pull_request
+
+jobs:
+  build-and-test:
+    permissions:
+      checks: write
+      pull-requests: write # only required if `comment: true` was enabled
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # Set up Docker Compose
+      - name: Set up Docker Compose
+        run: |
+          docker-compose --version
+
+      # Build and run the Docker containers using docker-compose
+      - name: Build and run Docker Compose
+        run: docker-compose up -d
+        # The '-d' flag ensures the services run in the background
+
+      # Wait for the server to be ready before running tests
+      - name: Wait for the application to be ready
+        run: |
+          until curl --output /dev/null --silent --head --fail http://localhost:8080; do
+            echo 'Waiting for the application to be ready...'
+            sleep 5
+          done
+
+      # Install Chrome and ChromeDriver
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      # Set up Python and run Selenium tests
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13' # Specify the version of Python you are using
+
+      - name: Install dependencies
+        run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
+
+      - name: Run Selenium tests
+        run: |
+          python3 selenium/selenium_tests.py > test-results.log
+          cat test-results.log
+
+      # Post the results into a PR comment
+      - name: Comment on Pull Request
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Selenium Test Results
+            ```plaintext
+            $(cat test-results.log)
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Tear down the Docker Compose environment after tests have run
+      - name: Tear down Docker Compose
+        if: always()
+        run: docker-compose down
