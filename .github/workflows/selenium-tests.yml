@@ -36,7 +36,7 @@ jobs:
         run: |
           docker run -d --name selenoid -p 4444:4444 \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v ${PWD}/config/:/etc/selenoid/:ro \
+            -v ${PWD}/selenium/config/:/etc/selenoid/:ro \
             aerokube/selenoid:latest-release
 
       # Wait for the server to be ready before running tests

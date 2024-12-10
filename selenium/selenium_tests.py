@@ -43,7 +43,7 @@ class IMISeleniumBaseTest(ABC):
         cls.https_base_url = f"http://{url}"
         # secret used in the subclass
         cls.secret = cls._loadSecretFile(cls, "secret")
-        cls.selenium_grid_url = "http://127.0.0.1:4444"
+        cls.selenium_grid_url = "http://127.0.0.1:4444/wd/hub"
 
     def setUp(self) -> None:
         """
