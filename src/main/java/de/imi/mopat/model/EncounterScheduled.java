@@ -87,7 +87,7 @@ public class EncounterScheduled implements Serializable {
     private EncounterScheduledMailStatus mailStatus = EncounterScheduledMailStatus.ACTIVE;
     @OneToMany(mappedBy = "EncounterScheduled", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Encounter> encounters = new HashSet<>();
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "clinic_id", referencedColumnName = "id")
     private Clinic clinic;
 
