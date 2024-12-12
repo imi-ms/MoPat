@@ -446,6 +446,7 @@ public class EncounterController {
                 Encounter encounter = new Encounter();
                 encounter.setEncounterScheduled(encounterScheduled);
                 encounter.setBundle(bundle);
+                encounter.setClinic(encounterScheduled.getClinic());
                 bundle.addEncounter(encounter);
                 encounter.setCaseNumber(encounterScheduled.getCaseNumber());
                 encounter.setStartTime(new Timestamp(today.getTime()));
