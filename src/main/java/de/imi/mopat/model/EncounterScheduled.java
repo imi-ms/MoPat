@@ -87,6 +87,9 @@ public class EncounterScheduled implements Serializable {
     private EncounterScheduledMailStatus mailStatus = EncounterScheduledMailStatus.ACTIVE;
     @OneToMany(mappedBy = "EncounterScheduled", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Encounter> encounters = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "clinic_id", referencedColumnName = "id")
+    private Clinic clinic;
 
     public EncounterScheduled() {
     }
@@ -105,7 +108,7 @@ public class EncounterScheduled implements Serializable {
      * @param personalText                 personalText for the scheduled encounter.
      * @param replyMail                    The replay mail of the scheduled encounter. series.
      */
-    public EncounterScheduled(final String caseNumber, final Bundle bundle, final Date startDate,
+    public EncounterScheduled(final String caseNumber, final Bundle bundle, final Clinic clinic, final Date startDate,
         final EncounterScheduledSerialType encounterScheduledSerialType, final Date endDate,
         final Integer repeatPeriod, final String email, final String locale,
         final String personalText, final String replyMail) {
@@ -119,6 +122,7 @@ public class EncounterScheduled implements Serializable {
         setLocale(locale);
         setPersonalText(personalText);
         setReplyMail(replyMail);
+        setClinic(clinic);
     }
 
     /**
@@ -397,6 +401,24 @@ public class EncounterScheduled implements Serializable {
      */
     public void setReplyMail(final String replyMail) {
         this.replyMail = replyMail;
+    }
+
+    /**
+     * Returns the {@link Clinic} for this {@link EncounterScheduled} object.
+     *
+     * @return The {@link Clinic} for this {@link EncounterScheduled} object.
+     */
+    public Clinic getClinic() {
+        return clinic;
+    }
+
+    /**
+     * Sets the {@link Clinic} for this {@link EncounterScheduled} object.
+     *
+     * @param clinic The new {@link Clinic} for this {@link EncounterScheduled}.
+     */
+    public void setClinic(Clinic clinic) {
+        this.clinic = clinic;
     }
 
     @Override

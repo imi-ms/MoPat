@@ -3,6 +3,7 @@ package de.imi.mopat.controller;
 import de.imi.mopat.cron.EncounterScheduledExecutor;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
@@ -96,6 +97,8 @@ public class EncounterController {
     private EncounterDTOMapper encounterDTOMapper;
     @Autowired
     private ClinicService clinicService;
+    @Autowired
+    private ClinicDao clinicDao;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -372,9 +375,10 @@ public class EncounterController {
 
         EncounterScheduled encounterScheduled = null;
         Bundle bundle = bundleDao.getElementById(encounterScheduledDTO.getBundleDTO().getId());
+        Clinic clinic = clinicDao.getElementById(encounterScheduledDTO.getClinicDTO().getId());
         if (encounterScheduledDTO.getId() == null) {
             encounterScheduled = new EncounterScheduled(encounterScheduledDTO.getCaseNumber(),
-                bundle, encounterScheduledDTO.getStartDate(),
+                bundle, clinic, encounterScheduledDTO.getStartDate(),
                 encounterScheduledDTO.getEncounterScheduledSerialType(),
                 encounterScheduledDTO.getEndDate(), encounterScheduledDTO.getRepeatPeriod(),
                 encounterScheduledDTO.getEmail(), encounterScheduledDTO.getLocale().toString(),
@@ -384,6 +388,7 @@ public class EncounterController {
                 encounterScheduledDTO.getId());
             encounterScheduled.setCaseNumber(encounterScheduledDTO.getCaseNumber());
             encounterScheduled.setBundle(bundle);
+            encounterScheduled.setClinic(clinic);
             encounterScheduled.setEmail(encounterScheduledDTO.getEmail());
             encounterScheduled.setEncounterScheduledSerialType(
                 encounterScheduledDTO.getEncounterScheduledSerialType());
