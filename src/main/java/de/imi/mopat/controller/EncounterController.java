@@ -3,28 +3,34 @@ package de.imi.mopat.controller;
 import de.imi.mopat.cron.EncounterScheduledExecutor;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
+import de.imi.mopat.helper.controller.ClinicService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.dto.BundleDTO;
+import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
+import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
 import java.sql.Timestamp;
@@ -89,6 +95,10 @@ public class EncounterController {
     private EncounterScheduledDTOMapper encounterScheduledDTOMapper;
     @Autowired
     private EncounterDTOMapper encounterDTOMapper;
+    @Autowired
+    private ClinicService clinicService;
+    @Autowired
+    private ClinicDao clinicDao;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -261,6 +271,7 @@ public class EncounterController {
         @RequestParam(value = "pseudonym", required = false) final String pseudonym,
         @RequestParam(value = "email", required = false) final String email, final Model model) {
 
+        addClinicInfoToModel(model,getCurrentUser());
         EncounterScheduledDTO encounterScheduledDTO = new EncounterScheduledDTO();
         if (id != null && id > 0) {
             EncounterScheduled encounterScheduled = encounterScheduledDao.getElementById(id);
@@ -304,8 +315,6 @@ public class EncounterController {
         model.addAttribute("bundleDTOs", bundleDTOs);
         model.addAttribute("encounterScheduledSerialTypeList",
             new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
-        model.addAttribute("pseudonymizationIsActive",
-            configurationDao.isPseudonymizationServiceActivated());
         return "encounter/schedule";
     }
 
@@ -361,16 +370,15 @@ public class EncounterController {
             model.addAttribute("bundleDTOs", bundleDTOs);
             model.addAttribute("encounterScheduledSerialTypeList",
                 new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
-            model.addAttribute("pseudonymizationIsActive",
-                configurationDao.isPseudonymizationServiceActivated());
             return "encounter/schedule";
         }
 
         EncounterScheduled encounterScheduled = null;
         Bundle bundle = bundleDao.getElementById(encounterScheduledDTO.getBundleDTO().getId());
+        Clinic clinic = clinicDao.getElementById(encounterScheduledDTO.getClinicDTO().getId());
         if (encounterScheduledDTO.getId() == null) {
             encounterScheduled = new EncounterScheduled(encounterScheduledDTO.getCaseNumber(),
-                bundle, encounterScheduledDTO.getStartDate(),
+                bundle, clinic, encounterScheduledDTO.getStartDate(),
                 encounterScheduledDTO.getEncounterScheduledSerialType(),
                 encounterScheduledDTO.getEndDate(), encounterScheduledDTO.getRepeatPeriod(),
                 encounterScheduledDTO.getEmail(), encounterScheduledDTO.getLocale().toString(),
@@ -380,6 +388,7 @@ public class EncounterController {
                 encounterScheduledDTO.getId());
             encounterScheduled.setCaseNumber(encounterScheduledDTO.getCaseNumber());
             encounterScheduled.setBundle(bundle);
+            encounterScheduled.setClinic(clinic);
             encounterScheduled.setEmail(encounterScheduledDTO.getEmail());
             encounterScheduled.setEncounterScheduledSerialType(
                 encounterScheduledDTO.getEncounterScheduledSerialType());
@@ -437,6 +446,7 @@ public class EncounterController {
                 Encounter encounter = new Encounter();
                 encounter.setEncounterScheduled(encounterScheduled);
                 encounter.setBundle(bundle);
+                encounter.setClinic(encounterScheduled.getClinic());
                 bundle.addEncounter(encounter);
                 encounter.setCaseNumber(encounterScheduled.getCaseNumber());
                 encounter.setStartTime(new Timestamp(today.getTime()));
@@ -758,5 +768,32 @@ public class EncounterController {
         }
 
         return "redirect:/encounter/list";
+    }
+
+    /**
+     * Adds ClinicDTOS to the model
+     * @param model
+     */
+    private void addClinicInfoToModel(Model model, User user){
+        boolean isAdmin = false;
+        for(Authority authority: user.getAuthority()){
+            if(authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())){
+                isAdmin=true;
+                break;
+            }
+        }
+        if(isAdmin){
+            model.addAttribute("clinicDTOs", clinicService.getAllClinicsWithoutBundle());
+        } else {
+            List<Clinic> assignedClinics = clinicService.getAssignedClinics(user);
+            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false, assignedClinics);
+            model.addAttribute("clinicDTOs", clinicDTOs);
+        }
+
+    }
+
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication()
+            .getPrincipal();
     }
 }

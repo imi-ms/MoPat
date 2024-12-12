@@ -183,5 +183,8 @@ WHERE ccm.clinic_configuration_id = 3;
 ALTER TABLE encounter ADD clinic_id BIGINT NULL;
 ALTER TABLE encounter ADD CONSTRAINT encounter_clinic_FK FOREIGN KEY (clinic_id) REFERENCES moPat.clinic(id);
 
+ALTER TABLE encounter_scheduled ADD clinic_id BIGINT NULL;
+ALTER TABLE encounter_scheduled ADD CONSTRAINT encounter_scheduled_clinic_FK FOREIGN KEY (clinic_id) REFERENCES moPat.clinic(id);
+
 DELETE FROM `configuration` where `id` in (31,32,33,34,35,43,44,45,46);
 DELETE FROM `configuration_group` WHERE `id`=3;

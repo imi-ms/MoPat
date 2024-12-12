@@ -1264,7 +1264,7 @@ public class SurveyController {
         User currentUser = getCurrentUser();
         List<Clinic> assignedClinics = clinicService.getAssignedClinics(currentUser);
 
-        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(assignedClinics);
+        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(true, assignedClinics);
         model.addAttribute("clinicDTOs", clinicDTOs);
 
         if (!clinicDTOs.isEmpty()) {
@@ -1295,7 +1295,7 @@ public class SurveyController {
         User currentUser = getCurrentUser();
         List<Clinic> assignedClinics = clinicService.getAssignedClinics(currentUser);
 
-        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(assignedClinics);
+        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(true, assignedClinics);
         ClinicDTO activeClinicDTO = clinicDTOs.stream().filter(
             clinicDTO -> clinicDTO.getId().equals(clinicId)
         ).findFirst().get();
