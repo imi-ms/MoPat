@@ -7,8 +7,10 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.model.Bundle;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.EncounterScheduledTest;
 import java.util.ArrayList;
@@ -39,6 +41,8 @@ public class EncounterScheduledDaoImplTest {
     EncounterScheduledDao testEncounterScheduledDao;
     @Autowired
     BundleDao bundleDao;
+    @Autowired
+    ClinicDao clinicDao;
 
     /**
      * Test of {@link EncounterScheduledDaoImpl#getAllElements}.<br> Valid input: random number of
@@ -53,6 +57,8 @@ public class EncounterScheduledDaoImplTest {
         for (int i = 0; i < countEncounterScheduled; i++) {
             EncounterScheduled testEncounterScheduled = EncounterScheduledTest.getNewValidEncounterScheduled();
             Bundle testBundle = testEncounterScheduled.getBundle();
+            Clinic testClinic = testEncounterScheduled.getClinic();
+            clinicDao.merge(testClinic);
             bundleDao.merge(testBundle);
             testEncounterScheduledDao.merge(testEncounterScheduled);
             testList.add(testEncounterScheduled);
@@ -101,11 +107,16 @@ public class EncounterScheduledDaoImplTest {
 
         for (EncounterScheduled testEncounterScheduled : inRangeEncounterScheduled) {
             Bundle testBundle = testEncounterScheduled.getBundle();
+            Clinic testClinic = testEncounterScheduled.getClinic();
+            clinicDao.merge(testClinic);
             bundleDao.merge(testBundle);
+
             testEncounterScheduledDao.merge(testEncounterScheduled);
         }
         for (EncounterScheduled testEncounterScheduled : outRangeEncounterScheduled) {
             Bundle testBundle = testEncounterScheduled.getBundle();
+            Clinic testClinic = testEncounterScheduled.getClinic();
+            clinicDao.merge(testClinic);
             bundleDao.merge(testBundle);
             testEncounterScheduledDao.merge(testEncounterScheduled);
         }
@@ -141,11 +152,15 @@ public class EncounterScheduledDaoImplTest {
 
         for (EncounterScheduled testEncounterScheduled : pastEncounterScheduled) {
             Bundle testBundle = testEncounterScheduled.getBundle();
+            Clinic testClinic = testEncounterScheduled.getClinic();
+            clinicDao.merge(testClinic);
             bundleDao.merge(testBundle);
             testEncounterScheduledDao.merge(testEncounterScheduled);
         }
         for (EncounterScheduled testEncounterScheduled : futureEncounterScheduled) {
             Bundle testBundle = testEncounterScheduled.getBundle();
+            Clinic testClinic = testEncounterScheduled.getClinic();
+            clinicDao.merge(testClinic);
             bundleDao.merge(testBundle);
             testEncounterScheduledDao.merge(testEncounterScheduled);
         }
