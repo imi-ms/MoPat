@@ -111,4 +111,11 @@ public interface EncounterDao extends MoPatDao<Encounter> {
      * @return All case numbers from stored {@link Encounter encounters}
      */
     List<String> getAllCaseNumbers();
+
+    /**
+     * Returns all encounters from stored {@link Encounter encounters} for a clinic.
+     *
+     * @return All encounter from stored {@link Encounter encounters} for a clinic
+     */
+    List<Encounter> getEncountersByClinicId(Long clinicId);
 }
