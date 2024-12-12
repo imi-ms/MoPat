@@ -5,6 +5,7 @@ import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
@@ -100,6 +101,8 @@ public class ClinicController {
     private UserService userService;
     @Autowired
     private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
+    @Autowired
+    private EncounterDao encounterDao;
 
     /**
      * @param id The Id of the {@link Clinic} object
@@ -445,7 +448,7 @@ public class ClinicController {
         final Model model) {
         Clinic clinic = clinicDao.getElementById(id);
         if (clinic != null) {
-            if(!clinic.getEncounters().isEmpty()){
+            if(!encounterDao.getEncountersByClinicId(clinic.getId()).isEmpty()){
                 model.addAttribute("messageFail", messageSource.getMessage(
                     "clinic.message.deleteFailure",
                     new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
