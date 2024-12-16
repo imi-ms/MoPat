@@ -38,12 +38,13 @@ class IMISeleniumBaseTest(ABC):
             Used to initialize constants.
         """
         # get filename of calling script (url)
-        url = "127.0.0.1:8080/"
+        url = "webapp-container:8080/"
         cls.base_url = url
         cls.https_base_url = f"http://{url}"
         # secret used in the subclass
         cls.secret = cls._loadSecretFile(cls, "secret")
-        cls.selenium_grid_url = "http://127.0.0.1:4444/wd/hub"
+        cls.selenium_grid_url = f"http://localhost:4444/wd/hub/"
+
 
     def setUp(self) -> None:
         """
@@ -129,12 +130,12 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
         name: str = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{self.base_url}_chrome"
         options = webdriver.ChromeOptions()
         options.set_capability("acceptInsecureCerts", True)
+        options.add_argument("--headless=new")
         options.set_capability("selenoid:options", {
-                                                    "enableVNC": True,
-                                                    "enableVideo": True,
+                                                    "enableVNC": False,
+                                                    "enableVideo": False,
                                                     "enableLog": True,
                                                     "name": name,
-                                                    "videoName": f"{name}.mp4",
                                                     "logName": f"{name}.log"
                                                     })
         self.driver = webdriver.Remote(options=options,
