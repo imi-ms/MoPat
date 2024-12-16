@@ -1,10 +1,10 @@
 {
   "chrome": {
-    "default": "64.0",
+    "default": "latest",
     "versions": {
-      "64.0": {
-        "image": "selenoid/chrome:90.0",
-        "env" : ["LANG=ru_RU.UTF-8", "LANGUAGE=ru:en", "LC_ALL=ru_RU.UTF-8"]
+      "latest": {
+        "image": "selenoid/chrome:latest",
+        "port": "4444"
       }
     }
   }
