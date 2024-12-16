@@ -70,20 +70,30 @@ jobs:
         run: |
           python3 selenium/selenium_tests.py > test-results.log
 
-      - name: Save results to file
+      - name: Save results to env
         if: always() && github.event_name == 'pull_request'
-        run: cat test-results.log > selenium_test_results.txt
+        id: test_report
+        run: echo "SELENIUM_TEST_SUMMARY=$(base64 -w 0 test-results.log)" >> $GITHUB_ENV
 
-      # Post the results into a PR comment
-      - name: Comment on Pull Request
+          # Install GitHub CLI
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
+
+  # Authenticate GitHub CLI
+      - name: Authenticate GitHub CLI
+        env:
+           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo $GH_TOKEN | gh auth login --with-token
+
+      - name: Decode results and comment
         if: always() && github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            \```plaintext
-            $(cat selenium_test_results.txt)
-            \```
+        run: |
+          decoded_results=$(echo "${{ env.SELENIUM_TEST_SUMMARY }}" | base64 --decode)
+          echo "### Selenium Test Results" > comment_body.md
+          echo "\`\`\`plaintext" >> comment_body.md
+          echo "$decoded_results" >> comment_body.md
+          echo "\`\`\`" >> comment_body.md
+
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
