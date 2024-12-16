@@ -11,8 +11,8 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.EncounterScheduledService;
+import de.imi.mopat.helper.model.BundleDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
@@ -57,10 +57,10 @@ public class EncounterScheduledTest {
     private EncounterScheduled testEncounterScheduled;
 
     @Autowired
-    private EncounterScheduledService encounterScheduledService;
+    private EncounterScheduledDTOMapper encounterScheduledDTOMapper;
 
     @Autowired
-    private BundleService bundleService;
+    private BundleDTOMapper bundleDTOMapper;
 
     public EncounterScheduledTest() {
     }
@@ -81,6 +81,7 @@ public class EncounterScheduledTest {
     public static EncounterScheduled getNewValidEncounterScheduled() {
         String caseNumber = Helper.getRandomAlphanumericString(random.nextInt(255) + 1);
         Bundle bundle = BundleTest.getNewValidBundle();
+        Clinic clinic = ClinicTest.getNewValidClinic();
         Date startDate = new Date(System.currentTimeMillis());
         EncounterScheduledSerialType encounterScheduledSerialType = Helper.getRandomEnum(
             EncounterScheduledSerialType.class);
@@ -91,7 +92,7 @@ public class EncounterScheduledTest {
         String personalText = Helper.getRandomString(random.nextInt(500));
         String replyMail = Helper.getRandomMailAddress();
 
-        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle,
+        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle, clinic,
             startDate, encounterScheduledSerialType, endDate, repeatPeriod, email, locale,
             personalText, replyMail);
         return encounterScheduled;
@@ -106,6 +107,7 @@ public class EncounterScheduledTest {
     public static EncounterScheduled getNewValidEncounterScheduledWithDate(Date date) {
         String caseNumber = Helper.getRandomAlphanumericString(random.nextInt(255) + 1);
         Bundle bundle = BundleTest.getNewValidBundle();
+        Clinic clinic = ClinicTest.getNewValidClinic();
         EncounterScheduledSerialType encounterScheduledSerialType = Helper.getRandomEnum(
             EncounterScheduledSerialType.class);
         Date startDate;
@@ -122,7 +124,7 @@ public class EncounterScheduledTest {
         String personalText = Helper.getRandomString(random.nextInt(500));
         String replyMail = Helper.getRandomMailAddress();
 
-        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle,
+        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle, clinic,
             startDate, encounterScheduledSerialType, endDate, repeatPeriod, email, locale,
             personalText, replyMail);
         return encounterScheduled;
@@ -137,6 +139,7 @@ public class EncounterScheduledTest {
     public static EncounterScheduled getNewValidEncounterScheduledWithEndDate(Date date) {
         String caseNumber = Helper.getRandomAlphanumericString(random.nextInt(255) + 1);
         Bundle bundle = BundleTest.getNewValidBundle();
+        Clinic clinic = ClinicTest.getNewValidClinic();
         EncounterScheduledSerialType encounterScheduledSerialType = Helper.getRandomEnum(
             EncounterScheduledSerialType.class);
         Date startDate;
@@ -153,7 +156,7 @@ public class EncounterScheduledTest {
         String personalText = Helper.getRandomString(random.nextInt(500));
         String replyMail = Helper.getRandomMailAddress();
 
-        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle,
+        EncounterScheduled encounterScheduled = new EncounterScheduled(caseNumber, bundle, clinic,
             startDate, encounterScheduledSerialType, endDate, repeatPeriod, email, locale,
             personalText, replyMail);
         return encounterScheduled;
@@ -169,8 +172,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getLocale} and {@link EncounterScheduled#setLocale}.<br>
-     * Valid input: random locale String
+     * Test of {@link EncounterScheduled#getLocale} and {@link EncounterScheduled#setLocale}.<br> Valid input: random
+     * locale String
      */
     @Test
     public void testGetAndSetLocale() {
@@ -181,8 +184,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getPersonalText} and
-     * {@link EncounterScheduled#setPersonalText}.<br> Valid input: random String
+     * Test of {@link EncounterScheduled#getPersonalText} and {@link EncounterScheduled#setPersonalText}.<br> Valid
+     * input: random String
      */
     @Test
     public void testGetAndSetPersonalText() {
@@ -193,9 +196,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getCaseNumber} and
-     * {@link EncounterScheduled#setCaseNumber}.<br> Invalid input: <code>null</code><br> Valid
-     * input: random String
+     * Test of {@link EncounterScheduled#getCaseNumber} and {@link EncounterScheduled#setCaseNumber}.<br> Invalid input:
+     * <code>null</code><br> Valid input: random String
      */
     @Test
     public void testGetAndSetCaseNumber() {
@@ -225,8 +227,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getEmail} and {@link EncounterScheduled#setEmail}.<br>
-     * Invalid input: <code>null</code><br> Valid input: random mail address
+     * Test of {@link EncounterScheduled#getEmail} and {@link EncounterScheduled#setEmail}.<br> Invalid input:
+     * <code>null</code><br> Valid input: random mail address
      */
     @Test
     public void testGetAndSetEmail() {
@@ -246,8 +248,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getBundle} and {@link EncounterScheduled#setBundle}.<br>
-     * Invalid input: <code>null</code><br> Valid input: random {@link Bundle}
+     * Test of {@link EncounterScheduled#getBundle} and {@link EncounterScheduled#setBundle}.<br> Invalid input:
+     * <code>null</code><br> Valid input: random {@link Bundle}
      */
     @Test
     public void testGetAndSetBundle() {
@@ -267,8 +269,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getStartDate} and
-     * {@link EncounterScheduled#setStartDate}.<br> Valid input: random Date
+     * Test of {@link EncounterScheduled#getStartDate} and {@link EncounterScheduled#setStartDate}.<br> Valid input:
+     * random Date
      */
     @Test
     public void testGetAndSetStartDate() {
@@ -279,8 +281,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getEndDate} and {@link EncounterScheduled#setEndDate}.<br>
-     * Valid input: random Date
+     * Test of {@link EncounterScheduled#getEndDate} and {@link EncounterScheduled#setEndDate}.<br> Valid input: random
+     * Date
      */
     @Test
     public void testGetAndSetEndDate() {
@@ -291,8 +293,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getRepeatPeriod} and
-     * {@link EncounterScheduled#setRepeatPeriod}.<br> Valid input: random Integer
+     * Test of {@link EncounterScheduled#getRepeatPeriod} and {@link EncounterScheduled#setRepeatPeriod}.<br> Valid
+     * input: random Integer
      */
     @Test
     public void testGetAndSetRepeatPeriod() {
@@ -326,9 +328,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getEncounters} and
-     * {@link EncounterScheduled#setEncounters}.<br> Valid input: random number of
-     * {@link Encounter Encounters}
+     * Test of {@link EncounterScheduled#getEncounters} and {@link EncounterScheduled#setEncounters}.<br> Valid input:
+     * random number of {@link Encounter Encounters}
      */
     @Test
     public void testGetAndSetEncounters() {
@@ -343,8 +344,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#addEncounter}.<br> Invalid input: <code>null</code><br>
-     * Valid input: random number of {@link Encounter Encounters}
+     * Test of {@link EncounterScheduled#addEncounter}.<br> Invalid input: <code>null</code><br> Valid input: random
+     * number of {@link Encounter Encounters}
      */
     @Test
     public void testAddEncounter() {
@@ -378,9 +379,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getMailStatus} and
-     * {@link EncounterScheduled#sSetMailStatus}.<br> Valid input: random
-     * {@link EncounterScheduledMailStatus}
+     * Test of {@link EncounterScheduled#getMailStatus} and {@link EncounterScheduled#setMailStatus}.<br> Valid input:
+     * random {@link EncounterScheduledMailStatus}
      */
     @Test
     public void testGetAndSetMailStatus() {
@@ -392,8 +392,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#getReplyMail} and
-     * {@link EncounterScheduled#setReplyMail}.<br> Valid input: random mail address
+     * Test of {@link EncounterScheduled#getReplyMail} and {@link EncounterScheduled#setReplyMail}.<br> Valid input:
+     * random mail address
      */
     @Test
     public void testGetAndSetReplyMail() {
@@ -404,8 +404,8 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#equals}.<br> Invalid input: the same
-     * {@link EncounterScheduled} twice in a HashSet
+     * Test of {@link EncounterScheduled#equals}.<br> Invalid input: the same {@link EncounterScheduled} twice in a
+     * HashSet
      */
     @Test
     public void testEquals() {
@@ -427,7 +427,7 @@ public class EncounterScheduledTest {
     }
 
     /**
-     * Test of {@link EncounterScheduled#toEncounterScheduledDTO}.<br> Valid input: random
+     * Test of {@link EncounterScheduledDTOMapper#apply(EncounterScheduled)}.<br> Valid input: random
      * {@link EncounterScheduled} with random number of {@link Encounter Encounters}
      */
     @Test
@@ -452,7 +452,7 @@ public class EncounterScheduledTest {
             testEncounterScheduled.addEncounter(spyEncounter);
         }
 
-        EncounterScheduledDTO testEncounterScheduledDTO = encounterScheduledService.toEncounterScheduledDTO(
+        EncounterScheduledDTO testEncounterScheduledDTO = encounterScheduledDTOMapper.apply(
             spyEncounterScheduled);
 
         assertEquals("The getting startDate was not the expected one",
@@ -479,13 +479,12 @@ public class EncounterScheduledTest {
             spyEncounterScheduled.getEncounters().size(),
             testEncounterScheduledDTO.getEncounterDTOs().size());
         assertEquals("The getting  was not the expected one",
-            bundleService.toBundleDTO(true, spyEncounterScheduled.getBundle()),
+            bundleDTOMapper.apply(true, spyEncounterScheduled.getBundle()),
             testEncounterScheduledDTO.getBundleDTO());
     }
 
     /**
-     * Test of {@link EncounterScheduled#sendReactivationMail}.<br> Invalid input: <br> Valid
-     * input:
+     * Test of {@link EncounterScheduled#sendReactivationMail}.<br> Invalid input: <br> Valid input:
      */
     @Test
     public void testSendReactivationMail() {

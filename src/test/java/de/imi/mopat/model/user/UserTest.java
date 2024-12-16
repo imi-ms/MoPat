@@ -3,9 +3,11 @@ package de.imi.mopat.model.user;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
+import de.imi.mopat.helper.model.UserDTOMapper;
 import de.imi.mopat.model.dto.UserDTO;
 import de.imi.mopat.utils.Helper;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -31,6 +34,9 @@ public class UserTest {
 
     private static final Random random = new Random();
     private User testUser;
+    
+
+    private UserDTOMapper userDTOMapper;
 
     public UserTest() {
     }
@@ -57,6 +63,7 @@ public class UserTest {
     @Before
     public void setUp() {
         testUser = getNewValidUser();
+        userDTOMapper = new UserDTOMapper();
     }
 
     @After
@@ -64,7 +71,7 @@ public class UserTest {
     }
 
     /**
-     * Test of {@link User#toUserDTO}.<br> Valid input: {@link User} with random username, password,
+     * Test of {@link UserDTOMapper#apply(User)}.<br> Valid input: {@link User} with random username, password,
      * firstname, lastname, email and mocked id
      */
     @Test
@@ -73,7 +80,7 @@ public class UserTest {
         testUser.setLastname(Helper.getRandomAlphabeticString(random.nextInt(15) + 3));
         testUser.setEmail(Helper.getRandomMailAddress());
 
-        UserDTO testUserDTO = testUser.toUserDTO();
+        UserDTO testUserDTO = userDTOMapper.apply(testUser);
         assertEquals("The getting Id was not the expected one", testUser.getId(),
             testUserDTO.getId());
         assertEquals("The getting Username was not the expected one", testUser.getUsername(),
@@ -369,6 +376,32 @@ public class UserTest {
     @Test
     public void testIsCredentialsNonExpired() {
         assertTrue("isCredentialsNonExpired was not true", testUser.isCredentialsNonExpired());
+    }
+
+    @Test
+    public void testGetAndSetPin() {
+        String testPin = null;
+        testUser.setPin(testPin);
+
+        assertNull("It was not possible to set null as the pin", testUser.getPin());
+
+        int number = random.nextInt(999999);
+
+        testPin = String.format("%06d", number);
+        testUser.setPin(testPin);
+        assertEquals("The getting Password was not the expected one", testPin,
+            testUser.getPin());
+    }
+
+    @Test
+    public void testAndGetPinFlag() {
+        testUser.setUsePin(false);
+
+        assertFalse("The pin was not false", testUser.getUsePin());
+
+        testUser.setUsePin(true);
+
+        assertTrue("The pin was not true", testUser.getUsePin());
     }
 
     /**

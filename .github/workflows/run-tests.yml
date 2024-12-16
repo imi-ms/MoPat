@@ -1,0 +1,62 @@
+name: test
+
+on: pull_request
+
+jobs:
+  test:
+    permissions:
+      checks: write
+      pull-requests: write # only required if `comment: true` was enabled
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh 
+          --connect 
+          --innodb_initialized" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install MySQL client and Load Database Schema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+          mysql -h 127.0.0.1 -u root --password=root -e "CREATE USER IF NOT EXISTS 'mopat'@'%' IDENTIFIED BY 'mopat';"
+          mysql -h 127.0.0.1 -u root --password=root -e "GRANT ALL PRIVILEGES ON *.* TO 'mopat'@'%'; FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -u root --password=root < db/installationInitTest.sql
+
+      - name: Test with Maven
+        run: mvn -B test --file pom.xml
+
+      - name: Publish Test Report
+        id: testReport
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/target/surefire-reports/*.xml'
+
+      - name: Post PR comment with Test Results
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Test Results:
+            ${{ steps.testReport.outputs.summary }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

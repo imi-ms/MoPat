@@ -8,7 +8,7 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
-import de.imi.mopat.helper.controller.EncounterScheduledService;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.model.EncounterScheduledTest;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
@@ -49,7 +49,7 @@ public class EncounterScheduledDTOValidatorTest {
     @Autowired
     MessageSource messageSource;
     @Autowired
-    private EncounterScheduledService encounterScheduledService;
+    private EncounterScheduledDTOMapper encounterScheduledDTOMapper;
 
     /**
      * Test of {@link EncounterScheduledDTOValidator#supports(java.lang.Class)}<br> Valid input:
@@ -92,7 +92,7 @@ public class EncounterScheduledDTOValidatorTest {
         BindingResult result = new MapBindingResult(new HashMap<>(),
             Helper.getRandomAlphabeticString(random.nextInt(13)));
 
-        EncounterScheduledDTO encounterScheduledDTO = encounterScheduledService.toEncounterScheduledDTO(
+        EncounterScheduledDTO encounterScheduledDTO = encounterScheduledDTOMapper.apply(
             EncounterScheduledTest.getNewValidEncounterScheduled());
         BundleDTO spyBundleDTO = Mockito.spy(encounterScheduledDTO.getBundleDTO());
         Mockito.when(spyBundleDTO.getId()).thenReturn(Math.abs(random.nextLong()));

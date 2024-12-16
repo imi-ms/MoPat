@@ -19,6 +19,8 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      */
     Configuration getConfigurationByAttributeAndClass(String attribute, String clazz);
 
+    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
+        final String clazz, final String groupName);
     /**
      * Returns the base url of the application.
      *
@@ -116,32 +118,6 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
     String getMetadataExporterPDF();
 
     /**
-     * Returns true if registryOfPatient is activated and false otherwise. Get this boolean from the
-     * {@link ConfigurationDao} by using the name of this class and the appropriate attribute name.
-     *
-     * @return The configured registryOfPatient boolean.
-     */
-    Boolean isRegistryOfPatientActivated();
-
-    /**
-     * Returns true if UsePatientDataLookup toggle is activated and false otherwise. Get this
-     * boolean from the {@link ConfigurationDao} by using the name of this class and the appropriate
-     * attribute name.
-     *
-     * @return The configured usePatientDataLookup boolean.
-     */
-    Boolean isUsePatientDataLookupActivated();
-
-    /**
-     * Returns true if PseudonymizationService is activated and false otherwise. Get this boolean
-     * from the {@link ConfigurationDao} by using the name of this class and the appropriate
-     * attribute name.
-     *
-     * @return The configured pseudonymizationService boolean.
-     */
-    Boolean isPseudonymizationServiceActivated();
-
-    /**
      * Returns the time window after incomplete encounterScheduleds should be deleted in millis from
      * the {@link ConfigurationDao} by using the name of this class and the appropriate attribute
      * name.
@@ -165,19 +141,25 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      *
      * @return The path, where images are saved.
      */
-    public String getImageUploadPath();
+    String getImageUploadPath();
 
     /**
      * Returns the system url.
      *
      * @return system url for fhir export.
      */
-    public String getFHIRsystemURI();
+    String getFHIRsystemURI();
 
     /**
      * Returns the deployed webapp ROOT path
      *
      * @return deployed webapp ROOT path.
      */
-    public String getWebappRootPath();
+    String getWebappRootPath();
+
+    /**
+     * Returns the flag, whether Pin Auth should be enabled
+     * @return true, if pin auth is enabled, false otherwise
+     */
+    Boolean isGlobalPinAuthEnabled();
 }

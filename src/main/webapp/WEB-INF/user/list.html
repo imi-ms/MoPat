@@ -6,10 +6,39 @@
 	th:with="title=${messages.get(#locale, 'user.heading.userList', 'All users')}"
 >
 	<th:block layout:fragment="content">
+		<div
+			id="loadingContainer"
+			class="d-flex flex-column align-items-center justify-content-center vh-50"
+		>
+			<div
+				class="spinner-border"
+				id="loadingSpinner"
+				role="status"
+			>
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+
+        <div th:if="${#bools.isTrue(userDeleteError)}">
+            <div class="alert alert-danger">
+                <th:block
+                        th:text="${
+						messages.get(
+							#locale,
+							'user.list.userDeleteError',
+							'You tried to deactivate your own account. This is not allowed.
+							If you want to deactivate this account,
+							please log in to another admin account and try again.'
+						)}"
+                ></th:block>
+            </div>
+        </div>
+
 		<div class="table-responsive">
 			<table
-				class="table table-hover pagedTable responsive"
-				style="width: 100%"
+				class="table table-hover responsive"
+				id="userTable"
+				style="width: 100%; display:none"
 			>
 				<thead>
 					<tr>
@@ -125,11 +154,11 @@
 										</th:block>
 										<a
 											class="link"
-											th:href="|clinicrights?id=${item.id}|"
+											th:href="|rights?id=${item.id}|"
 										>
 											<i
 												class="bi-list-task"
-												th:title="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+												th:title="${messages.get(#locale, 'user.button.rights', 'Edit user rights')}"
 											>
 											</i>
 										</a>
@@ -165,8 +194,8 @@
 												</a>
 												<a
 													class="dropdown-item link"
-													th:href="|clinicrights?id=${item.id}|"
-													th:text="${messages.get(#locale, 'user.button.clinicRights', 'Edit clinic rights')}"
+													th:href="|rights?id=${item.id}|"
+													th:text="${messages.get(#locale, 'user.button.rights', 'Edit user rights')}"
 												></a>
 											</th:block>
 										</th:block>
@@ -188,4 +217,25 @@
 			</a>
 		</div>
 	</th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+
+		$(document).ready(function() {
+			$('#userTable').DataTable({
+				"deferRender": true,
+				"paging": true,
+				"ordering": false,
+				"initComplete": function(settings, json) {
+					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
+					$('#loadingContainer').addClass("d-none")
+					$('#userTable').fadeIn(); // Show the table
+				}
+			});
+		});
+	</script>
 </th:block>

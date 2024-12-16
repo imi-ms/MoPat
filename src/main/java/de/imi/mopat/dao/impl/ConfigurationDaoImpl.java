@@ -3,6 +3,7 @@ package de.imi.mopat.dao.impl;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.model.ClinicConfigurationGroupMapping;
 import de.imi.mopat.model.Configuration;
 
 import java.io.IOException;
@@ -29,6 +30,48 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
             return query.getSingleResult();
         } catch (NoResultException e) {
             return null;
+        }
+    }
+
+
+    @Override
+    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
+        final String clazz, final String groupName) {
+        try {
+            String mappingIdJpql = "SELECT ccm.id FROM ClinicConfigurationMapping ccm " +
+                "JOIN ccm.clinic c " +
+                "JOIN ccm.clinicConfiguration cc " +
+                "WHERE c.id = :clinicId " +
+                "AND cc.mappedConfigurationGroup = :mappedGroupName";
+
+            TypedQuery<Long> mappingIdQuery = moPatEntityManager.createQuery(mappingIdJpql, Long.class);
+            mappingIdQuery.setParameter("clinicId", clinicId);
+            mappingIdQuery.setParameter("mappedGroupName", groupName);
+
+            Long clinicConfigurationMappingId = mappingIdQuery.getSingleResult();
+
+            String groupIdJpql = "SELECT ccgm FROM ClinicConfigurationGroupMapping ccgm " +
+                "WHERE ccgm.clinicConfigurationMapping.id = :mappingId";
+
+            TypedQuery<ClinicConfigurationGroupMapping> groupIdQuery = moPatEntityManager.createQuery(groupIdJpql, ClinicConfigurationGroupMapping.class);
+            groupIdQuery.setParameter("mappingId", clinicConfigurationMappingId);
+
+            ClinicConfigurationGroupMapping clinicConfigurationGroupMapping = groupIdQuery.getSingleResult();
+            Long configurationGroupId = clinicConfigurationGroupMapping.getConfigurationGroup().getId();
+
+            String configurationsJpql = "SELECT conf FROM Configuration conf " +
+                "WHERE conf.configurationGroup.id = :groupId " +
+                "AND conf.attribute = :attribute " +
+                "AND conf.entityClass = :clazz";
+
+            TypedQuery<Configuration> configurationsQuery = moPatEntityManager.createQuery(configurationsJpql, Configuration.class);
+            configurationsQuery.setParameter("groupId", configurationGroupId);
+            configurationsQuery.setParameter("attribute", attribute);
+            configurationsQuery.setParameter("clazz", clazz);
+
+            return configurationsQuery.getSingleResult();
+        } catch (NoResultException e) {
+            return null; // Return an empty list if no results are found
         }
     }
 
@@ -152,6 +195,13 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
     }
 
     @Override
+    public Boolean isGlobalPinAuthEnabled() {
+        Configuration configuration = getConfigurationByAttributeAndClass(
+            Constants.ENABLE_GLOBAL_PIN_AUTH, Constants.CLASS_GLOBAL);
+        return Boolean.valueOf(configuration.getValue());
+    }
+
+    @Override
     public Long getIncompleteEncounterScheduledTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
             Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
@@ -177,26 +227,5 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
         Configuration configuration = getConfigurationByAttributeAndClass(
             Constants.METADATA_EXPORTER_PDF, Constants.CLASS_GLOBAL);
         return configuration.getValue();
-    }
-
-    @Override
-    public Boolean isRegistryOfPatientActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.REGISTER_PATIENT_DATA, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
-    }
-
-    @Override
-    public Boolean isUsePatientDataLookupActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.USE_PATIENT_DATA_LOOKUP, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
-    }
-
-    @Override
-    public Boolean isPseudonymizationServiceActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.USE_PSEUDONYMIZATION_SERVICE, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
     }
 }

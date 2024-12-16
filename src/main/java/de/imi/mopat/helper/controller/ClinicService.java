@@ -1,13 +1,16 @@
 package de.imi.mopat.helper.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.model.BundleClinic;
+import de.imi.mopat.dao.user.AclEntryDao;
+import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.Clinic;
-import de.imi.mopat.model.Question;
-import de.imi.mopat.model.dto.BundleClinicDTO;
 import de.imi.mopat.model.dto.ClinicDTO;
-import java.util.ArrayList;
+import de.imi.mopat.model.enumeration.PermissionType;
+import de.imi.mopat.model.user.User;
 import java.util.List;
+
+import java.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,33 +18,54 @@ import org.springframework.stereotype.Service;
 public class ClinicService {
 
     private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(Question.class);
+        org.slf4j.LoggerFactory.getLogger(ClinicService.class);
 
     @Autowired
-    private BundleClinicService bundleClinicService;
+    ClinicDTOMapper clinicDTOMapper;
+    @Autowired
+    private ClinicDao clinicDao;
+    @Autowired
+    private AclEntryDao aclEntryDao;
 
-    /*
-     * Converts this {@link Clinic} object to an {@link ClinicDTO} object.
-     *
-     * @return An {@link ClinicDTO} object based on this {@link Clinic}
-     * object.
-     */
-    @JsonIgnore
-    public ClinicDTO toClinicDTO(Clinic clinic) {
-        ClinicDTO clinicDTO = new ClinicDTO();
-        clinicDTO.setId(clinic.getId());
-        clinicDTO.setDescription(clinic.getDescription());
-        clinicDTO.setName(clinic.getName());
-        clinicDTO.setEmail(clinic.getEmail());
+    @Autowired
+    private ClinicConfigurationMappingService clinicConfigurationMappingService;
 
-        List<BundleClinicDTO> bundleClinicDTOs = new ArrayList<>();
-        for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
-            bundleClinicDTOs.add(bundleClinicService.toBundleClinicDTO(clinicDTO,bundleClinic));
+    public List<ClinicDTO> getAllClinicsWithoutBundle() {
+        return clinicDao.getAllElements().stream()
+            .map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic))
+            .toList();
+    }
+    
+    public ClinicDTO getClinicDTOById(Long id) {
+        return clinicDTOMapper.apply(
+            clinicDao.getElementById(id)
+        );
+    }
+    
+    public List<Clinic> getAssignedClinics(User user) {
+        return new ArrayList<>(clinicDao.getElementsById(
+            aclEntryDao.getObjectIdsForClassUserAndRight(
+                Clinic.class, user, PermissionType.READ
+            )
+        ));
+    }
+    
+    public List<ClinicDTO> transformClinicsToDTOs(Boolean fullVersion, List<Clinic> clinics) {
+        if(fullVersion){
+            return clinics.stream().map(clinic -> clinicDTOMapper.apply(clinic)).toList();
         }
-        clinicDTO.setBundleClinicDTOs(bundleClinicDTOs);
-
-        return clinicDTO;
+        return clinics.stream().map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic)).toList();
+    }
+    
+    public Clinic getClinicByIdFromList(List<Clinic> clinics, Long id) {
+        try {
+            return clinics.stream().filter(clinic -> clinic.getId().equals(id)).findFirst().get();
+        } catch(NoSuchElementException e) {
+            return null;
+        }
     }
 
-
+    public void merge(Clinic clinic) {
+        clinicDao.merge(clinic);
+    }
 }

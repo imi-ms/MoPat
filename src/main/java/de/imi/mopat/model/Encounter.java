@@ -97,6 +97,9 @@ public class Encounter implements Serializable {
     private List<Long> activeQuestionnaires = new ArrayList<>();
     @Column(name = "last_reminder_date")
     private Timestamp lastReminderDate;
+    @ManyToOne
+    @JoinColumn(name = "clinic_id", referencedColumnName = "id")
+    private Clinic clinic;
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationMailer.class);
 
@@ -537,6 +540,25 @@ public class Encounter implements Serializable {
         }
         this.encounterScheduled = encounterScheduled;
     }
+
+    /**
+     * Returns the {@link Clinic} for this {@link Encounter} object.
+     *
+     * @return The {@link Clinic} for this {@link Encounter} object.
+     */
+    public Clinic getClinic() {
+        return clinic;
+    }
+
+    /**
+     * Sets the {@link Clinic} for this {@link Encounter} object.
+     *
+     * @param clinic The new {@link Clinic} for this {@link Encounter}.
+     */
+    public void setClinic(Clinic clinic) {
+        this.clinic = clinic;
+    }
+
 
     /**
      * Return the number of currently assigned and successfully exported export templates. If there

@@ -84,4 +84,12 @@ public class Helper {
         int x = random.nextInt(enumClass.getEnumConstants().length);
         return enumClass.getEnumConstants()[x];
     }
+
+    public static Long generatePositiveNonZeroLong() {
+        long id;
+        do {
+            id = random.nextLong() & Long.MAX_VALUE;
+        } while (id == 0);
+        return id;
+    }
 }

@@ -5,6 +5,8 @@ import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  *
  */
@@ -23,4 +25,6 @@ public interface BundleQuestionnaireDao extends MoPatDao<BundleQuestionnaire> {
      * and {@link Questionnaire}.
      */
     BundleQuestionnaire getBundleQuestionnaire(Bundle bundle, Questionnaire questionnaire);
+
+    List<BundleQuestionnaire> findByQuestionnaire(Long questionnaireId);
 }
