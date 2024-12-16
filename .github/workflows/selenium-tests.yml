@@ -70,10 +70,9 @@ jobs:
         run: |
           python3 selenium/selenium_tests.py > test-results.log
 
-      - name: Save results to env
+      - name: Save results to file
         if: always() && github.event_name == 'pull_request'
-        id: test_report
-        run: echo "SELENIUM_TEST_SUMMARY=$(base64 -w 0 test-results.log)" >> $GITHUB_ENV
+        run: cat test-results.log > selenium_test_results.txt
 
       # Post the results into a PR comment
       - name: Comment on Pull Request
@@ -85,7 +84,7 @@ jobs:
           body: |
             ### Selenium Test Results
             ```plaintext
-            ${{ env.SELENIUM_TEST_SUMMARY | fromBase64 }}
+            $(cat selenium_test_results.txt)
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
