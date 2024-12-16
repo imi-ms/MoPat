@@ -5,6 +5,7 @@ import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
@@ -100,6 +101,8 @@ public class ClinicController {
     private UserService userService;
     @Autowired
     private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
+    @Autowired
+    private EncounterDao encounterDao;
 
     /**
      * @param id The Id of the {@link Clinic} object
@@ -444,29 +447,34 @@ public class ClinicController {
     public String removeClinic(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
         Clinic clinic = clinicDao.getElementById(id);
-
         if (clinic != null) {
-            // Revoke all permissions for all users to this clinic
-            // and the inherited bundles, Key = User, Value = Permission
-            for (Map.Entry<User, PermissionType> entry : aclEntryDao.getUserRightsByObject(clinic)
-                .entrySet()) {
-                clinicDao.revokeRight(clinic, entry.getKey(), entry.getValue(), Boolean.TRUE);
-            }
-            // Delete connection to the bundles
-            for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
-                Bundle bundle = bundleClinic.getBundle();
-                bundle.removeBundleClinic(bundleClinic);
-                bundleDao.merge(bundle);
-            }
-            clinic.removeAllBundleClinics();
-            // Delete the corresponding ACL object for the removed clinic
-            aclObjectIdentityDao.remove(aclObjectIdentityDao.getElementByClassAndObjectId(
-                aclClassDao.getElementByClass(Clinic.class.getName()), id));
-            // Delete the clinic
-            clinicDao.remove(clinic);
-            model.addAttribute("messageSuccess",
-                messageSource.getMessage("clinic.message.deleteSuccess",
+            if(!encounterDao.getEncountersByClinicId(clinic.getId()).isEmpty()){
+                model.addAttribute("messageFail", messageSource.getMessage(
+                    "clinic.message.deleteFailure",
                     new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
+            } else {
+                // Revoke all permissions for all users to this clinic
+                // and the inherited bundles, Key = User, Value = Permission
+                for (Map.Entry<User, PermissionType> entry : aclEntryDao.getUserRightsByObject(clinic)
+                    .entrySet()) {
+                    clinicDao.revokeRight(clinic, entry.getKey(), entry.getValue(), Boolean.TRUE);
+                }
+                // Delete connection to the bundles
+                for (BundleClinic bundleClinic : clinic.getBundleClinics()) {
+                    Bundle bundle = bundleClinic.getBundle();
+                    bundle.removeBundleClinic(bundleClinic);
+                    bundleDao.merge(bundle);
+                }
+                clinic.removeAllBundleClinics();
+                // Delete the corresponding ACL object for the removed clinic
+                aclObjectIdentityDao.remove(aclObjectIdentityDao.getElementByClassAndObjectId(
+                    aclClassDao.getElementByClass(Clinic.class.getName()), id));
+                // Delete the clinic
+                clinicDao.remove(clinic);
+                model.addAttribute("messageSuccess",
+                    messageSource.getMessage("clinic.message.deleteSuccess",
+                        new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));
+            }
         }
         return showClinics(model);
     }
@@ -543,7 +551,8 @@ public class ClinicController {
     }
 
     private List<ClinicConfigurationMapping> createNewClinicConfigurationMappings(
-        Clinic clinic, ClinicConfiguration clinicConfiguration, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+        Clinic clinic, ClinicConfiguration clinicConfiguration,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         List<ClinicConfigurationMapping> clinicConfigurationMappingList = new ArrayList<>();
         ClinicConfigurationMapping clinicConfigurationMapping =
             new ClinicConfigurationMapping(clinic, clinicConfiguration, clinicConfigurationMappingDTO.getValue());
@@ -568,7 +577,8 @@ public class ClinicController {
 
 
     private List<ClinicConfigurationMapping> updateExistingClinicConfigurationMappings(
-        Clinic clinic, ClinicConfiguration clinicConfiguration,ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+        Clinic clinic, ClinicConfiguration clinicConfiguration,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
 
         List<ClinicConfigurationMapping> clinicConfigurationMappingList = new ArrayList<>();
         ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getElementById(
@@ -578,8 +588,8 @@ public class ClinicController {
 
         if (clinicConfiguration.getMappedConfigurationGroup() != null
             && clinicConfigurationMappingDTO.getValue().equals("true")) {
-            clinicConfigurationMapping.setClinicConfigurationGroupMappings(
-                updateClinicConfigurationGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO));
+
+            updateClinicConfigurationGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO);
         }
 
         clinicConfigurationMappingList.add(clinicConfigurationMapping);
@@ -592,27 +602,25 @@ public class ClinicController {
     }
 
 
-    private List<ClinicConfigurationGroupMapping> updateClinicConfigurationGroupMapping(
-        ClinicConfigurationMapping clinicConfigurationMapping, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+    private void updateClinicConfigurationGroupMapping(
+        ClinicConfigurationMapping clinicConfigurationMapping,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
 
         if (!clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
-            clinicConfigurationMapping.setClinicConfigurationGroupMappings(
-                updateExistingGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO));
+            updateExistingGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO);
         } else {
             clinicConfigurationGroupMappings.add(
                 new ClinicConfigurationGroupMapping(clinicConfigurationMapping,
                     configurationGroupDao.getConfigurationGroupByName(
                         clinicConfigurationMappingDTO.getMappedConfigurationGroup())));
-
+            clinicConfigurationMapping.setClinicConfigurationGroupMappings(clinicConfigurationGroupMappings);
         }
-
-        return clinicConfigurationGroupMappings;
     }
 
-    private List<ClinicConfigurationGroupMapping> updateExistingGroupMapping(
-        ClinicConfigurationMapping clinicConfigurationMapping, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
-        List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
+    private void updateExistingGroupMapping(
+        ClinicConfigurationMapping clinicConfigurationMapping,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         ClinicConfigurationGroupMapping clinicConfigurationGroupMapping
             = clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0);
 
@@ -622,9 +630,6 @@ public class ClinicController {
             clinicConfigurationGroupMapping.setConfigurationGroup(
                 configurationGroupDao.getConfigurationGroupByName(
                     clinicConfigurationMappingDTO.getMappedConfigurationGroup()));
-            clinicConfigurationGroupMappings.add(clinicConfigurationGroupMapping);
         }
-
-        return clinicConfigurationGroupMappings;
     }
 }

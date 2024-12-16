@@ -144,6 +144,15 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     }
 
     @Override
+    public List<Encounter> getEncountersByClinicId(Long clinicId){
+        TypedQuery<Encounter> query = moPatEntityManager.createQuery(
+            "SELECT e FROM Encounter e WHERE e.clinic.id=" + clinicId,
+            Encounter.class);
+
+        return query.getResultList();
+    }
+
+    @Override
     public Long getEncounterCountByBundleInInterval(final Long bundleId, final Date startDate,
         Date endDate) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
