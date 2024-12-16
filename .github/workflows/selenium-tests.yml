@@ -73,7 +73,7 @@ jobs:
       - name: Save results to env
         if: always() && github.event_name == 'pull_request'
         id: test_report
-        run: echo "SELENIUM_TEST_SUMMARY=$(cat test-results.log)" >> $GITHUB_ENV
+        run: echo "SELENIUM_TEST_SUMMARY=$(base64 -w 0 test-results.log)" >> $GITHUB_ENV
 
       # Post the results into a PR comment
       - name: Comment on Pull Request
@@ -85,7 +85,7 @@ jobs:
           body: |
             ### Selenium Test Results
             ```plaintext
-            ${{ env.SELENIUM_TEST_SUMMARY }}
+            ${{ env.SELENIUM_TEST_SUMMARY | fromBase64 }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
