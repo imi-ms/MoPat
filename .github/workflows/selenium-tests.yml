@@ -30,14 +30,8 @@ jobs:
       # Setup Docker-Compose
       - name: Docker Compose Action
         uses: hoverkraft-tech/compose-action@v2.0.2
-
-      # Run Selenoid
-      - name: Run Selenoid
-        run: |
-          docker run -d --name selenoid -p 4444:4444 \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v ${PWD}/selenium/config/:/etc/selenoid/:ro \
-            aerokube/selenoid:latest-release
+        with:
+          compose-file: "selenium/docker-compose.yml"
 
       # Wait for the server to be ready before running tests
       - name: Wait for the application to be ready
@@ -50,14 +44,6 @@ jobs:
             echo 'Waiting for Selenoid to be ready...'
             sleep 5
           done
-
-      # Install Chrome and ChromeDriver
-      - name: Install Chrome
-        run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
 
       # Set up Python and run Selenium tests
       - name: Set up Python
