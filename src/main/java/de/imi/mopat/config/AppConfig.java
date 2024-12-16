@@ -3,7 +3,6 @@ package de.imi.mopat.config;
 import de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
-import de.imi.mopat.helper.controller.PatientDataRetrieverFactoryBean;
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.apache.commons.lang.LocaleUtils;
 import org.springframework.cache.CacheManager;
@@ -189,35 +188,6 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
             .addResourceLocations("/conf/")
             .setCachePeriod(604800);
 
-    }
-
-    /**
-     * Creates PatientDataRetrieverFactoryBean
-     *
-     * @return PatientDataRetrieverFactoryBean
-     */
-    @Bean(name = "patientDataRetriever")
-    public PatientDataRetrieverFactoryBean pdrfb() {
-        return new PatientDataRetrieverFactoryBean();
-    }
-
-    /**
-     * Adds PatientDataRetriever to servlet depending on whether it is set in the database
-     * <p>
-     * Since it is not advised to use NullBeans with java config it is checked whether the PatientDataRetriever was set
-     * in the PatientDataRetrieverFactoryBean by comparing the toString results
-     *
-     * @return PatientDataRetriever / null
-     * @throws Exception
-     */
-    @Bean
-    public PatientDataRetriever patientDataRetriever() throws Exception {
-        PatientDataRetriever result = pdrfb().getObject();
-        if (result.toString().equals("null")) {
-            return null;
-        } else {
-            return result;
-        }
     }
 
     /**

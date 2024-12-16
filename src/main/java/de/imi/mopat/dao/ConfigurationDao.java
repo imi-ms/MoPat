@@ -118,32 +118,6 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
     String getMetadataExporterPDF();
 
     /**
-     * Returns true if registryOfPatient is activated and false otherwise. Get this boolean from the
-     * {@link ConfigurationDao} by using the name of this class and the appropriate attribute name.
-     *
-     * @return The configured registryOfPatient boolean.
-     */
-    Boolean isRegistryOfPatientActivated();
-
-    /**
-     * Returns true if UsePatientDataLookup toggle is activated and false otherwise. Get this
-     * boolean from the {@link ConfigurationDao} by using the name of this class and the appropriate
-     * attribute name.
-     *
-     * @return The configured usePatientDataLookup boolean.
-     */
-    Boolean isUsePatientDataLookupActivated();
-
-    /**
-     * Returns true if PseudonymizationService is activated and false otherwise. Get this boolean
-     * from the {@link ConfigurationDao} by using the name of this class and the appropriate
-     * attribute name.
-     *
-     * @return The configured pseudonymizationService boolean.
-     */
-    Boolean isPseudonymizationServiceActivated();
-
-    /**
      * Returns the time window after incomplete encounterScheduleds should be deleted in millis from
      * the {@link ConfigurationDao} by using the name of this class and the appropriate attribute
      * name.

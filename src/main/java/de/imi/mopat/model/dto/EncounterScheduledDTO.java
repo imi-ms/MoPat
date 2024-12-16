@@ -60,6 +60,9 @@ public class EncounterScheduledDTO {
     @JsonIgnore
     private Integer repeatPeriod;
 
+    @JsonIgnore
+    private ClinicDTO clinicDTO;
+
     private EncounterScheduledMailStatus mailStatus;
 
     private List<EncounterDTO> encounterDTOs;
@@ -187,6 +190,13 @@ public class EncounterScheduledDTO {
         this.replyMails = replyMails;
     }
 
+    public ClinicDTO getClinicDTO() {
+        return clinicDTO;
+    }
+
+    public void setClinicDTO(ClinicDTO clinicDTO) {
+        this.clinicDTO = clinicDTO;
+    }
     public Boolean isCompleted() {
         if (this.endDate != null) {
             return new Date().after(endDate);

@@ -82,6 +82,7 @@
 		th:attr="data-path=${imageBase64}"
 		th:accept="${not #strings.isEmpty(accept)} ? ${accept} : ''"
 		type="file"
+		onchange="validateImageUpload(this)"
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">

@@ -601,13 +601,12 @@
 
         var caseNumberType = /*[[${caseNumberType}]]*/ "";
 		var labelCaseNumber;
-		if (searchHISType == "CASE_NUMBER") {
-			labelCaseNumber=
+
+		labelCaseNumber=
 				/*[[${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}]]*/ "Case number";
-		} else {
-			labelCaseNumber=
+		labelPID=
 				/*[[${messages.get(#locale, 'survey.label.pid', 'Patient ID')}]]*/ "Patient ID";
-		}
+
 		var labelPseudonym =
 			/*[[${messages.get(#locale, 'survey.label.pseudonym', 'Pseudonym')}]]*/ "Pseudonym";
 
@@ -663,7 +662,7 @@
 		$(document).ready(function () {
 			/*[- Set the current registration service -]*/
 			handleRegistrationServiceChange($("#patientDataService").val(), true);
-
+			$("#nameError").hide();
 			checkCaseNumber($("#caseNumber")); 
 			/*[- Register the code reader and the onclick event of the scanButton -]*/
 			if (Modernizr.getusermedia === true) {
@@ -805,8 +804,6 @@
 			$("#patientDataServiceShowBundle").val(value);
 			/*[- Enable caseNumber and change its placeholder and label to default value -]*/
 			$("#caseNumber").prop("disabled", false);
-			$("#caseNumber").prop("placeholder", labelCaseNumber);
-			$("#caseNumberLabel").html("<b>" + labelCaseNumber + ":" + "</b>");
 			$("#checkButton").prop("disabled", true);
 			$(".personalDataInput").attr("disabled", true);
 
@@ -816,8 +813,12 @@
 					var buttonLabel; 
 					if (searchHISType == "CASE_NUMBER") {
 						buttonLabel = /*[[${messages.get(#locale, 'survey.check.button.search', 'Search')}]]*/ "Search"
+						$("#caseNumber").prop("placeholder", labelCaseNumber);
+						$("#caseNumberLabel").html("<b>" + labelCaseNumber + ":" + "</b>");
 					} else {
 						buttonLabel = /*[[${messages.get(#locale, 'survey.check.button.search2', 'Search')}]]*/ "Search"
+						$("#caseNumber").prop("placeholder", labelPID);
+						$("#caseNumberLabel").html("<b>" + labelPID + ":" + "</b>");
 					}
 
 					customizeCheckButton(
@@ -879,6 +880,9 @@
 					}
 					break;
 				case "register":
+					$("#caseNumber").prop("placeholder", labelCaseNumber);
+					$("#caseNumberLabel").html("<b>" + labelCaseNumber + ":" + "</b>");
+					
 					customizeCheckButton(
 						"register",
 						/*[[${messages.get(#locale, 'survey.check.button.register', 'Register')}]]*/ "Register",

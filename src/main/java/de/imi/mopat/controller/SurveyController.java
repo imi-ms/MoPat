@@ -230,13 +230,12 @@ public class SurveyController {
             boolean isHISActivated =
                 clinicConfigurationMappingDao.isUsePatientDataLookupActivated(activeClinicDTO.getId());
             model.addAttribute("searchHIS", isHISActivated);
-
+            
+            model.addAttribute("searchHISType", "CASE_NUMBER");
             if (isHISActivated) {
                 PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicDTO.getId());
                 if (patientDataRetriever.getClass() == HL7v22PatientInformationRetrieverByPID.class) {
                     model.addAttribute("searchHISType", "PID");
-                } else {
-                    model.addAttribute("searchHISType", "CASE_NUMBER");
                 }
             }
 
@@ -1264,7 +1263,7 @@ public class SurveyController {
         User currentUser = getCurrentUser();
         List<Clinic> assignedClinics = clinicService.getAssignedClinics(currentUser);
 
-        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(assignedClinics);
+        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(true, assignedClinics);
         model.addAttribute("clinicDTOs", clinicDTOs);
 
         if (!clinicDTOs.isEmpty()) {
@@ -1295,7 +1294,7 @@ public class SurveyController {
         User currentUser = getCurrentUser();
         List<Clinic> assignedClinics = clinicService.getAssignedClinics(currentUser);
 
-        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(assignedClinics);
+        List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(true, assignedClinics);
         ClinicDTO activeClinicDTO = clinicDTOs.stream().filter(
             clinicDTO -> clinicDTO.getId().equals(clinicId)
         ).findFirst().get();
