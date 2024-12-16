@@ -231,7 +231,7 @@ public class QuestionnaireController {
                 .orElse(new QuestionnaireDTO());
         Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(questionnaireDTO);
 
-        model.addAttribute("canEdit", canEditWithReason.getLeft());
+        model.addAttribute("isEditableState", canEditWithReason.getLeft());
         model.addAttribute("infoMessage", canEditWithReason.getRight());
         model.addAttribute("questionnaireDTO", questionnaireDTO);
         model.addAttribute("localeHelper", localeHelper);
@@ -265,7 +265,8 @@ public class QuestionnaireController {
 
         questionnaireService.validateQuestionnaire(questionnaireDTO, logo, result);
         if (result.hasErrors()) {
-            return handleValidationErrors(questionnaireDTO, model);
+            fillModelForValidationErrors(questionnaireDTO, model);
+            return "questionnaire/edit";
         }
 
         Long principalId = authService.getAuthenticatedUserId();
@@ -279,14 +280,19 @@ public class QuestionnaireController {
         }
     }
 
-    private String handleValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
+    private void fillModelForValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
+        boolean isEditableState = true;
+
         if (questionnaireDTO.getId() != null) {
-            questionnaireDTO.setLogo(
-                    questionnaireDao.getElementById(questionnaireDTO.getId()).getLogo());
+            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
+            if (existingQuestionnaire != null){
+                questionnaireDTO.setLogo(existingQuestionnaire.getLogo());
+                isEditableState = questionnaireService.editingQuestionnaireAllowed(questionnaireDTO);
+            }
         }
+        model.addAttribute("isEditableState", isEditableState);
         model.addAttribute("questionnaireDTO", questionnaireDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        return "questionnaire/edit";
     }
 
     /**

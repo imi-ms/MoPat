@@ -166,7 +166,7 @@
 					<div class="alert alert-info" role="alert" th:text="${infoMessage}"></div>
 				</th:block>
 
-				<th:block th:if="${canEdit}">
+				<th:block th:if="${isEditableState}">
 					<button
 							type="submit"
 							class="btn btn-primary"
@@ -184,7 +184,7 @@
 							th:text="${messages.get(#locale, 'questionnaire.button.saveAndEdit', 'Save and edit questions')}"
 					></button>
 				</th:block>
-				<th:block th:unless="${canEdit}">
+				<th:block th:unless="${isEditableState}">
 					<button
 							type="submit"
 							class="btn btn-primary"
