@@ -230,13 +230,12 @@ public class SurveyController {
             boolean isHISActivated =
                 clinicConfigurationMappingDao.isUsePatientDataLookupActivated(activeClinicDTO.getId());
             model.addAttribute("searchHIS", isHISActivated);
-
+            
+            model.addAttribute("searchHISType", "CASE_NUMBER");
             if (isHISActivated) {
                 PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicDTO.getId());
                 if (patientDataRetriever.getClass() == HL7v22PatientInformationRetrieverByPID.class) {
                     model.addAttribute("searchHISType", "PID");
-                } else {
-                    model.addAttribute("searchHISType", "CASE_NUMBER");
                 }
             }
 
