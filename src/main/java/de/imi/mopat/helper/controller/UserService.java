@@ -129,21 +129,33 @@ public class UserService {
      * @param clinicIDs The list of clinic IDs to assign rights to.
      */
     public void updateUserClinicRights(User user, List<Long> clinicIDs) {
-        Collection<Clinic> assignedClinics = clinicDao.getElementsById(
+        // Previously assigned clinics
+        Collection<Clinic> previouslyAssignedClinics = clinicDao.getElementsById(
                 aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
-        Collection<Clinic> currentClinics = new ArrayList<>();
+
+        // Newly assigned clinics based on input
+        Collection<Clinic> newlyAssignedClinics = new ArrayList<>();
         if (clinicIDs != null && !clinicIDs.isEmpty()) {
-            currentClinics = clinicDao.getElementsById(clinicIDs);
+            newlyAssignedClinics = clinicDao.getElementsById(clinicIDs);
         }
-        assignedClinics.removeAll(currentClinics);
-        currentClinics.removeAll(assignedClinics);
-        for (Clinic clinic : currentClinics) {
+
+        // Determine which clinics to add and remove
+        Collection<Clinic> clinicsToRemove = new ArrayList<>(previouslyAssignedClinics);
+        clinicsToRemove.removeAll(newlyAssignedClinics);
+
+        Collection<Clinic> clinicsToAdd = new ArrayList<>(newlyAssignedClinics);
+        clinicsToAdd.removeAll(previouslyAssignedClinics);
+
+        // Grant rights for newly assigned clinics
+        for (Clinic clinic : clinicsToAdd) {
             AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
             if (clinicACLEntry == null) {
                 clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
             }
         }
-        for (Clinic clinic : assignedClinics) {
+
+        // Revoke rights for clinics no longer assigned
+        for (Clinic clinic : clinicsToRemove) {
             AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
             if (clinicACLEntry != null) {
                 clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
