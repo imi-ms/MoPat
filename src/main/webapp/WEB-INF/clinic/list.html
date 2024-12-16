@@ -14,6 +14,14 @@
 				<th:block th:text="${messageSuccess}"></th:block>
 			</div>
 		</th:block>
+		<th:block th:if="${messageFail != null}">
+			<div
+				id="notification"
+				class="alert alert-danger"
+			>
+				<th:block th:text="${messageFail}" />
+			</div>
+		</th:block>
 		<div 
 			id="loadingContainer" 
 			class="d-flex flex-column align-items-center justify-content-center vh-50"
