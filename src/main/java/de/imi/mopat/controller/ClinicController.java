@@ -600,8 +600,7 @@ public class ClinicController {
         List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
 
         if (!clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
-            clinicConfigurationMapping.setClinicConfigurationGroupMappings(
-                updateExistingGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO));
+            updateExistingGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO);
         } else {
             clinicConfigurationGroupMappings.add(
                 new ClinicConfigurationGroupMapping(clinicConfigurationMapping,
@@ -611,10 +610,9 @@ public class ClinicController {
         }
     }
 
-    private List<ClinicConfigurationGroupMapping> updateExistingGroupMapping(
+    private void updateExistingGroupMapping(
         ClinicConfigurationMapping clinicConfigurationMapping,
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
-        List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
         ClinicConfigurationGroupMapping clinicConfigurationGroupMapping
             = clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0);
 
@@ -624,9 +622,6 @@ public class ClinicController {
             clinicConfigurationGroupMapping.setConfigurationGroup(
                 configurationGroupDao.getConfigurationGroupByName(
                     clinicConfigurationMappingDTO.getMappedConfigurationGroup()));
-            clinicConfigurationGroupMappings.add(clinicConfigurationGroupMapping);
         }
-
-        return clinicConfigurationGroupMappings;
     }
 }
