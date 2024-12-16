@@ -543,7 +543,8 @@ public class ClinicController {
     }
 
     private List<ClinicConfigurationMapping> createNewClinicConfigurationMappings(
-        Clinic clinic, ClinicConfiguration clinicConfiguration, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+        Clinic clinic, ClinicConfiguration clinicConfiguration,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         List<ClinicConfigurationMapping> clinicConfigurationMappingList = new ArrayList<>();
         ClinicConfigurationMapping clinicConfigurationMapping =
             new ClinicConfigurationMapping(clinic, clinicConfiguration, clinicConfigurationMappingDTO.getValue());
@@ -568,7 +569,8 @@ public class ClinicController {
 
 
     private List<ClinicConfigurationMapping> updateExistingClinicConfigurationMappings(
-        Clinic clinic, ClinicConfiguration clinicConfiguration,ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+        Clinic clinic, ClinicConfiguration clinicConfiguration,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
 
         List<ClinicConfigurationMapping> clinicConfigurationMappingList = new ArrayList<>();
         ClinicConfigurationMapping clinicConfigurationMapping = clinicConfigurationMappingDao.getElementById(
@@ -578,8 +580,8 @@ public class ClinicController {
 
         if (clinicConfiguration.getMappedConfigurationGroup() != null
             && clinicConfigurationMappingDTO.getValue().equals("true")) {
-            clinicConfigurationMapping.setClinicConfigurationGroupMappings(
-                updateClinicConfigurationGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO));
+
+            updateClinicConfigurationGroupMapping(clinicConfigurationMapping, clinicConfigurationMappingDTO);
         }
 
         clinicConfigurationMappingList.add(clinicConfigurationMapping);
@@ -592,8 +594,9 @@ public class ClinicController {
     }
 
 
-    private List<ClinicConfigurationGroupMapping> updateClinicConfigurationGroupMapping(
-        ClinicConfigurationMapping clinicConfigurationMapping, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+    private void updateClinicConfigurationGroupMapping(
+        ClinicConfigurationMapping clinicConfigurationMapping,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
 
         if (!clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
@@ -604,14 +607,13 @@ public class ClinicController {
                 new ClinicConfigurationGroupMapping(clinicConfigurationMapping,
                     configurationGroupDao.getConfigurationGroupByName(
                         clinicConfigurationMappingDTO.getMappedConfigurationGroup())));
-
+            clinicConfigurationMapping.setClinicConfigurationGroupMappings(clinicConfigurationGroupMappings);
         }
-
-        return clinicConfigurationGroupMappings;
     }
 
     private List<ClinicConfigurationGroupMapping> updateExistingGroupMapping(
-        ClinicConfigurationMapping clinicConfigurationMapping, ClinicConfigurationMappingDTO clinicConfigurationMappingDTO){
+        ClinicConfigurationMapping clinicConfigurationMapping,
+        ClinicConfigurationMappingDTO clinicConfigurationMappingDTO) {
         List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings = new ArrayList<>();
         ClinicConfigurationGroupMapping clinicConfigurationGroupMapping
             = clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0);
