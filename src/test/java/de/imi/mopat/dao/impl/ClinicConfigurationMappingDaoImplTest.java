@@ -71,4 +71,32 @@ public class ClinicConfigurationMappingDaoImplTest {
     public void tearDown(){
         clinicDao.remove(clinic);
     }
+    /**
+     * Test of {@link ConfigurationDaoImpl#isRegistryOfPatientActivated}.<br>
+     */
+    @Test
+    public void testIsRegistryOfPatientActivated() {
+        assertTrue("The getting is registry of patient activated was not the expected one",
+                testClinicconfigurationMappingDao.isRegistryOfPatientActivated(clinic.getId()));
+    }
+
+    /**
+     * Test of {@link ConfigurationDaoImpl#isUsePatientDataLookupActivated}.<br>
+     */
+    @Test
+    public void testIsUsePatientDataLookupActivated() {
+        clinicDao.merge(clinic);
+        assertTrue("The getting is registry of patient activated was not the expected one",
+                testClinicconfigurationMappingDao.isUsePatientDataLookupActivated(clinic.getId()));
+    }
+
+    /**
+     * Test of {@link ConfigurationDaoImpl#isPseudonymizationServiceActivated}.<br>
+     */
+    @Test
+    public void testIsPseudonymizationServiceActivated() {
+        assertTrue(
+            "The getting is pseudonymization service activated activated was not the expected one",
+                testClinicconfigurationMappingDao.isPseudonymizationServiceActivated(clinic.getId()));
+    }
 }
