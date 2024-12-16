@@ -1,0 +1,46 @@
+services:
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    ports:
+      - "4444:4444"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock" # Required to communicate with the Docker daemon
+      - "./config/:/etc/selenoid/:ro" # Configuration files for Selenoid
+      - "./logs/:/opt/selenoid/logs/"
+    networks: 
+      - selenoid-network
+    command: ["-container-network", "selenium_selenoid-network"]
+
+  db-container:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: mopat
+      MYSQL_PASSWORD: mopat
+      MYSQL_DATABASE: initDb
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../db:/docker-entrypoint-initdb.d
+    networks: 
+      - selenoid-network
+
+  webapp-container:
+    build: ..
+    depends_on:
+      - db-container
+    ports:
+      - "8080:8080"
+    networks: 
+      - selenoid-network
+    environment:
+      - MYSQL_USER=mopat
+      - MYSQL_PASSWORD=mopat
+      - MYSQL_MOPAT_URL=jdbc:mysql://db-container:3306/moPat?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+      - MYSQL_MOPAT_USER_URL=jdbc:mysql://db-container:3306/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+      - MYSQL_MOPAT_AUDIT_URL=jdbc:mysql://db-container:3306/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
+networks:
+  selenoid-network:
+    driver: bridge
+
