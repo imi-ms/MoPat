@@ -82,9 +82,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            ### Selenium Test Results
-            ```plaintext
+            \```plaintext
             $(cat selenium_test_results.txt)
-            ```
+            \```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
