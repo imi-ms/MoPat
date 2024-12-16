@@ -662,7 +662,7 @@
 		$(document).ready(function () {
 			/*[- Set the current registration service -]*/
 			handleRegistrationServiceChange($("#patientDataService").val(), true);
-
+			$("#nameError").hide();
 			checkCaseNumber($("#caseNumber")); 
 			/*[- Register the code reader and the onclick event of the scanButton -]*/
 			if (Modernizr.getusermedia === true) {
