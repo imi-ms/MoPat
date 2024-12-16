@@ -228,25 +228,4 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
             Constants.METADATA_EXPORTER_PDF, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
-
-    @Override
-    public Boolean isRegistryOfPatientActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.REGISTER_PATIENT_DATA, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
-    }
-
-    @Override
-    public Boolean isUsePatientDataLookupActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.USE_PATIENT_DATA_LOOKUP, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
-    }
-
-    @Override
-    public Boolean isPseudonymizationServiceActivated() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.USE_PSEUDONYMIZATION_SERVICE, Constants.CLASS_GLOBAL);
-        return Boolean.valueOf(configuration.getValue());
-    }
 }
