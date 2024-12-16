@@ -5,6 +5,8 @@ from time import gmtime, strftime
 import unittest
 import json
 import os
+import traceback
+import time
 from abc import ABC, abstractmethod
 import unittest
 from selenium import webdriver
@@ -60,12 +62,22 @@ class IMISeleniumBaseTest(ABC):
         # maximize window to full-screen
         self.driver.maximize_window()
 
-    def run(self, result=None) -> None:
-        """
-            Main function of the unit test.
-        """
+    def run(self, result=None):
+        test_name = self._testMethodName
+        print(f"=================== RUNNING TEST '{test_name}' ===================")
         self.currentResult = result
         unittest.TestCase.run(self, result)
+        
+        if result.wasSuccessful():
+            print("Successfully ran Test without Errors")
+        else:
+            print("Test ran with errors:")
+            for failed, error in result.failures + result.errors:
+                if failed == self:
+                    print("\n--- Stack Trace ---")
+                    self._printError(error)
+                    print("--- End of Trace ---")
+        print(f"=================== END OF '{test_name}' ===================\n")
 
     def tearDown(self) -> None:
         """
@@ -77,6 +89,10 @@ class IMISeleniumBaseTest(ABC):
             cookie = {'name': 'zaleniumTestPassed', 'value': 'false'}
         self.driver.add_cookie(cookie)
         self.driver.quit()
+        
+    def _printError(self, error):
+        exc_type, exc_value, tb = error
+        traceback.print_exception(exc_type, exc_value, tb)
 
     def _loadSecretFile(self, filename):
         """
@@ -98,7 +114,6 @@ class IMISeleniumBaseTest(ABC):
     @abstractmethod
     def _setLocalDriver(self, directory):
         self.driver = None
-
 
 
 class CustomTest(IMISeleniumBaseTest):
@@ -155,6 +170,82 @@ class CustomChromeTest(CustomTest, IMISeleniumChromeTest, unittest.TestCase):
     # Do not touch this function. This is the main entry point for selenium
     pass
 
+class CustomTestResult(unittest.TextTestResult):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.successful_tests = []
+
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        self.successful_tests.append(test)
+
+    def addError(self, test, err):
+        self.errors.append((test, err))  # Store errors
+        # Do not call the super method to prevent the default printing
+
+    def addFailure(self, test, err):
+        self.failures.append((test, err))  # Store failures
+        # Do not call the super method to prevent the default printing
+
+    def printErrors(self):
+        # Override this method to suppress default error printing
+        pass
+
+    def printFailures(self):
+        # Override this method to suppress default failure printing
+        pass
+
+    def printSummary(self):
+        print("\n======================== TEST SUMMARY ========================")
+        print(f"Total Tests Run: {self.testsRun}")
         
+        print(f"\nSuccessful Tests ({len(self.successful_tests)}/{self.testsRun}):")
+        if self.successful_tests:
+            for test in self.successful_tests:
+                print(f" - {test}")
+        else:
+            print(" None")
+
+        print(f"\nFailed Tests ({len(self.failures)}/{self.testsRun}):")
+        if self.failures:
+            for test, _ in self.failures:
+                print(f" - {test}")
+        else:
+            print(" None")
+
+        print(f"\nErrored Tests ({len(self.errors)}/{self.testsRun}):")
+        if self.errors:
+            for test, _ in self.errors:
+                print(f" - {test}")
+        else:
+            print(" None")
+
+        print("=============================================================\n")
+
+class CustomTestRunner(unittest.TextTestRunner):
+    def _makeResult(self):
+        return CustomTestResult(self.stream, self.descriptions, self.verbosity)
+
+    def run(self, test):
+        result = self._makeResult()
+        result.failfast = self.failfast
+        result.buffer = self.buffer
+        result.tb_locals = self.tb_locals
+
+        startTime = time.perf_counter()
+        try:
+            test(result)
+        finally:
+            stopTime = time.perf_counter()
+            timeTaken = stopTime - startTime
+
+            result.printErrors()  # Suppress default error print
+            result.printFailures()  # Suppress default failure print
+
+            result.printSummary()  # Print custom summary
+            print(f"Time Taken: {timeTaken:.3f}s")  # Custom time output
+
+        return result
+    
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(testRunner=CustomTestRunner(verbosity=2))
