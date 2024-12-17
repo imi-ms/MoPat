@@ -97,3 +97,4 @@ jobs:
           pwd
           ls -lah .
           ls -lah /home/runner/work/MoPat/MoPat
+          ls -lah /home/runner/work/MoPat
