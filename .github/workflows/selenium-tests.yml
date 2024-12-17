@@ -93,4 +93,4 @@ jobs:
 
       - name: Check maven folder
         run: |
-          ls -lah ~/.m2/repository
+          ls -lah ~/.m2
