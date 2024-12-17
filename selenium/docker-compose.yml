@@ -33,7 +33,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "/home/runner/.m2:/root/.m2:rw"
+      - "~/.m2:/root/.m2"
     networks: 
       - selenoid-network
     environment:
