@@ -16,11 +16,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up cache for Maven
+        id: mavenCache
         uses: actions/cache@v4
         with:
           path: /home/runner/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      - name: Pre-fill Maven Dependencies
+        if: steps.mavenCache.outputs.cache-hit == 'true'
+        run: |
+          docker run --rm \
+            -v /home/runner/.m2:/root/.m2 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace maven:3.9.8-eclipse-temurin-17-focal \
+            mvn dependency:go-offline
 
       # Set up Docker
       - name: Set up Docker Buildx
@@ -90,3 +100,7 @@ jobs:
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy .m2 to host
+        run: docker cp webapp-container:/root/.m2 /home/runner/.m2
+
