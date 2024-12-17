@@ -32,6 +32,8 @@ services:
       - db-container
     ports:
       - "8080:8080"
+    volumes:
+      - ~/.m2/repository:/root/.m2/repository
     networks: 
       - selenoid-network
     environment:
