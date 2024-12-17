@@ -95,6 +95,13 @@ jobs:
       - name: List container names
         run: docker ps -a
 
+      - name: Remove existing .m2 if necessary
+        run: rm -rf /home/runner/.m2
+
+      - name: Create .m2 directory
+        run: mkdir -p /home/runner/.m2
+
       - name: Copy .m2 to host
-        run: docker cp selenium-webapp-container-1:/root/.m2 /home/runner/.m2
+        run: docker cp selenium-webapp-container-1:/root/.m2/. /home/runner/.m2
+
 
