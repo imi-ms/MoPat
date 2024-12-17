@@ -18,10 +18,9 @@ jobs:
       - name: Set up cache for Maven
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
-          key: mopat-maven
-          restore-keys: |
-            mopat-maven
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
       # Set up Docker
       - name: Set up Docker Buildx
