@@ -95,4 +95,5 @@ jobs:
         run: |
           cd ~/.m2
           pwd
-          ls -lah . 
+          ls -lah .
+          ls -lah /home/runner/work/MoPat/MoPat
