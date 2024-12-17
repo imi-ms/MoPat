@@ -5,6 +5,8 @@ FROM maven:3.9.8-eclipse-temurin-17-focal as builder
 COPY pom.xml .
 COPY .git ./.git
 
+ENV MAVEN_OPTS="-Dmaven.repo.local=/root/.m2/repository"
+
 RUN mvn -B -f pom.xml dependency:go-offline
 COPY src ./src
 
