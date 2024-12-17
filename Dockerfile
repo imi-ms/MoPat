@@ -5,16 +5,12 @@ FROM maven:3.9.8-eclipse-temurin-17-focal as builder
 COPY pom.xml .
 COPY .git ./.git
 
-VOLUME ["/root/.m2"]
-
-ENV MAVEN_OPTS="-Dmaven.repo.local=/root/.m2/repository"
-
-RUN mvn -B -f pom.xml dependency:go-offline -Dmaven.repo.local=/root/.m2/repository
+RUN mvn -B -f pom.xml dependency:go-offline
 
 COPY src ./src
 
 # Build the project while skipping tests
-RUN mvn -B install -DskipTests -Dmaven.repo.local=/root/.m2/repository
+RUN mvn -B install -DskipTests
 
 # Use the official Tomcat image that supports Java 17
 FROM tomcat:10.1.28-jdk17-temurin-jammy
