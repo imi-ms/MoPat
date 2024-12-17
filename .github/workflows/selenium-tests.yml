@@ -3,7 +3,7 @@ name: selenium_tests
 on: pull_request
 
 jobs:
-  build-and-test:
+  selenium-tests:
     permissions:
       checks: write
       pull-requests: write # only required if `comment: true` was enabled
