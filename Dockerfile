@@ -9,8 +9,8 @@ VOLUME ["/root/.m2"]
 
 ENV MAVEN_OPTS="-Dmaven.repo.local=/root/.m2/repository"
 
-RUN mvn -B -f pom.xml dependency:go-offline -Dmaven.repo.local=/root/.m2/repository && \
-      ls -R /root/.m2/repository
+RUN mvn -B -f pom.xml dependency:go-offline -Dmaven.repo.local=/root/.m2/repository
+
 COPY src ./src
 
 # Build the project while skipping tests
