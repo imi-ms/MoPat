@@ -33,7 +33,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ~/.m2:/root/.m2
+      - /root/.m2:/root/.m2
     networks: 
       - selenoid-network
     environment:
@@ -45,4 +45,3 @@ services:
 networks:
   selenoid-network:
     driver: bridge
-

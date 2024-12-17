@@ -18,7 +18,7 @@ jobs:
       - name: Set up cache for Maven
         uses: actions/cache@v4
         with:
-          path: ~/.m2
+          path: /root/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
@@ -93,4 +93,4 @@ jobs:
 
       - name: Check maven folder
         run: |
-          ls -lah ~/.m2
+          ls -lah /root/.m2
