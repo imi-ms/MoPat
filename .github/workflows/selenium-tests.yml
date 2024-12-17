@@ -24,7 +24,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Pre-fill Maven Dependencies
-        if: steps.mavenCache.outputs.cache-hit == 'true'
+        if: steps.mavenCache.outputs.cache-hit != 'true'
         run: |
           docker run --rm \
             -v /home/runner/.m2:/root/.m2 \
@@ -100,6 +100,9 @@ jobs:
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List container names
+        run: docker ps -a
 
       - name: Copy .m2 to host
         run: docker cp webapp-container:/root/.m2 /home/runner/.m2
