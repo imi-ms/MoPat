@@ -23,15 +23,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Pre-fill Maven Dependencies
-        if: steps.mavenCache.outputs.cache-hit != 'true'
-        run: |
-          docker run --rm \
-            -v /home/runner/.m2:/root/.m2 \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace maven:3.9.8-eclipse-temurin-17-focal \
-            mvn dependency:go-offline
-
       # Set up Docker
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
