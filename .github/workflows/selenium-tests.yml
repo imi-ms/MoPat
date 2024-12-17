@@ -90,11 +90,3 @@ jobs:
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check maven folder
-        run: |
-          cd ~/.m2
-          pwd
-          ls -lah .
-          ls -lah /home/runner/work/MoPat/MoPat
-          ls -lah /home/runner/work/MoPat
