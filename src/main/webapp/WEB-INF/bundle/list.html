@@ -160,6 +160,7 @@
 										</i>
 									</a>
 									<a
+										th:id="'removeBundle_' + ${item.id}"
 										class="link removeBundleLink"
 										th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
 										th:href="@{remove?id=__${item.id}__}"

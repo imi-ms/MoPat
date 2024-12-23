@@ -17,6 +17,7 @@
 					<th:block sec:authorize="hasRole('ROLE_EDITOR')">
 						<li class="nav-item dropdown">
 							<a
+								id="questionnaireDropdownLink"
 								class="nav-link d-flex align-items-center"
 								role="button"
 								data-bs-toggle="dropdown"
@@ -35,6 +36,7 @@
 							>
 								<li>
 									<a
+										id="manageQuestionnaireLink"
 										class="dropdown-item"
 										th:href="@{/questionnaire/list}"
 										th:text="${messages.get(#locale, 'admin.navigation.questionnaire', 'Manage questionnaires')}"
@@ -53,6 +55,7 @@
 						</li>
 						<li class="nav-item">
 							<a
+								id="bundleLink"
 								class="nav-link"
 								th:href="@{/bundle/list}"
 								th:text="#{admin.navigation.header.bundle}"
@@ -63,6 +66,7 @@
 					<th:block sec:authorize="hasRole('ROLE_ADMIN')">
 						<li class="nav-item">
 							<a
+								id="clinicLink"
 								class="nav-link"
 								th:href="@{/clinic/list}"
 								th:text="#{admin.navigation.header.clinic}"
@@ -72,6 +76,7 @@
 
 						<li class="nav-item dropdown">
 							<a
+								id="userDropdownLink"
 								class="nav-link d-flex align-items-center"
 								data-bs-toggle="dropdown"
 								role="button"
@@ -95,6 +100,7 @@
 								</li>
 								<li>
 									<a
+										id="mailToAllLink"
 										class="dropdown-item"
 										th:href="@{/user/mailtoall}"
 										th:text="#{admin.navigation.user.mailToAll}"

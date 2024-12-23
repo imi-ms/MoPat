@@ -33,10 +33,11 @@
 				<div class="form-group">
 					<label
 						class="required"
-						for="content"
+						for="mailContent"
 						th:text="${messages.get(#locale, 'user.label.message', 'Message')}"
 					></label>
 					<textarea
+						id="mailContent"
 						class="form-control"
 						cols="40"
 						rows="10"
@@ -104,7 +105,7 @@
 					type="submit"
 					class="btn btn-primary"
 					value="preview"
-					id="mailButton"
+					id="mailPreviewButton"
 					name="action"
 					th:text="${messages.get(#locale, 'user.button.preview', 'Preview')}"
 				>

@@ -204,6 +204,7 @@
 												</div>
 											</div>
 											<a
+												th:id="'removeQuestionnaire_' + ${item.id}"
 												class="link removeQuestionnaireLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}"
 												th:href="@{remove?id=__${item.id}__}"

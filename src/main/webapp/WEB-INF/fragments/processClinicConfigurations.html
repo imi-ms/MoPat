@@ -3,6 +3,7 @@
 >
     <th:block th:each="configurationDTO, configurationIndex: ${configurationList}">
         <li
+            th:id="${configurationDTO.attribute}"
             class="list-group-item"
             th:classappend="${parent != null} ? |children| : ''"
             th:attr="configurationId=${configurationDTO.id},parentId=${parent != null} ? ${parent.clinicConfigurationId} : ''"
