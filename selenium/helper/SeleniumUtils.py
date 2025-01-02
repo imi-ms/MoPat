@@ -18,10 +18,11 @@ class SearchBoxSelectors:
     BUNDLE = (By.CSS_SELECTOR, "#bundleTable_filter input[type='search']")
     CLINIC = (By.CSS_SELECTOR, "#clinicTable_filter input[type='search']")
 
+
 class SeleniumUtils:
-    def __init__(self, driver, navigator=None):
+    def __init__(self, driver, navigation_helper = None):
         self.driver = driver
-        self.navigator = navigator
+        self.navigator = navigation_helper
 
     def click_element(self, selector):
         """
@@ -136,6 +137,8 @@ class SeleniumUtils:
                 select.select_by_visible_text(value)
             elif method == "value":
                 select.select_by_value(value)
+            elif method == "index":
+                select.select_by_index(value)
             else:
                 raise ValueError(f"Invalid method '{method}'. Use 'visible_text' or 'value'.")
         except TimeoutException:
@@ -191,4 +194,34 @@ class SeleniumUtils:
             raise Exception(f"Failed to delete {item_type} '{item_name}' with ID {item_id}'.")
         except Exception as e:
             raise Exception(f"An error occurred while deleting {item_type} '{item_name}': {e}")
+
+
+    def handle_popup_alert(self, accept=True, timeout=2):
+        """
+        :param accept: Boolean indicating whether to accept (True) or dismiss (False) the alert.
+        :param timeout: Time to wait for the alert to appear.
+        """
+        try:
+            WebDriverWait(self.driver, timeout).until(EC.alert_is_present())
+            alert = self.driver.switch_to.alert
+            if accept:
+                alert.accept()
+            else:
+                alert.dismiss()
+        except TimeoutException:
+            pass  # No alert appeared
+
+
+    def set_value(self, field_name, steps=1):
+        """
+        :param field_name: The name of the input field.
+        :param steps: Number of times to press the ARROW_UP key (default is 1).
+        """
+        value_input = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.NAME, field_name))
+        )
+        value_input.click()
+        for _ in range(steps):
+            value_input.send_keys(Keys.ARROW_UP)
+
 

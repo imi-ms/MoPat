@@ -25,6 +25,8 @@ class NavigationBarSelectors:
 class QuestionnaireTableSelectors:
     FILTER_INPUT = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     FIRST_RESULT_LINK = (By.CSS_SELECTOR, "#questionnaireTable tbody tr td a")
+    EDIT_QUESTIONS_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/question/list?id={questionnaire_id}"]')
+    EDIT_SCORES_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/score/list?id={questionnaire_id}"]')
 
 class NavigationHelper:
     def __init__(self, driver):
@@ -37,6 +39,22 @@ class NavigationHelper:
             self.utils.click_element(NavigationBarSelectors.QuestionnaireMenu.MANAGE_LINK)
         except Exception as e:
             raise Exception(f"Failed to navigate to 'Manage Questionnaires': {e}")
+
+    def navigate_to_questions_of_questionnaire(self, questionnaire_id, questionnaire_name):
+        self.navigate_to_manage_questionnaires()
+        self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+        link = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(QuestionnaireTableSelectors.EDIT_QUESTIONS_LINK(questionnaire_id))
+        )
+        link.click()
+
+    def navigate_to_scores_of_questionnaire(self, questionnaire_id, questionnaire_name):
+        self.navigate_to_manage_questionnaires()
+        self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+        scores_link = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id))
+        )
+        scores_link.click()
 
     def navigate_to_manage_bundles(self):
         try:

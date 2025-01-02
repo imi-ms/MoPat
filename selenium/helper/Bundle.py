@@ -1,9 +1,12 @@
 import time
 
 from selenium.common import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+from helper.Navigation import NavigationHelper
 from helper.SeleniumUtils import SearchBoxSelectors
 from helper.SeleniumUtils import SeleniumUtils
 
@@ -23,9 +26,8 @@ class BundleSelectors:
 
 
 class BundleHelper:
-    def __init__(self, driver, fragebogen_helper, navigation_helper):
+    def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
-        self.fragebogen_helper = fragebogen_helper
         self.navigation_helper = navigation_helper
         self.utils = SeleniumUtils(driver)
 

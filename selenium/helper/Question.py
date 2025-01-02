@@ -3,12 +3,14 @@ from functools import partial
 
 from selenium import webdriver
 from selenium.common import TimeoutException, ElementClickInterceptedException
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
+from helper.Navigation import NavigationHelper
 from helper.SeleniumUtils import SeleniumUtils
 
 
@@ -29,8 +31,9 @@ class QuestionSelectors:
     INPUT_NUMERIC_CHECKBOX_FREETEXT_MIN_EDITABLE_DIV = lambda language_code: (By.XPATH, f'//*[@id="localizedMinimumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_NUMERIC_CHECKBOX_FREETEXT_MAX_EDITABLE_DIV = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
 
-    TABLE_ROW_QUESTION = (By.XPATH, "/html/body/div/div/div[1]/div/div[2]/div[2]/table/tbody/tr")
     TABLE_QUESTION = (By.ID, "questionTable")
+    TABLE_LAST_ROW = (By.XPATH, "//tbody/tr[last()]")
+    TABLE_ROWS = (By.XPATH, "//tbody/tr")
 
     class QuestionTypes:
         INFO_TEXT = "INFO_TEXT"
@@ -63,9 +66,10 @@ class QuestionHelper:
     DEFAULT_MC_MAX_VALUE = len(DEFAULT_MC_OPTIONS)
     DEFAULT_FREE_TEXT_LABEL = "Freetext Label"
 
-    def __init__(self, driver):
+    def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
         self.utils = SeleniumUtils(driver)
+        self.navigation_helper = navigation_helper
         self.QUESTION_TYPES = [
             partial(self.add_question_info_text),
             partial(self.add_question_multiple_choice),
@@ -80,6 +84,28 @@ class QuestionHelper:
 
     def save_question(self):
         self.utils.click_element(QuestionSelectors.BUTTON_SAVE)
+        return self.get_last_added_question_id()
+
+    def get_last_added_question_id(self):
+        """
+        :return: ID of the question as a string.
+        """
+        # Wait until the table rows are loaded
+        WebDriverWait(self.driver, 30).until(
+            EC.presence_of_element_located(QuestionSelectors.TABLE_LAST_ROW)
+        )
+
+        # Find the last row in the table
+        last_row = self.driver.find_element(*QuestionSelectors.TABLE_LAST_ROW)
+
+        # Extract the ID from the `id` attribute of the last row
+        question_id = last_row.get_attribute("id")
+
+        # Ensure the ID is found
+        if not question_id:
+            raise Exception("The ID of the last question could not be found.")
+
+        return question_id
 
     def add_question_info_text(self, language_code=None, question_text=None):
         """
