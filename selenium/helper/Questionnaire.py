@@ -81,7 +81,7 @@ class QuestionnaireHelper:
 
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
-        self.utils = SeleniumUtils(driver)
+        self.utils = SeleniumUtils(driver, navigation_helper)
         self.navigation_helper = navigation_helper
         self.question_helper = QuestionHelper(driver, navigation_helper)
 
