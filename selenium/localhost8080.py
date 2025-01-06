@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import json
 import random
 import string
 import unittest
@@ -16,7 +17,9 @@ from helper.Bundle import BundleHelper
 from helper.Clinic import ClinicHelper, ClinicSelectors
 from helper.Navigation import NavigationHelper
 from helper.Question import QuestionHelper, QuestionErrorHelper, QuestionSelectors
-from helper.Questionnaire import QuestionnaireHelper, ConditionHelper, ScoreHelper
+from helper.Questionnaire import QuestionnaireHelper
+from helper.Condition import ConditionHelper
+from helper.Score import ScoreHelper
 from helper.SeleniumUtils import SeleniumUtils
 from helper.Survey import SurveyHelper, SurveySelectors, SurveyAssertHelper
 from utils.imiseleniumtest import IMISeleniumBaseTest, IMISeleniumChromeTest
@@ -62,22 +65,21 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         # Initialize Navigation and Utils
         self.navigation_helper = NavigationHelper(self.driver)
-        self.utils = SeleniumUtils(self.driver, navigator=self.navigation_helper)
+        self.utils = SeleniumUtils(self.driver, navigation_helper=self.navigation_helper)
         self.navigation_helper.utils = self.utils
 
         # Initialize other helpers
         self.authentication_helper = AuthenticationHelper(self.driver)
-        self.questionnaire_helper = QuestionnaireHelper(self.driver)
-        self.question_helper = QuestionHelper(self.driver)
-        self.condition_helper = ConditionHelper(self.driver)
-        self.score_helper = ScoreHelper(self.driver)
-        self.questionnaire_error_helper = QuestionErrorHelper(self.driver)
-
-        self.bundle_helper = BundleHelper(self.driver, self.questionnaire_helper, self.navigation_helper)
+        self.questionnaire_helper = QuestionnaireHelper(self.driver, self.navigation_helper)
+        self.question_helper = QuestionHelper(self.driver, self.navigation_helper)
+        self.bundle_helper = BundleHelper(self.driver, self.navigation_helper)
         self.clinic_helper = ClinicHelper(self.driver, self.navigation_helper)
-        self.survey_helper = SurveyHelper(self.driver, self.authentication_helper)
+        self.survey_helper = SurveyHelper(self.driver, self.navigation_helper)
 
-        self.survey_assert_helper = SurveyAssertHelper(self.driver, self.authentication_helper)
+        self.condition_helper = ConditionHelper(self.driver, self.navigation_helper)
+        self.score_helper = ScoreHelper(self.driver, self.navigation_helper)
+        self.questionnaire_error_helper = QuestionErrorHelper(self.driver, self.navigation_helper)
+        self.survey_assert_helper = SurveyAssertHelper(self.driver, self.navigation_helper)
 
     def test_login_ad_admin(self):
         # Arrange
@@ -482,7 +484,6 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
                 self.utils.search_and_delete_item(questionnaire_name, questionnaire_id, "questionnaire")
             self.authentication_helper.logout()
 
-    # TODO [] Add assertions to survey execution (add to class SurveyAssertHelper)
     def test_complete_workflow(self):
         # Arrange
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -490,13 +491,7 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         username_creator = "admin"
         username_survey_executor = "user"
 
-        questionnaire_id = None
-        questionnaire_name = f"Fragebogen alle Typen {timestamp}"
-        questionnaire_description = "Dieser Fragebogen enthält alle bisher implementierten Fragetypen"
-        questionnaire_language_code = "de_DE"
-        questionnaire_welcome_text = 'Ein Willkommenstext für das Paket "Selenium-Paket". Nichts besonderes zu sehen. 2'
-        questionnaire_final_text = 'Dieser Text wird am Ende des Fragebogens gezeigt.'
-        questionnaire_display_name = questionnaire_name
+        questionnaire = None
         added_questions = []
 
         bundle_id = None
@@ -520,33 +515,17 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         try:
             # Act
-            # Step 1: Create Questionnaire
-            self.navigation_helper.navigate_to_manage_questionnaires()
-            self.questionnaire_helper.click_add_questionnaire_button()
-            self.questionnaire_helper.fill_questionnaire_details(questionnaire_name, questionnaire_description,
-                                                                 questionnaire_language_code,
-                                                                 questionnaire_display_name, questionnaire_welcome_text,
-                                                                 questionnaire_final_text)
-            questionnaire_id = self.questionnaire_helper.save_questionnaire_edit_question()
-            questionnaires = [{"id": questionnaire_id, "name": questionnaire_name}]
-
-            # Step 2: Add Questions to questionnaire (all question types)
-            for add_question_method in self.question_helper.QUESTION_TYPES:
-                self.questionnaire_helper.click_add_question_button()
-                question_info = add_question_method()
-                added_questions.append(question_info)
-                self.question_helper.save_question()
-
-            # Assert
-            # Verify the number of questions added
-            self.questionnaire_error_helper.verify_number_of_questions(len(self.question_helper.QUESTION_TYPES))
+            # Step 1: Create Questionnaire with questions (all question types)
+            questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
+            added_questions = questionnaire['questions']
 
             # Act
             # Step 3: Add Bundle
             self.navigation_helper.navigate_to_manage_bundles()
             bundle_id = None
             if not self.bundle_helper.bundle_exists(bundle_name):
-                self.bundle_helper.create_bundle(bundle_name, True, questionnaires)
+                self.bundle_helper.create_bundle(bundle_name, True,
+                                                 [{"id": questionnaire['id'], "name": questionnaire['name']}])
                 bundle_id = self.bundle_helper.save_bundle(bundle_name)
             bundles = [{"id": bundle_id, "name": bundle_name}]
 
@@ -567,8 +546,8 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         # Arrange
         case_number = "55755388"
-        language_value = "de_DE"
-        welcome_text = 'Ein Willkommenstext für das Paket "Selenium-Paket". Nichts besonderes zu sehen.'
+        language_value = QuestionnaireHelper.DEFAULT_LANGUAGE_CODE
+        welcome_text = QuestionnaireHelper.DEFAULT_LOCALIZED_WELCOME_TEXT
 
         # Login as User
         self.driver.get(self.https_base_url)
@@ -585,6 +564,7 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
             self.survey_helper.click_next_button()
 
             for question in added_questions:
+                self.survey_assert_helper.assertion_for_question_title(question)
                 if question["type"] == QuestionSelectors.QuestionTypes.MULTIPLE_CHOICE:
                     self.survey_helper.answer_multiple_choice_question(question)
                 elif question["type"] == QuestionSelectors.QuestionTypes.SLIDER:
@@ -618,24 +598,99 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
                 print(f"Logout failed: {e}")
 
     # TODO [] complete creation of the test 'test_TestCase_Questionnaire_Create_and_Remove_All_Types_with_Bundle_Clinic_Conditions'
-    def test_case_questionnaire_Create_and_Remove_All_Types_with_Bundle_Clinic_Conditions(self):
+    def test_case_questionnaire_create_and_remove_all_Types_with_Bundle_Clinic_Conditions(self):
+
+        # Arrange
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        username_creator = "admin"
+        username_survey_executor = "user"
 
         questionnaire_id = None
-        questionnaire_name = ""
+        questionnaire_name = f"Fragebogen - Alle Fragetypen - Conditions - Scores - Bundles - Clinics {timestamp}"
+        questionnaire_description = "Dieser Fragebogen enthält sämtliche derzeit verfügbaren Fragetypen und dient der vollständigen Funktionsprüfung."
+        questionnaire_language_code = "de_DE"
+        questionnaire_welcome_text = 'Willkommen! Dieser Fragebogen ist ein Testbogen. Sie können alle Fragetypen ausprobieren.'
+        questionnaire_final_text = 'Vielen Dank für Ihre Teilnahme! Dieser Text erscheint am Ende des Fragebogens.'
+        questionnaire_display_name = questionnaire_name
+        added_questions = []
+
         bundle_id = None
-        bundle_name = ""
+        bundle_name = f"Fragebogenpaket Fragebogen Alle Fragetypen - Conditions - Scores - Bundles - Clinics {random.randint(1, 999999)}"
+
         clinic_id = None
-        clinic_name = ""
+        clinic_name = f"Testklinik für Fragebogenpaket {timestamp}"
+        clinic_description = 'Diese Klinik enthält das Fragebogenpaket "Fragebogenpaket Fragebogen Alle Fragetypen ...", um verschiedene Konfigurationsmöglichkeiten und Szenarien zu testen.'
+        configurations = [
+            {'selector': ClinicSelectors.CONFIG_REGISTER_PATIENT_DATA,
+             'config_selector': SurveySelectors.RADIO_REGISTER},
+            {'selector': ClinicSelectors.CONFIG_USE_PATIENT_DATA_LOOKUP, 'dropdown_value': "patient lookup 1",
+             'config_selector': SurveySelectors.RADIO_SEARCH_HIS},
+            {'selector': ClinicSelectors.CONFIG_USE_PSEUDONYMIZATION_SERVICE, 'dropdown_value': "pseudonymization 1",
+             'config_selector': SurveySelectors.RADIO_PSEUDONYMIZATION}
+        ]
+
+        # Login as Admin
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.admin_login(username=username_creator)
 
         try:
-            pass
             # Step 1: Create Questionnaire
+            # Act
+            self.navigation_helper.navigate_to_manage_questionnaires()
+            self.questionnaire_helper.click_add_questionnaire_button()
+            self.questionnaire_helper.fill_questionnaire_details(questionnaire_name, questionnaire_description,
+                                                                 questionnaire_language_code,
+                                                                 questionnaire_display_name,
+                                                                 questionnaire_welcome_text,
+                                                                 questionnaire_final_text)
+            questionnaire_id = self.questionnaire_helper.save_questionnaire_edit_question()
+            questionnaires = [{"id": questionnaire_id, "name": questionnaire_name}]
+
             # Step 2: Add Questions to questionnaire (all question types)
+            for add_question_method in self.question_helper.QUESTION_TYPES:
+                self.questionnaire_helper.click_add_question_button()
+                question_info = add_question_method()
+                added_questions.append(question_info)
+                self.question_helper.save_question()
+            # Assert
+            # Verify the number of questions added
+            self.questionnaire_error_helper.verify_number_of_questions(len(self.question_helper.QUESTION_TYPES))
+
             # Step 3: Add Bundle
+            # Act
+            self.navigation_helper.navigate_to_manage_bundles()
+            bundle_id = None
+            if not self.bundle_helper.bundle_exists(bundle_name):
+                self.bundle_helper.create_bundle(bundle_name, True, questionnaires)
+                bundle_id = self.bundle_helper.save_bundle(bundle_name)
+            bundles = [{"id": bundle_id, "name": bundle_name}]
+
             # Step 4: Add Clinic
+            self.navigation_helper.navigate_to_manage_clinics()
+            self.clinic_helper.create_clinic(clinic_name, clinic_description, configurations, bundles,
+                                             [username_creator, username_survey_executor])
+            clinic_id = self.clinic_helper.save_clinic(clinic_name)
+
             # Step 5: Add Conditions
-            # TODO [] implement methods
-            # self.condition_helper.add_condition_to_questionnaire()
+            self.navigation_helper.navigate_to_questions_of_questionnaire(questionnaire_id, questionnaire_name)
+            for question in added_questions:
+                if question['type'] == QuestionSelectors.QuestionTypes.MULTIPLE_CHOICE:
+                    self.condition_helper.add_condition_for_multiple_choice(question['id'])
+                    self.condition_helper.navigate_back_to_questionnaire()
+                elif question['type'] == QuestionSelectors.QuestionTypes.SLIDER:
+                    self.condition_helper.add_condition_for_slider(question)
+                    self.condition_helper.navigate_back_to_questionnaire()
+                elif question['type'] == QuestionSelectors.QuestionTypes.NUMBER_INPUT:
+                    self.condition_helper.add_condition_for_number_input(question['id'])
+                    self.condition_helper.navigate_back_to_questionnaire()
+                elif question['type'] == QuestionSelectors.QuestionTypes.DROP_DOWN:
+                    self.condition_helper.add_condition_for_drop_down(question['id'])
+                    self.condition_helper.navigate_back_to_questionnaire()
+                elif question['type'] == QuestionSelectors.QuestionTypes.NUMBER_CHECKBOX:
+                    self.condition_helper.add_condition_for_numbered_checkbox(question)
+                    self.condition_helper.navigate_back_to_questionnaire()
+
             # Step 6: Add Scores
             # TODO [] implement methods
             # self.score_helper.add_score_to_questionnaire()

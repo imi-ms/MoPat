@@ -1,7 +1,10 @@
 from selenium.common import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+from helper.Navigation import NavigationHelper
 from helper.SeleniumUtils import SearchBoxSelectors
 from helper.SeleniumUtils import SeleniumUtils
 
@@ -30,7 +33,7 @@ class ClinicSelectors:
     TABLE_ROW_LINK = (By.CSS_SELECTOR, "#clinicTable > tbody > tr > td.dtr-control > a")
 
 class ClinicHelper:
-    def __init__(self, driver, navigation_helper):
+    def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
         self.navigation_helper = navigation_helper
         self.utils = SeleniumUtils(driver)

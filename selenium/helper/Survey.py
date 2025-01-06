@@ -1,11 +1,13 @@
 import time
 
 from selenium.common import TimeoutException
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
+from helper.Navigation import NavigationHelper
 from helper.Question import QuestionSelectors
 from helper.SeleniumUtils import SeleniumUtils
 
@@ -32,6 +34,7 @@ class SurveySelectors:
     SLIDER = (By.ID, "range")
 
     TEXT_QUESTION_CONTENT = (By.ID, "questionContent")
+    TEXT_QUESTION_TITLE = (By.ID, "questionTitle")
 
     LABEL_FOR_CHECKBOX = lambda selected_value: (By.CSS_SELECTOR, f"label[for='numberedCheckbox_{selected_value}']")
     LABEL_BY_OPTION_TEXT = lambda option_text: (By.XPATH, f"//div[@class='right' and text()='{option_text}']/..")
@@ -45,10 +48,10 @@ class SurveyHelper:
     DEFAULT_SLIDER_POSITION = 0.5
     DEFAULT_DATE = "1970-01-01"
 
-    def __init__(self, driver, login_helper):
+    def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
-        self.login_helper = login_helper
         self.utils = SeleniumUtils(driver)
+        self.navigation_helper = navigation_helper
 
     def click_next_button(self):
         self.utils.click_element(SurveySelectors.BUTTON_NEXT_QUESTION)
@@ -64,10 +67,20 @@ class SurveyHelper:
         """
         try:
             # Select clinic
-            WebDriverWait(self.driver, 10).until(
+            clinic_dropdown = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(SurveySelectors.DROPDOWN_CLINIC_SELECTION)
             )
-            self.utils.select_dropdown(SurveySelectors.DROPDOWN_CLINIC_SELECTION, clinic_name, "visible_text")
+
+            # Check if the dropdown is disabled
+            is_disabled = clinic_dropdown.get_attribute("disabled")
+            if is_disabled:
+                # Validate that the preselected clinic matches the expected clinic
+                selected_option = clinic_dropdown.find_element(By.CSS_SELECTOR, "option[selected]")
+                selected_clinic = selected_option.text
+                assert selected_clinic == clinic_name, f"Expected clinic '{clinic_name}', but got '{selected_clinic}'"
+            else:
+                # Select the clinic from the dropdown
+                self.utils.select_dropdown(SurveySelectors.DROPDOWN_CLINIC_SELECTION, clinic_name, "visible_text")
 
             # Select configuration
             config_selector = configuration['config_selector']
@@ -272,3 +285,17 @@ class SurveyAssertHelper(SurveyHelper):
         )
         welcome_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_CONTENT).text
         assert text in welcome_text, "Welcome text not found!"
+
+    def assertion_for_question_title(self, question):
+        if question["type"] == QuestionSelectors.QuestionTypes.INFO_TEXT:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located(SurveySelectors.TEXT_QUESTION_CONTENT)
+            )
+            question_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_CONTENT).text
+            assert question['text'] in question_text, "Question text not found!"
+        else:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located(SurveySelectors.TEXT_QUESTION_TITLE)
+            )
+            question_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_TITLE).text
+            assert question['text'] in question_text, "Question title not found!"
