@@ -17,10 +17,13 @@ class BundleSelectors:
 
     INPUT_NAME = (By.ID, "name")
     INPUT_EDITABLE_DESCRIPTION = (By.CSS_SELECTOR, "div.note-editable")
+    INPUT_WELCOME_TEXT = (By.CSS_SELECTOR, "#localizedWelcomeTextCollapsableText_de_DE > div > div.note-editing-area > div.note-editable")
     INPUT_BUNDLE_SEARCH = (By.ID, "bundleTable_filter")
     INPUT_QUESTIONNAIRE = lambda questionnaire_id: (By.ID, f"questionnaire_{questionnaire_id}")
     INPUT_QUESTIONNAIRE_AVAILABLE_SEARCH = (By.ID, "availableQuestionnairesFilter")
-
+    TABLE_BUNDLE = (By.ID, "bundleTable")
+    PAGINATION_BUNDLE = (By.CSS_SELECTOR, "#bundleTable_paginate")
+    BUTTON_ADD_LANGUAGE = (By.CSS_SELECTOR, "#languageDropdown > a")
 
 class BundleHelper:
     def __init__(self, driver, fragebogen_helper, navigation_helper):
@@ -93,10 +96,22 @@ class BundleHelper:
 
             # Publish the bundle if requested
             if publish_bundle:
+                self.utils.scroll_to_element(BundleSelectors.CHECKBOX_PUBLISH)
                 self.utils.toggle_checkbox(BundleSelectors.CHECKBOX_PUBLISH, enable=True)
 
         except Exception as e:
             raise Exception(f"Error while creating bundle '{bundle_name}': {e}")
+
+    def add_language_to_bundle(self):
+        """
+        :param language: Language to add to the bundle.
+        """
+        try:
+            self.utils.click_element(BundleSelectors.BUTTON_ADD_LANGUAGE)
+            self.utils.click_element((By.ID, 'ur_PK'))
+        except Exception as e:
+            raise Exception(f"Error while adding language to the bundle: {e}")
+        
 
     def save_bundle(self, bundle_name):
         """
@@ -146,3 +161,15 @@ class BundleHelper:
                     raise Exception(f"Error while assigning questionnaire '{questionnaire['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple questionnaires: {e}")
+        
+    def get_bundle_id(self):
+        edit_link = self.get_first_bundle_row().find_element(By.CSS_SELECTOR, "a[href^='fill?id=']")
+        href = edit_link.get_attribute('href')
+        # Extract ID from href using split
+        bundle_id = href.split('id=')[1]
+        return bundle_id
+
+    def get_first_bundle_row(self):
+        return self.driver.find_element(*BundleSelectors.TABLE_BUNDLE) \
+                           .find_element(By.TAG_NAME, "tbody") \
+                           .find_element(By.TAG_NAME, "tr")

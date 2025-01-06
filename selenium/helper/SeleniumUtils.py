@@ -158,6 +158,31 @@ class SeleniumUtils:
         except TimeoutException:
             raise Exception(f"Timeout while locating table rows in table '{value}'.")
 
+    def search_item(self, item_name, item_type):
+        """
+        :param item_name: The name of the item to search for.
+        :param item_id: The unique ID of the item to delete.
+        :param item_type: The type of the item to delete (e.g., "questionnaire", "bundle", "clinic").
+        """
+        try:
+            # Initialize variables based on the item type
+            if item_type == "questionnaire":
+                self.navigator.navigate_to_manage_questionnaires()
+                search_box_selector = SearchBoxSelectors.QUESTIONNAIRE
+            elif item_type == "bundle":
+                self.navigator.navigate_to_manage_bundles()
+                search_box_selector = SearchBoxSelectors.BUNDLE
+            elif item_type == "clinic":
+                self.navigator.navigate_to_manage_clinics()
+                search_box_selector = SearchBoxSelectors.CLINIC
+            else:
+                raise ValueError(f"Unknown item type: {item_type}")
+
+            # Search for the element using the appropriate search box
+            self.fill_text_field(search_box_selector, item_name)
+
+        except Exception as e:
+            raise Exception(f"An error occurred while searching for {item_type} '{item_name}'")
 
     def search_and_delete_item(self, item_name, item_id, item_type):
         """
