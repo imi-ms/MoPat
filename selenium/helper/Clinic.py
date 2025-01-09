@@ -17,20 +17,37 @@ class ClinicSelectors:
 
     INPUT_CLINIC_NAME = (By.ID, "name")
     INPUT_EDITABLE_DESCRIPTION = (By.CSS_SELECTOR, "div.note-editable")
+    INPUT_CLINIC_EMAIL=(By.ID, 'email')
 
+    DIV_CLINIC_CONFIGURATION = (By.ID, "clinicConfigurations")
+    
+    CLINIC_CONFIGURATION_LIST = (By.CSS_SELECTOR, "#clinicConfigurations > div > div > ul > li")
     # Configuration selectors
     CONFIG_USE_PATIENT_DATA_LOOKUP = (By.CSS_SELECTOR, "li#usePatientDataLookup input[type='checkbox']")
     CONFIG_USE_PSEUDONYMIZATION_SERVICE = (By.CSS_SELECTOR, "li#usePseudonymizationService input[type='checkbox']")
     CONFIG_REGISTER_PATIENT_DATA = (By.CSS_SELECTOR, "li#registerPatientData input[type='checkbox']")
 
     INPUT_BUNDLE_AVAILABLE_SEARCH = (By.ID, "availableBundlesFilter")
+    INPUT_BUNDLE_ASSIGNED_SEARCH = (By.ID, "assignedBundlesFilter")
     INPUT_BUNDLE = lambda bundle_id: (By.ID, f"bundle_{bundle_id}")
     BUTTON_MOVE_ITEM = lambda bundle_id: (By.ID, f"move_{bundle_id}")
 
     INPUT_USER_AVAILABLE_SEARCH = (By.ID, "availableUsersFilter")
+    INPUT_USER_ASSIGNED_SEARCH = (By.ID, "assignedUsersFilter")
+
     INPUT_USER = lambda username: (By.ID, f"user_{username}")
 
+    TABLE_CLINIC= (By.CSS_SELECTOR, "#clinicTable")
     TABLE_ROW_LINK = (By.CSS_SELECTOR, "#clinicTable > tbody > tr > td.dtr-control > a")
+    TABLE_SEARCH = (By.ID, 'clinicTable_filter')
+    TABLE_ACTION_BUTTONS= (By.CSS_SELECTOR, "td.actionColumn")
+
+    TABLE_AVAIALBLE_BUNDLES = (By.ID, "availableBundlesTable")
+    TABLE_ASSIGNED_BUNDLES = (By.ID, "assignedBundlesTable")
+    TABLE_AVAIALBLE_USERS = (By.ID, "availableUsersTable")
+    TABLE_ASSIGNED_USERS = (By.ID, "assignedUsersTable")
+
+    PAGINATION_CLINIC_TABLE = (By.ID, "clinicTable_paginate")
 
 class ClinicHelper:
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
@@ -179,6 +196,32 @@ class ClinicHelper:
                     raise Exception(f"Error while assigning bundle '{bundle['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple bundles: {e}")
+    
+    def remove_multiple_bundes_from_clinic(self, bundles, clinic_id=None):
+        """
+        :param bundles: List of dictionaries containing bundle details (e.g., {'id': str, 'name': str}).
+        :param clinic_id: ID of the clinic to which the bundles will be removed (optional).
+        """
+        try:
+            if clinic_id:
+                self.search_and_open_clinic(clinic_id)
+
+            for bundle in bundles:
+                try:
+                    self.utils.fill_text_field(ClinicSelectors.INPUT_BUNDLE_ASSIGNED_SEARCH, bundle['name'])
+
+                    bundle_selector = ClinicSelectors.INPUT_BUNDLE(bundle['id'])
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located(bundle_selector)
+                    )
+                    self.utils.scroll_to_element(ClinicSelectors.BUTTON_MOVE_ITEM(bundle['id']))
+                    self.utils.click_element(ClinicSelectors.BUTTON_MOVE_ITEM(bundle['id']))
+                except TimeoutException:
+                    raise Exception(f"Timeout while assigning bundle '{bundle['name']}'.")
+                except Exception as e:
+                    raise Exception(f"Error while assigning bundle '{bundle['name']}': {e}")
+        except Exception as e:
+            raise Exception(f"Error while assigning multiple bundles: {e}")
 
     def assign_multiple_users_to_clinic(self, usernames, clinic_id=None):
         """
@@ -192,6 +235,32 @@ class ClinicHelper:
             for username in usernames:
                 try:
                     self.utils.fill_text_field(ClinicSelectors.INPUT_USER_AVAILABLE_SEARCH, username)
+
+                    user_selector = ClinicSelectors.INPUT_USER(username)
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located(user_selector)
+                    )
+                    self.utils.scroll_to_element(ClinicSelectors.BUTTON_MOVE_ITEM(username))
+                    self.utils.click_element(ClinicSelectors.BUTTON_MOVE_ITEM(username))
+                except TimeoutException:
+                    raise Exception(f"Timeout while assigning user '{username}'.")
+                except Exception as e:
+                    raise Exception(f"Error while assigning user '{username}': {e}")
+        except Exception as e:
+            raise Exception(f"Error while assigning multiple users: {e}")
+        
+    def remove_multiple_users_from_clinic(self, usernames, clinic_id=None):
+        """
+        :param usernames: List of usernames.
+        :param clinic_id: ID of the clinic to which the bundles will be removed (optional).
+        """
+        try:
+            if clinic_id:
+                self.search_and_open_clinic(clinic_id)
+
+            for username in usernames:
+                try:
+                    self.utils.fill_text_field(ClinicSelectors.INPUT_USER_ASSIGNED_SEARCH, username)
 
                     user_selector = ClinicSelectors.INPUT_USER(username)
                     WebDriverWait(self.driver, 10).until(

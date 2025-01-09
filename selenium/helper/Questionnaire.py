@@ -183,9 +183,10 @@ class QuestionnaireHelper:
 
         # Add questions to the questionnaire
         added_questions = []
-        for add_question_method in question_types:
+        for question_type in question_types:
             self.click_add_question_button()
-            question_info = add_question_method()  # Add question
+            method_to_call = self.question_helper.QUESTION_TYPE_MAPPING[question_type]
+            question_info=method_to_call()  # Add question
             question_info["id"] = self.question_helper.save_question()  # Save the question and retrieve ID
             added_questions.append(question_info)
 

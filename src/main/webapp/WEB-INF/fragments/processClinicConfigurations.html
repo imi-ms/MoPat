@@ -71,6 +71,7 @@
                     th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
                     th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
                     style="color: red"
+                    class="configurationError"
                 >
                 </div>
             </div>

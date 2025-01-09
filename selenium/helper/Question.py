@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import Select
 
 from helper.Navigation import NavigationHelper
 from helper.SeleniumUtils import SeleniumUtils
-
+from enum import Enum
 
 class QuestionSelectors:
     BUTTON_SAVE = (By.ID, "saveButton")
@@ -35,7 +35,7 @@ class QuestionSelectors:
     TABLE_LAST_ROW = (By.XPATH, "//tbody/tr[last()]")
     TABLE_ROWS = (By.XPATH, "//tbody/tr")
 
-    class QuestionTypes:
+    class QuestionTypes():
         INFO_TEXT = "INFO_TEXT"
         MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
         SLIDER = "SLIDER"
@@ -65,21 +65,32 @@ class QuestionHelper:
     DEFAULT_MC_MIN_VALUE = 0
     DEFAULT_MC_MAX_VALUE = len(DEFAULT_MC_OPTIONS)
     DEFAULT_FREE_TEXT_LABEL = "Freetext Label"
-
+            
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
         self.utils = SeleniumUtils(driver)
         self.navigation_helper = navigation_helper
+        self.QUESTION_TYPE_MAPPING = {
+            QuestionSelectors.QuestionTypes.INFO_TEXT: partial(self.add_question_info_text),
+            QuestionSelectors.QuestionTypes.MULTIPLE_CHOICE: partial(self.add_question_multiple_choice),
+            QuestionSelectors.QuestionTypes.SLIDER: partial(self.add_question_slider_question),
+            QuestionSelectors.QuestionTypes.NUMBER_CHECKBOX: partial(self.add_question_numeric_checkbox),
+            QuestionSelectors.QuestionTypes.NUMBER_CHECKBOX_TEXT: partial(self.add_question_numeric_checkbox_freetext),
+            QuestionSelectors.QuestionTypes.DATE: partial(self.add_question_date_question),
+            QuestionSelectors.QuestionTypes.DROP_DOWN: partial(self.add_question_dropdown),
+            QuestionSelectors.QuestionTypes.NUMBER_INPUT: partial(self.add_question_numeric_question),
+            QuestionSelectors.QuestionTypes.FREE_TEXT: partial(self.add_question_freetext),
+        }
         self.QUESTION_TYPES = [
-            partial(self.add_question_info_text),
-            partial(self.add_question_multiple_choice),
-            partial(self.add_question_slider_question),
-            partial(self.add_question_numeric_checkbox),
-            partial(self.add_question_numeric_checkbox_freetext),
-            partial(self.add_question_date_question),
-            partial(self.add_question_dropdown),
-            partial(self.add_question_numeric_question),
-            partial(self.add_question_freetext),
+            QuestionSelectors.QuestionTypes.INFO_TEXT,
+            QuestionSelectors.QuestionTypes.MULTIPLE_CHOICE,
+            QuestionSelectors.QuestionTypes.SLIDER,
+            QuestionSelectors.QuestionTypes.NUMBER_CHECKBOX,
+            QuestionSelectors.QuestionTypes.NUMBER_CHECKBOX_TEXT,
+            QuestionSelectors.QuestionTypes.DATE,
+            QuestionSelectors.QuestionTypes.DROP_DOWN,
+            QuestionSelectors.QuestionTypes.NUMBER_INPUT,
+            QuestionSelectors.QuestionTypes.FREE_TEXT,
         ]
 
     def save_question(self):

@@ -8,6 +8,11 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
+class ErrorSelectors:
+    INPUT_VALIDATION_SELECTOR=(By.CLASS_NAME, "validationError")
+    CONFIGURATION_ERROR_SELECTOR=(By.CLASS_NAME, "configurationError")
+
+
 class RemoveButtonSelectors:
     QUESTIONNAIRE = "removeQuestionnaire_{}"
     BUNDLE = "removeBundle_{}"
