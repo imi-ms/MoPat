@@ -16,6 +16,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, target-densityDpi=device-dpi">
 		<title>MoPat</title>
 
+		<link 
+			rel="manifest"
+			th:href="@{/conf/app.webmanifest}"
+		/>
+		
 		<!--/* WYSIWYG Editor */-->
 		<link
 			rel="stylesheet"
@@ -103,6 +108,10 @@
 		<script
 			defer
 			th:src="@{/js/helper/dialog.js?version=3.0}"
+		></script>
+		<script
+			defer
+			th:src="@{/js/helper/image.js?version=3.0}"
 		></script>
 		<!--/* Iconpicker for slider questions */-->
 		<script

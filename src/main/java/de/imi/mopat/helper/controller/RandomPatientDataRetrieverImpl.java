@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.model.Clinic;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class RandomPatientDataRetrieverImpl extends PatientDataRetriever {
     }
 
     @Override
-    public EncounterDTO retrievePatientData(final String caseNumber) {
+    public EncounterDTO retrievePatientData(final Clinic clinic,final String caseNumber) {
         LOGGER.debug("Case number is: {}", caseNumber);
         assert caseNumber != null : "The given caseNumber was null";
 

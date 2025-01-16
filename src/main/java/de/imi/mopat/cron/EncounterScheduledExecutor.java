@@ -150,6 +150,7 @@ public class EncounterScheduledExecutor {
                 encounter.setCaseNumber(encounterScheduled.getCaseNumber());
                 encounter.setStartTime(new Timestamp(today.getTime()));
                 encounter.setEncounterScheduled(encounterScheduled);
+                encounter.setClinic(encounterScheduled.getClinic());
 
                 encounter.sendMail(applicationMailer, messageSource, configurationDao.getBaseURL());
                 // Store last reminder date, which was set in sendMail

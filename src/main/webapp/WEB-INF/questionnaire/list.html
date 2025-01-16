@@ -22,11 +22,24 @@
 				<th:block th:text="${messageFail}" />
 			</div>
 		</th:block>
+		<div class="alert alert-warning" role="alert" th:if="${hasQuestionnaireConditions}" th:text="${messages.get(#locale, 'questionnaire.warning.cloneConditions', '')}"></div>
+    <div
+        id="loadingContainer"
+        class="d-flex flex-column align-items-center justify-content-center vh-50"
+    >
+      <div
+          class="spinner-border"
+          id="loadingSpinner"
+          role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 		<div class="table-responsive">
 			<table
 				id="questionnaireTable"
-				class="table table-hover pagedTable responsive"
-				style="width: 100%"
+				class="table table-hover responsive"
+				style="width: 100%; display: none;"
 			>
 				<colgroup>
 					<col width="20%" />
@@ -315,6 +328,19 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
+		$(document).ready(function() {
+			$('#questionnaireTable').DataTable({
+				"deferRender": true,
+				"paging": true,
+				"ordering": false,
+				"initComplete": function(settings, json) {
+					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
+					$('#loadingContainer').addClass("d-none")
+					$('#questionnaireTable').fadeIn(); // Show the table
+				}
+			});
+		});
+
 		var deleteQuestionnaireWithConditions =
 			/*[[#{questionnaire.warning.deleteQuestionnaireWithConditions}]]*/ "The questionnaire is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the questionnaire anyway?";
 

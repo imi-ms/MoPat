@@ -54,7 +54,7 @@ public interface MoPatDao<T> {
      *
      * @return All elements of type T within the database.
      */
-    @PostFilter("hasRole('ROLE_ADMIN') OR hasPermission(filterObject, 'READ')")
+    @PostFilter("hasRole('ROLE_EDITOR') OR hasPermission(filterObject, 'READ')")
     List<T> getAllElements();
 
     /**

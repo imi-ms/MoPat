@@ -10,10 +10,12 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
-import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.utils.Helper;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -45,7 +47,7 @@ public class ClinicTest {
     private Clinic testClinic;
 
     @Autowired
-    private ClinicService clinicService;
+    private ClinicDTOMapper clinicDTOMapper;
 
     public ClinicTest() {
     }
@@ -361,12 +363,20 @@ public class ClinicTest {
     }
 
     /**
-     * Test of {@link Clinic#toCLinicDTO} method.<br> Valid input: random {@link Clinic}
+     * Test of {@link ClinicDTOMapper#apply(Clinic)} method.<br> Valid input: random {@link Clinic}
      */
     @Test
     public void testToClinicDTO() {
         Clinic spyClinic = spy(testClinic);
         Mockito.when(spyClinic.getId()).thenReturn(Math.abs(random.nextLong()));
+        ClinicConfigurationMapping clinicConfigurationMapping1 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
+        clinicConfigurationMapping1.setClinic(spyClinic);
+        ClinicConfigurationMapping clinicConfigurationMapping2 = spy(ClinicConfigurationMappingTest.getNewValidConfiguration());
+        clinicConfigurationMapping2.setClinic(spyClinic);
+        List<ClinicConfigurationMapping> clinicConfigurationMappings = new ArrayList<>();
+        clinicConfigurationMappings.add(clinicConfigurationMapping1);
+        clinicConfigurationMappings.add(clinicConfigurationMapping2);
+        spyClinic.setClinicConfigurationMappings(clinicConfigurationMappings);
         Bundle bundle = spy(BundleTest.getNewValidBundle());
         Mockito.when(bundle.getId()).thenReturn(Math.abs(random.nextLong()));
         bundle.setLocalizedFinalText(new TreeMap<>());
@@ -374,7 +384,7 @@ public class ClinicTest {
         BundleClinic bundleClinic = BundleClinicTest.getNewValidBundleClinic(spyClinic, bundle);
         spyClinic.addBundleClinic(bundleClinic);
         spyClinic.setEmail(Helper.getRandomMailAddress());
-        ClinicDTO clinicDTO = clinicService.toClinicDTO(spyClinic);
+        ClinicDTO clinicDTO = clinicDTOMapper.apply(spyClinic);
         assertEquals(
             "Converting the clinic to DTO failed. The returned id didn't match the expected value.",
             spyClinic.getId(), clinicDTO.getId());

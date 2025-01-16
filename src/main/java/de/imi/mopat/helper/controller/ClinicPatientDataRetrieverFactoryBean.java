@@ -1,5 +1,6 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.model.Configuration;
 import org.slf4j.Logger;
@@ -7,32 +8,45 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Factory to look up, instantiate and provide an implementation of {@link PatientDataRetriever} via
- * the {@link PatientDataRetrieverFactoryBean#getObject()} method. Checks the configurationwhether a
- * {@link PatientDataRetriever} has been activated. If yes, searches for a class given in the
- * configuration and tries to instantiate it (the implementation itself has to gather and use the
- * information it needs). If everything worked, the implementation is provided. Otherwise, it just
- * returns <code>null</code>.
+ * Factory to look up, instantiate and provide an implementation of {@link PatientDataRetriever} via the
+ * {@link ClinicPatientDataRetrieverFactoryBean#getObject()} method. Checks the configuration whether a
+ * {@link PatientDataRetriever} has been activated. If yes, searches for a class given in the configuration and tries to
+ * instantiate it (the implementation itself has to gather and use the information it needs). If everything worked, the
+ * implementation is provided. Otherwise, it just returns <code>null</code>.
  *
  * @version 1.0
  */
-public class PatientDataRetrieverFactoryBean implements FactoryBean<PatientDataRetriever> {
+public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<PatientDataRetriever> {
+
+    @Autowired
+    private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
 
     @Autowired
     private ConfigurationDao configurationDao;
 
+    private Long clinicId;
+
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        PatientDataRetrieverFactoryBean.class);
+        ClinicPatientDataRetrieverFactoryBean.class);
 
     private final String className = this.getClass().getName();
 
     public final String usePatientDataLookupProperty = "usePatientDataLookup";
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
     public final String patientDataRetrieverClassProperty = "patientDataRetrieverClass";
+
+    public ClinicPatientDataRetrieverFactoryBean() {
+
+    }
+
+    public ClinicPatientDataRetrieverFactoryBean(Long clinicId) {
+        this.clinicId = clinicId;
+    }
 
     @Override
     public PatientDataRetriever getObject() throws Exception {
         PatientDataRetriever result = null;
-        Boolean activated = configurationDao.isUsePatientDataLookupActivated();
+        Boolean activated = clinicConfigurationMappingDao.isUsePatientDataLookupActivated(clinicId);
 
         LOGGER.info("[SETUP] Checking whether a property ({}) for activation of "
             + "patient data retrieving is given...[DONE]", usePatientDataLookupProperty);
@@ -41,7 +55,7 @@ public class PatientDataRetrieverFactoryBean implements FactoryBean<PatientDataR
             + "expected, beware that only 'true' is detected as " + "activation", activated);
 
         if (activated) {
-            String patientDataRetrieverImplementationClass = getPatientRetrieverClass();
+            String patientDataRetrieverImplementationClass = getPatientRetrieverClass(clinicId);
             LOGGER.info("[SETUP] Checking whether a property ({}) for the patient"
                 + " data retriever is given...", patientDataRetrieverClassProperty);
             if (patientDataRetrieverImplementationClass == null) {
@@ -85,9 +99,13 @@ public class PatientDataRetrieverFactoryBean implements FactoryBean<PatientDataR
         return false;
     }
 
-    private String getPatientRetrieverClass() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            patientDataRetrieverClassProperty, className);
+    private String getPatientRetrieverClass(Long clinicId) {
+        Configuration configuration = configurationDao.getConfigurationByGroupName(
+            clinicId, patientDataRetrieverClassProperty, className, usePatientDataLookupGroupName);
         return configuration.getValue();
+    }
+
+    private void setClinicId(Long clinicId) {
+        this.clinicId = clinicId;
     }
 }

@@ -13,6 +13,7 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.helper.controller.QuestionnaireService;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
@@ -54,6 +55,8 @@ public class QuestionnaireTest {
     private Questionnaire testQuestionnaire;
     @Autowired
     private QuestionnaireService questionnairService;
+    @Autowired
+    QuestionnaireDTOMapper questionnaireDTOMapper;
 
     public QuestionnaireTest() {
     }
@@ -80,9 +83,25 @@ public class QuestionnaireTest {
         Boolean isPublished = random.nextBoolean();
 
         Questionnaire questionnaire = new Questionnaire(name, description, changedBy, isPublished);
+        
+        QuestionnaireVersionGroup questionnaireVersionGroup = getNewValidQuestionnaireVersionGroup();
+        Set<Questionnaire> questionnaireSet = new HashSet<>();
+        questionnaireSet.add(questionnaire);
+        
+        questionnaireVersionGroup.setQuestionnaires(questionnaireSet);
+        questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
 
         return questionnaire;
 
+    }
+    
+    private static QuestionnaireVersionGroup getNewValidQuestionnaireVersionGroup() {
+        String name = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
+        
+        QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
+        questionnaireVersionGroup.setName(name);
+        
+        return questionnaireVersionGroup;
     }
 
     @Before
@@ -283,8 +302,7 @@ public class QuestionnaireTest {
         spyQuestionnaire.setLocalizedDisplayName(stringMap);
         spyQuestionnaire.setLocalizedFinalText(stringMap);
         spyQuestionnaire.setLocalizedWelcomeText(stringMap);
-        QuestionnaireDTO questionnaireDTO = questionnairService.toQuestionnaireDTO(
-            spyQuestionnaire);
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(spyQuestionnaire);
         assertNotNull(
             "Converting the questionnaire to DTO failed. The returned value was null although a not-null value was expected.",
             questionnaireDTO);
