@@ -22,6 +22,8 @@ class SearchBoxSelectors:
     QUESTIONNAIRE = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     BUNDLE = (By.CSS_SELECTOR, "#bundleTable_filter input[type='search']")
     CLINIC = (By.CSS_SELECTOR, "#clinicTable_filter input[type='search']")
+    INVITATION = (By.CSS_SELECTOR, "#invitationTable_filter input[type='search']")
+
 
 
 class SeleniumUtils:

@@ -10,6 +10,8 @@ class NavigationBarSelectors:
     class UserMenu:
         BUTTON = (By.ID, "userDropdownLink")
         MAIL_TO_ALL_LINK = (By.ID, "mailToAllLink")
+        MANAGE_USER_LINK = (By.ID, "managerUserLink")
+        MANAGE_INVITATIONS_LINK = (By.ID, "manageInvitationLink")
 
     class QuestionnaireMenu:
         BUTTON = (By.ID, "questionnaireDropdownLink")
@@ -74,6 +76,26 @@ class NavigationHelper:
             self.utils.click_element(NavigationBarSelectors.UserMenu.MAIL_TO_ALL_LINK)
         except Exception as e:
             raise Exception(f"Failed to navigate to 'E-Mail to All Users': {e}")
+    
+    def navigate_to_manager_user(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.UserMenu.BUTTON)
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(NavigationBarSelectors.UserMenu.MANAGE_USER_LINK)
+            )
+            self.utils.click_element(NavigationBarSelectors.UserMenu.MANAGE_USER_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Users': {e}")
+        
+    def navigate_to_manage_invitations(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.UserMenu.BUTTON)
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(NavigationBarSelectors.UserMenu.MANAGE_INVITATIONS_LINK)
+            )
+            self.utils.click_element(NavigationBarSelectors.UserMenu.MANAGE_INVITATIONS_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Invitations': {e}")
 
     def search_and_open_questionnaire(self, questionnaire_name):
         try:

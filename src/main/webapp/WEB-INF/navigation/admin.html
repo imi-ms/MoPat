@@ -92,6 +92,7 @@
 							<ul class="dropdown-menu">
 								<li>
 									<a
+										id="managerUserLink"
 										class="dropdown-item"
 										th:href="@{/user/list}"
 										th:text="${messages.get(#locale, 'admin.navigation.user', 'Manage Users')}"
@@ -109,6 +110,7 @@
 								</li>
 								<li>
 									<a
+										id="manageInvitationLink"
 										class="dropdown-item"
 										th:href="@{/invitation/list}"
 										th:text="#{admin.navigation.user.editInvitation}"

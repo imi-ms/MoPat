@@ -72,7 +72,8 @@
 					</select>
 				</div>
 				<th:block th:if="${#bools.isTrue(preview)}">
-					<h3
+					<div id="preview">
+						<h3
 						th:text="${messages.get(#locale, 'user.label.preview', 'Preview')}"
 					></h3>
 					<div class="form-group">
@@ -98,6 +99,7 @@
 							disabled="true"
 							th:text="${previewContent}"
 						></textarea>
+					</div>
 					</div>
 				</th:block>
 

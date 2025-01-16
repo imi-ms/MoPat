@@ -8,6 +8,7 @@
 	<th:block layout:fragment="content">
 		<div class="table-responsive">
 			<table
+				id="invitationTable"
 				class="table table-hover pagedTable responsive"
 				style="width: 100%"
 			>
@@ -84,6 +85,7 @@
 								<div class="d-none d-xl-block">
 									<th:block th:fragment="actionFragment">
 										<a
+											id="editInvite"
 											class="link"
 											th:href="@{edit?id=__${item.id}__}"
 										>
