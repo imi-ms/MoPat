@@ -23,6 +23,13 @@ class NavigationBarSelectors:
 
     class ClinicMenu:
         LINK = (By.ID, "clinicLink")
+    
+    class SurveysMenu:
+        BUTTON = (By.ID, "surveyDropdownLink")
+        MANAGE_SURVEY_LINK = (By.ID, "manageSurveyLink")
+        SCHEDULE_SURVEY_LINK = (By.ID, "scheduleSurveyLink")
+        EXECUTE_SURVEY_LINK = (By.ID, "executeSurveyLink")
+
 
 class QuestionnaireTableSelectors:
     FILTER_INPUT = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
@@ -109,6 +116,27 @@ class NavigationHelper:
             first_result_link.click()
         except TimeoutException:
             raise Exception(f"Failed to search and open questionnaire '{questionnaire_name}'.")
+    
+    def navigate_to_manage_surveys(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.MANAGE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Surveys': {e}")
+        
+    def navigate_to_schedule_survey(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.SCHEDULE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Schedule Survey': {e}")
+        
+    def navigate_to_execute_survey(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.EXECUTE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Execute Survey': {e}")
 
     # def search_and_delete_item(self, item_name, item_id, item_type):
     #     try:

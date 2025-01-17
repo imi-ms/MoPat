@@ -125,6 +125,7 @@
 						class="nav-item dropdown"
 					>
 						<a
+							id="surveyDropdownLink"
 							class="nav-link d-flex align-items-center"
 							data-bs-toggle="dropdown"
 							role="button"
@@ -140,6 +141,7 @@
 						<ul class="dropdown-menu">
 							<li>
 								<a
+									id="manageSurveyLink"
 									class="dropdown-item"
 									th:href="@{/encounter/list}"
 									th:text="${messages.get(#locale, 'admin.navigation.manageSurveys', 'Manage surveys')}"
@@ -148,6 +150,7 @@
 							</li>
 							<li>
 								<a
+									id="scheduleSurveyLink"
 									class="dropdown-item"
 									th:href="@{/encounter/schedule}"
 									th:text="#{admin.navigation.scheduleSurvey}"
@@ -156,6 +159,7 @@
 							</li>
 							<li>
 								<a
+									id="executeSurveyLink"
 									class="dropdown-item"
 									th:href="@{/mobile/survey/index}"
 									th:text="#{admin.navigation.executeSurvey}"
