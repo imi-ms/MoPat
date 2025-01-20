@@ -23,6 +23,7 @@ class SearchBoxSelectors:
     BUNDLE = (By.CSS_SELECTOR, "#bundleTable_filter input[type='search']")
     CLINIC = (By.CSS_SELECTOR, "#clinicTable_filter input[type='search']")
     INVITATION = (By.CSS_SELECTOR, "#invitationTable_filter input[type='search']")
+    SCHEDULED_ENCOUNTER = (By.CSS_SELECTOR, "#encounterScheduled_filter input[type='search']")
 
 
 
