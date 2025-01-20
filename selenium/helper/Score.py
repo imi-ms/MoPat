@@ -1,10 +1,11 @@
-from selenium.webdriver import Keys
+from datetime import datetime
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from helper.Questionnaire import QuestionnaireHelper
+from helper.SeleniumUtils import DropdownMethod
 
 class ScoreSelectors:
     BUTTON_ADD_SCORE = (By.ID, "addScore")
@@ -17,6 +18,17 @@ class ScoreSelectors:
 
     INPUT_NAME = (By.ID, "name")
     INPUT_VALUE = lambda index: (By.NAME, f"expression.expressions[{index}].value")
+
+    TABLE_ROWS = (By.CSS_SELECTOR, "tbody > tr:not(#emptyRow)")
+    SCORE_TABLE = (By.ID, "scoreTable")
+    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > a.link")
+
+    DROPDOWN_EXPRESSION_TYPE = (By.ID, "expression")
+    EXPRESSION_OPERATOR_SELECTED = lambda path: (By.NAME, f"{path}.operatorId")
+    EXPRESSION_OPERATOR_UNSELECTED = lambda path: (By.NAME, f"{path}")
+    EXPRESSION_VALUE = lambda path: (By.NAME, f"{path}.value")
+    EXPRESSION_QUESTION = lambda path: (By.NAME, f"{path}.questionId")
+    EXPRESSION_SCORE = lambda path: (By.NAME, f"{path}.scoreId")
 
     # Specific score types
     class ExpressionType:
@@ -48,76 +60,273 @@ class ScoreHelper(QuestionnaireHelper):
     def save_score(self):
         self.utils.click_element(ScoreSelectors.BUTTON_SAVE)
 
-    def add_basic_score(self, name, expression_type, steps=1):
+    def create_basic_score(self, expression_type, name_prefix=None, question_id=None, score_id=None):
         """
-        :param name: Name of the score.
-        :param expression_type: The type of expression (e.g., '1' for addition, '5' for question value, etc.).
-        :param steps: Number of times to press ARROW_UP for value fields (default is 1).
-        """
-        self.utils.fill_text_field(ScoreSelectors.INPUT_NAME, name)
-        self.utils.select_dropdown(ScoreSelectors.DROPDOWN_EXPRESSION, expression_type, "value")
+        Creates a basic score for a given operator.
 
-        # Dispatch logic based on expression type
-        if expression_type in [ScoreSelectors.ExpressionType.ADDITION, ScoreSelectors.ExpressionType.SUBTRACTION, ScoreSelectors.ExpressionType.MULTIPLICATION, ScoreSelectors.ExpressionType.DIVISION]:
-            self._binary_score(steps)
-        elif expression_type == ScoreSelectors.ExpressionType.QUESTION_VALUE:
-            self._question_value_score()
+        :param expression_type: The expression type for which the score should be created (e.g., "+" or "VALUE").
+        :param name_prefix: Prefix for the name of the score.
+        :param question_id: Question ID for QUESTION_VALUE operator.
+        :param score_id: Score ID for VALUE_OF_SCORE operator.
+        :return: A dictionary with details of the created score.
+        """
+        timestamp: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        name_prefix = name_prefix or f"Basic Score {timestamp}"
+
+        score_name = f"{name_prefix} - {expression_type}"
+        expression_tree = self._get_basic_expression_tree(expression_type, question_id=question_id, score_id=score_id)
+
+        # Add the score using the helper
+        self.add_score(
+            name=score_name,
+            expression_type=expression_type,
+            expression_tree=expression_tree
+        )
+
+        return {
+            "name": score_name,
+            "operator": expression_type,
+            "expression_tree": expression_tree
+        }
+
+    def _get_basic_expression_tree(self, expression_type, question_id=None, score_id=None):
+        """
+        Generates a basic expression tree for a given operator.
+
+        :param expression_type: The operator value for the expression.
+        :param question_id: The ID of the question to use (required for QUESTION_VALUE).
+        :param score_id: The ID of the score to use (required for VALUE_OF_SCORE).
+        :return: A dictionary representing a basic expression tree.
+        """
+        if expression_type in [ScoreSelectors.ExpressionType.ADDITION, ScoreSelectors.ExpressionType.SUBTRACTION,
+                               ScoreSelectors.ExpressionType.MULTIPLICATION, ScoreSelectors.ExpressionType.DIVISION,
+                               ScoreSelectors.ExpressionType.GREATER_THAN, ScoreSelectors.ExpressionType.GREATER_THAN_EQUALS,
+                               ScoreSelectors.ExpressionType.LESS_THAN, ScoreSelectors.ExpressionType.LESS_THAN_EQUALS,
+                               ScoreSelectors.ExpressionType.EQUALS, ScoreSelectors.ExpressionType.NOT_EQUALS]:
+            # Binary operator: Two operands
+            return {
+                "operator": expression_type,
+                "nested": [
+                    {"operator": ScoreSelectors.ExpressionType.VALUE, "value": 10},
+                    {"operator": ScoreSelectors.ExpressionType.VALUE, "value": 5}
+                ]
+            }
+        elif expression_type in [ScoreSelectors.ExpressionType.SUM, ScoreSelectors.ExpressionType.COUNTER,
+                                 ScoreSelectors.ExpressionType.AVERAGE, ScoreSelectors.ExpressionType.MAXIMUM,
+                                 ScoreSelectors.ExpressionType.MINIMUM]:
+            # Multi operator: Multiple operands
+            return {
+                "operator": expression_type,
+                "nested": [
+                    {"operator": ScoreSelectors.ExpressionType.VALUE, "value": 10},
+                    {"operator": ScoreSelectors.ExpressionType.VALUE, "value": 20}
+                ]
+            }
         elif expression_type == ScoreSelectors.ExpressionType.VALUE:
-            self._value_score(steps)
-        elif expression_type == ScoreSelectors.ExpressionType.SUM:
-            self._sum_score(steps)
-        elif expression_type in [ScoreSelectors.ExpressionType.GREATER_THAN, ScoreSelectors.ExpressionType.GREATER_THAN_EQUALS, ScoreSelectors.ExpressionType.LESS_THAN, ScoreSelectors.ExpressionType.LESS_THAN_EQUALS, ScoreSelectors.ExpressionType.EQUALS, ScoreSelectors.ExpressionType.NOT_EQUALS]:
-            self._binary_score(steps)
-        elif expression_type == ScoreSelectors.ExpressionType.COUNTER:
-            self._counter_score(steps)
-        elif expression_type == ScoreSelectors.ExpressionType.AVERAGE:
-            self._average_score(steps)
+            # Unary operator: Single value
+            return {
+                "operator": expression_type,
+                "value": 42
+            }
+        elif expression_type == ScoreSelectors.ExpressionType.QUESTION_VALUE:
+            if not question_id:
+                raise ValueError("QUESTION_VALUE requires a valid question_id.")
+            # Question-based operator
+            return {
+                "operator": expression_type,
+                "question": question_id
+            }
         elif expression_type == ScoreSelectors.ExpressionType.VALUE_OF_SCORE:
-            self._value_of_score()
-        elif expression_type in [ScoreSelectors.ExpressionType.MAXIMUM, ScoreSelectors.ExpressionType.MINIMUM]:
-            self._min_or_max_score(steps)
+            if not score_id:
+                raise ValueError("VALUE_OF_SCORE requires a valid score_id.")
+            # Score-based operator
+            return {
+                "operator": expression_type,
+                "score": score_id
+            }
+        else:
+            raise ValueError(f"Unsupported operator: {expression_type}")
 
-    # Score Logic
-    def _binary_score(self, steps):
-        """binary scores (e.g., +, -, *, /)."""
-        self._set_operator_and_value(0, steps=steps)
-        self._set_operator_and_value(1, steps=steps)
-
-    def _question_value_score(self):
-        self.utils.select_dropdown(ScoreSelectors.DROPDOWN_QUESTION, 2, "index")
-
-    def _value_score(self, steps):
-        self.utils.set_value("expression.value", steps)
-
-    def _sum_score(self, steps):
-        self._set_operator_and_value(0, steps=steps)
-
-    def _counter_score(self, steps):
-        self._set_operator_and_value(0, nested=True, steps=steps)
-        self.utils.select_dropdown((By.NAME, "expression.expressions[0].operatorId"), ScoreSelectors.ExpressionType.LESS_THAN_EQUALS, "value")
-        self._set_operator_and_value(1, nested=True, steps=steps)
-
-    def _average_score(self, steps):
-        self._set_operator_and_value(0, steps=steps)
-
-    def _value_of_score(self):
-        self.utils.select_dropdown(ScoreSelectors.DROPDOWN_SCORE, 1, "index")
-
-    def _min_or_max_score(self, steps):
-        self._set_operator_and_value(0, steps=steps)
-
-    # Helpers
-    def _set_operator_and_value(self, index, steps=1, nested=False):
+    def add_score(self, name=None, expression_type=None, expression_tree=None):
         """
-        :param index: The index of the operator and value to set.
-        :param steps: Number of times to press ARROW_UP for the value (default is 1).
-        :param nested: Whether the value is nested in another structure.
+        Adds a score with a specific name and an expression structure.
+
+        :param name: Optional name of the score (generated if None).
+        :param expression_type: Type of the root expression (e.g., ADDITION, SUM).
+        :param expression_tree: Nested dictionary representing the expression tree.
+        :return: A dictionary with details of the created score.
         """
-        # Adjust the base name for nested structures
-        base_name = f"expression.expressions[0]." if nested else ""
+        # Generate name if not provided
+        timestamp: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        name = name or f"Score {timestamp} - {expression_type}"
 
-        operator_selector = (By.NAME, f"{base_name}expression.expressions[{index}].operatorId")
-        value_selector = (By.NAME, f"{base_name}expression.expressions[{index}].value")
+        # Click Add Score Button
+        self.utils.click_element(ScoreSelectors.BUTTON_ADD_SCORE)
+        self.utils.fill_text_field(ScoreSelectors.INPUT_NAME, name)
 
-        self.utils.select_dropdown(operator_selector, ScoreSelectors.ExpressionType.VALUE, "value")
-        self.utils.set_value(value_selector[1], steps=steps)
+        # Build the expression tree
+        if expression_tree:
+            self._build_expression("expression", expression_tree)
+
+        return {
+            "name": name,
+            "operator": expression_type,
+            "expression_tree": expression_tree
+        }
+
+    def _build_expression(self, path: str, expression: dict):
+        """
+        Recursively builds an expression.
+
+        :param path: Path prefix for the current expression (e.g., "expression").
+        :param expression: Dictionary representing the expression structure.
+        """
+        operator = expression.get("operator")
+        value = expression.get("value")
+        question = expression.get("question")
+        score = expression.get("score")
+        nested_expressions = expression.get("nested")
+
+        if operator:
+            self.utils.select_dropdown(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(path), operator, DropdownMethod.VALUE)
+
+        if value is not None:
+            self.utils.fill_number_field(ScoreSelectors.EXPRESSION_VALUE(path), value)
+
+        if question:
+            self.utils.select_dropdown(ScoreSelectors.EXPRESSION_QUESTION(path), question, DropdownMethod.VALUE)
+
+        if score:
+            self.utils.select_dropdown(ScoreSelectors.EXPRESSION_SCORE(path), score, DropdownMethod.VALUE)
+
+        if nested_expressions:
+            for i, nested_expression in enumerate(nested_expressions):
+                nested_path = f"{path}.expressions[{i}]"
+                self._build_expression(nested_path, nested_expression)
+
+class ScoreAssertHelper(ScoreHelper):
+
+    def assert_scores_list(self):
+        # Arrange: Verify 'Add New Score' button is present
+        add_score_button = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.BUTTON_ADD_SCORE)
+        )
+        assert add_score_button.is_displayed(), "The 'Add New Score' button is not displayed."
+
+        # Act & Assert: Add the first score and verify
+        self.add_and_verify_score(ScoreSelectors.ExpressionType.ADDITION)
+
+        # Act & Assert: Add a second score and verify
+        self.add_and_verify_score(ScoreSelectors.ExpressionType.MULTIPLICATION)
+
+        # Verify: Action buttons are displayed for each row
+        self.assert_scores_table_and_buttons()
+
+    def add_and_verify_score(self, expression_type):
+        """
+        :param expression_type: The type of the score to add.
+        """
+
+        # Add a basic score
+        score = self.create_basic_score(expression_type)
+
+        # Save the score
+        self.save_score()
+
+        # Verify: Score table contains the new score
+        score_table = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+            ScoreSelectors.SCORE_TABLE))
+        assert score_table.is_displayed(), "Score table is not displayed."
+
+        rows = score_table.find_elements(By.TAG_NAME, "tr")
+        assert any(score['name'] in row.text for row in rows), f"Score '{score['name']}' is not found in the table."
+
+    def assert_scores_table_and_buttons(self):
+        # Locate table rows
+        rows = self.driver.find_elements(*ScoreSelectors.TABLE_ROWS)
+
+        # Ensure the table has rows
+        assert len(rows) > 0, "Scores table is empty. No rows found."
+
+        for index, row in enumerate(rows, start=1):
+            # Locate action buttons in the current row
+            action_buttons = row.find_elements(*ScoreSelectors.ACTION_BUTTONS)
+
+            # Assert that each row has exactly two action buttons
+            assert len(action_buttons) == 2, (
+                f"Row {index} does not have exactly two action buttons. Found: {len(action_buttons)}."
+            )
+
+    def assert_score_fill(self):
+        """
+        Verifies that the Score Fill page:
+        - Displays inputs for the question score
+        - Shows dropdowns for selecting operators
+        - Allows the combination of different operators, adjusting dynamically based on the selected values
+        - Handles errors for invalid combinations gracefully
+        """
+
+        # Step 1: Navigate to the Score Fill page
+        self.click_add_score_button()
+
+        # Step 2: Verify the presence of the input field for the score name
+        score_name_input = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.INPUT_NAME))
+        assert score_name_input.is_displayed(), "Score name input field is not displayed."
+
+        # Fill the score name
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        score_name = f"Fill Score Test {timestamp}"
+        self.utils.fill_text_field(ScoreSelectors.INPUT_NAME, score_name)
+
+        # Step 3: Verify the presence of the operator dropdown
+        operator_dropdown = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.DROPDOWN_EXPRESSION))
+        assert operator_dropdown.is_displayed(), "Operator dropdown is not displayed."
+
+        # Select an initial operator
+        self.utils.select_dropdown(ScoreSelectors.DROPDOWN_EXPRESSION, ScoreSelectors.ExpressionType.ADDITION,
+                                   DropdownMethod.VALUE)
+
+        # Step 4: Validate the appearance of nested operator inputs
+        first_nested_path = "expression.expressions[0]"
+        first_nested_operator = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(first_nested_path)))
+        assert first_nested_operator.is_displayed(), "First nested operator input is not displayed."
+
+        # Add a nested operator and validate the structure
+        self.utils.select_dropdown(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(first_nested_path),
+                                   ScoreSelectors.ExpressionType.VALUE, DropdownMethod.VALUE)
+        first_value_input = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.EXPRESSION_VALUE(first_nested_path)))
+        assert first_value_input.is_displayed(), "Value input for the first nested operator is not displayed."
+
+        self.utils.fill_number_field(ScoreSelectors.EXPRESSION_VALUE(first_nested_path), 3)
+
+        # Step 5: Add a second operator and validate the DOM structure
+        second_nested_path = "expression.expressions[1]"
+        self.utils.select_dropdown(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(second_nested_path),
+                                   ScoreSelectors.ExpressionType.MULTIPLICATION, DropdownMethod.VALUE)
+
+        # Ensure a second nested operator appears
+        second_nested_first_path = f"{second_nested_path}.expressions[0]"
+        second_nested_first_operator = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(second_nested_first_path)))
+        assert second_nested_first_operator.is_displayed(), "Second nested first operator is not displayed."
+
+        self.utils.select_dropdown(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(second_nested_first_path),
+                                   ScoreSelectors.ExpressionType.VALUE, DropdownMethod.VALUE)
+        self.utils.fill_number_field(ScoreSelectors.EXPRESSION_VALUE(second_nested_first_path), 3)
+
+        # Add another nested operator to complete the second branch
+        second_nested_second_path = f"{second_nested_path}.expressions[1]"
+        second_nested_second_operator = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(second_nested_second_path)))
+        assert second_nested_second_operator.is_displayed(), "Second nested second operator is not displayed."
+
+        self.utils.select_dropdown(ScoreSelectors.EXPRESSION_OPERATOR_UNSELECTED(second_nested_second_path),
+                                   ScoreSelectors.ExpressionType.VALUE, DropdownMethod.VALUE)
+        self.utils.fill_number_field(ScoreSelectors.EXPRESSION_VALUE(second_nested_second_path), 4)
+
+        self.save_score()
+
