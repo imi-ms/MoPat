@@ -229,7 +229,15 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
 
-        #TODO: Action column, number of exports [after survey schedule function implementation]
+        #Assert - Check if the action column is present
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(EncounterSelectors.TABLE_ACTION_COLUMN)
+            )
+        except TimeoutException:
+            self.fail("Action column for Scheduled Encounters table not found")
+
+        #TODO: number of exports [after survey schedule function implementation]
 
         #Assert - Check for button for scheduling an encounter
         try:
