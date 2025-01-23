@@ -3,7 +3,7 @@
 */-->
 <th:block
 	layout:decorate="~{layout/mobile}"
-	th:with="contenttype='content', title=__${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}__"
+	th:with="contenttype='content', title=${messages.get(#locale, 'survey.title.selectBundle', 'Select bundle')}"
 >
 	<th:block layout:fragment="content">
 		<form

@@ -5,7 +5,9 @@ import de.imi.mopat.helper.controller.*;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.HashMap;
@@ -34,7 +36,16 @@ public class RootController {
 
     @Autowired
     private ServletContext context;
-
+    
+    /**
+     * Globally set Form limit to more than 256
+     * @param binder
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.setAutoGrowCollectionLimit(2058);
+    }
+    
     /**
      * Adding the parameterHelper to all pages.
      *
