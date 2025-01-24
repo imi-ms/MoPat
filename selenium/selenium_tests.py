@@ -167,26 +167,32 @@ class CustomTest(IMISeleniumBaseTest):
         else:
             pass
 
-    def test_admin_interface_tests(self):
+    def test_admin_interface_login(self):
         self.driver.get(self.https_base_url)
         # a
-        self.authentication_assert_helper.assert_mobile_user_login()
+        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
         # b
         self.authentication_assert_helper.assert_mobile_user_password()
 
+    def test_admin_interface_index(self):
         self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
 
         # c
         self.authentication_assert_helper.assert_admin_index()
-        #
+
+        self.authentication_helper.logout()
+
+    def test_admin_interface_questionnaire_question_types_score(self):
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
         self.navigation_helper.navigate_to_manage_questionnaires()
+
         # d
         self.questionnaire_assert_helper.assert_questionnaire_list()
-        self.questionnaire_helper.click_add_questionnaire_button()
         # e
+        self.questionnaire_helper.click_add_questionnaire_button()
         questionnaire = self.questionnaire_assert_helper.assert_questionnaire_fill_page()
-
         # f
         self.navigation_helper.search_and_open_questionnaire(questionnaire['name'])
         self.questionnaire_helper.save_questionnaire_edit_question()
@@ -202,38 +208,52 @@ class CustomTest(IMISeleniumBaseTest):
             self.questionnaire_helper.click_add_question_button()
             question_by_type = self.question_assert_helper.assert_question_by_type(question_type)
             question_list.append(question_by_type)
-
         # g
         self.question_assert_helper.assert_question_table_functionality(len(question_list))
-
         # h
         self.navigation_helper.navigate_to_scores_of_questionnaire(questionnaire['id'], questionnaire['name'])
         self.score_assert_helper.assert_scores_list()
-
         # i
         self.navigation_helper.navigate_to_scores_of_questionnaire(questionnaire['id'], questionnaire['name'])
         self.score_assert_helper.assert_score_fill()
 
+        self.authentication_helper.logout()
+
+    def test_admin_interface_conditions(self):
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+
         # j
-        source_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(
-            question_types={QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN})
-        target_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(
-            question_types={QuestionType.INFO_TEXT})
+        # Create source and target questionnaires with specific question types and add the questionnaires to a bundle to enable selection as a condition target
+        source_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN})
+        target_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.INFO_TEXT})
         bundle = self.bundle_helper.create_bundle(questionnaires=[source_questionnaire, target_questionnaire])
 
-        source_questionnaire_slider_question = next((question for question in source_questionnaire['questions'] if question['type'] == QuestionType.SLIDER), None)
+        threshold_supported_question_types = {QuestionType.SLIDER, QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_INPUT}
 
+        # Select a question where condition can be added with threshold value from the source questionnaire
+        threshold_condition_question = next((question for question in source_questionnaire['questions']
+                                                                   if question['type'] in[threshold_supported_question_types]), None)
+
+        # Navigate to the source questionnaire's questions and reorder the slider question to the first position
         self.navigation_helper.navigate_to_questions_of_questionnaire(source_questionnaire['id'], source_questionnaire['name'])
-        self.question_helper.reorder_question(source_questionnaire_slider_question['id'], 0)
+        self.questionnaire_helper.reorder_question(threshold_condition_question['id'], 0)
+        # Open the condition page for the question and add conditions targeting question, answer, and questionnaire
+        self.condition_helper.open_conditions_of_question(threshold_condition_question['id'])
+        condition_id_1 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=1, target_type=ConditionSelectors.TargetType.QUESTION)
+        condition_id_2 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=2, target_type=ConditionSelectors.TargetType.ANSWER)
+        condition_id_3 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=3, target_type=ConditionSelectors.TargetType.QUESTIONNAIRE)
 
-        # Adding conditions to the slider question
-        self.condition_helper.open_conditions_of_question(source_questionnaire_slider_question['id'])
+        # Assert the conditions are correctly listed in the tables
+        self.condition_assert_helper.assert_condition_list_and_search_de()
+        # k
+        self.condition_assert_helper.assert_add_condition_page(source_questionnaire)
 
-        self.condition_helper.add_condition_for_slider(threshold_steps=1, target_type=ConditionSelectors.TargetType.QUESTION)
-        self.condition_helper.add_condition_for_slider(threshold_steps=2, target_type=ConditionSelectors.TargetType.ANSWER)
-        self.condition_helper.add_condition_for_slider(threshold_steps=3, target_type=ConditionSelectors.TargetType.QUESTIONNAIRE)
+        self.condition_helper.delete_condition(condition_id_1)
+        self.condition_helper.delete_condition(condition_id_2)
+        self.condition_helper.delete_condition(condition_id_3)
 
-        self.condition_assert_helper.assert_question_condition_list_de()
+        self.authentication_helper.logout()
 
     def tearDown(self): 
         self.driver.quit()
