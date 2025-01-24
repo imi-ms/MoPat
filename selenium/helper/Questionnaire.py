@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from helper.Navigation import NavigationHelper
-from helper.Question import QuestionHelper, QuestionType
+from helper.Question import QuestionHelper, QuestionType, QuestionSelectors
 from helper.SeleniumUtils import SeleniumUtils
 
 
@@ -206,6 +206,32 @@ class QuestionnaireHelper:
             added_questions.append(question_info)
 
         return {"id": questionnaire_id, "name": questionnaire_name, "questions": added_questions}
+
+
+    def reorder_question(self, source_question_id, new_index):
+        # Get all rows
+        rows = WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_elements(*QuestionSelectors.TABLE_ROWS)
+        )
+
+        # Identify target rows
+        target_question_id = rows[new_index].get_attribute('id')
+
+        if target_question_id == source_question_id: return
+
+        # Use the drag-and-drop utility
+        self.utils.drag_and_drop(QuestionSelectors.GRIP_SELECTOR(source_question_id),
+                                 QuestionSelectors.GRIP_SELECTOR(target_question_id))
+
+        self.driver.refresh()
+
+        # Validate the reordering
+        reordered_rows = WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_elements(*QuestionSelectors.TABLE_ROWS)
+        )
+        reordered_ids = [row.get_attribute("id") for row in reordered_rows]
+
+        return reordered_ids
 
 
 class QuestionnaireAssertHelper(QuestionnaireHelper):

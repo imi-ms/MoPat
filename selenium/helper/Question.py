@@ -767,29 +767,6 @@ class QuestionHelper:
         else:
             raise ValueError(f"Unexpected image type: {selected_image_type}")
 
-    def reorder_question(self, source_question_id, new_index):
-        # Get all rows
-        rows = WebDriverWait(self.driver, 10).until(
-            lambda d: d.find_elements(*QuestionSelectors.TABLE_ROWS)
-        )
-
-        # Identify target rows
-        target_question_id = rows[new_index].get_attribute('id')
-
-        if target_question_id == source_question_id: return
-
-        # Use the drag-and-drop utility
-        self.utils.drag_and_drop(QuestionSelectors.GRIP_SELECTOR(source_question_id),
-                                 QuestionSelectors.GRIP_SELECTOR(target_question_id))
-
-        # Validate the reordering
-        reordered_rows = WebDriverWait(self.driver, 10).until(
-            lambda d: d.find_elements(*QuestionSelectors.TABLE_ROWS)
-        )
-        reordered_ids = [row.get_attribute("id") for row in reordered_rows]
-
-        return reordered_ids
-
 
 class QuestionAssertHelper(QuestionHelper):
 
