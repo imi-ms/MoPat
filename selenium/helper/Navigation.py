@@ -31,6 +31,10 @@ class NavigationBarSelectors:
         EXECUTE_SURVEY_LINK = (By.ID, "executeSurveyLink")
 
 
+class QuestionTableSelectors:
+    EDIT_QUESTION_LINK = lambda question_id: (By.XPATH, f'//a[@href="fill?id={question_id}"]')
+    EDIT_QUESTIONS_CONDITIONS_LINK = lambda question_id: (By.XPATH, f'//a[@href="/condition/listQuestionConditions?questionId={question_id}"]')
+
 class QuestionnaireTableSelectors:
     FILTER_INPUT = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     FIRST_RESULT_LINK = (By.CSS_SELECTOR, "#questionnaireTable tbody tr td a")
@@ -52,17 +56,15 @@ class NavigationHelper:
     def navigate_to_questions_of_questionnaire(self, questionnaire_id, questionnaire_name):
         self.navigate_to_manage_questionnaires()
         self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
-        link = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable(QuestionnaireTableSelectors.EDIT_QUESTIONS_LINK(questionnaire_id))
-        )
+        link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.EDIT_QUESTIONS_LINK(questionnaire_id)))
         link.click()
 
     def navigate_to_scores_of_questionnaire(self, questionnaire_id, questionnaire_name):
         self.navigate_to_manage_questionnaires()
         self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
-        scores_link = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable(QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id))
-        )
+        scores_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id)))
         scores_link.click()
 
     def navigate_to_manage_bundles(self):
@@ -110,9 +112,8 @@ class NavigationHelper:
             self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
 
             # Click the first result
-            first_result_link = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(QuestionnaireTableSelectors.FIRST_RESULT_LINK)
-            )
+            first_result_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                QuestionnaireTableSelectors.FIRST_RESULT_LINK))
             first_result_link.click()
         except TimeoutException:
             raise Exception(f"Failed to search and open questionnaire '{questionnaire_name}'.")
@@ -138,30 +139,8 @@ class NavigationHelper:
         except Exception as e:
             raise Exception(f"Failed to navigate to 'Execute Survey': {e}")
 
-    # def search_and_delete_item(self, item_name, item_id, item_type):
-    #     try:
-    #         # Initialize variables based on the item type
-    #         if item_type == "questionnaire":
-    #             self.navigate_to_manage_questionnaires()
-    #             search_box_selector = SearchBoxSelectors.QUESTIONNAIRE
-    #             button_id = RemoveButtonSelectors.QUESTIONNAIRE.format(item_id)
-    #         elif item_type == "bundle":
-    #             self.navigate_to_manage_bundles()
-    #             search_box_selector = SearchBoxSelectors.BUNDLE
-    #             button_id = RemoveButtonSelectors.BUNDLE.format(item_id)
-    #         elif item_type == "clinic":
-    #             self.navigate_to_manage_clinics()
-    #             search_box_selector = SearchBoxSelectors.CLINIC
-    #             button_id = RemoveButtonSelectors.CLINIC.format(item_id)
-    #         else:
-    #             raise ValueError(f"Unknown item type: {item_type}")
-    #
-    #         # Search for the element using the appropriate search box
-    #         self.utils.fill_text_field(search_box_selector, item_name)
-    #
-    #         # click the remove button
-    #         self.utils.click_element((By.ID, button_id))
-    #     except TimeoutException:
-    #         raise Exception(f"Failed to delete {item_type} '{item_name}' with ID {item_id}'.")
-    #     except Exception as e:
-    #         raise Exception(f"An error occurred while deleting {item_type} '{item_name}': {e}")
+
+    def open_question(self, question_id):
+        question_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionTableSelectors.EDIT_QUESTION_LINK(question_id)))
+        question_link.click()

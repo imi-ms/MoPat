@@ -1,6 +1,6 @@
-import time
+import datetime
 
-from selenium.common import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+from selenium.common import TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -16,7 +16,7 @@ class BundleSelectors:
     BUTTON_SAVE = (By.ID, "saveButton")
     BUTTON_MOVE_ITEM = lambda questionnaire_id: (By.ID, f"move_{questionnaire_id}")
     BUTTON_ADD_LANGUAGE = (By.CSS_SELECTOR, "#languageDropdown > a")
-    
+
     CHECKBOX_PUBLISH = (By.ID, "isPublished1")
     CHECKBOX_NAME_PROGRESS = (By.ID, "deactivateProgressAndNameDuringSurvey1")
     CHECKBOX_PROGRESS_WHOLE_PACKAGE = (By.ID, "showProgressPerBundle1")
@@ -30,10 +30,15 @@ class BundleSelectors:
     INPUT_QUESTIONNAIRE_AVAILABLE_SEARCH = (By.ID, "availableQuestionnairesFilter")
     INPUT_QUESTIONNAIRE_ASSIGNED_SEARCH = (By.ID, "assignedQuestionnairesFilter")
 
-    TABLE_AVAILABLE_QUESTIONNAIRES = (By.ID, "availableQuestionnairesTable")  
+    BUNDLE_LINK = lambda bundle_id: (By.ID, f"bundleLink_{bundle_id}")
+    BUNDLE_LINK_BY_NAME = lambda bundle_name: (By.XPATH, f"//table[@id='bundleTable']//a[text()='{bundle_name}']")
+
+    TABLE_ROWS = (By.CSS_SELECTOR, "#DataTables_Table_0 tbody tr")
+
+    TABLE_AVAILABLE_QUESTIONNAIRES = (By.ID, "availableQuestionnairesTable")
     TABLE_ASSIGNED_QUESTIONNAIRES = (By.ID, "assignedQuestionnairesTable")
     TABLE_BUNDLE = (By.ID, "bundleTable")
-    
+
     CELL_FLAGICON=(By.CSS_SELECTOR, "#bundleTable > tbody > tr > td:nth-child(2) > img")
     PAGINATION_BUNDLE = (By.CSS_SELECTOR, "#bundleTable_paginate")
 
@@ -50,16 +55,13 @@ class BundleHelper:
         """
         try:
             # Fill the search box with the bundle name
-            self.utils.fill_text_field(SearchBoxSelectors.BUNDLE, bundle_name)
+            self.utils.fill_text_field(BundleSelectors.INPUT_BUNDLE_SEARCH, bundle_name)
 
-            # Wait until the table rows are present (or timeout if none are found)
-            rows = WebDriverWait(self.driver, 2).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#DataTables_Table_0 tbody tr"))
+            # Check if the bundle link with the specified name exists
+            WebDriverWait(self.driver, 2).until(
+                EC.presence_of_element_located(BundleSelectors.BUNDLE_LINK_BY_NAME(bundle_name))
             )
-
-            # Check if the first row has more than one <td> (indicating a valid result)
-            first_row_columns = rows[0].find_elements(By.TAG_NAME, "td") if rows else []
-            return len(first_row_columns) > 1
+            return True
         except TimeoutException:
             # No rows found within the timeout
             return False
@@ -72,31 +74,37 @@ class BundleHelper:
         """
         try:
             self.utils.fill_text_field(SearchBoxSelectors.BUNDLE, bundle_name)
-            row_hyperlink = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "#DataTables_Table_0 tbody tr td a"))
-            )
-            self.utils.click_element((By.CSS_SELECTOR, "#DataTables_Table_0 tbody tr td a"))
+
+            bundle_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                BundleSelectors.BUNDLE_LINK_BY_NAME(bundle_name)))
+            bundle_link.click()
+
         except TimeoutException:
             raise Exception(f"Timeout while searching for bundle '{bundle_name}' to open.")
         except Exception as e:
             raise Exception(f"Error while opening bundle '{bundle_name}': {e}")
 
-    def create_bundle(self, bundle_name, publish_bundle, questionnaires=None):
+    def create_bundle(self, bundle_name=None, publish_bundle=False, questionnaires=None):
         """
         :param bundle_name: Name of the bundle to create.
         :param publish_bundle: Whether to publish the bundle.
         :param questionnaires: List of questionnaires to assign to the bundle (optional).
         """
+        timestamp: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        bundle_name = bundle_name or f"Bundle {timestamp}"
+
         try:
+            self.navigation_helper.navigate_to_manage_bundles()
+
             self.utils.click_element(BundleSelectors.BUTTON_ADD_BUNDLE)
 
             # Add name
             self.utils.fill_text_field(BundleSelectors.INPUT_NAME, bundle_name)
 
             # Add description
-            description_field = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(BundleSelectors.INPUT_EDITABLE_DESCRIPTION)
-            )
+            description_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
+                BundleSelectors.INPUT_EDITABLE_DESCRIPTION))
+
             self.utils.scroll_to_element(BundleSelectors.INPUT_EDITABLE_DESCRIPTION)
             description_field.click()
             description_field.send_keys("This bundle contains questionnaires.")
@@ -110,6 +118,13 @@ class BundleHelper:
                 self.utils.scroll_to_element(BundleSelectors.CHECKBOX_PUBLISH)
                 self.utils.toggle_checkbox(BundleSelectors.CHECKBOX_PUBLISH, enable=True)
 
+            bundle_id = self.save_bundle(bundle_name)
+
+            return {
+                "id": bundle_id,
+                "name": bundle_name
+            }
+
         except Exception as e:
             raise Exception(f"Error while creating bundle '{bundle_name}': {e}")
 
@@ -122,7 +137,7 @@ class BundleHelper:
             self.utils.click_element((By.ID, 'ur_PK'))
         except Exception as e:
             raise Exception(f"Error while adding language to the bundle: {e}")
-        
+
 
     def save_bundle(self, bundle_name):
         """
@@ -140,9 +155,9 @@ class BundleHelper:
             self.utils.fill_text_field(SearchBoxSelectors.BUNDLE, bundle_name)
 
             # Extract the bundle ID from the link
-            bundle_link = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.LINK_TEXT, bundle_name))
-            )
+            bundle_link = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                (By.LINK_TEXT, bundle_name)))
+
             return bundle_link.get_attribute("href").split("id=")[1]
         except Exception as e:
             raise Exception(f"Error while saving bundle '{bundle_name}': {e}")
@@ -161,9 +176,9 @@ class BundleHelper:
                     self.utils.fill_text_field(BundleSelectors.INPUT_QUESTIONNAIRE_AVAILABLE_SEARCH, questionnaire['name'])
 
                     questionnaire_selector = BundleSelectors.INPUT_QUESTIONNAIRE(questionnaire['id'])
-                    WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located(questionnaire_selector)
-                    )
+                    WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                        questionnaire_selector))
+
                     self.utils.scroll_to_element(BundleSelectors.BUTTON_MOVE_ITEM(questionnaire['id']))
                     self.utils.click_element(BundleSelectors.BUTTON_MOVE_ITEM(questionnaire['id']))
                 except TimeoutException:
@@ -172,7 +187,7 @@ class BundleHelper:
                     raise Exception(f"Error while assigning questionnaire '{questionnaire['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple questionnaires: {e}")
-    
+
     def remove_multiple_questionnaires_from_bundle(self, questionnaires, bundle_id=None):
         """
         :param questionnaires: List of dictionaries containing questionnaire details (e.g., {'id': str, 'name': str}).
@@ -198,7 +213,7 @@ class BundleHelper:
                     raise Exception(f"Error while removing questionnaire '{questionnaire['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while removing multiple questionnaires: {e}")
-        
+
     def get_bundle_id(self):
         edit_link = self.get_first_bundle_row().find_element(By.CSS_SELECTOR, "a[href^='fill?id=']")
         href = edit_link.get_attribute('href')

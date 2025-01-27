@@ -1,11 +1,11 @@
-from selenium.common import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+from selenium.common import TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from helper.Navigation import NavigationHelper
-from helper.SeleniumUtils import SearchBoxSelectors
+from helper.SeleniumUtils import SearchBoxSelectors, DropdownMethod
 from helper.SeleniumUtils import SeleniumUtils
 
 class URLPathsClinic:
@@ -14,13 +14,21 @@ class URLPathsClinic:
 class ClinicSelectors:
     BUTTON_ADD_CLINIC = (By.ID, "addClinic")
     BUTTON_SAVE = (By.ID, "saveButton")
+    BUTTON_DELETE_CLINIC = lambda clinic_id: (By.ID, f"removeClinic_{clinic_id}")
+    BUTTON_MOVE_ITEM = lambda bundle_id: (By.ID, f"move_{bundle_id}")
+
+    DROPDOWN_CONFIG = lambda parent_id: (By.CSS_SELECTOR, f"li[parentid='{parent_id}'] select")
 
     INPUT_CLINIC_NAME = (By.ID, "name")
     INPUT_EDITABLE_DESCRIPTION = (By.CSS_SELECTOR, "div.note-editable")
+    INPUT_USER_AVAILABLE_SEARCH = (By.ID, "availableUsersFilter")
+    INPUT_USER = lambda username: (By.ID, f"user_{username}")
+    INPUT_BUNDLE_AVAILABLE_SEARCH = (By.ID, "availableBundlesFilter")
+    INPUT_BUNDLE = lambda bundle_id: (By.ID, f"bundle_{bundle_id}")
     INPUT_CLINIC_EMAIL=(By.ID, 'email')
 
     DIV_CLINIC_CONFIGURATION = (By.ID, "clinicConfigurations")
-    
+
     CLINIC_CONFIGURATION_LIST = (By.CSS_SELECTOR, "#clinicConfigurations > div > div > ul > li")
     # Configuration selectors
     CONFIG_USE_PATIENT_DATA_LOOKUP = (By.CSS_SELECTOR, "li#usePatientDataLookup input[type='checkbox']")
@@ -72,9 +80,8 @@ class ClinicHelper:
             self.utils.fill_text_field(ClinicSelectors.INPUT_CLINIC_NAME, clinic_name)
 
             # Add description
-            description_field = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION)
-            )
+            description_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
+                ClinicSelectors.INPUT_EDITABLE_DESCRIPTION))
             description_field.click()          #  self.utils.click_element(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION)
             description_field.send_keys(clinic_description)
 
@@ -109,36 +116,34 @@ class ClinicHelper:
             self.utils.fill_text_field(SearchBoxSelectors.CLINIC, clinic_name)
 
             # Extract the bundle ID from the link
-            clinic_link = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.LINK_TEXT, clinic_name))
-            )
+            clinic_link = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                (By.LINK_TEXT, clinic_name)))
+
             return clinic_link.get_attribute("href").split("id=")[1]
         except Exception as e:
             raise Exception(f"Error while saving clinic '{clinic_name}': {e}")
 
-    def delete_clinic(self, clinic_name):
+    def delete_clinic(self, clinic_id):
         """
-        :param clinic_name: Name of the clinic to be deleted.
+        Deletes a clinic by its ID.
+
+        :param clinic_id: ID of the clinic to be deleted.
         :return: True if the clinic was successfully deleted, False if it does not exist.
         """
         try:
             # Navigate to "Manage Clinics"
-            self.navigation_helper.navigate_to_manage_clinics(self.driver)
+            self.navigation_helper.navigate_to_manage_clinics()
 
-            # Search for the clinic
-            self.utils.fill_text_field(SearchBoxSelectors.CLINIC, clinic_name)
-
-            # Find and click the delete button
-            delete_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, f'//a[contains(text(), "{clinic_name}")]/../..//button'))
-            )
-            self.utils.click_element((By.XPATH, f'//a[contains(text(), "{clinic_name}")]/../..//button'))
+            # Wait for and click the delete button for the specified clinic
+            delete_button = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                ClinicSelectors.BUTTON_DELETE_CLINIC(clinic_id)))
+            delete_button.click()
             return True
         except TimeoutException:
             # Clinic not found
             return False
         except Exception as e:
-            raise Exception(f"Error while deleting clinic '{clinic_name}': {e}")
+            raise Exception(f"Error while deleting clinic with ID '{clinic_id}': {e}")
 
     def configure_clinic_setting(self, config_selector, config_dropdown_value=None):
         """
@@ -147,26 +152,16 @@ class ClinicHelper:
         """
         try:
             # Enable the checkbox for the configuration
-            checkbox = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(config_selector)
-            )
+            checkbox = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                config_selector))
+
             self.utils.scroll_to_element(config_selector)
             self.utils.toggle_checkbox(config_selector, enable=True)
 
             # Select the value from the dropdown if specified
             if config_dropdown_value:
                 parent_id = checkbox.get_attribute("triggerid")
-                dropdown = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, f"li[parentid='{parent_id}'] select"))
-                )
-                self.utils.scroll_to_element((By.CSS_SELECTOR, f"li[parentid='{parent_id}'] select"))
-                dropdown.click()
-
-                # Locate the <option> by value instead of text
-                option = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, f"option[value='{config_dropdown_value}']"))
-                )
-                option.click()
+                self.utils.select_dropdown(ClinicSelectors.DROPDOWN_CONFIG(parent_id), config_dropdown_value, DropdownMethod.VALUE)
         except Exception as e:
             raise Exception(
                 f"Error configuring setting '{config_selector}' with dropdown value '{config_dropdown_value}': {e}")
@@ -184,10 +179,9 @@ class ClinicHelper:
                 try:
                     self.utils.fill_text_field(ClinicSelectors.INPUT_BUNDLE_AVAILABLE_SEARCH, bundle['name'])
 
-                    bundle_selector = ClinicSelectors.INPUT_BUNDLE(bundle['id'])
-                    WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located(bundle_selector)
-                    )
+                    WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                        ClinicSelectors.INPUT_BUNDLE(bundle['id'])))
+
                     self.utils.scroll_to_element(ClinicSelectors.BUTTON_MOVE_ITEM(bundle['id']))
                     self.utils.click_element(ClinicSelectors.BUTTON_MOVE_ITEM(bundle['id']))
                 except TimeoutException:
@@ -196,7 +190,7 @@ class ClinicHelper:
                     raise Exception(f"Error while assigning bundle '{bundle['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple bundles: {e}")
-    
+
     def remove_multiple_bundes_from_clinic(self, bundles, clinic_id=None):
         """
         :param bundles: List of dictionaries containing bundle details (e.g., {'id': str, 'name': str}).
@@ -248,7 +242,7 @@ class ClinicHelper:
                     raise Exception(f"Error while assigning user '{username}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple users: {e}")
-        
+
     def remove_multiple_users_from_clinic(self, usernames, clinic_id=None):
         """
         :param usernames: List of usernames.
@@ -263,9 +257,8 @@ class ClinicHelper:
                     self.utils.fill_text_field(ClinicSelectors.INPUT_USER_ASSIGNED_SEARCH, username)
 
                     user_selector = ClinicSelectors.INPUT_USER(username)
-                    WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located(user_selector)
-                    )
+                    WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                        user_selector))
                     self.utils.scroll_to_element(ClinicSelectors.BUTTON_MOVE_ITEM(username))
                     self.utils.click_element(ClinicSelectors.BUTTON_MOVE_ITEM(username))
                 except TimeoutException:
@@ -284,11 +277,15 @@ class ClinicHelper:
             self.navigation_helper.navigate_to_manage_clinics()
 
         try:
+            # Fill the search box with the clinic name
             self.utils.fill_text_field(SearchBoxSelectors.CLINIC, clinic_name)
-            row_hyperlink = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(ClinicSelectors.TABLE_ROW_LINK)
-            )
-            self.utils.click_element(ClinicSelectors.TABLE_ROW_LINK)
+
+            # Wait for the clinic link to be clickable
+            clinic_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                ClinicSelectors.TABLE_ROW_LINK))
+
+            # Click the clinic link
+            clinic_link.click()
         except TimeoutException:
             raise Exception(f"Timeout while searching for clinic '{clinic_name}' to open.")
         except Exception as e:
