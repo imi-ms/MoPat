@@ -1,6 +1,7 @@
 package de.imi.mopat.validator;
 
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.helper.controller.HtmlUtils;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
@@ -52,6 +53,14 @@ public class BundleDTOValidator implements Validator {
             && !bundleDao.isBundleNameUnused(bundleDTO.getName(), bundleDTO.getId())) {
             errors.rejectValue("name", "errormessage",
                 messageSource.getMessage("bundle.error.nameInUse", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+        }
+
+        String bundleDescription = HtmlUtils.removeHtmlTags(bundleDTO.getDescription());
+
+        if (bundleDescription.isEmpty()) {
+            errors.rejectValue("description", "errormessage",
+                messageSource.getMessage("bundle.description.notNull", new Object[]{},
                     LocaleContextHolder.getLocale()));
         }
 
