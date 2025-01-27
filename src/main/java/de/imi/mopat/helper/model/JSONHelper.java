@@ -22,15 +22,16 @@ import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.score.Score;
 import java.io.IOException;
 
-public class JSONHelper{
+public class JSONHelper {
 
     private final ConfigurationDao configurationDao;
 
-    public JSONHelper(final ConfigurationDao configurationDao){
+    public JSONHelper(final ConfigurationDao configurationDao) {
         this.configurationDao = configurationDao;
     }
 
-    public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO, final Questionnaire questionnaire){
+    public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
+        final Questionnaire questionnaire) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -43,11 +44,11 @@ public class JSONHelper{
             try {
                 jsonQuestionnaireDTO.setLogoBase64(StringUtilities.convertImageToBase64String(
                     (configurationDao.getImageUploadPath()
-                                + "/questionnaire/"
-                                + questionnaire.getId()
-                                + "/"
-                                + questionnaire.getLogo()
-                        ),
+                        + "/questionnaire/"
+                        + questionnaire.getId()
+                        + "/"
+                        + questionnaire.getLogo()
+                    ),
                     questionnaire.getLogo()));
             } catch (Exception e) {
             }
@@ -55,7 +56,7 @@ public class JSONHelper{
 
         for (Question question : questionnaire.getQuestions()) {
             JsonQuestionDTO jsonQuestionDTO = new JsonQuestionDTO();
-            this.initializeJsonQuestionDTO(jsonQuestionDTO,question);
+            this.initializeJsonQuestionDTO(jsonQuestionDTO, question);
             jsonQuestionnaireDTO.setQuestionDTO(question.getId(), jsonQuestionDTO);
             jsonQuestionDTO.setJsonQuestionnaireDTO(jsonQuestionnaireDTO);
         }
@@ -68,7 +69,7 @@ public class JSONHelper{
         }
     }
 
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO,final Question question){
+    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -87,7 +88,7 @@ public class JSONHelper{
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer){
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
@@ -163,7 +164,8 @@ public class JSONHelper{
             // Try to load the image from the disk as a BufferedImage and get
             // the Base64 representation
             try {
-                String imagePath = (configurationDao.getImageUploadPath() + "/question/" +jsonAnswerDTO.getImagePath());
+                String imagePath = (configurationDao.getImageUploadPath() + "/question/"
+                    + jsonAnswerDTO.getImagePath());
                 String fileName = jsonAnswerDTO.getImagePath()
                     .substring(imageAnswer.getImagePath()
                         .lastIndexOf("/"));
