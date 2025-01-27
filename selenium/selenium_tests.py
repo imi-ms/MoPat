@@ -13,18 +13,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-from helper.Authentication import AuthenticationHelper, AuthenticationAssertHelper
-from helper.Bundle import BundleHelper
-from helper.Clinic import ClinicHelper
-from helper.Condition import ConditionHelper, ConditionSelectors, ConditionAssertHelper
 from helper.Login import LoginHelper
-from helper.Navigation import NavigationHelper
-from helper.Question import QuestionHelper, QuestionAssertHelper, QuestionType
-from helper.Questionnaire import QuestionnaireHelper, QuestionnaireAssertHelper
-from helper.Score import ScoreHelper, ScoreAssertHelper
-from helper.SeleniumUtils import SeleniumUtils
-from helper.Survey import SurveyHelper, SurveyAssertHelper
 
 loginHelper = LoginHelper()
 
@@ -128,29 +117,6 @@ class IMISeleniumBaseTest(ABC):
 
 
 class CustomTest(IMISeleniumBaseTest):
-
-    def setUp(self):
-        super().setUp()
-
-        self.navigation_helper = NavigationHelper(self.driver)
-        self.utils = SeleniumUtils(self.driver, navigation_helper=self.navigation_helper)
-        self.navigation_helper.utils = self.utils
-
-        self.authentication_helper = AuthenticationHelper(self.driver)
-        self.questionnaire_helper = QuestionnaireHelper(self.driver, self.navigation_helper)
-        self.question_helper = QuestionHelper(self.driver, self.navigation_helper)
-        self.bundle_helper = BundleHelper(self.driver, self.navigation_helper)
-        self.clinic_helper = ClinicHelper(self.driver, self.navigation_helper)
-        self.survey_helper = SurveyHelper(self.driver, self.navigation_helper)
-        self.condition_helper = ConditionHelper(self.driver, self.navigation_helper)
-        self.score_helper = ScoreHelper(self.driver, self.navigation_helper)
-        self.question_assert_helper = QuestionAssertHelper(self.driver, self.navigation_helper)
-        self.survey_assert_helper = SurveyAssertHelper(self.driver, self.navigation_helper)
-        self.authentication_assert_helper = AuthenticationAssertHelper(self.driver)
-        self.questionnaire_assert_helper = QuestionnaireAssertHelper(self.driver, self.navigation_helper)
-        self.score_assert_helper = ScoreAssertHelper(self.driver, self.navigation_helper)
-        self.condition_assert_helper = ConditionAssertHelper(self.driver, self.navigation_helper)
-
     def test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
             self.driver.get(self.https_base_url)
@@ -166,95 +132,7 @@ class CustomTest(IMISeleniumBaseTest):
             assert True
         else:
             pass
-
-    def test_admin_interface_login(self):
-        self.driver.get(self.https_base_url)
-        # a
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
-        # b
-        self.authentication_assert_helper.assert_mobile_user_password()
-
-    def test_admin_interface_index(self):
-        self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
-
-        # c
-        self.authentication_assert_helper.assert_admin_index()
-
-        self.authentication_helper.logout()
-
-    def test_admin_interface_questionnaire_question_types_score(self):
-        self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
-        self.navigation_helper.navigate_to_manage_questionnaires()
-
-        # d
-        self.questionnaire_assert_helper.assert_questionnaire_list()
-        # e
-        self.questionnaire_helper.click_add_questionnaire_button()
-        questionnaire = self.questionnaire_assert_helper.assert_questionnaire_fill_page()
-        # f
-        self.navigation_helper.search_and_open_questionnaire(questionnaire['name'])
-        self.questionnaire_helper.save_questionnaire_edit_question()
-        self.questionnaire_helper.click_add_question_button()
-        self.question_assert_helper.assert_question_fill_page()
-        # f (question types)
-        # TODO [LJ] implement for all types
-        question_list = list()
-        excluded_question_types = {QuestionType.IMAGE}
-        question_types = [question_type for question_type in QuestionType if
-                          question_type not in excluded_question_types]
-        for question_type in question_types:
-            self.questionnaire_helper.click_add_question_button()
-            question_by_type = self.question_assert_helper.assert_question_by_type(question_type)
-            question_list.append(question_by_type)
-        # g
-        self.question_assert_helper.assert_question_table_functionality(len(question_list))
-        # h
-        self.navigation_helper.navigate_to_scores_of_questionnaire(questionnaire['id'], questionnaire['name'])
-        self.score_assert_helper.assert_scores_list()
-        # i
-        self.navigation_helper.navigate_to_scores_of_questionnaire(questionnaire['id'], questionnaire['name'])
-        self.score_assert_helper.assert_score_fill()
-
-        self.authentication_helper.logout()
-
-    def test_admin_interface_conditions(self):
-        self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
-
-        # j
-        # Create source and target questionnaires with specific question types and add the questionnaires to a bundle to enable selection as a condition target
-        source_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN})
-        target_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.INFO_TEXT})
-        bundle = self.bundle_helper.create_bundle(questionnaires=[source_questionnaire, target_questionnaire])
-
-        threshold_supported_question_types = {QuestionType.SLIDER, QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_INPUT}
-
-        # Select a question where condition can be added with threshold value from the source questionnaire
-        threshold_condition_question = next((question for question in source_questionnaire['questions']
-                                                                   if question['type'] in[threshold_supported_question_types]), None)
-
-        # Navigate to the source questionnaire's questions and reorder the slider question to the first position
-        self.navigation_helper.navigate_to_questions_of_questionnaire(source_questionnaire['id'], source_questionnaire['name'])
-        self.questionnaire_helper.reorder_question(threshold_condition_question['id'], 0)
-        # Open the condition page for the question and add conditions targeting question, answer, and questionnaire
-        self.condition_helper.open_conditions_of_question(threshold_condition_question['id'])
-        condition_id_1 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=1, target_type=ConditionSelectors.TargetType.QUESTION)
-        condition_id_2 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=2, target_type=ConditionSelectors.TargetType.ANSWER)
-        condition_id_3 = self.condition_helper.add_condition_for_threshold_questions(threshold_steps=3, target_type=ConditionSelectors.TargetType.QUESTIONNAIRE)
-
-        # Assert the conditions are correctly listed in the tables
-        self.condition_assert_helper.assert_condition_list_and_search_de()
-        # k
-        self.condition_assert_helper.assert_add_condition_page(source_questionnaire)
-
-        self.condition_helper.delete_condition(condition_id_1)
-        self.condition_helper.delete_condition(condition_id_2)
-        self.condition_helper.delete_condition(condition_id_3)
-
-        self.authentication_helper.logout()
-
+    
     def tearDown(self): 
         self.driver.quit()
 

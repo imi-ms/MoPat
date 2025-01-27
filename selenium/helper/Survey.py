@@ -1,3 +1,5 @@
+import time
+
 from selenium.common import TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
@@ -6,9 +8,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
 from helper.Navigation import NavigationHelper
-from helper.Question import QuestionType
-from helper.SeleniumUtils import SeleniumUtils, DropdownMethod
-
+from helper.Question import QuestionSelectors
+from helper.SeleniumUtils import SeleniumUtils
 
 class SurveySelectors:
     BUTTON_SHOW_BUNDLES = (By.ID, "showBundles")
@@ -37,6 +38,7 @@ class SurveySelectors:
 
     LABEL_FOR_CHECKBOX = lambda selected_value: (By.CSS_SELECTOR, f"label[for='numberedCheckbox_{selected_value}']")
     LABEL_BY_OPTION_TEXT = lambda option_text: (By.XPATH, f"//div[@class='right' and text()='{option_text}']/..")
+
 
 class SurveyHelper:
 
@@ -78,7 +80,7 @@ class SurveyHelper:
                 assert selected_clinic == clinic_name, f"Expected clinic '{clinic_name}', but got '{selected_clinic}'"
             else:
                 # Select the clinic from the dropdown
-                self.utils.select_dropdown(SurveySelectors.DROPDOWN_CLINIC_SELECTION, clinic_name, DropdownMethod.VISIBLE_TEXT)
+                self.utils.select_dropdown(SurveySelectors.DROPDOWN_CLINIC_SELECTION, clinic_name, "visible_text")
 
             # Select configuration
             config_selector = configuration['config_selector']
@@ -99,8 +101,9 @@ class SurveyHelper:
         self.click_next_button()
 
         # Wait for the survey completion message to appear
-        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-            SurveySelectors.TEXT_QUESTION_CONTENT))
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(SurveySelectors.TEXT_QUESTION_CONTENT)
+        )
 
         # Validate that the survey completion page is displayed
         completion_content = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_CONTENT).text
@@ -116,14 +119,20 @@ class SurveyHelper:
         language_code = language_code or self.DEFAULT_LANGUAGE_CODE
         try:
             # Click "Show Bundles" button to proceed
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(SurveySelectors.BUTTON_SHOW_BUNDLES)
+            )
             self.utils.click_element(SurveySelectors.BUTTON_SHOW_BUNDLES)
 
             # Select bundle
-            self.utils.select_dropdown(SurveySelectors.DROPDOWN_BUNDLE_SELECTION, bundle_name, DropdownMethod.VISIBLE_TEXT)
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(SurveySelectors.DROPDOWN_BUNDLE_SELECTION)
+            )
+            self.utils.select_dropdown(SurveySelectors.DROPDOWN_BUNDLE_SELECTION, bundle_name, "visible_text")
 
             # Select language if provided
             if language_code:
-                self.utils.select_dropdown(SurveySelectors.DROPDOWN_LANGUAGE_SELECTION, language_code, DropdownMethod.VALUE)
+                self.utils.select_dropdown(SurveySelectors.DROPDOWN_LANGUAGE_SELECTION, language_code, "value")
 
             # Start the survey
             self.utils.click_element(SurveySelectors.BUTTON_START_SURVEY)
@@ -272,19 +281,21 @@ class SurveyAssertHelper(SurveyHelper):
 
     def assertion_for_welcome_text(self, text):
         WebDriverWait(self.driver, 10).until(
-            EC.text_to_be_present_in_element(
-                SurveySelectors.TEXT_QUESTION_CONTENT, text))
+            EC.text_to_be_present_in_element(SurveySelectors.TEXT_QUESTION_CONTENT, text)
+        )
         welcome_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_CONTENT).text
         assert text in welcome_text, "Welcome text not found!"
 
     def assertion_for_question_title(self, question):
-        if question["type"] == QuestionType.INFO_TEXT:
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
-                SurveySelectors.TEXT_QUESTION_CONTENT))
+        if question["type"] == QuestionSelectors.QuestionTypes.INFO_TEXT:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located(SurveySelectors.TEXT_QUESTION_CONTENT)
+            )
             question_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_CONTENT).text
             assert question['text'] in question_text, "Question text not found!"
         else:
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
-                SurveySelectors.TEXT_QUESTION_TITLE))
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located(SurveySelectors.TEXT_QUESTION_TITLE)
+            )
             question_text = self.driver.find_element(*SurveySelectors.TEXT_QUESTION_TITLE).text
             assert question['text'] in question_text, "Question title not found!"
