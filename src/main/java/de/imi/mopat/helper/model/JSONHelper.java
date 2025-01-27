@@ -5,7 +5,6 @@ import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.DateAnswer;
 import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
@@ -21,18 +20,15 @@ import de.imi.mopat.model.dto.export.JsonQuestionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.score.Score;
-import jakarta.servlet.ServletContext;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
 public class JSONHelper{
 
-    @Autowired
-    private ConfigurationDao configurationDao;
+    private final ConfigurationDao configurationDao;
+
+    public JSONHelper(final ConfigurationDao configurationDao){
+        this.configurationDao = configurationDao;
+    }
 
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO, final Questionnaire questionnaire){
         jsonQuestionnaireDTO.setId(questionnaire.getId());
