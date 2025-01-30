@@ -940,21 +940,20 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      * @return The {@link CLDataType} of the given {@link Question}.
      */
     private CLDataType getCLDataType(Question question) {
-        switch (question.getCodedValueType()) {
-            case STRING:
-                return CLDataType.STRING;
-            case INTEGER:
-                return CLDataType.INTEGER;
-            case FLOAT:
-                return CLDataType.FLOAT;
-            default:
-                for (Answer answer : question.getAnswers()) {
-                    if (answer instanceof BodyPartAnswer) {
-                        return CLDataType.STRING;
-                    }
+        if (question.getCodedValueType() == null) {
+            for (Answer answer : question.getAnswers()) {
+                if (answer instanceof BodyPartAnswer) {
+                    return CLDataType.STRING;
                 }
-                return CLDataType.INTEGER;
+            }
+            return CLDataType.INTEGER;
         }
+
+        return switch (question.getCodedValueType()) {
+            case INTEGER -> CLDataType.INTEGER;
+            case FLOAT -> CLDataType.FLOAT;
+            default -> CLDataType.STRING;
+        };
     }
 
     /**
