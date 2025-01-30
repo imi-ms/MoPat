@@ -21,14 +21,14 @@ import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.score.Score;
 import java.io.IOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JSONHelper {
 
-    private final ConfigurationDao configurationDao;
-
-    public JSONHelper(final ConfigurationDao configurationDao) {
-        this.configurationDao = configurationDao;
-    }
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
         final Questionnaire questionnaire) {
