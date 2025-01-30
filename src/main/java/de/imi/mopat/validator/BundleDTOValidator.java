@@ -58,7 +58,7 @@ public class BundleDTOValidator implements Validator {
 
         String bundleDescription = HtmlUtils.removeHtmlTags(bundleDTO.getDescription());
 
-        if (bundleDescription.isEmpty()) {
+        if (bundleDescription != null && bundleDescription.isEmpty()) {
             errors.rejectValue("description", "errormessage",
                 messageSource.getMessage("bundle.description.notNull", new Object[]{},
                     LocaleContextHolder.getLocale()));
