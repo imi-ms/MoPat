@@ -33,15 +33,14 @@ import org.slf4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * Looks up patient data using HL7 v2.2 messages (QRY^01 to query and ADR_A19 to retrieve). Tries to
- * connect to a system using a given hostname (see
- * {@link HL7v22PatientInformationRetriever#getHL7v22PatientInformationRetrieverHostname() }) and
- * port (see {@link HL7v22PatientInformationRetriever#getHL7v22PatientInformationRetrieverPort() })
- * that have to be provided in the configuration.<br> Different to the official HL7 specification,
- * this HL7 patient data retriever does not only allow the value 'AA' as an MSA acknowledgement
- * code, but also the value 'CA'. If either one of these values is present as an MSA acknowledgement
- * code in the communication server's answer, this patient data retriever tries to get patient data
- * out of this very answer and populate the {@link Encounter}.
+ * Looks up patient data using HL7 v2.2 messages (QRY^01 to query and ADR_A19 to retrieve). Tries to connect to a system
+ * using a given hostname (see
+ * {@link HL7v22PatientInformationRetriever#getHL7v22PatientInformationRetrieverHostname() }) and port (see
+ * {@link HL7v22PatientInformationRetriever#getHL7v22PatientInformationRetrieverPort() }) that have to be provided in
+ * the configuration.<br> Different to the official HL7 specification, this HL7 patient data retriever does not only
+ * allow the value 'AA' as an MSA acknowledgement code, but also the value 'CA'. If either one of these values is
+ * present as an MSA acknowledgement code in the communication server's answer, this patient data retriever tries to get
+ * patient data out of this very answer and populate the {@link Encounter}.
  *
  * @version 1.0
  */
@@ -50,8 +49,8 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         HL7v22PatientInformationRetriever.class);
     /**
-     * Codes from HL7 v2 specification telling that the message sent to a communication server
-     * resulted in acceptance and thus valid data sent back, not error or reject
+     * Codes from HL7 v2 specification telling that the message sent to a communication server resulted in acceptance
+     * and thus valid data sent back, not error or reject
      */
     public static final String MSA_APPLICATION_ACCEPT_CODE = "AA";
     public static final String MSA_COMMIT_ACCEPT_CODE = "CA";
@@ -71,7 +70,9 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     @Override
     public EncounterDTO retrievePatientData(Clinic clinic, String caseNumber) {
         LOGGER.debug("caseNumber is: {}", caseNumber);
-        assert caseNumber != null : "The given caseNumber was null";
+        if(caseNumber==null){
+            throw new NullPointerException("caseNumber is null");
+        }
         caseNumber = caseNumber.trim();
         EncounterDTO result = null;
         String hostname = getHL7v22PatientInformationRetrieverHostname(clinic);
@@ -320,8 +321,8 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     }
 
     /**
-     * Returns the HL7v22PatientRetriever hostname from the {@link ConfigurationDao} by using the
-     * name of this class and the appropriate attribute name.
+     * Returns the HL7v22PatientRetriever hostname from the {@link ConfigurationDao} by using the name of this class and
+     * the appropriate attribute name.
      *
      * @return The HL7v22PatientRetriever hostname string.
      */
@@ -334,8 +335,8 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
     }
 
     /**
-     * Returns the HL7v22PatientRetriever port from the {@link ConfigurationDao} by using the name
-     * of this class and the appropriate attribute name.
+     * Returns the HL7v22PatientRetriever port from the {@link ConfigurationDao} by using the name of this class and the
+     * appropriate attribute name.
      *
      * @return The HL7v22PatientRetriever port number.
      */
