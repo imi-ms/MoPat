@@ -196,13 +196,13 @@ public class QuestionnaireService {
     public boolean editingQuestionnaireAllowed(QuestionnaireDTO questionnaireDTO) {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
-        // Admins and moderators can edit if there are no encounters
-        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+        // Admins can edit if there are no encounters
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
             return questionnaire.isModifiable();
         }
 
-        // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
-        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
+        // Moderators and Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
+        if (authService.hasExactRole(UserRole.ROLE_MODERATOR) || authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
 
@@ -228,11 +228,11 @@ public class QuestionnaireService {
         boolean isModifiable = questionnaire.isModifiable();
         boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
 
-        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR) && !isModifiable) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN) && !isModifiable) {
             return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
         }
 
-        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
+        if (authService.hasExactRole(UserRole.ROLE_MODERATOR) || authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             if (!isModifiable && partOfEnabledBundle) {
                 return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
             }
