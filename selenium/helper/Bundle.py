@@ -17,18 +17,28 @@ class BundleSelectors:
     BUTTON_MOVE_ITEM = lambda questionnaire_id: (By.ID, f"move_{questionnaire_id}")
 
     CHECKBOX_PUBLISH = (By.ID, "isPublished1")
+    CHECKBOX_NAME_PROGRESS = (By.ID, "deactivateProgressAndNameDuringSurvey1")
+    CHECKBOX_PROGRESS_WHOLE_PACKAGE = (By.ID, "showProgressPerBundle1")
 
     INPUT_NAME = (By.ID, "name")
     INPUT_EDITABLE_DESCRIPTION = (By.CSS_SELECTOR, "div.note-editable")
+    INPUT_WELCOME_TEXT = (By.CSS_SELECTOR, "#localizedWelcomeTextCollapsableText_de_DE > div > div.note-editing-area > div.note-editable")
+    INPUT_END_TEXT = (By.CSS_SELECTOR, "#localizedFinalTextCollapsableText_de_DE > div:nth-child(2) > div:nth-child(2) > div:nth-child(3)")
     INPUT_BUNDLE_SEARCH = (By.ID, "bundleTable_filter")
     INPUT_QUESTIONNAIRE = lambda questionnaire_id: (By.ID, f"questionnaire_{questionnaire_id}")
     INPUT_QUESTIONNAIRE_AVAILABLE_SEARCH = (By.ID, "availableQuestionnairesFilter")
+    INPUT_QUESTIONNAIRE_ASSIGNED_SEARCH = (By.ID, "assignedQuestionnairesFilter")
 
     BUNDLE_LINK = lambda bundle_id: (By.ID, f"bundleLink_{bundle_id}")
     BUNDLE_LINK_BY_NAME = lambda bundle_name: (By.XPATH, f"//table[@id='bundleTable']//a[text()='{bundle_name}']")
 
     TABLE_ROWS = (By.CSS_SELECTOR, "#DataTables_Table_0 tbody tr")
+    TABLE_BUNDLE = (By.ID, "bundleTable")
+    TABLE_AVAILABLE_QUESTIONNAIRES = (By.ID, "availableQuestionnairesTable")
+    TABLE_ASSIGNED_QUESTIONNAIRES = (By.ID, "assignedQuestionnairesTable")
 
+    CELL_FLAGICON=(By.CSS_SELECTOR, "#bundleTable > tbody > tr > td:nth-child(2) > img")
+    PAGINATION_BUNDLE = (By.CSS_SELECTOR, "#bundleTable_paginate")
 
 class BundleHelper:
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
@@ -79,7 +89,7 @@ class BundleHelper:
         :param questionnaires: List of questionnaires to assign to the bundle (optional).
         """
         timestamp: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        bundle_name = bundle_name or f"Bundle {timestamp}"
+        bundle_name = bundle_name or f"Test Bundle {timestamp}"
 
         try:
             self.navigation_helper.navigate_to_manage_bundles()
@@ -105,10 +115,7 @@ class BundleHelper:
             if publish_bundle:
                 self.utils.toggle_checkbox(BundleSelectors.CHECKBOX_PUBLISH, enable=True)
 
-            bundle_id = self.save_bundle(bundle_name)
-
             return {
-                "id": bundle_id,
                 "name": bundle_name
             }
 
@@ -163,3 +170,42 @@ class BundleHelper:
                     raise Exception(f"Error while assigning questionnaire '{questionnaire['name']}': {e}")
         except Exception as e:
             raise Exception(f"Error while assigning multiple questionnaires: {e}")
+
+    def get_bundle_id(self):
+        edit_link = self.get_first_bundle_row().find_element(By.CSS_SELECTOR, "a[href^='fill?id=']")
+        href = edit_link.get_attribute('href')
+        # Extract ID from href using split
+        bundle_id = href.split('id=')[1]
+        return bundle_id
+
+    def get_first_bundle_row(self):
+        return self.driver.find_element(*BundleSelectors.TABLE_BUNDLE) \
+            .find_element(By.TAG_NAME, "tbody") \
+            .find_element(By.TAG_NAME, "tr")
+
+    def remove_multiple_questionnaires_from_bundle(self, questionnaires, bundle_id=None):
+        """
+        :param questionnaires: List of dictionaries containing questionnaire details (e.g., {'id': str, 'name': str}).
+        :param bundle_id: ID of the bundle from which the questionnaires will be removed (optional).
+        """
+        try:
+            if bundle_id:
+                self.search_and_open_bundle(bundle_id)
+
+            for questionnaire in questionnaires:
+                try:
+                    self.utils.fill_text_field(BundleSelectors.INPUT_QUESTIONNAIRE_ASSIGNED_SEARCH,
+                                               questionnaire['name'])
+
+                    questionnaire_selector = BundleSelectors.INPUT_QUESTIONNAIRE(questionnaire['id'])
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located(questionnaire_selector)
+                    )
+                    self.utils.scroll_to_element(BundleSelectors.BUTTON_MOVE_ITEM(questionnaire['id']))
+                    self.utils.click_element(BundleSelectors.BUTTON_MOVE_ITEM(questionnaire['id']))
+                except TimeoutException:
+                    raise Exception(f"Timeout while removing questionnaire '{questionnaire['name']}'.")
+                except Exception as e:
+                    raise Exception(f"Error while removing questionnaire '{questionnaire['name']}': {e}")
+        except Exception as e:
+            raise Exception(f"Error while removing multiple questionnaires: {e}")

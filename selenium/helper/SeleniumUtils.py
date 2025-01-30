@@ -1,13 +1,13 @@
-import time
-from enum import Enum, auto
+from enum import Enum
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 class RemoveButtonSelectors:
     QUESTIONNAIRE = "removeQuestionnaire_{}"
@@ -18,11 +18,17 @@ class SearchBoxSelectors:
     QUESTIONNAIRE = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     BUNDLE = (By.CSS_SELECTOR, "#bundleTable_filter input[type='search']")
     CLINIC = (By.CSS_SELECTOR, "#clinicTable_filter input[type='search']")
+    SCHEDULED_ENCOUNTER = (By.CSS_SELECTOR, "#encounterScheduled_filter input[type='search']")
+    INVITATION = (By.CSS_SELECTOR, "#invitationTable_filter input[type='search']")
 
 class DropdownMethod(Enum):
     VISIBLE_TEXT = "visible_text"
     VALUE = "value"
     INDEX = "index"
+
+class ErrorSelectors:
+    INPUT_VALIDATION_SELECTOR=(By.CLASS_NAME, "validationError")
+    CONFIGURATION_ERROR_SELECTOR=(By.CLASS_NAME, "configurationError")
 
 class SeleniumUtils:
     def __init__(self, driver, navigation_helper = None):
@@ -65,7 +71,7 @@ class SeleniumUtils:
     def fill_number_field(self, selector, number):
         """
         :param selector: A tuple representing the element locator (e.g., (By.ID, "text_field_id")).
-        :param text: The text to input into the text field.
+        :param number: The number to input into the field.
         """
         try:
             text_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
@@ -339,3 +345,27 @@ class SeleniumUtils:
         # Perform the drag-and-drop action
         ActionChains(self.driver).drag_and_drop(source_element, target_element).perform()
 
+    def search_item(self, item_name, item_type):
+        """
+        :param item_name: The name of the item to search for.
+        :param item_type: The type of the item to delete (e.g., "questionnaire", "bundle", "clinic").
+        """
+        try:
+            # Initialize variables based on the item type
+            if item_type == "questionnaire":
+                self.navigator.navigate_to_manage_questionnaires()
+                search_box_selector = SearchBoxSelectors.QUESTIONNAIRE
+            elif item_type == "bundle":
+                self.navigator.navigate_to_manage_bundles()
+                search_box_selector = SearchBoxSelectors.BUNDLE
+            elif item_type == "clinic":
+                self.navigator.navigate_to_manage_clinics()
+                search_box_selector = SearchBoxSelectors.CLINIC
+            else:
+                raise ValueError(f"Unknown item type: {item_type}")
+
+            # Search for the element using the appropriate search box
+            self.fill_text_field(search_box_selector, item_name)
+
+        except Exception as e:
+            raise Exception(f"An error occurred while searching for {item_type} '{item_name}'")

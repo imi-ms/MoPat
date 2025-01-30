@@ -10,6 +10,8 @@ class NavigationBarSelectors:
     class UserMenu:
         BUTTON = (By.ID, "userDropdownLink")
         MAIL_TO_ALL_LINK = (By.ID, "mailToAllLink")
+        MANAGE_USER_LINK = (By.ID, "managerUserLink")
+        MANAGE_INVITATIONS_LINK = (By.ID, "manageInvitationLink")
 
     class QuestionnaireMenu:
         BUTTON = (By.ID, "questionnaireDropdownLink")
@@ -21,6 +23,12 @@ class NavigationBarSelectors:
 
     class ClinicMenu:
         LINK = (By.ID, "clinicLink")
+
+    class SurveysMenu:
+        BUTTON = (By.ID, "surveyDropdownLink")
+        MANAGE_SURVEY_LINK = (By.ID, "manageSurveyLink")
+        SCHEDULE_SURVEY_LINK = (By.ID, "scheduleSurveyLink")
+        EXECUTE_SURVEY_LINK = (By.ID, "executeSurveyLink")
 
 class QuestionTableSelectors:
     EDIT_QUESTION_LINK = lambda question_id: (By.XPATH, f'//a[@href="fill?id={question_id}"]')
@@ -94,3 +102,44 @@ class NavigationHelper:
         question_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionTableSelectors.EDIT_QUESTION_LINK(question_id)))
         question_link.click()
+
+    def navigate_to_manage_surveys(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.MANAGE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Surveys': {e}")
+
+    def navigate_to_schedule_survey(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.SCHEDULE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Schedule Survey': {e}")
+
+    def navigate_to_execute_survey(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.EXECUTE_SURVEY_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Execute Survey': {e}")
+
+    def navigate_to_manager_user(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.UserMenu.BUTTON)
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(NavigationBarSelectors.UserMenu.MANAGE_USER_LINK)
+            )
+            self.utils.click_element(NavigationBarSelectors.UserMenu.MANAGE_USER_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Users': {e}")
+
+    def navigate_to_manage_invitations(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.UserMenu.BUTTON)
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(NavigationBarSelectors.UserMenu.MANAGE_INVITATIONS_LINK)
+            )
+            self.utils.click_element(NavigationBarSelectors.UserMenu.MANAGE_INVITATIONS_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Manage Invitations': {e}")
