@@ -738,6 +738,10 @@
 			HIDE: 'hide'
 		};
 
+		const filter = {
+			availableQuestionnaires: $('#availableQuestionnairesFilter')
+		};
+
 		const tables = {
 			availableTable: $('#availableQuestionnairesTable'),
 			assignedTable: $('#assignedQuestionnairesTable')
@@ -925,7 +929,13 @@
 			const availableFields = tables.availableTable.find(".scores, .templateTypes, .enable");
 			availableFields.css('display', 'none');
 
-			if (shouldRefreshGroupVisibility) refreshGroupVisibilityState(tables.availableTable);
+			const isSearchEmpty = filter.availableQuestionnaires.val().trim() === '';
+			if (shouldRefreshGroupVisibility && isSearchEmpty) {
+				fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable).forEach(groupId => {
+					const groupExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
+					applyQuestionnaireVersionGroupVisibilityAction(groupId, groupExpanded ? ACTIONS.EXPAND : ACTIONS.MINIMIZE, true);
+				});
+			}
 
 			DragNDropList.checkIfTablesAreEmptyAndShowPlaceholder();
 			checkPublishingState();
@@ -979,14 +989,6 @@
 			} else if (action === ACTIONS.HIDE) {
 				useSlide ? questionnaireVersionGroupElements.slideUp() : questionnaireVersionGroupElements.hide();
 			}
-		}
-
-		/** Refreshes the visibility state of all groups in the table (expand or minimize). */
-		function refreshGroupVisibilityState(table) {
-			fetchUniqueQuestionnaireVersionGroupIds(table).forEach(groupId => {
-				const groupExpanded = fetchQuestionnaireVersionGroupElementsById(table, groupId, 'questionnaire-version-group-spacer').is(':visible');
-				applyQuestionnaireVersionGroupVisibilityAction(groupId, groupExpanded ? ACTIONS.EXPAND : ACTIONS.MINIMIZE, true);
-			});
 		}
 
 		/** Updates the group chevron and spacer based on the visibility action. */
