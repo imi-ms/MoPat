@@ -29,6 +29,9 @@ public class RootController {
     private ThymeleafMessageHelper thymeleafMessageHelper;
 
     @Autowired
+    private ThymeleafLocalHelper thymeleafLocalHelper;
+
+    @Autowired
     private ConfigurationDao configurationDao;
 
     @Autowired
@@ -94,6 +97,16 @@ public class RootController {
     @ModelAttribute("messages")
     public ThymeleafMessageHelper helper() {
         return this.thymeleafMessageHelper;
+    }
+
+    /**
+     * Adds the ThymeleafLocalHelper to all pages.
+     *
+     * @return thymeleafLocalHelper
+     */
+    @ModelAttribute("localHelper")
+    public ThymeleafLocalHelper localHelper() {
+        return this.thymeleafLocalHelper;
     }
 
     /**

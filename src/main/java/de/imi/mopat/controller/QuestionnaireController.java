@@ -205,7 +205,7 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
+        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
         model.addAttribute("localizedDisplayNamesForQuestionnaire",
