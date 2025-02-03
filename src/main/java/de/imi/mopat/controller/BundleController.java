@@ -171,7 +171,7 @@ public class BundleController {
             bundle.setHasConditions(targetBundles.contains(bundle.getId()));
         }
 
-        model.addAttribute("allBundles", bundles);
+        model.addAttribute("allBundles", bundleService.sortBundlesByNameAsc(bundles));
         return "bundle/list";
     }
 

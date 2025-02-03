@@ -151,7 +151,8 @@ public class ClinicController {
     @RequestMapping(value = "/clinic/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showClinics(final Model model) {
-        model.addAttribute("allClinics", clinicDao.getAllElements());
+        List<Clinic> clinics = clinicDao.getAllElements();
+        model.addAttribute("allClinics", clinicService.sortClinicsByNameAsc(clinics));
         return "clinic/list";
     }
 

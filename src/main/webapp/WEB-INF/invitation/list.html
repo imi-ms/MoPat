@@ -2,182 +2,199 @@
     * View to show all pending invitations     
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'user.heading.userInvitation', 'All users')}"
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'user.heading.userInvitation', 'All users')}"
 >
-	<th:block layout:fragment="content">
-		<div class="table-responsive">
-			<table
-				class="table table-hover pagedTable responsive"
-				style="width: 100%"
-			>
-				<colgroup>
-					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
-				</colgroup>
-				<thead>
-					<tr>
-						<th
-							data-priority="4"
-							th:text="${messages.get(#locale, 'invitation.label.firstname', 'Firstname')}"
-						></th>
-						<th
-							data-priority="3"
-							th:text="${messages.get(#locale, 'invitation.label.lastname', 'Lastname')}"
-						></th>
-						<th
-							data-priority="1"
-							th:text="${messages.get(#locale, 'invitation.label.email', 'E-mail')}"
-						></th>
-						<th
-							th:text="${messages.get(#locale, 'invitation.label.expirationdate', 'Expiration date')}"
-						></th>
-						<th
-							data-priority="2"
-							class="actionColumn"
-							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
-						></th>
-					</tr>
-				</thead>
-				<tbody>
-					<th:block
-						th:if="${not #lists.isEmpty(invitedUsers)}"
-						th:each="item: ${invitedUsers}"
-					>
-						<tr>
-							<td>
-								<th:block
-									th:if="${not #strings.isEmpty(item.firstName)}"
-									th:text="${item.firstName}"
-								/>
-							</td>
-							<td>
-								<th:block
-									th:if="${not #strings.isEmpty(item.lastName)}"
-									th:text="${item.lastName}"
-								/>
-							</td>
-							<td>
-								<th:block
-									th:if="${not #strings.isEmpty(item.email)}"
-									th:text="${item.email}"
-								/>
-							</td>
-							<td>
-								<th:block th:if="${item.expirationDate != null}">
-									<th:block th:if="${item.expirationDate < #dates.createNow()}">
-										<font
-											color="red"
-											th:text="${#dates.format(item.expirationDate, 'dd.MM.yyyy')}"
-										></font>
-									</th:block>
-									<th:block
-										th:unless="${item.expirationDate < #dates.createNow()}"
-										th:text="${#dates.format(item.expirationDate, 'dd.MM.yyyy')}"
-									/>
-								</th:block>
-							</td>
-							<td class="actionColumn">
-								<div class="d-none d-xl-block">
-									<th:block th:fragment="actionFragment">
-										<a
-											class="link"
-											th:href="@{edit?id=__${item.id}__}"
-										>
-											<i
-												class="bi-pencil-fill"
-												th:title="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
-											>
-											</i>
-										</a>
-										<a
-											class="link"
-											th:href="@{refresh?id=__${item.id}__}"
-										>
-											<i
-												class="bi-alarm-fill"
-												th:title="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
-											>
-											</i>
-										</a>
-										<a
-											class="link"
-											th:href="@{remove?id=__${item.id}__}"
-										>
-											<i
-												class="bi-x-circle-fill"
-												th:title="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
-											>
-											</i>
-										</a>
-									</th:block>
-								</div>
+    <th:block layout:fragment="content">
+        <div class="table-responsive">
+            <table
+                class="table table-hover responsive"
+                id="invitationTable"
+                style="width: 100%"
+            >
+                <colgroup>
+                    <col width="20%" />
+                    <col width="20%" />
+                    <col width="20%" />
+                    <col width="20%" />
+                    <col width="20%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th
+                            data-priority="4"
+                            th:text="${messages.get(#locale, 'invitation.label.firstname', 'Firstname')}"
+                        ></th>
+                        <th
+                            data-priority="3"
+                            th:text="${messages.get(#locale, 'invitation.label.lastname', 'Lastname')}"
+                        ></th>
+                        <th
+                            data-priority="1"
+                            th:text="${messages.get(#locale, 'invitation.label.email', 'E-mail')}"
+                        ></th>
+                        <th
+                            th:text="${messages.get(#locale, 'invitation.label.expirationdate', 'Expiration date')}"
+                        ></th>
+                        <th
+                            data-priority="2"
+                            class="actionColumn"
+                            th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
+                        ></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block
+                        th:if="${not #lists.isEmpty(invitedUsers)}"
+                        th:each="item: ${invitedUsers}"
+                    >
+                        <tr>
+                            <td>
+                                <th:block
+                                    th:if="${not #strings.isEmpty(item.firstName)}"
+                                    th:text="${item.firstName}"
+                                />
+                            </td>
+                            <td>
+                                <th:block
+                                    th:if="${not #strings.isEmpty(item.lastName)}"
+                                    th:text="${item.lastName}"
+                                />
+                            </td>
+                            <td>
+                                <th:block
+                                    th:if="${not #strings.isEmpty(item.email)}"
+                                    th:text="${item.email}"
+                                />
+                            </td>
+                            <td>
+                                <th:block th:if="${item.expirationDate != null}">
+                                    <th:block th:if="${item.expirationDate < #dates.createNow()}">
+                                        <font
+                                            color="red"
+                                            th:text="${localHelper.formatDateToLocaleDate(item.expirationDate)}"
+                                        ></font>
+                                    </th:block>
+                                    <th:block
+                                        th:unless="${item.expirationDate < #dates.createNow()}"
+                                        th:text="${localHelper.formatDateToLocaleDate(item.expirationDate)}"
+                                    />
+                                </th:block>
+                            </td>
+                            <td class="actionColumn">
+                                <div class="d-none d-xl-block">
+                                    <th:block th:fragment="actionFragment">
+                                        <a
+                                            class="link"
+                                            th:href="@{edit?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-pencil-fill"
+                                                th:title="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
+                                            >
+                                            </i>
+                                        </a>
+                                        <a
+                                            class="link"
+                                            th:href="@{refresh?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-alarm-fill"
+                                                th:title="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
+                                            >
+                                            </i>
+                                        </a>
+                                        <a
+                                            class="link"
+                                            th:href="@{remove?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-x-circle-fill"
+                                                th:title="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
+                                            >
+                                            </i>
+                                        </a>
+                                    </th:block>
+                                </div>
 
-								<div class="d-block d-xl-none">
-									<a
-										class="link"
-										data-bs-toggle="offcanvas"
-										th:href="|#${item.id}_offcanvas|"
-									>
-										<i
-											class="bi bi-three-dots"
-											style="font-size: 1.5rem"
-										></i>
-									</a>
+                                <div class="d-block d-xl-none">
+                                    <a
+                                        class="link"
+                                        data-bs-toggle="offcanvas"
+                                        th:href="|#${item.id}_offcanvas|"
+                                    >
+                                        <i
+                                            class="bi bi-three-dots"
+                                            style="font-size: 1.5rem"
+                                        ></i>
+                                    </a>
 
-									<th:block
-										layout:insert="~{fragments/structures :: mobileOptionsMenu(
+                                    <th:block
+                                        layout:insert="~{fragments/structures :: mobileOptionsMenu(
                                                                 itemName=|${item.firstName} ${item.lastName} (${item.email})|, 
                                                                 id=|${item.id}_offcanvas|
                                         )}"
-									>
-										<th:block layout:fragment="optionsContent">
-											<a
-												class="link"
-												th:href="@{edit?id=__${item.id}__}"
-												th:text="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
-											>
-											</a>
-											<a
-												class="link"
-												th:href="@{refresh?id=__${item.id}__}"
-												th:text="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
-											>
-											</a>
-											<a
-												class="link"
-												th:href="@{remove?id=__${item.id}__}"
-												th:text="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
-											>
-											</a>
-										</th:block>
-									</th:block>
-								</div>
-							</td>
-						</tr>
-					</th:block>
-				</tbody>
-			</table>
-			<div class="panel-body">
-				<form
-					th:object="${invitation}"
-					method="GET"
-					action="edit"
-				>
-					<button
-						type="submit"
-						class="btn btn-primary"
-						value="inviteUser"
-						id="newInvitationButton"
-						name="action"
-						th:text="${messages.get(#locale, 'invitation.button.newInvitation', 'Create New Invitation')}"
-					>
-					</button>
-				</form>
-			</div>
-		</div>
-	</th:block>
+                                    >
+                                        <th:block layout:fragment="optionsContent">
+                                            <a
+                                                class="link"
+                                                th:href="@{edit?id=__${item.id}__}"
+                                                th:text="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
+                                            >
+                                            </a>
+                                            <a
+                                                class="link"
+                                                th:href="@{refresh?id=__${item.id}__}"
+                                                th:text="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
+                                            >
+                                            </a>
+                                            <a
+                                                class="link"
+                                                th:href="@{remove?id=__${item.id}__}"
+                                                th:text="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
+                                            >
+                                            </a>
+                                        </th:block>
+                                    </th:block>
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                </tbody>
+            </table>
+            <div class="panel-body">
+                <form
+                    th:object="${invitation}"
+                    method="GET"
+                    action="edit"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        value="inviteUser"
+                        id="newInvitationButton"
+                        name="action"
+                        th:text="${messages.get(#locale, 'invitation.button.newInvitation', 'Create New Invitation')}"
+                    >
+                    </button>
+                </form>
+            </div>
+        </div>
+    </th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+    <script
+        th:inline="javascript"
+        type="text/javascript"
+    >
+        $(document).ready(function () {
+            $("#invitationTable").DataTable({
+                deferRender: true,
+                paging: true,
+                ordering: true,
+                columnDefs: [{ orderable: false, targets: [4] }],
+            });
+        });
+    </script>
 </th:block>

@@ -43,9 +43,10 @@
 			>
 				<colgroup>
 					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
-					<col width="22%" />
+					<col width="15%" />
+					<col width="15%" />
+					<col width="16%" />
+					<col width="16%" />
 					<col width="18%" />
 				</colgroup>
 				<thead>
@@ -62,6 +63,9 @@
 						></th>
 						<th
 							th:text="${messages.get(#locale, 'questionnaire.label.containedInBundles', 'Contained in bundles:')}"
+						></th>
+						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.createdAt', 'Created At')}"
 						></th>
 						<th
 							data-priority="2"
@@ -124,6 +128,11 @@
 											</li>
 										</th:block>
 									</ul>
+								</td>
+								<td style="text-align: left">
+									<th:block th:if="not ${#strings.isEmpty(item.createdAt)}">
+											<th:block th:text="${localHelper.formatTimestampToLocaleDate(item.createdAt)}" />
+									</th:block>
 								</td>
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
@@ -332,7 +341,8 @@
 			$('#questionnaireTable').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [{ orderable: false, targets: [1,2,5] }],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")
