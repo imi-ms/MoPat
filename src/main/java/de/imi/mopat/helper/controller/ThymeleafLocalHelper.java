@@ -16,4 +16,10 @@ public class ThymeleafLocalHelper {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
         return dateFormat.format(date);
     }
+
+    public static String formatDateToLocaleDate(Date date) {
+        Locale locale = Locale.getDefault();
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
+        return dateFormat.format(date);
+    }
 }
