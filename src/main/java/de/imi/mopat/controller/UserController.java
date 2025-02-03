@@ -143,7 +143,7 @@ public class UserController {
         @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError,
         final Model model
     ) {
-        model.addAttribute("allUsers", userDao.getAllElements());
+        model.addAttribute("allUsers", userService.sortUsersByNameAsc(userDao.getAllElements()));
         return "user/list";
     }
 
