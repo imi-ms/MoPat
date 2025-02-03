@@ -31,6 +31,7 @@ import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.user.AclObjectIdentity;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.BundleDTOValidator;
 
 import java.util.ArrayList;
@@ -219,6 +220,10 @@ public class BundleController {
         if (bundleDTO.getId() != null && !bundleDao.getElementById(bundleDTO.getId())
             .isModifiable()) {
             return "redirect:/bundle/fill?id=" + bundleDTO.getId();
+        }
+
+        if (!authService.hasExactRole(UserRole.ROLE_ADMIN)){
+            bundleDTO.setIsPublished(false);
         }
 
         // Check if one of the welcome texts has only one newline and
