@@ -270,6 +270,8 @@ public class BundleController {
                     // Set the export templates to the assigned questionnaire
                     bundleQuestionnaireDTO.getQuestionnaireDTO()
                         .setExportTemplates(questionnaireDTO.getExportTemplates());
+                    bundleQuestionnaireDTO.getQuestionnaireDTO()
+                            .setQuestionnaireGroupDTO(questionnaireDTO.getQuestionnaireGroupDTO());
                 }
             }
         }
