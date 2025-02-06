@@ -121,38 +121,6 @@ public class BundleController {
     }
 
     /**
-     * @param id is id of the {@link Bundle Bundle} object
-     * @return Returns all {@link Questionnaire Questionnaire} objects that are not already present
-     * in the bundle with the given id.
-     */
-    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
-        // Fetch questionnaires not linked with the given bundle
-        List<Questionnaire> availableQuestionnaires = bundleDao.getAvailableQuestionnairesForBundle(bundleId);
-
-        // Collect IDs for fetching scores
-        Set<Long> questionnaireIds = availableQuestionnaires.stream().map(Questionnaire::getId).collect(Collectors.toSet());
-        Set<Long> questionnairesWithScores = new HashSet<>();
-        if (!questionnaireIds.isEmpty()) {
-            questionnairesWithScores.addAll(
-                scoreDao.findQuestionnairesWithScores(
-                    new ArrayList<>(questionnaireIds)
-                )
-            );
-        }
-
-        // Map to DTO and sort
-        return availableQuestionnaires.stream()
-            .filter(q -> !q.getQuestions().isEmpty())
-            .map(q -> {
-                QuestionnaireDTO dto = questionnaireDTOMapper.apply(q);
-                dto.setHasScores(questionnairesWithScores.contains(q.getId()));
-                return dto;
-            })
-            .sorted(Comparator.comparing(QuestionnaireDTO::getName, String.CASE_INSENSITIVE_ORDER))
-            .collect(Collectors.toList());
-    }
-
-    /**
      * Controls the HTTP GET requests for the URL <i>/bundle/list</i>. Shows the list of bundles.
      *
      * @param model The model, which holds the information for the view.
@@ -226,7 +194,7 @@ public class BundleController {
 
         bundleService.prepareBundleForEdit(bundleDTO);
 
-        List<QuestionnaireDTO> availableQuestionnaireDTOs = getAvailableQuestionnaires(null);
+        List<QuestionnaireDTO> availableQuestionnaireDTOs = bundleService.getAvailableQuestionnaires(null);
         List<BundleQuestionnaireDTO> assignedBundleQuestionnaireDTOs = new ArrayList<>(
             bundleDTO.getBundleQuestionnaireDTOs());
         List<QuestionnaireDTO> questionnaireDTOsToDelete = new ArrayList<>();

@@ -74,7 +74,7 @@ public class BundleService {
                         Comparator.comparing(QuestionnaireDTO::getQuestionnaireVersionGroupName, String::compareToIgnoreCase)
                                 .thenComparing(QuestionnaireDTO::getQuestionnaireVersionGroupId)
                                 .thenComparing(QuestionnaireDTO::getVersion))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
