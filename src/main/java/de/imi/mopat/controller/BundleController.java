@@ -245,6 +245,8 @@ public class BundleController {
                         .setExportTemplates(questionnaireDTO.getExportTemplates());
                     bundleQuestionnaireDTO.getQuestionnaireDTO()
                             .setQuestionnaireGroupDTO(questionnaireDTO.getQuestionnaireGroupDTO());
+                    bundleQuestionnaireDTO.getQuestionnaireDTO()
+                            .setHasScores(questionnaireDTO.getHasScores());
                 }
             }
         }
