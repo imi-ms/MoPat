@@ -71,35 +71,6 @@ public class BundleController {
     private BundleService bundleService;
     @Autowired
     private ClinicService clinicService;
-    @Autowired
-    private BundleDTOMapper bundleDTOMapper;
-
-    /**
-     * @param id for bundle
-     * @return resulting bundle for id
-     */
-    public BundleDTO getBundleDTO(final Long id) {
-        BundleDTO result;
-        BundleDTO bundleDTO;
-        if (id == null || id <= 0) {
-            result = new BundleDTO();
-        } else {
-            Bundle bundle = bundleDao.getElementById(id);
-            if (bundle == null) {
-                result = new BundleDTO();
-            } else {
-                bundleDTO = bundleDTOMapper.apply(true,bundle);
-                for (BundleQuestionnaireDTO bundleQuestionnaireDTO
-                        : bundleDTO.getBundleQuestionnaireDTOs()) {
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                          .setHasScores(scoreDao.hasScore(questionnaireDao.getElementById(bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                                                                                                                .getId())));
-                }
-                result = bundleDTO;
-            }
-        }
-        return result;
-    }
 
     /**
      * Controls the HTTP GET requests for the URL <i>/bundle/list</i>. Shows the list of bundles.
@@ -137,7 +108,7 @@ public class BundleController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         final Model model) {
-        BundleDTO bundleDTO = getBundleDTO(bundleId);
+        BundleDTO bundleDTO = bundleService.getBundleDTO(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("availableQuestionnaireDTOs", bundleService.getAvailableQuestionnaires(bundleId));

@@ -7,6 +7,7 @@ import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
@@ -52,6 +53,37 @@ public class BundleService {
     private AclClassDao aclClassDao;
     @Autowired
     private AclObjectIdentityDao aclObjectIdentityDao;
+    @Autowired
+    private BundleDTOMapper bundleDTOMapper;
+
+    /**
+     * Retrieves a BundleDTO for the given bundle ID.
+     *
+     * @param id The ID of the bundle.
+     * @return The corresponding BundleDTO or a new instance if the bundle is not found.
+     */
+    public BundleDTO getBundleDTO(final Long id) {
+        if (id == null || id <= 0) {
+            return new BundleDTO();
+        }
+
+        Bundle bundle = bundleDao.getElementById(id);
+        if (bundle == null) {
+            return new BundleDTO();
+        }
+
+        BundleDTO bundleDTO = bundleDTOMapper.apply(true, bundle);
+
+        bundleDTO.getBundleQuestionnaireDTOs().forEach(bundleQuestionnaireDTO -> {
+            QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
+            if (questionnaireDTO != null && questionnaireDTO.getId() != null) {
+                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaireDao.getElementById(questionnaireDTO.getId())));
+            }
+        });
+
+        return bundleDTO;
+    }
+
 
     /**
      * Retrieves all available {@link QuestionnaireDTO} objects that are not currently assigned
