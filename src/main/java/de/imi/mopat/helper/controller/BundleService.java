@@ -1,12 +1,16 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.user.AclClassDao;
+import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
+import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
@@ -22,6 +26,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.imi.mopat.model.user.AclObjectIdentity;
+import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +52,12 @@ public class BundleService {
     private QuestionnaireService questionnaireService;
     @Autowired
     private AuthService authService;
+    @Autowired
+    private ExportTemplateDao exportTemplateDao;
+    @Autowired
+    private AclClassDao aclClassDao;
+    @Autowired
+    private AclObjectIdentityDao aclObjectIdentityDao;
 
     /**
      * Retrieves all available {@link QuestionnaireDTO} objects that are not currently assigned
@@ -194,5 +206,105 @@ public class BundleService {
                 abq.getQuestionnaireDTO().setHasScores(assignedQuestionnaire.getHasScores());
             }
         });
+    }
+
+    public void saveOrUpdateBundle(BundleDTO bundleDTO) {
+        if (!authService.hasExactRole(UserRole.ROLE_ADMIN)){
+            bundleDTO.setIsPublished(false);
+        }
+        // Set property of the Bundle to current user
+        User principal = authService.getAuthenticatedUser();
+
+        Bundle bundle;
+        if (bundleDTO.getId() != null) {
+            bundle = bundleDao.getElementById(bundleDTO.getId());
+            bundle.setName(bundleDTO.getName());
+            bundle.setChangedBy(principal.getId());
+            bundle.setDescription(bundleDTO.getDescription());
+            bundle.setIsPublished(bundleDTO.getIsPublished());
+            bundle.setShowProgressPerBundle(bundleDTO.getShowProgressPerBundle());
+            bundle.setDeactivateProgressAndNameDuringSurvey(
+                    bundleDTO.getdeactivateProgressAndNameDuringSurvey());
+        } else {
+            bundle = new Bundle(bundleDTO.getName(), bundleDTO.getDescription(), principal.getId(),
+                    bundleDTO.getIsPublished(), bundleDTO.getShowProgressPerBundle(),
+                    bundleDTO.getdeactivateProgressAndNameDuringSurvey());
+        }
+        bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
+        bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
+
+        if (bundle.getId() == null) { // the bundle is completely new, thus
+            // no removal of BundleQuestionnaire objects necessary and in the
+            // end persist (not merge)
+            bundleDao.merge(bundle);
+            // Get the current user, which is the owner of the bundle
+            User currentUser = authService.getAuthenticatedUser();
+            // Create a new ACLObjectIdentity for the bundle and save it
+            AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
+                    Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
+                    null);
+            aclObjectIdentityDao.persist(bundleObjectIdentity);
+        } else {
+            // the bundle is not new,
+            // thus BundleQuestionnaire objects might have been removed or
+            // repositioned.
+            // To avoid complex code, we remove all BundleQuestionnaire
+            // objects from the bundle and (re-)add them.
+            // In the end: merge (not persist) (since the bundle already has
+            // an ID)
+            for (BundleQuestionnaire toDelete : bundle.getBundleQuestionnaires()) {
+                HashSet<ExportTemplate> exportTemplates = new HashSet<>(
+                        toDelete.getExportTemplates());
+                toDelete.removeExportTemplates();
+                for (ExportTemplate exportTemplate : exportTemplates) {
+                    exportTemplateDao.merge(exportTemplate);
+                }
+                Questionnaire questionnaire = toDelete.getQuestionnaire();
+                questionnaire.removeBundleQuestionnaire(toDelete);
+                questionnaireDao.merge(questionnaire);
+            }
+            bundle.removeAllBundleQuestionnaires();
+            bundleDao.merge(bundle);
+        }
+        // Save the bundle questionnaire relationships
+        if (bundleDTO.getBundleQuestionnaireDTOs() != null
+                && !bundleDTO.getBundleQuestionnaireDTOs().isEmpty()) {
+            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleDTO.getBundleQuestionnaireDTOs()) {
+                if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
+                        || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
+                    continue;
+                }
+                Questionnaire questionnaire = questionnaireDao.getElementById(
+                        bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
+
+                if (bundleQuestionnaireDTO.getIsEnabled() == null) {
+                    bundleQuestionnaireDTO.setIsEnabled(false);
+                }
+
+                if (bundleQuestionnaireDTO.getShowScores() == null) {
+                    bundleQuestionnaireDTO.setShowScores(false);
+                }
+
+                BundleQuestionnaire bundleQuestionnaire = new BundleQuestionnaire(bundle,
+                        questionnaire, bundleQuestionnaireDTO.getPosition().intValue(),
+                        bundleQuestionnaireDTO.getIsEnabled(), bundleQuestionnaireDTO.getShowScores());
+                for (Long id : bundleQuestionnaireDTO.getExportTemplates()) {
+                    ExportTemplate exportTemplate = exportTemplateDao.getElementById(id);
+                    if (exportTemplate != null) {
+                        bundleQuestionnaire.addExportTemplate(exportTemplate);
+                        exportTemplateDao.merge(exportTemplate);
+                    }
+                }
+                bundle.addBundleQuestionnaire(bundleQuestionnaire);
+                questionnaire.addBundleQuestionnaire(bundleQuestionnaire);
+                questionnaireDao.merge(questionnaire);
+            }
+        }
+        // If the bundle has no questionnaire change isPublished to false
+        if (Boolean.TRUE.equals(bundle.getIsPublished()) && bundle.getBundleQuestionnaires()
+                .isEmpty()) {
+            bundle.setIsPublished(Boolean.FALSE);
+        }
+        bundleDao.merge(bundle);
     }
 }

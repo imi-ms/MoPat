@@ -20,7 +20,6 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Clinic;
-import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -29,21 +28,11 @@ import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.user.AclObjectIdentity;
-import de.imi.mopat.model.user.User;
-import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.BundleDTOValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.stream.Collectors;
 import jakarta.validation.Valid;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -73,8 +62,6 @@ public class BundleController {
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
-    private ExportTemplateDao exportTemplateDao;
-    @Autowired
     private QuestionnaireDao questionnaireDao;
     @Autowired
     private BundleDTOValidator bundleDTOValidator;
@@ -83,15 +70,9 @@ public class BundleController {
     @Autowired
     private BundleService bundleService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ClinicService clinicService;
     @Autowired
-    private QuestionnaireDTOMapper questionnaireDTOMapper;
-    @Autowired
     private BundleDTOMapper bundleDTOMapper;
-    @Autowired
-    private AuthService authService;
 
     /**
      * @param id for bundle
@@ -188,10 +169,6 @@ public class BundleController {
             return "redirect:/bundle/fill?id=" + bundleDTO.getId();
         }
 
-        if (!authService.hasExactRole(UserRole.ROLE_ADMIN)){
-            bundleDTO.setIsPublished(false);
-        }
-
         bundleService.prepareBundleForEdit(bundleDTO);
 
         List<QuestionnaireDTO> availableQuestionnaireDTOs = bundleService.getAvailableQuestionnaires(null);
@@ -207,100 +184,7 @@ public class BundleController {
             return "bundle/edit";
         }
 
-        // Set property of the Bundle to current user
-        User principal = authService.getAuthenticatedUser();
-
-        Bundle bundle;
-        if (bundleDTO.getId() != null) {
-            bundle = bundleDao.getElementById(bundleDTO.getId());
-            bundle.setName(bundleDTO.getName());
-            bundle.setChangedBy(principal.getId());
-            bundle.setDescription(bundleDTO.getDescription());
-            bundle.setIsPublished(bundleDTO.getIsPublished());
-            bundle.setShowProgressPerBundle(bundleDTO.getShowProgressPerBundle());
-            bundle.setDeactivateProgressAndNameDuringSurvey(
-                bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        } else {
-            bundle = new Bundle(bundleDTO.getName(), bundleDTO.getDescription(), principal.getId(),
-                bundleDTO.getIsPublished(), bundleDTO.getShowProgressPerBundle(),
-                bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        }
-        bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
-        bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
-
-        if (bundle.getId() == null) { // the bundle is completely new, thus
-            // no removal of BundleQuestionnaire objects necessary and in the
-            // end persist (not merge)
-            bundleDao.merge(bundle);
-            // Get the current user, which is the owner of the bundle
-            User currentUser = authService.getAuthenticatedUser();
-            // Create a new ACLObjectIdentity for the bundle and save it
-            AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
-                Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
-                null);
-            aclObjectIdentityDao.persist(bundleObjectIdentity);
-        } else {
-            // the bundle is not new,
-            // thus BundleQuestionnaire objects might have been removed or
-            // repositioned.
-            // To avoid complex code, we remove all BundleQuestionnaire
-            // objects from the bundle and (re-)add them.
-            // In the end: merge (not persist) (since the bundle already has
-            // an ID)
-            for (BundleQuestionnaire toDelete : bundle.getBundleQuestionnaires()) {
-                HashSet<ExportTemplate> exportTemplates = new HashSet<>(
-                    toDelete.getExportTemplates());
-                toDelete.removeExportTemplates();
-                for (ExportTemplate exportTemplate : exportTemplates) {
-                    exportTemplateDao.merge(exportTemplate);
-                }
-                Questionnaire questionnaire = toDelete.getQuestionnaire();
-                questionnaire.removeBundleQuestionnaire(toDelete);
-                questionnaireDao.merge(questionnaire);
-            }
-            bundle.removeAllBundleQuestionnaires();
-            bundleDao.merge(bundle);
-        }
-        // Save the bundle questionnaire relationships
-        if (bundleDTO.getBundleQuestionnaireDTOs() != null
-            && !bundleDTO.getBundleQuestionnaireDTOs().isEmpty()) {
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleDTO.getBundleQuestionnaireDTOs()) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
-                    || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
-                    continue;
-                }
-                Questionnaire questionnaire = questionnaireDao.getElementById(
-                    bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
-
-                if (bundleQuestionnaireDTO.getIsEnabled() == null) {
-                    bundleQuestionnaireDTO.setIsEnabled(false);
-                }
-
-                if (bundleQuestionnaireDTO.getShowScores() == null) {
-                    bundleQuestionnaireDTO.setShowScores(false);
-                }
-
-                BundleQuestionnaire bundleQuestionnaire = new BundleQuestionnaire(bundle,
-                    questionnaire, bundleQuestionnaireDTO.getPosition().intValue(),
-                    bundleQuestionnaireDTO.getIsEnabled(), bundleQuestionnaireDTO.getShowScores());
-                for (Long id : bundleQuestionnaireDTO.getExportTemplates()) {
-                    ExportTemplate exportTemplate = exportTemplateDao.getElementById(id);
-                    if (exportTemplate != null) {
-                        bundleQuestionnaire.addExportTemplate(exportTemplate);
-                        exportTemplateDao.merge(exportTemplate);
-                    }
-                }
-                bundle.addBundleQuestionnaire(bundleQuestionnaire);
-                questionnaire.addBundleQuestionnaire(bundleQuestionnaire);
-                questionnaireDao.merge(questionnaire);
-            }
-        }
-        // If the bundle has no questionnaire change isPublished to false
-        if (Boolean.TRUE.equals(bundle.getIsPublished()) && bundle.getBundleQuestionnaires()
-            .isEmpty()) {
-            bundle.setIsPublished(Boolean.FALSE);
-        }
-        bundleDao.merge(bundle);
+        bundleService.saveOrUpdateBundle(bundleDTO);
 
         return "redirect:/bundle/list";
     }
