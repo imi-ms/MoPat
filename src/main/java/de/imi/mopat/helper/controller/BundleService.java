@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
+import de.imi.mopat.model.user.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,8 @@ public class BundleService {
     private BundleQuestionnaireDao bundleQuestionnaireDao;
     @Autowired
     private QuestionnaireService questionnaireService;
+    @Autowired
+    private AuthService authService;
 
     /**
      * Retrieves all available {@link QuestionnaireDTO} objects that are not currently assigned
@@ -128,5 +132,31 @@ public class BundleService {
 
     public boolean isBundleModifiable(BundleDTO bundleDTO) {
         return bundleDTO.getId() == null || bundleDao.getElementById(bundleDTO.getId()).isModifiable();
+    }
+
+    public void prepareBundleForEdit(BundleDTO bundleDTO) {
+        cleanUpTextFields(bundleDTO);
+
+        if (!authService.hasExactRole(UserRole.ROLE_ADMIN)) {
+            bundleDTO.setIsPublished(false);
+        }
+
+        removeUnassignedBundleQuestionnaires(bundleDTO);
+    }
+
+    public void cleanUpTextFields(BundleDTO bundleDTO) {
+        bundleDTO.setLocalizedWelcomeText(cleanUpLocalizedText(bundleDTO.getLocalizedWelcomeText()));
+        bundleDTO.setLocalizedFinalText(cleanUpLocalizedText(bundleDTO.getLocalizedFinalText()));
+    }
+
+    private SortedMap<String, String> cleanUpLocalizedText(SortedMap<String, String> textMap) {
+        textMap.replaceAll((key, value) -> ("<p><br></p>".equals(value) || "<br>".equals(value)) ? "" : value);
+        return textMap;
+    }
+
+    private void removeUnassignedBundleQuestionnaires(BundleDTO bundleDTO) {
+        bundleDTO.getBundleQuestionnaireDTOs().removeIf(
+                bq -> bq.getQuestionnaireDTO() == null || bq.getQuestionnaireDTO().getId() == null
+        );
     }
 }

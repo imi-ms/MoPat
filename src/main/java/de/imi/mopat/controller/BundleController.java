@@ -224,25 +224,7 @@ public class BundleController {
             bundleDTO.setIsPublished(false);
         }
 
-        // Check if one of the welcome texts has only one newline and
-        // change it to an empty string
-        SortedMap<String, String> tempLocalizedWelcomeText = bundleDTO.getLocalizedWelcomeText();
-        for (SortedMap.Entry entry : tempLocalizedWelcomeText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        bundleDTO.setLocalizedWelcomeText(tempLocalizedWelcomeText);
-
-        // Check if one of the final texts has only one newline and
-        // change it to an empty string
-        SortedMap<String, String> tempLocalizedFinalText = bundleDTO.getLocalizedFinalText();
-        for (SortedMap.Entry entry : tempLocalizedFinalText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        bundleDTO.setLocalizedFinalText(tempLocalizedFinalText);
+        bundleService.prepareBundleForEdit(bundleDTO);
 
         List<QuestionnaireDTO> availableQuestionnaireDTOs = getAvailableQuestionnaires(null);
         List<BundleQuestionnaireDTO> assignedBundleQuestionnaireDTOs = new ArrayList<>(
@@ -253,14 +235,7 @@ public class BundleController {
         // bundleDTO are detained
         for (QuestionnaireDTO questionnaireDTO : new ArrayList<>(availableQuestionnaireDTOs)) {
             for (BundleQuestionnaireDTO bundleQuestionnaireDTO : assignedBundleQuestionnaireDTOs) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
-                    || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
-                    // Delete empty entries
-                    bundleDTO.getBundleQuestionnaireDTOs().remove(bundleQuestionnaireDTO);
-                    // If this available questionnaire is in the assigned
-                    // questionnaire list as well,
-                    // remove it from the available list
-                } else if (questionnaireDTO.getId().longValue()
+                if (questionnaireDTO.getId().longValue()
                     == bundleQuestionnaireDTO.getQuestionnaireDTO().getId().longValue()) {
                     // Remove this questionnaire from the list with available
                     // questionnaires
