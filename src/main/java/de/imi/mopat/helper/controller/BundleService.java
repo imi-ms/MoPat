@@ -213,32 +213,18 @@ public class BundleService {
             bundleDTO.setIsPublished(false);
         }
         // Set property of the Bundle to current user
-        User principal = authService.getAuthenticatedUser();
+        User currentUser = authService.getAuthenticatedUser();
 
-        Bundle bundle;
-        if (bundleDTO.getId() != null) {
-            bundle = bundleDao.getElementById(bundleDTO.getId());
-            bundle.setName(bundleDTO.getName());
-            bundle.setChangedBy(principal.getId());
-            bundle.setDescription(bundleDTO.getDescription());
-            bundle.setIsPublished(bundleDTO.getIsPublished());
-            bundle.setShowProgressPerBundle(bundleDTO.getShowProgressPerBundle());
-            bundle.setDeactivateProgressAndNameDuringSurvey(
-                    bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        } else {
-            bundle = new Bundle(bundleDTO.getName(), bundleDTO.getDescription(), principal.getId(),
-                    bundleDTO.getIsPublished(), bundleDTO.getShowProgressPerBundle(),
-                    bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        }
-        bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
-        bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
+        Bundle bundle = (bundleDTO.getId() != null)
+                ? bundleDao.getElementById(bundleDTO.getId())
+                : new Bundle();
+
+        updateBundleProperties(bundle, bundleDTO, currentUser);
 
         if (bundle.getId() == null) { // the bundle is completely new, thus
             // no removal of BundleQuestionnaire objects necessary and in the
             // end persist (not merge)
             bundleDao.merge(bundle);
-            // Get the current user, which is the owner of the bundle
-            User currentUser = authService.getAuthenticatedUser();
             // Create a new ACLObjectIdentity for the bundle and save it
             AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
                     Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
@@ -306,5 +292,16 @@ public class BundleService {
             bundle.setIsPublished(Boolean.FALSE);
         }
         bundleDao.merge(bundle);
+    }
+
+    private void updateBundleProperties(Bundle bundle, BundleDTO bundleDTO, User principal) {
+        bundle.setName(bundleDTO.getName());
+        bundle.setChangedBy(principal.getId());
+        bundle.setDescription(bundleDTO.getDescription());
+        bundle.setShowProgressPerBundle(bundleDTO.getShowProgressPerBundle());
+        bundle.setDeactivateProgressAndNameDuringSurvey(bundleDTO.getdeactivateProgressAndNameDuringSurvey());
+        bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
+        bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
+        bundle.setIsPublished(bundleDTO.getIsPublished());
     }
 }
