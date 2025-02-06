@@ -195,35 +195,7 @@ public class BundleController {
         bundleService.prepareBundleForEdit(bundleDTO);
 
         List<QuestionnaireDTO> availableQuestionnaireDTOs = bundleService.getAvailableQuestionnaires(null);
-        List<BundleQuestionnaireDTO> assignedBundleQuestionnaireDTOs = new ArrayList<>(
-            bundleDTO.getBundleQuestionnaireDTOs());
-        List<QuestionnaireDTO> questionnaireDTOsToDelete = new ArrayList<>();
-
-        //make sure the changes in the bundleQuestionnaireDTO list of
-        // bundleDTO are detained
-        for (QuestionnaireDTO questionnaireDTO : new ArrayList<>(availableQuestionnaireDTOs)) {
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : assignedBundleQuestionnaireDTOs) {
-                if (questionnaireDTO.getId().longValue()
-                    == bundleQuestionnaireDTO.getQuestionnaireDTO().getId().longValue()) {
-                    // Remove this questionnaire from the list with available
-                    // questionnaires
-                    questionnaireDTOsToDelete.add(questionnaireDTO);
-                    // Set the export templates to the assigned questionnaire
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                        .setExportTemplates(questionnaireDTO.getExportTemplates());
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                            .setQuestionnaireGroupDTO(questionnaireDTO.getQuestionnaireGroupDTO());
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                            .setHasScores(questionnaireDTO.getHasScores());
-                }
-            }
-        }
-        availableQuestionnaireDTOs.removeAll(questionnaireDTOsToDelete);
-
-        // Sort assigned bundle questionnaires by position
-        Collections.sort(bundleDTO.getBundleQuestionnaireDTOs(),
-            (BundleQuestionnaireDTO o1, BundleQuestionnaireDTO o2) -> o1.getPosition()
-                .compareTo(o2.getPosition()));
+        bundleService.syncAssignedAndAvailableQuestionnaires(bundleDTO.getBundleQuestionnaireDTOs(), availableQuestionnaireDTOs);
 
         // Validate the bundle object
         bundleDTOValidator.validate(bundleDTO, result);

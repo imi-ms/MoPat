@@ -9,6 +9,7 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.BundleDTO;
+import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -17,6 +18,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import de.imi.mopat.model.user.UserRole;
@@ -158,5 +161,38 @@ public class BundleService {
         bundleDTO.getBundleQuestionnaireDTOs().removeIf(
                 bq -> bq.getQuestionnaireDTO() == null || bq.getQuestionnaireDTO().getId() == null
         );
+    }
+
+    public void syncAssignedAndAvailableQuestionnaires(List<BundleQuestionnaireDTO> bundleQuestionnaireDTOS, List<QuestionnaireDTO> availableQuestionnaireDTOs) {
+        // IDs der bereits zugewiesenen Fragebögen sammeln
+        Set<Long> assignedIds = bundleQuestionnaireDTOS.stream()
+                .map(BundleQuestionnaireDTO::getQuestionnaireDTO)
+                .filter(Objects::nonNull)
+                .map(QuestionnaireDTO::getId)
+                .collect(Collectors.toSet());
+
+        List<QuestionnaireDTO> assignedQuestionnaires = availableQuestionnaireDTOs.stream()
+                .filter(q -> assignedIds.contains(q.getId()))
+                .toList();
+
+        availableQuestionnaireDTOs.removeAll(assignedQuestionnaires);
+
+        updateMissingQuestionnaireData(bundleQuestionnaireDTOS, assignedQuestionnaires);
+
+        bundleQuestionnaireDTOS.sort(Comparator.comparing(BundleQuestionnaireDTO::getPosition));
+    }
+
+    private void updateMissingQuestionnaireData(List<BundleQuestionnaireDTO> assignedBundleQuestionnaires, List<QuestionnaireDTO> assignedQuestionnaires) {
+        Map<Long, QuestionnaireDTO> assignedQuestionnaireMap = assignedQuestionnaires.stream()
+                .collect(Collectors.toMap(QuestionnaireDTO::getId, Function.identity()));
+
+        assignedBundleQuestionnaires.forEach(abq -> {
+            QuestionnaireDTO assignedQuestionnaire = assignedQuestionnaireMap.get(abq.getQuestionnaireDTO().getId());
+            if (assignedQuestionnaire != null) {
+                abq.getQuestionnaireDTO().setExportTemplates(assignedQuestionnaire.getExportTemplates());
+                abq.getQuestionnaireDTO().setQuestionnaireGroupDTO(assignedQuestionnaire.getQuestionnaireGroupDTO());
+                abq.getQuestionnaireDTO().setHasScores(assignedQuestionnaire.getHasScores());
+            }
+        });
     }
 }
