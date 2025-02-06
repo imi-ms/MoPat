@@ -221,36 +221,11 @@ public class BundleService {
 
         updateBundleProperties(bundle, bundleDTO, currentUser);
 
-        if (bundle.getId() == null) { // the bundle is completely new, thus
-            // no removal of BundleQuestionnaire objects necessary and in the
-            // end persist (not merge)
+        if (bundle.getId() == null) {
             bundleDao.merge(bundle);
-            // Create a new ACLObjectIdentity for the bundle and save it
-            AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
-                    Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
-                    null);
-            aclObjectIdentityDao.persist(bundleObjectIdentity);
+            createAclEntry(bundle, currentUser);
         } else {
-            // the bundle is not new,
-            // thus BundleQuestionnaire objects might have been removed or
-            // repositioned.
-            // To avoid complex code, we remove all BundleQuestionnaire
-            // objects from the bundle and (re-)add them.
-            // In the end: merge (not persist) (since the bundle already has
-            // an ID)
-            for (BundleQuestionnaire toDelete : bundle.getBundleQuestionnaires()) {
-                HashSet<ExportTemplate> exportTemplates = new HashSet<>(
-                        toDelete.getExportTemplates());
-                toDelete.removeExportTemplates();
-                for (ExportTemplate exportTemplate : exportTemplates) {
-                    exportTemplateDao.merge(exportTemplate);
-                }
-                Questionnaire questionnaire = toDelete.getQuestionnaire();
-                questionnaire.removeBundleQuestionnaire(toDelete);
-                questionnaireDao.merge(questionnaire);
-            }
-            bundle.removeAllBundleQuestionnaires();
-            bundleDao.merge(bundle);
+            cleanupRemovedBundleQuestionnaires(bundle);
         }
         // Save the bundle questionnaire relationships
         if (bundleDTO.getBundleQuestionnaireDTOs() != null
@@ -303,5 +278,31 @@ public class BundleService {
         bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
         bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
         bundle.setIsPublished(bundleDTO.getIsPublished());
+    }
+
+    private void createAclEntry(Bundle bundle, User currentUser) {
+        AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(
+                bundle.getId(),
+                Boolean.TRUE, 
+                aclClassDao.getElementByClass(Bundle.class.getName()), 
+                currentUser,
+                null
+        );
+        aclObjectIdentityDao.persist(bundleObjectIdentity);
+    }
+
+    private void cleanupRemovedBundleQuestionnaires(Bundle bundle) {
+        for (BundleQuestionnaire toDelete : bundle.getBundleQuestionnaires()) {
+            HashSet<ExportTemplate> exportTemplates = new HashSet<>(toDelete.getExportTemplates());
+            toDelete.removeExportTemplates();
+            for (ExportTemplate exportTemplate : exportTemplates) {
+                exportTemplateDao.merge(exportTemplate);
+            }
+            Questionnaire questionnaire = toDelete.getQuestionnaire();
+            questionnaire.removeBundleQuestionnaire(toDelete);
+            questionnaireDao.merge(questionnaire);
+        }
+        bundle.removeAllBundleQuestionnaires();
+        bundleDao.merge(bundle);
     }
 }
