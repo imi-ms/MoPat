@@ -216,9 +216,7 @@ public class BundleController {
             return "redirect:/bundle/list";
         }
 
-        // If the bundle has any incomplete encounters, it may not be edited
-        if (bundleDTO.getId() != null && !bundleDao.getElementById(bundleDTO.getId())
-            .isModifiable()) {
+        if (!bundleService.isBundleModifiable(bundleDTO)) {
             return "redirect:/bundle/fill?id=" + bundleDTO.getId();
         }
 

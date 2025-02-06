@@ -8,6 +8,7 @@ import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -125,5 +126,7 @@ public class BundleService {
         return resultSet;
     }
 
-
+    public boolean isBundleModifiable(BundleDTO bundleDTO) {
+        return bundleDTO.getId() == null || bundleDao.getElementById(bundleDTO.getId()).isModifiable();
+    }
 }
