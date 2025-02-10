@@ -434,7 +434,7 @@
 						dataType: "text",
 						error: function (jqXHR, textStatus, errorThrown) {
 							showMessage(textQuestionRepositionError, true);
-
+							reloadPage();
 							/*[- Revert to original order -]*/
 							return false; 
 						},
@@ -448,9 +448,11 @@
 									}
 								);
 								showMessage(textQuestionRepositionSuccess, false);
+								reloadPage();
 								/*[- If a condition target was before its trigger cancel repositioning and show error message -]*/
 							} else {
 								showMessage(data, true);
+								reloadPage();
 								/*[- Revert to original order -]*/
 								return false;
 							}
@@ -470,6 +472,12 @@
 			}
 			/*[- If the animation is already running, stop it, and restart the fadeOut timer -]*/
 			$("#notification").stop().fadeOut(0).fadeIn(0).fadeOut(5000);
+		}
+
+		function reloadPage(){
+			setTimeout(function () {
+				window.location.reload();
+			}, 5000);
 		}
 		/*[- 
         --- called if question should be deleted
