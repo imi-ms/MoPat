@@ -290,7 +290,6 @@ class MappingAssertHelper(MappingHelper):
         file_name = file_name or self.DEFAULT_TEMPLATE_FILE_NAME
 
         template_path = os.path.join(os.path.dirname(__file__), upload_path, file_name)
-        print(template_path)
         tree = ET.parse(template_path)
         root = tree.getroot()
 
