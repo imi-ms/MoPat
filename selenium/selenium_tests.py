@@ -153,7 +153,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.condition_assert_helper = ConditionAssertHelper(self.driver, self.navigation_helper)
         self.language_helper = LanguageHelper(self.driver, self.navigation_helper)
 
-    def _test_login_admin(self):
+    def test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
             self.driver.get(self.https_base_url)
 
@@ -169,14 +169,14 @@ class CustomTest(IMISeleniumBaseTest):
         else:
             pass
 
-    def _test_admin_interface_login(self):
+    def test_admin_interface_login(self):
         self.driver.get(self.https_base_url)
         # a
-        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_assert_helper.assert_mobile_user_login()
         # b
         self.authentication_assert_helper.assert_mobile_user_password()
 
-    def _test_admin_interface_index(self):
+    def test_admin_interface_index(self):
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
@@ -185,7 +185,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.authentication_helper.logout()
 
-    def _test_admin_interface_questionnaire_question_types_score(self):
+    def test_admin_interface_questionnaire_question_types_score(self):
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
         self.navigation_helper.navigate_to_manage_questionnaires()
@@ -221,7 +221,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.authentication_helper.logout()
 
-    def _test_admin_interface_conditions(self):
+    def test_admin_interface_conditions(self):
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
@@ -230,12 +230,13 @@ class CustomTest(IMISeleniumBaseTest):
         source_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN})
         target_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.INFO_TEXT})
         bundle = self.bundle_helper.create_bundle(questionnaires=[source_questionnaire, target_questionnaire])
+        bundle['id'] = self.bundle_helper.save_bundle(bundle['name'])
 
         threshold_supported_question_types = {QuestionType.SLIDER, QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_INPUT}
 
         # Select a question where condition can be added with threshold value from the source questionnaire
         threshold_condition_question = next((question for question in source_questionnaire['questions']
-                                                                   if question['type'] in[threshold_supported_question_types]), None)
+                                                                   if question['type'] in threshold_supported_question_types), None)
 
         # Navigate to the source questionnaire's questions and reorder the slider question to the first position
         self.navigation_helper.navigate_to_questions_of_questionnaire(source_questionnaire['id'], source_questionnaire['name'])
@@ -248,12 +249,13 @@ class CustomTest(IMISeleniumBaseTest):
 
         # Assert the conditions are correctly listed in the tables
         self.condition_assert_helper.assert_condition_list_and_search_de()
-        # k
-        self.condition_assert_helper.assert_add_condition_page(source_questionnaire)
-
         self.condition_helper.delete_condition(condition_id_1)
         self.condition_helper.delete_condition(condition_id_2)
         self.condition_helper.delete_condition(condition_id_3)
+        self.condition_helper.navigate_back_to_questions_of_questionnaire()
+
+        # k
+        self.condition_assert_helper.assert_add_condition_page(source_questionnaire)
 
         self.authentication_helper.logout()
 
