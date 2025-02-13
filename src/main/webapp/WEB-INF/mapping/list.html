@@ -53,7 +53,7 @@
 						th:if="${not #lists.isEmpty(allMappings)}"
 						th:each="item: ${allMappings}"
 					>
-						<tr>
+						<tr th:id="${item.id}">
 							<td
 								th:text="|${item.exportTemplateType} (${item.configurationGroup.name})|"
 							></td>

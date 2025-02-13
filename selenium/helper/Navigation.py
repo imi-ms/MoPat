@@ -39,6 +39,7 @@ class QuestionnaireTableSelectors:
     FIRST_RESULT_LINK = (By.CSS_SELECTOR, "#questionnaireTable tbody tr td a")
     EDIT_QUESTIONS_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/question/list?id={questionnaire_id}"]')
     EDIT_SCORES_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/score/list?id={questionnaire_id}"]')
+    EDIT_MAPPING_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/mapping/list?id={questionnaire_id}"]')
 
 class NavigationHelper:
     def __init__(self, driver):
@@ -65,6 +66,13 @@ class NavigationHelper:
         scores_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id)))
         scores_link.click()
+
+    def navigate_to_export_templates_of_questionnaire(self, questionnaire_id, questionnaire_name):
+        self.navigate_to_manage_questionnaires()
+        self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+        export_templates_links = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.EDIT_MAPPING_LINK(questionnaire_id)))
+        export_templates_links.click()
 
     def navigate_to_manage_bundles(self):
         try:

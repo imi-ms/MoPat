@@ -19,6 +19,7 @@ from helper.Bundle import BundleHelper
 from helper.Clinic import ClinicHelper
 from helper.Condition import ConditionHelper, ConditionSelectors, ConditionAssertHelper
 from helper.Login import LoginHelper
+from helper.Mapping import MappingHelper, MappingAssertHelper
 from helper.Navigation import NavigationHelper
 from helper.Question import QuestionHelper, QuestionAssertHelper, QuestionType
 from helper.Questionnaire import QuestionnaireHelper, QuestionnaireAssertHelper
@@ -150,6 +151,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.questionnaire_assert_helper = QuestionnaireAssertHelper(self.driver, self.navigation_helper)
         self.score_assert_helper = ScoreAssertHelper(self.driver, self.navigation_helper)
         self.condition_assert_helper = ConditionAssertHelper(self.driver, self.navigation_helper)
+        self.mapping_helper = MappingHelper(self.driver, self.navigation_helper)
+        self.mapping_assert_helper = MappingAssertHelper(self.driver, self.navigation_helper)
 
     def test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
@@ -254,6 +257,26 @@ class CustomTest(IMISeleniumBaseTest):
 
         # k
         self.condition_assert_helper.assert_add_condition_page(source_questionnaire)
+
+        self.authentication_helper.logout()
+
+    def test_admin_interface_mapping(self):
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+
+        #
+        questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(question_types={QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN})
+
+        self.navigation_helper.navigate_to_export_templates_of_questionnaire(questionnaire['id'], questionnaire['name'])
+        self.mapping_helper.click_upload_template_button()
+        self.mapping_assert_helper.assert_template_upload_page()
+
+        mapping_info = self.mapping_helper.upload_export_mapping_template()
+        mapping_info['id'] = self.mapping_helper.trigger_template_upload(mapping_info['name'])
+        self.mapping_assert_helper.assert_template_list_page()
+
+        self.mapping_helper.navigate_to_mapping_page(mapping_info)
+        self.mapping_assert_helper.assert_template_mapping_page()
 
         self.authentication_helper.logout()
 
