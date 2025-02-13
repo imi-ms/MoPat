@@ -74,9 +74,9 @@ class QuestionnaireHelper:
         fragetypen_text = ''
         if question_types:
             delimiter = "+"
-            fragetypen_text = f" (Fragetypen: {delimiter.join(str(question_type.value) for question_type in question_types)})"
+            fragetypen_text = f" (Question types: {delimiter.join(str(question_type.value) for question_type in question_types)})"
 
-        questionnaire_name = questionnaire_name or f"Fragebogen {timestamp}{fragetypen_text}"
+        questionnaire_name = questionnaire_name or f"Questionnaire {timestamp}{fragetypen_text}"
         description = description or self.DEFAULT_DESCRIPTION
         language_code = language_code or self.DEFAULT_LANGUAGE_CODE
         localized_display_name = localized_display_name or questionnaire_name

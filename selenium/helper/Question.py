@@ -570,7 +570,7 @@ class QuestionHelper:
         question_text = self.initialize_question(QuestionType.BARCODE, language_code, is_required, question_text)
 
         return {
-            "type": QuestionType.BODY_PART,
+            "type": QuestionType.BARCODE,
             "text": question_text
         }
 

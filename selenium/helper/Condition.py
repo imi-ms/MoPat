@@ -25,7 +25,7 @@ class ConditionSelectors:
     TABLE_CONDITIONS_QUESTION = (By.ID, "DataTables_Table_0")
     TABLE_CONDITIONS_ANSWER = (By.ID, "DataTables_Table_1")
     TABLE_CONDITIONS_QUESTIONNAIRE = (By.ID, "DataTables_Table_2")
-    TABLE_LAST_ROW = (By.XPATH, "//tbody/tr[last()]")
+    TABLE_LAST_ROW = (By.XPATH, ".//tbody/tr[last()]")
 
     # Search input fields for each table
     SEARCH_INPUT_CONDITIONS_QUESTION = (By.CSS_SELECTOR, "#DataTables_Table_0_filter input")
@@ -281,6 +281,10 @@ class ConditionAssertHelper(ConditionHelper):
             # Verify the condition appears in the table
             self.assert_condition_in_section(table_selector, condition_text)
 
+            search_input = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(search_input_selector)
+            )
+            search_input.clear()
         except Exception as e:
             raise AssertionError(f"Error asserting search functionality: {e}")
 
