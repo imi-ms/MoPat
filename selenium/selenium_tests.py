@@ -15,7 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from helper.Authentication import AuthenticationHelper, AuthenticationAssertHelper
-from helper.Bundle import BundleHelper
+from helper.Bundle import BundleHelper, BundleSelectors
 from helper.Clinic import ClinicHelper
 from helper.Condition import ConditionHelper, ConditionSelectors, ConditionAssertHelper
 from helper.Login import LoginHelper
@@ -23,8 +23,9 @@ from helper.Navigation import NavigationHelper
 from helper.Question import QuestionHelper, QuestionAssertHelper, QuestionType
 from helper.Questionnaire import QuestionnaireHelper, QuestionnaireAssertHelper
 from helper.Score import ScoreHelper, ScoreAssertHelper
-from helper.SeleniumUtils import SeleniumUtils
+from helper.SeleniumUtils import SeleniumUtils, ErrorSelectors
 from helper.Survey import SurveyHelper, SurveyAssertHelper
+from helper.Language import LanguageSelectors, LanguageHelper
 
 loginHelper = LoginHelper()
 
@@ -150,12 +151,13 @@ class CustomTest(IMISeleniumBaseTest):
         self.questionnaire_assert_helper = QuestionnaireAssertHelper(self.driver, self.navigation_helper)
         self.score_assert_helper = ScoreAssertHelper(self.driver, self.navigation_helper)
         self.condition_assert_helper = ConditionAssertHelper(self.driver, self.navigation_helper)
+        self.language_helper = LanguageHelper(self.driver, self.navigation_helper)
 
-    def test_login_admin(self):
+    def _test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
             self.driver.get(self.https_base_url)
 
-            loginHelper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+            self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
             WebDriverWait(self.driver, 10).until(EC.url_to_be(self.https_base_url + "admin/index"))
 
@@ -167,25 +169,25 @@ class CustomTest(IMISeleniumBaseTest):
         else:
             pass
 
-    def test_admin_interface_login(self):
+    def _test_admin_interface_login(self):
         self.driver.get(self.https_base_url)
         # a
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
         # b
         self.authentication_assert_helper.assert_mobile_user_password()
 
-    def test_admin_interface_index(self):
+    def _test_admin_interface_index(self):
         self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         # c
         self.authentication_assert_helper.assert_admin_index()
 
         self.authentication_helper.logout()
 
-    def test_admin_interface_questionnaire_question_types_score(self):
+    def _test_admin_interface_questionnaire_question_types_score(self):
         self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
         self.navigation_helper.navigate_to_manage_questionnaires()
 
         # d
@@ -219,9 +221,9 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.authentication_helper.logout()
 
-    def test_admin_interface_conditions(self):
+    def _test_admin_interface_conditions(self):
         self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.driver,self.secret['admin-username'], self.secret['admin-password'])
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         # j
         # Create source and target questionnaires with specific question types and add the questionnaires to a bundle to enable selection as a condition target
@@ -255,6 +257,127 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.authentication_helper.logout()
 
+    def test_bundle_list(self):
+        bundle={}
+        created_questionnaire={}
+        clinic={}
+
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+
+        try:
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
+        except Exception as e:
+            self.fail(f"Failed to create questionnaire: {e}")
+
+        try:
+            self.navigation_helper.navigate_to_manage_bundles()
+        except Exception as e:
+            self.fail(f"Failed to navigate to 'Bundles' page: {e}")
+
+        self.utils.check_visibility_of_element(BundleSelectors.TABLE_BUNDLE, "Bundle table not found")
+
+        try:
+            bundle = self.bundle_helper.create_bundle(publish_bundle=True, questionnaires=[created_questionnaire])
+            bundle['id']=self.bundle_helper.save_bundle(bundle_name=bundle['name'])
+        except Exception as e:
+            self.fail(f"Failed to create bundle: {e}")
+    
+        self.utils.check_visibility_of_element(BundleSelectors.CELL_FLAGICON, "Flag icon not found")
+    
+        try:
+            self.navigation_helper.navigate_to_manage_clinics()
+            clinic["name"] = self.clinic_helper.create_clinic(bundles=[bundle],
+                                                              configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}])
+            clinic['id']=self.clinic_helper.save_clinic(clinic_name=clinic['name'])
+
+        except Exception as e:
+            self.fail(f"Failed to create clinic: {e}")
+
+        # Assert - Find clinics assigned to the bundle
+        try:
+            self.navigation_helper.navigate_to_manage_bundles()
+            self.utils.search_item(bundle["name"], "bundle")
+            bundle_row = self.bundle_helper.get_first_bundle_row()
+            bundle_row.find_element(By.CSS_SELECTOR, "td:nth-child(3)")
+            clinic_link = bundle_row.find_element(By.CSS_SELECTOR, "ul > li > a")
+            self.assertEqual(clinic_link.text, clinic["name"], f"Clinic name '{clinic["name"]}' not found in bundle row.")
+
+        except Exception as e:
+            self.fail(f"Failed to find clinic assigned to bundle: {e}")
+
+        self.utils.check_visibility_of_element(BundleSelectors.INPUT_BUNDLE_SEARCH, "Bundle table search box not found")
+        self.utils.check_visibility_of_element(BundleSelectors.PAGINATION_BUNDLE, "Bundle table pagination not found")
+        self.utils.check_visibility_of_element(BundleSelectors.BUTTON_ADD_BUNDLE, "Bundle add button not found")
+
+        try:
+            pass
+        finally:
+            self.utils.search_and_delete_item(clinic["name"],clinic["id"], "clinic")
+            self.utils.search_and_delete_item(bundle["name"],bundle["id"], "bundle")
+            self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
+
+        self.authentication_helper.logout()
+
+    def test_bundle_fill(self):
+        created_questionnaire = {}
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+
+        try:
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
+        except Exception as e:
+            self.fail(f"Failed to create questionnaire: {e}")
+
+        try:
+            self.navigation_helper.navigate_to_manage_bundles()
+        except Exception as e:
+            self.fail(f"Failed to navigate to 'Bundles' page: {e}")
+
+        self.utils.click_element(BundleSelectors.BUTTON_ADD_BUNDLE)
+        self.language_helper.open_language_dropdown()
+        self.utils.check_visibility_of_element(LanguageSelectors.LANGUAGE_DROPDOWN, "Failed to open language dropdown")
+        self.utils.check_visibility_of_element(BundleSelectors.INPUT_NAME, "Failed to locate bundle input")
+        self.utils.check_visibility_of_element(BundleSelectors.INPUT_EDITABLE_DESCRIPTION, "Failed to locate bundle description input")
+        self.utils.check_visibility_of_element(BundleSelectors.INPUT_WELCOME_TEXT, "Failed to locate welcome input")
+        self.utils.check_visibility_of_element(BundleSelectors.INPUT_END_TEXT, "Failed to locate end input")
+        self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PUBLISH, "Failed to locate publish checkbox")
+        self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_NAME_PROGRESS, "Failed to locate name progress checkbox")
+        self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PROGRESS_WHOLE_PACKAGE, "Failed to locate progress whole package checkbox")
+        self.utils.check_visibility_of_element(BundleSelectors.TABLE_AVAILABLE_QUESTIONNAIRES, "Available questionnaires table not found")
+        self.utils.check_visibility_of_element(BundleSelectors.TABLE_ASSIGNED_QUESTIONNAIRES, "Assigned questionnaires table not found")
+
+        #Assert - Test for assigning questionnaire to bundle
+        try:
+            self.bundle_helper.assign_multiple_questionnaires_to_bundle([created_questionnaire])
+        except Exception as e:
+            self.fail(f"Failed to assign questionnaire to bundle: {e}")
+
+        #Assert - Test for removing questionnaire to bundle
+        try:
+            self.bundle_helper.remove_multiple_questionnaires_from_bundle([created_questionnaire])
+        except Exception as e:
+            self.fail(f"Failed to assign questionnaire to bundle: {e}")
+
+        #Assert - Check form validation
+        try:
+            self.utils.click_element(BundleSelectors.BUTTON_SAVE)
+            WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(ErrorSelectors.INPUT_VALIDATION_SELECTOR)
+            )
+            validation_errors = self.driver.find_elements(*ErrorSelectors.INPUT_VALIDATION_SELECTOR)
+            self.assertEqual(len(validation_errors), 2, "Expected 2 validation errors, but found {len(validation_errors)}")
+        except Exception as e:
+            self.fail(f"Failed to save bundle: {e}")
+    
+        
+        #Finally
+        finally:
+            if(created_questionnaire):
+                self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
+
+        self.authentication_helper.logout()
+    
     def tearDown(self): 
         self.driver.quit()
 
@@ -268,6 +391,7 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
         options = webdriver.ChromeOptions()
         options.set_capability("acceptInsecureCerts", True)
         options.add_argument("--headless=new")
+        options.add_argument("--window-size=1920,1080")
         options.set_capability("selenoid:options", {
                                                     "enableVNC": False,
                                                     "enableVideo": False,

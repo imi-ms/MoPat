@@ -369,3 +369,13 @@ class SeleniumUtils:
 
         except Exception as e:
             raise Exception(f"An error occurred while searching for {item_type} '{item_name}'")
+        
+    def check_visibility_of_element(self, selector, error_message):
+        """
+        :param selector: A tuple representing the element locator (e.g., (By.ID, "element_id")).
+        :param error_message: The error message to display when the element is not visible.
+        """
+        try:
+            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(selector))
+        except TimeoutException:
+            raise Exception(error_message)
