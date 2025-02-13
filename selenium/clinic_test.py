@@ -83,10 +83,8 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         self.survey_assert_helper = SurveyAssertHelper(self.driver, self.navigation_helper)
 
-    def _test_clinic_list(self):
-        clinic_name = "Test Clinic"
-        clinic_description = "Test Clinic Description"
-        clinic_id = None
+    def test_clinic_list(self):
+        clinic={}
 
         # Arrange
         if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
@@ -99,69 +97,30 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         except Exception as e:
             self.fail(f"Failed to navigate to 'Clinic' page: {e}")
 
-        # Act
         try:
-            self.clinic_helper.create_clinic(clinic_name, clinic_description,configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}])
-            clinic_id = self.clinic_helper.save_clinic(clinic_name)
+            self.navigation_helper.navigate_to_manage_clinics()
+            clinic["name"] = self.clinic_helper.create_clinic(configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}])
+            clinic['id']=self.clinic_helper.save_clinic(clinic_name=clinic['name'])
+
         except Exception as e:
             self.fail(f"Failed to create clinic: {e}")
 
-        #Assert - Check if the clinic table is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_CLINIC)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic table not found")
-            
-        #Assert - Check if the clinic table pagination is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.PAGINATION_CLINIC_TABLE)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic table pagination not found")
-            
-        #Assert - Check if the clinic table search is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_SEARCH)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic table pagination not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_CLINIC, "Clinic table not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.PAGINATION_CLINIC_TABLE, "Clinic table pagination not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_SEARCH, "Clinic table search not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ACTION_BUTTONS, "Clinic table action buttons not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.BUTTON_ADD_CLINIC, "Add new clinic button not found")
         
-        #Assert - Check if the clinic table action buttons are displayed
         try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_ACTION_BUTTONS)
-            )
-        except TimeoutException:  
-            self.fail(
-                f"Clinic table action buttons not found")
-        
-        #Assert - Check if the add new clinic button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.BUTTON_ADD_CLINIC)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Add new clinic button not found")
-            
+            pass
         finally:
-            self.utils.search_and_delete_item(clinic_name,clinic_id,"clinic")
+            self.utils.search_and_delete_item(clinic["name"],clinic["id"],"clinic")
             self.authentication_helper.logout()
             
     def test_clinic_fill(self):
-        clinic_name = "Test Clinic"
-        clinic_description = "Test Clinic Description"
-        clinic_id = None
-        bundle_name = "Test Bundle"
-        bundle_id=None
-
+        clinic={}
+        created_questionnaire={}
+        bundle={}
 
         # Arrange
         if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
@@ -171,45 +130,20 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         #Arrange
         try:
-            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(questionnaire_name="Test", questionnaire_description="Test",
-                                            questionnaire_language_code="de_DE", questionnaire_display_name="Test",
-                                            questionnaire_welcome_text="Test", questionnaire_final_text="Test", 
-                                            question_types=[QuestionType.INFO_TEXT])
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
             self.navigation_helper.navigate_to_manage_bundles()
-            self.bundle_helper.create_bundle(bundle_name, True, [created_questionnaire])
-            bundle_id=self.bundle_helper.save_bundle(bundle_name)
+            bundle = self.bundle_helper.create_bundle(publish_bundle=True, questionnaires=[created_questionnaire])
+            bundle['id']=self.bundle_helper.save_bundle(bundle_name=bundle['name'])
         except Exception as e:
             self.fail(f"Failed to setup questionnaire and bundle: {e}")
 
         self.navigation_helper.navigate_to_manage_clinics()
         WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(ClinicSelectors.BUTTON_ADD_CLINIC))
         self.utils.click_element(ClinicSelectors.BUTTON_ADD_CLINIC)
-        #Assert - Check if the clinic name input is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.INPUT_CLINIC_NAME)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic name input not found")
 
-        #Assert - Check if the clinic description input is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic description input not found")
-
-        #Assert - Check if the clinic email input is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.INPUT_CLINIC_EMAIL)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Clinic email input not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_NAME, "Clinic name input not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION, "Clinic description input not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_EMAIL, "Clinic email input not found")
         
         #Assert - Check if the clinic configuration is displayed
         try:
@@ -223,54 +157,24 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
             self.fail(
                 f"Clinic configuration not found")
             
-        #Assert - Check if the tables with available bundles is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_AVAIALBLE_BUNDLES)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Table with available bundles not found")
-            
-        #Assert - Check if the tables with selected bundles is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_ASSIGNED_BUNDLES)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Table with assigned bundles not found")
-            
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_BUNDLES, "Available bundles table not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_BUNDLES, "Assigned bundles table not found")            
+
+                    
         #Assert - Check if the bundles can be added to the clinic
         try:
-            self.clinic_helper.assign_multiple_bundes_to_clinic([{'id': bundle_id, 'name': bundle_name}])
+            self.clinic_helper.assign_multiple_bundes_to_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
         except Exception as e:
             self.fail(f"Failed to assign bundle to clinic: {e}")
         
         #Assert - Check if the bundles can be removed from the clinic
         try:
-            self.clinic_helper.remove_multiple_bundes_from_clinic([{'id': bundle_id, 'name': bundle_name}])
+            self.clinic_helper.remove_multiple_bundes_from_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
         except Exception as e:
             self.fail(f"Failed to remove bundle from clinic: {e}")
 
-         #Assert - Check if the tables with available users is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_AVAIALBLE_USERS)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Table with available users not found")
-            
-        #Assert - Check if the tables with selected bundles is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(ClinicSelectors.TABLE_ASSIGNED_USERS)
-            )
-        except TimeoutException:
-            self.fail(
-                f"Table with assigned users not found")
-            
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_USERS, "Available users table not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_USERS, "Assigned users table not found") 
 
         #Assert - Check if the users can be added to the clinic
         try:
@@ -300,10 +204,9 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         #Assert - Check if the clinic can be created
         try:
             self.navigation_helper.navigate_to_manage_clinics()
-            self.clinic_helper.create_clinic(clinic_name, clinic_description,
-                                             configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
-                                             bundles=[{'id': bundle_id, 'name': bundle_name}], users=[self.secret.get('admin-username')])
-            clinic_id = self.clinic_helper.save_clinic(clinic_name)
+            clinic['name']=self.clinic_helper.create_clinic(configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
+                                             bundles=[{'id': bundle["id"], 'name': bundle["name"]}], users=[self.secret.get('admin-username')])
+            clinic['id'] = self.clinic_helper.save_clinic(clinic["name"])
             WebDriverWait(self.driver, 10).until(
                 EC.visibility_of_element_located(ClinicSelectors.TABLE_CLINIC)
             )
@@ -311,10 +214,10 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
             self.fail(f"Failed to create clinic: {e}")
 
         finally:
-            if clinic_id:
-                self.utils.search_and_delete_item(clinic_name,clinic_id,"clinic")
-            if bundle_id:
-                self.utils.search_and_delete_item(bundle_name,bundle_id,"bundle")
+            if clinic["id"]:
+                self.utils.search_and_delete_item(clinic['name'],clinic["id"],"clinic")
+            if bundle["id"]:
+                self.utils.search_and_delete_item(bundle["name"],bundle["id"],"bundle")
             if created_questionnaire:
                 self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
             self.authentication_helper.logout()
