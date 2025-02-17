@@ -7,6 +7,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from helper.Navigation import NavigationHelper
 from helper.SeleniumUtils import SearchBoxSelectors, SeleniumUtils
 
+class EmailSelectors:
+    SUBJECT_INPUT = (By.ID, "subject")
+    CONTENT_INPUT = (By.ID, "mailContent")
+    MAIL_PREVIEW_BUTTON = (By.ID, "mailPreviewButton")
+    SEND_BUTTON = (By.ID, "mailButton")
+    
 class UserSelector:
     BUTTON_INVITE_USER = (By.ID, "newInvitationButton")
     BUTTON_ADD_USER = (By.ID, "addInvitationButton")

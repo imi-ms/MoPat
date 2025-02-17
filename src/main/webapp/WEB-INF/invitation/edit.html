@@ -227,6 +227,7 @@
 					<select
 						name="role"
 						class="form-control"
+						id="userRoleSelect"
 					>
 						<th:block th:each="item: ${roleList}">
 							<!--/* Every user has one authority. Get the first one with help of the iterator */-->
@@ -256,6 +257,7 @@
 						th:value="${invitationDTO.locale}"
 						th:field="*{locale}"
 						class="form-control"
+						id="userLanguageSelect"
 					>
 						<option value="de_DE">
 							<label
@@ -476,6 +478,7 @@
 												<div class="col-1">
 													<a
 														data-bs-toggle="collapse"
+														th:id="${item.id}"
 														onClick="move($(this), $('#availableClinicsTable'), $('#assignedClinicsTable'))"
 													>
 														<span class="bi bi-chevron-left"></span>
@@ -504,6 +507,7 @@
 				<div
 					th:if="${not #strings.isEmpty(preview)}"
 					class="form-group"
+					id="previewDiv"
 				>
 					<div
 						th:text="${messages.get(#locale, 'user.label.preview', 'Preview')}"
@@ -536,7 +540,7 @@
 					type="submit"
 					class="btn btn-primary"
 					value="preview"
-					id="inviteButton"
+					id="previewButton"
 					name="action"
 					th:text="${messages.get(#locale, 'user.button.preview', 'Preview')}"
 				>

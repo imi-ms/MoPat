@@ -88,139 +88,46 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
     def test_user_list(self):
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         # Act
         self.navigation_helper.navigate_to_manager_user()
 
-        # Assert - Check if the user list is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_USERS)
-            )
-        except:
-            self.fail("User list not displayed")
-
-        #Assert - Check if the elements for pagination is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.PAGINATION_USER_TABLE)
-            )
-        except:
-            self.fail("Pagination not displayed")
-
-        #Assert - Check if the elements for action buttons is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_ACTION_BUTTONS)
-            )
-        except:
-            self.fail("Action buttons not displayed")
-        
-        #Assert - Check if the button to invite a user is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_INVITE_USER)
-            )
-        except:
-            self.fail("Invite user button not displayed")
+        self.utils.check_visibility_of_element(UserSelector.TABLE_USERS, "User list not displayed")
+        self.utils.check_visibility_of_element(UserSelector.PAGINATION_USER_TABLE, "Pagination not displayed")
+        self.utils.check_visibility_of_element(UserSelector.TABLE_ACTION_BUTTONS, "Action buttons not displayed")
+        self.utils.check_visibility_of_element(UserSelector.BUTTON_INVITE_USER, "Invite user button not displayed")
         
     def test_invitation_edit(self):
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         #Arrange - Create a new clinic
-        clinic_name = "Test Clinic"
-        clinic_description = "This is a test clinic"
-        clinic_id = None
+        clinic={}
         self.navigation_helper.navigate_to_manage_clinics()
 
         try:
-            self.clinic_helper.create_clinic(clinic_name, clinic_description,
-                                             configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],)
-            clinic_id=self.clinic_helper.save_clinic(clinic_name)
+            clinic["name"]=self.clinic_helper.create_clinic(configurations=[{'selector': (By.CSS_SELECTOR, '#usePseudonymizationService > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],)
+            clinic["id"]=self.clinic_helper.save_clinic(clinic["name"])
         except TimeoutException:
             self.fail("Failed to create clinic")
 
         #Arrange - Click on the user menu
         self.navigation_helper.navigate_to_manager_user()
 
-        # Act
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_INVITE_USER)
-            )
-            self.utils.click_element(UserSelector.BUTTON_INVITE_USER)
-        except TimeoutException:
-            self.fail("User list not displayed")
-
-        #Assert - Check if the input fields are displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_FIRST_NAME(0))
-            )
-        except TimeoutException:
-            self.fail("First name input field not displayed")
+        self.utils.click_element(UserSelector.BUTTON_INVITE_USER)
         
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_LAST_NAME(0))
-            )
-        except TimeoutException:
-            self.fail("Last name input field not displayed")
-        
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_EMAIL(0))
-            )
-        except TimeoutException:
-            self.fail("Email input field not displayed")
-        
-        #Assert - Check if add new user button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_ADD_USER)
-            )
-            self.utils.click_element(UserSelector.BUTTON_ADD_USER)
-        except TimeoutException:
-            self.fail("Add user button not displayed")
-        
-        #Assert - Check if new user inputs are created
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_FIRST_NAME(1))
-            )
-        except TimeoutException:
-            self.fail("Second user's first name input field not displayed")
-        
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_LAST_NAME(1))
-            )
-        except TimeoutException:
-            self.fail("Second user's last name input field not displayed")
-        
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_USER_EMAIL(1))
-            )
-        except TimeoutException:
-            self.fail("Second user's email input field not displayed")
-        
-        #Assert - Check if the remove user button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_REMOVE_INVITATION)
-            )
-            self.utils.click_element(UserSelector.BUTTON_REMOVE_INVITATION)
-        except TimeoutException:
-            self.fail("Remove user button not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_FIRST_NAME(0), "First name input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_LAST_NAME(0), "Last name input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_EMAIL(0), "Email input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.BUTTON_ADD_USER, "Add user button not displayed")
+        self.utils.click_element(UserSelector.BUTTON_ADD_USER)
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_FIRST_NAME(1), "Second user's first name input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_LAST_NAME(1), "Second user's last name input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_USER_EMAIL(1), "Second user's email input field not displayed")
+        self.utils.click_element(UserSelector.BUTTON_REMOVE_INVITATION)        
         
         #Assert - Check if the fields were removed
         try:
@@ -244,70 +151,17 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         except TimeoutException:
             self.fail("Email input field still displayed")
 
-        #Assert - Check if the file upload button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_CSV)
-            )
-        except TimeoutException:
-            self.fail("File upload button not displayed")
-        #Assert - Check if the role dropdown is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.SELECT_USER_ROLE)
-            )
-        except TimeoutException:
-            self.fail("Role dropdown not displayed")
-
-        #Assert - Check if the language dropdown is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.SELECT_USER_LANGUAGE)
-            )
-        except TimeoutException:
-            self.fail("Language dropdown not displayed")
-
-        #Assert - Check if input for invitation message is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.INPUT_PERSONAL_TEXT)
-            )
-        except TimeoutException:
-            self.fail("Invite message input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_CSV, "File upload button not displayed")
+        self.utils.check_visibility_of_element(UserSelector.SELECT_USER_ROLE, "Role dropdown not displayed")
+        self.utils.check_visibility_of_element(UserSelector.SELECT_USER_LANGUAGE, "Language dropdown not displayed")
+        self.utils.check_visibility_of_element(UserSelector.INPUT_PERSONAL_TEXT, "Invite message input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.TABLE_AVAILABLE_CLINICS, "Available clinic table not displayed")
+        self.utils.check_visibility_of_element(UserSelector.TABLE_ASSIGNED_CLINICS, "Assigned clinic table not displayed")
         
-        #Assert - Check if the clinic table is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_AVAILABLE_CLINICS)
-            )
-        except TimeoutException:
-            self.fail("Available clinic table not displayed")
-
-        #Assert - Check if the assigned clinics table is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_ASSIGNED_CLINICS)
-            )
-        except TimeoutException:
-            self.fail("Assigned clinic table not displayed")
-
-        #Assert - Move clinic from available to assigned
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_MOVE_CLINIC(clinic_id))
-            )
-            self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic_id))
-        except TimeoutException:
-            self.fail("Move clinic button not displayed")
-
-        #Assert - Move clinic from assigned to available
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_MOVE_CLINIC(clinic_id))
-            )
-            self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic_id))
-        except TimeoutException:
-            self.fail("Move clinic button not displayed")
+        self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic["id"]))
+        
+        self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic["id"]))
+        
 
         #Assert - Check validations
         try:
@@ -339,59 +193,24 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         except TimeoutException:
             self.fail("Preview not displayed")
         finally:
-            if clinic_id:
-                self.utils.search_and_delete_item(clinic_name, clinic_id, "clinic")
+            if clinic["id"]:
+                self.utils.search_and_delete_item(clinic["name"], clinic["id"], "clinic")
         
     def test_user_mail_to_all(self):
         test_subject = "Test Subject"
         test_content = "Test Content"
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         self.navigation_helper.navigate_to_email_to_all_users()
         
-        #Assert - Check if the subject input is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EmailSelectors.SUBJECT_INPUT)
-            )
-        except TimeoutException:
-            self.fail("Subject input field not displayed")
+        self.utils.check_visibility_of_element(EmailSelectors.SUBJECT_INPUT, "Subject input field not displayed")
+        self.utils.check_visibility_of_element(EmailSelectors.CONTENT_INPUT, "Content input field not displayed")
+        self.utils.check_visibility_of_element(UserSelector.SELECT_MAIL_LANGUAGE, "Language dropdown not displayed")
+        self.utils.check_visibility_of_element(EmailSelectors.MAIL_PREVIEW_BUTTON, "Preview button not displayed")
+        self.utils.check_visibility_of_element(EmailSelectors.SEND_BUTTON, "Send button not displayed")
 
-        #Assert - Check if the content input is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EmailSelectors.CONTENT_INPUT)
-            )
-        except TimeoutException:
-            self.fail("Content input field not displayed")
-            
-        #Assert - Check if the language dropdown is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.SELECT_MAIL_LANGUAGE)
-            )
-        except TimeoutException:
-            self.fail("Language dropdown not displayed")
-
-        #Assert - Check if the preview button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EmailSelectors.MAIL_PREVIEW_BUTTON)
-            )
-        except TimeoutException:
-            self.fail("Preview button not displayed")
-
-        #Assert - Check if the send button is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EmailSelectors.SEND_BUTTON)
-            )
-        except TimeoutException:
-            self.fail("Send button not displayed")
 
         #Assert - Check if the preview button works
         try:
@@ -404,49 +223,20 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         except TimeoutException:
             self.fail("Preview not displayed")
 
+        self.authentication_helper.logout()
+
     def test_invitation_list(self):
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         # Act
         self.navigation_helper.navigate_to_manage_invitations()
+        self.utils.check_visibility_of_element(UserSelector.TABLE_INVITAIONS, "User list not displayed")
+        self.utils.check_visibility_of_element(UserSelector.PAGINATION_INVITATION_TABLE, "Pagination not displayed")
+        self.utils.check_visibility_of_element(UserSelector.BUTTON_INVITE_USER, "Invite user button not displayed")
 
-        #Assert - Check if the user list is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_INVITAIONS)
-            )
-        except:
-            self.fail("User list not displayed")
-
-        #Assert - Check if the elements for pagination is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.PAGINATION_INVITATION_TABLE)
-            )
-        except:
-            self.fail("Pagination not displayed")
-
-        #Assert - Check if the elements for action buttons is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.TABLE_ACTION_BUTTONS)
-            )
-        except:
-            self.fail("Action buttons not displayed")
-        
-        #Assert - Check if the button to invite a user is displayed
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(UserSelector.BUTTON_INVITE_USER)
-            )
-        except:
-            self.fail("Invite user button not displayed")
-
-
+        self.authentication_helper.logout()
 
     def tearDown(self):
         if self.driver:
