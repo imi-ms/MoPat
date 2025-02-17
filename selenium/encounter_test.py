@@ -89,147 +89,70 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         self.language_helper = LanguageHelper(self.driver, self.navigation_helper)
 
     def test_encounter_list(self):
-        bundle_name = "TestBundle"
-        clinic_name = "TestClinic"
-        clinic_description = "TestDescription"
+        created_questionnaire = {}
+        bundle={}
+        clinic={}
         
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
 
         try:
-            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(questionnaire_name="Test", questionnaire_description="Test",
-                                            questionnaire_language_code="de_DE", questionnaire_display_name="Test",
-                                            questionnaire_welcome_text="Test", questionnaire_final_text="Test", 
-                                            question_types=[QuestionType.INFO_TEXT])
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
         except Exception as e:
             self.fail(f"Failed to create questionnaire: {e}")
 
         try:
             self.navigation_helper.navigate_to_manage_bundles()
-            self.bundle_helper.create_bundle(bundle_name, True, [created_questionnaire])
-            self.bundle_helper.save_bundle(bundle_name)
+            bundle = self.bundle_helper.create_bundle(publish_bundle=True, questionnaires=[created_questionnaire])
+            bundle["id"]=self.bundle_helper.save_bundle(bundle["name"])
         except Exception as e:
             self.fail(f"Failed to create bundle: {e}")
 
-
-        self.utils.search_item(bundle_name, "bundle")
-        bundle_id = self.bundle_helper.get_bundle_id()
-
         try:
             self.navigation_helper.navigate_to_manage_clinics()
-            self.clinic_helper.create_clinic(clinic_name=clinic_name, 
-                                             clinic_description="Test Clinic Description",
-                                             configurations=[{'selector': (By.CSS_SELECTOR, '#usePatientDataLookup > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
-                                             bundles=[{'id': bundle_id, 'name': bundle_name}])
-            clinic_id=self.clinic_helper.save_clinic(clinic_name)
+            clinic["name"]=self.clinic_helper.create_clinic(configurations=[{'selector': (By.CSS_SELECTOR, '#usePatientDataLookup > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
+                                             bundles=[bundle])
+            clinic["id"]=self.clinic_helper.save_clinic(clinic["name"])
 
         except Exception as e:
             self.fail(f"Failed to create clinic: {e}")
 
         # Act
         self.navigation_helper.navigate_to_manage_surveys()
-
-        #Assert - Check if tabs for "All Encounters" and "Scheduled Encounters" are present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(EncounterSelectors.BUTTON_ENCOUNTER_TABLE)
-            )
-            WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
-            )
-        except TimeoutException:
-            self.fail("Encounter tabs not found")
         
+        self.utils.check_visibility_of_element(EncounterSelectors.BUTTON_ENCOUNTER_TABLE, "Encounter Table button not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE, "Encounter Schedule Table button not found")
+
         # Act - Click on "All Encounters" tab
         self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_TABLE)
-        # Assert - Check if the table for all encounters is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.TABLE_ALL_ENCOUNTERS)
-            )
-        except TimeoutException:
-            self.fail("All Encounters table not found")
-        
-        #Assert - Check if table pagination is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.PAGINATION_ENCOUNTER_TABLE)
-            )
-        except TimeoutException:
-            self.fail("Pagination for All Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.TABLE_ALL_ENCOUNTERS, "All Encounters table not found")
 
-        #Assert - Check if table search is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.SEARCH_ALL_ENCOUNTERS)
-            )
-        except TimeoutException:
-            self.fail("Search for All Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.PAGINATION_ENCOUNTER_TABLE, "Pagination for All Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SEARCH_ALL_ENCOUNTERS, "Search for All Encounters table not found")
 
         #TODO: Action column, number of exports [after create survey function implementation]
 
-        #Assert - Check for button for starting an encounter
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(EncounterSelectors.BUTTON_EXECUTE_ENCOUNTER)
-            )
-        except TimeoutException:
-            self.fail("Execute Encounter button not found")
-
+        self.utils.check_visibility_of_element(EncounterSelectors.BUTTON_EXECUTE_ENCOUNTER, "Execute Encounter button not found")
 
         # Act - Click on "Scheduled Encounters" tab
         self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
-        # Assert - Check if the table for scheduled encounters is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.TABLE_SCHEDULED_ENCOUNTERS)
-            )
-        except TimeoutException:
-            self.fail("Scheduled Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.TABLE_SCHEDULED_ENCOUNTERS, "Scheduled Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.PAGINATION_ENCOUNTER_SCHEDULE_TABLE, "Pagination for Scheduled Encounters table not found")
 
-        #Assert - Check if table for scheduled encounters is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.TABLE_SCHEDULED_ENCOUNTERS)
-            )
-        except TimeoutException:
-            self.fail("Scheduled Encounters table not found")
-
-        #Assert - Check if table pagination is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.PAGINATION_ENCOUNTER_SCHEDULE_TABLE)
-            )
-        except TimeoutException:
-            self.fail("Pagination for Scheduled Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SEARCH_SCHEDULED_ENCOUNTERS, "Search for Scheduled Encounters table not found")
         
-        #Assert - Check if table search is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.SEARCH_SCHEDULED_ENCOUNTERS)
-            )
-        except TimeoutException:
-            self.fail("Search for Scheduled Encounters table not found")
         encounter_id = None
         try:
             self.utils.click_element(EncounterSelectors.BUTTON_SCHEDULE_ENCOUNTER)
-            encounter_id = self.encounter_helper.schedule_encounter("123456", clinic_name, bundle_name, "test@email.com", EncounterScheduleType.UNIQUELY,(datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+            encounter_id = self.encounter_helper.schedule_encounter("123456", clinic["name"], bundle["name"], "test@email.com", EncounterScheduleType.UNIQUELY,(datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
         except Exception as e:
             self.fail(f"Failed to schedule encounter: {e}")
 
         self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
 
-        #Assert - Check if the action column is present
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(EncounterSelectors.TABLE_ACTION_COLUMN)
-            )
-        except TimeoutException:
-            self.fail("Action column for Scheduled Encounters table not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.TABLE_ACTION_COLUMN, "Action column for Scheduled Encounters table not found")
 
         #TODO: number of exports [after survey schedule function implementation]
 
@@ -243,48 +166,37 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
 
         finally:
             self.encounter_helper.delete_scheduled_encounter(encounter_id, "123456")
-            self.utils.search_and_delete_item(clinic_name,clinic_id, "clinic")
-            self.utils.search_and_delete_item(bundle_name,bundle_id, "bundle")
+            self.utils.search_and_delete_item(clinic["name"],clinic["id"], "clinic")
+            self.utils.search_and_delete_item(bundle["name"],bundle["id"], "bundle")
             self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
 
 
     def test_encounter_schedule(self):
-        bundle_name = "TestBundle"
-        clinic_name = "TestClinic"
-        clinic_description = "TestDescription"
+        clinic={}
+        bundle={}
+        created_questionnaire = {}
         
         # Arrange
-        if not self.secret.get('admin-username') or not self.secret.get('admin-username'):
-            self.skipTest("User AD credentials missing. Test skipped.")
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])    
 
         try:
-            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(questionnaire_name="Test", questionnaire_description="Test",
-                                            questionnaire_language_code="de_DE", questionnaire_display_name="Test",
-                                            questionnaire_welcome_text="Test", questionnaire_final_text="Test", 
-                                            question_types=[QuestionType.INFO_TEXT])
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
         except Exception as e:
             self.fail(f"Failed to create questionnaire: {e}")
 
         try:
             self.navigation_helper.navigate_to_manage_bundles()
-            self.bundle_helper.create_bundle(bundle_name, True, [created_questionnaire])
-            self.bundle_helper.save_bundle(bundle_name)
+            bundle=self.bundle_helper.create_bundle(publish_bundle=True, questionnaires=[created_questionnaire])
+            bundle["id"]=self.bundle_helper.save_bundle(bundle["name"])
         except Exception as e:
             self.fail(f"Failed to create bundle: {e}")
 
-
-        self.utils.search_item(bundle_name, "bundle")
-        bundle_id = self.bundle_helper.get_bundle_id()
-        clinic_id = None
         try:
             self.navigation_helper.navigate_to_manage_clinics()
-            self.clinic_helper.create_clinic(clinic_name=clinic_name, 
-                                             clinic_description=clinic_description,
-                                             configurations=[{'selector': (By.CSS_SELECTOR, '#usePatientDataLookup > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
-                                             bundles=[{'id': bundle_id, 'name': bundle_name}])
-            clinic_id=self.clinic_helper.save_clinic(clinic_name)
+            clinic["name"]=self.clinic_helper.create_clinic(configurations=[{'selector': (By.CSS_SELECTOR, '#usePatientDataLookup > div:nth-child(1) > div:nth-child(3) > label:nth-child(1)')}],
+                                             bundles=[bundle])
+            clinic["id"]=self.clinic_helper.save_clinic(clinic["name"])
 
         except Exception as e:
             self.fail(f"Failed to create clinic: {e}")
@@ -296,87 +208,28 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         except Exception as e:
             self.fail(f"Failed to navigate to Schedule Encounter form: {e}")
 
-        # Assert - Check if all the inputs are present
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_SCHEDULE_CASE_NUMBER)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Case Number' not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_SCHEDULE_CASE_NUMBER, "Case Number input not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SELECT_SCHEDULE_CLINIC, "Clinic select not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SELECT_SCHEDULE_BUNDLE, "Bundle select not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_SCHEDULE_EMAIL, "Email input not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SELECT_SURVEY_TYPE, "Survey Type select not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_DATE, "Date input not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_END_DATE, "End Date input not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_TIME_PERIOD, "Time Period input not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.SELECT_LANGUAGE, "Language select not found")
+        self.utils.check_visibility_of_element(EncounterSelectors.INPUT_PERSONAL_TEXT, "Personal Text input not found")
 
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.SELECT_SCHEDULE_CLINIC)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Clinic' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.SELECT_SCHEDULE_BUNDLE)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Bundle' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_SCHEDULE_EMAIL)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Email' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.SELECT_SURVEY_TYPE)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Survey Type' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_DATE)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Date' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_END_DATE)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'End Date' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_TIME_PERIOD)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Time Period' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.SELECT_LANGUAGE)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Language' not found")
-
-        try:
-            WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(EncounterSelectors.INPUT_PERSONAL_TEXT)
-            )
-        except TimeoutException:
-            self.fail("Schedule Encounter form element 'Personal Text' not found")
         
         encounter_id = None
         try:
-            encounter_id = self.encounter_helper.schedule_encounter("123456", clinic_name, bundle_name, "test@email.com", EncounterScheduleType.UNIQUELY,(datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+            encounter_id = self.encounter_helper.schedule_encounter("123456", clinic["name"], bundle["name"], "test@email.com", EncounterScheduleType.UNIQUELY,(datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
         except Exception as e:
             self.fail(f"Failed to schedule encounter: {e}")
             
         finally:
             self.encounter_helper.delete_scheduled_encounter(encounter_id, "123456")
-            self.utils.search_and_delete_item(clinic_name,clinic_id, "clinic")
-            self.utils.search_and_delete_item(bundle_name,bundle_id, "bundle")
+            self.utils.search_and_delete_item(clinic["name"],clinic["id"], "clinic")
+            self.utils.search_and_delete_item(bundle["name"],bundle["id"], "bundle")
             self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
         
     def tearDown(self):

@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from helper.Navigation import NavigationHelper
-from helper.SeleniumUtils import SearchBoxSelectors, SeleniumUtils
+from helper.SeleniumUtils import SearchBoxSelectors, SeleniumUtils, DropdownMethod
 
 
 class EncounterSurveyLanguages(Enum):
@@ -99,29 +99,29 @@ class EncounterHelper:
             
         try:
             if survey_type == EncounterScheduleType.REPEATEDLY:
-                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "REPEATEDLY", method="value")
+                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "REPEATEDLY", method=DropdownMethod.VALUE)
                 self.utils.fill_text_field(EncounterSelectors.INPUT_TIME_PERIOD, time_period_days)
                 if end_date is not None:
                     self.driver.execute_script("document.getElementById('endDate').valueAsDate = new Date(arguments[0]);", end_date)
                     self.driver.execute_script("document.getElementById('endDate').dispatchEvent(new Event('blur'));")
             elif survey_type == EncounterScheduleType.WEEKLY:
-                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "WEEKLY", method="value")
+                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "WEEKLY", method=DropdownMethod.VALUE)
                 if end_date is not None:
                     self.driver.execute_script("document.getElementById('endDate').valueAsDate = new Date(arguments[0]);", end_date)
                     self.driver.execute_script("document.getElementById('endDate').dispatchEvent(new Event('blur'));")        
             elif survey_type == EncounterScheduleType.MONTHLY:
-                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "MONTHLY", method="value")
+                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "MONTHLY", method=DropdownMethod.VALUE)
                 if end_date is not None:
                     self.driver.execute_script("document.getElementById('endDate').valueAsDate = new Date(arguments[0]);", end_date)
                     self.driver.execute_script("document.getElementById('endDate').dispatchEvent(new Event('blur'));")
             else:
-                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "UNIQUELY", method="value")
+                self.utils.select_dropdown(EncounterSelectors.SELECT_SURVEY_TYPE, "UNIQUELY", method=DropdownMethod.VALUE)
             
         except Exception as e:
             print("Error filling schedule encounter form elements ", e)
 
         try:
-            self.utils.select_dropdown(EncounterSelectors.SELECT_LANGUAGE, language, method="value")
+            self.utils.select_dropdown(EncounterSelectors.SELECT_LANGUAGE, language, method=DropdownMethod.VALUE)
             self.utils.fill_text_field(EncounterSelectors.INPUT_PERSONAL_TEXT, message)
             self.utils.click_element(EncounterSelectors.BUTTON_SAVE_SCHEDULED_ENCOUNTER)
 
