@@ -235,7 +235,7 @@
 									<a
 										class="link"
 										th:href="@{remove?id=__${item.id}__}"
-										th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+										th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
 									>
 										<i
 											class="bi-trash-fill"
@@ -327,7 +327,7 @@
 											<a
 												class="link"
 												th:href="@{remove?id=__${item.id}__}"
-												th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+												th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
 												th:text="${messages.get(#locale, 'question.button.remove', 'Remove')}"
 											>
 											</a>
