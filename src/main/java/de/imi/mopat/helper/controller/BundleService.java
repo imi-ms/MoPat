@@ -86,15 +86,11 @@ public class BundleService {
 
 
     /**
-     * Retrieves all available {@link QuestionnaireDTO} objects that are not currently assigned
-     * to the {@link Bundle} with the given ID. This method filters out any questionnaires that
-     * have no associated questions and sorts the results first by group name, then by group ID,
-     * and finally by version.
+     * Retrieves all questionnaires that are not assigned to the given bundle.
+     * The list is sorted by group name, group ID, and version.
      *
-     * @param bundleId The ID of the {@link Bundle} from which unassigned questionnaires should be retrieved.
-     * @return A sorted list of {@link QuestionnaireDTO} objects that are not assigned to the specified bundle
-     *         and contain at least one question. If the bundle ID is null or not found, all available questionnaires
-     *         are returned.
+     * @param bundleId The ID of the bundle.
+     * @return A sorted list of unassigned questionnaires.
      */
     public List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
         Optional<Bundle> bundle = findBundleById(bundleId);
@@ -175,6 +171,12 @@ public class BundleService {
         return bundleDTO.getId() == null || bundleDao.getElementById(bundleDTO.getId()).isModifiable();
     }
 
+    /**
+     * Prepares a bundle for editing by cleaning text fields and ensuring
+     * that non-admin users cannot publish the bundle.
+     *
+     * @param bundleDTO The bundle to prepare.
+     */
     public void prepareBundleForEdit(BundleDTO bundleDTO) {
         cleanUpTextFields(bundleDTO);
 
@@ -201,8 +203,15 @@ public class BundleService {
         );
     }
 
+    /**
+     * Synchronizes assigned and available questionnaires.
+     * Ensures that assigned questionnaires are removed from the available list
+     * and updates missing data (ExportTemplates, QuestionnaireGroup, Scores) for assigned questionnaires.
+     *
+     * @param bundleQuestionnaireDTOS The list of assigned questionnaires.
+     * @param availableQuestionnaireDTOs The list of available questionnaires.
+     */
     public void syncAssignedAndAvailableQuestionnaires(List<BundleQuestionnaireDTO> bundleQuestionnaireDTOS, List<QuestionnaireDTO> availableQuestionnaireDTOs) {
-        // IDs der bereits zugewiesenen Fragebögen sammeln
         Set<Long> assignedIds = bundleQuestionnaireDTOS.stream()
                 .map(BundleQuestionnaireDTO::getQuestionnaireDTO)
                 .filter(Objects::nonNull)
@@ -234,6 +243,12 @@ public class BundleService {
         });
     }
 
+    /**
+     * Saves or updates the given bundle.
+     * If the bundle does not exist, it is created. Otherwise, it is updated.
+     *
+     * @param bundleDTO The bundle data.
+     */
     public void saveOrUpdateBundle(BundleDTO bundleDTO) {
         User currentUser = authService.getAuthenticatedUser();
 
