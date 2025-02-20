@@ -134,7 +134,7 @@
 					>
 					</checkbox>
 				</div>
-				<div class="form-group">
+				<div class="form-group" sec:authorize="hasRole('ROLE_ADMIN')">
 					<checkbox
 						layout:replace="~{fragments/forms :: checkbox(
                         path='isPublished',
