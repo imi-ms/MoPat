@@ -6,9 +6,14 @@ import de.imi.mopat.validator.ConditionalValidation;
 public record CreateReviewForm(
         Long questionnaireId,
         Long reviewerId,
-        String description
+        String description,
+        String personalMessage,
+        String language
 ) {
 
     public CreateReviewForm {
+        if (language == null || language.isBlank()) {
+            language = "de_DE";
+        }
     }
 }
