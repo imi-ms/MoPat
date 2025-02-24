@@ -128,6 +128,7 @@
 							<td class="actionColumn">
 								<div class="d-none d-xl-block">
 									<a
+										id="bundleLink__${item.id}__"
 										class="link"
 										th:href="@{fill?id=__${item.id}__}"
 									>
@@ -160,6 +161,7 @@
 										</i>
 									</a>
 									<a
+										th:id="'removeBundle_' + ${item.id}"
 										class="link removeBundleLink"
 										th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
 										th:href="@{remove?id=__${item.id}__}"
