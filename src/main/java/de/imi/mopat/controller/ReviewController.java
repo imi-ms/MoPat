@@ -87,6 +87,21 @@ public class ReviewController {
         return "redirect:/review/list";
     }
 
+    @RequestMapping(value = "/review/remove")
+    @PreAuthorize("@reviewService.canModifyReview(#id)")
+    public String removeReview(@RequestParam(value = "id", required = true) final Long id,
+                               final Model model,
+                               RedirectAttributes redirectAttributes) {
+
+        Locale locale = LocaleContextHolder.getLocale();
+        ValidationResult validationResult = reviewService.deleteReviewById(id, locale);
+
+        redirectAttributes.addFlashAttribute(
+                validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
+        );
+        return "redirect:/review/list";
+    }
+
     /**
      * Generates a localized email preview for a review request.
      * The preview includes the subject and content of the email, localized to the selected language.

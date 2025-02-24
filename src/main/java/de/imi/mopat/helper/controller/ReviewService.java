@@ -151,6 +151,24 @@ public class ReviewService {
         }
     }
 
+    public ValidationResult deleteReviewById(Long reviewId, Locale locale) {
+        ValidationResult validationResult = validateReview(reviewId, locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        validationResult = validateReviewAccess(reviewId, locale);
+        if(validationResult.hasErrors()){
+            return validationResult;
+        }
+
+        Review review = reviewDao.getElementById(reviewId);
+        String questionnaireName = review.getQuestionnaire().getName();
+
+        reviewDao.remove(review);
+        return successWithMessage("review.success.deleted", locale, questionnaireName);
+    }
+
     private String getInitials(String firstname, String lastname) {
         StringBuilder initials = new StringBuilder();
 
@@ -343,5 +361,75 @@ public class ReviewService {
 
         result.put("content", contentBuilder.toString());
         return result;
+    }
+
+    private ValidationResult validateReview(Long reviewId, Locale locale) {
+        if (reviewId == null || reviewId <= 0) {
+            return failureWithMessage(ValidationResult.INVALID_REVIEW_ID, locale);
+        }
+
+        Review review = reviewDao.getElementById(reviewId);
+        if (review == null) {
+            return failureWithMessage(ValidationResult.REVIEW_NOT_FOUND, locale);
+        }
+
+        return ValidationResult.SUCCESS;
+    }
+
+    private ValidationResult validateReviewAccess(Long reviewId, Locale locale) {
+        ValidationResult authValidation = validateAuthenticatedUser(locale);
+        if (authValidation.hasErrors()) return authValidation;
+
+
+        Review review = reviewDao.getElementById(reviewId);
+        if (review == null) {
+            return failureWithMessage(ValidationResult.REVIEW_NOT_FOUND, locale);
+        }
+
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+            return ValidationResult.SUCCESS;
+        }
+
+        Long userId = authService.getAuthenticatedUserId();
+        if (!Objects.equals(review.getEditorId(), userId) && !Objects.equals(review.getReviewerId(), userId)) {
+            return failureWithMessage(ValidationResult.UNAUTHORIZED, locale);
+        }
+
+        return ValidationResult.SUCCESS;
+    }
+
+    /**
+     * Checks whether the currently authenticated user has permission to modify a review.
+     * <p>
+     * A user can modify (delete) a review if:
+     * - They are authenticated.
+     * - They have the role of an admin or higher.
+     * - They are the editor of the review.
+     * <p>
+     * This method is used as a security expression in `@PreAuthorize` annotations within controllers.
+     *
+     * @param reviewId The ID of the review to check permissions for.
+     * @return `true` if the user has modification rights, otherwise `false`.
+     */
+    public boolean canModifyReview(Long reviewId) {
+        Long currentUserId = authService.getAuthenticatedUserId();
+
+        if (currentUserId == null) {
+            LOGGER.warn("No authenticated user found");
+            return false;
+        }
+
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+            return true;
+        }
+
+        Review review = reviewDao.getElementById(reviewId);
+        if (review == null) {
+            LOGGER.warn("Review not found for ID: {}", reviewId);
+            return false;
+        }
+
+        // Check if the user is the editor of the review
+        return currentUserId.equals(review.getEditorId());
     }
 }

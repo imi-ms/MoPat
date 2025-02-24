@@ -4,6 +4,9 @@ public enum ValidationResult {
 
     SUCCESS("review.success", "Action completed successfully."),
     NOT_AUTHENTICATED("review.error.user.notAuthenticated", "User not authenticated."),
+    REVIEW_NOT_FOUND("review.error.notFound", "Review not found."),
+    UNAUTHORIZED("review.error.unauthorized", "You are not authorized to perform this action."),
+    INVALID_REVIEW_ID("review.error.invalidId", "Invalid reviewId."),
     USER_NOT_FOUND("review.error.user.notFound", "User not found.");
 
     private final String code;
