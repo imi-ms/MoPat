@@ -137,7 +137,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
-    
+
+    @Column(name = "is_approved", nullable = false)
+    private Boolean isApproved = false;
+
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
@@ -856,5 +859,9 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     public Long getQuestionnaireVersionGroupId() {
         return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
+    }
+
+    public Boolean isApproved() {
+        return isApproved;
     }
 }

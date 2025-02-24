@@ -1,0 +1,90 @@
+<th:block
+        layout:decorate="~{layout/main}"
+        th:with="title=${messages.get(#locale, 'review.create.heading.createReview', 'Create Review for Questionnaire')}"
+>
+    <th:block layout:fragment="content">
+        <div class="panel-body">
+
+            <form
+                    id="createReviewForm"
+                    action="/review/create"
+                    method="POST"
+                    th:object="${createReviewForm}"
+                    enctype="application/x-www-form-urlencoded"
+            >
+                <!-- Select reviewer -->
+                <div class="form-group">
+                    <label class="required" for="reviewerId" th:text="${messages.get(#locale, 'review.create.label.reviewer', 'Select Reviewer')}"></label>
+                    <select id="reviewerId" name="reviewerId" class="form-control" th:field="*{reviewerId}" onchange="handleQuestionnaireChange()">
+                        <option th:each="reviewer : ${reviewers}"
+                                th:value="${reviewer.id}"
+                                th:text="${reviewer.firstname + ' ' + reviewer.lastname}">
+                        </option>
+                    </select>
+                    <div class="text-danger" th:if="${#fields.hasErrors('reviewerId')}" th:errors="*{reviewerId}"></div>
+                </div>
+
+                <!-- Select questionnaire -->
+                <div class="form-group">
+                    <label class="required" for="questionnaireId" th:text="${messages.get(#locale, 'review.create.label.questionnaire', 'Select Questionnaire')}"></label>
+                    <select id="questionnaireId" name="questionnaireId" class="form-control" th:field="*{questionnaireId}">
+                        <option th:each="questionnaire : ${questionnaires}"
+                                th:value="${questionnaire.id}"
+                                th:data-version="${questionnaire.version}"
+                                th:text="${questionnaire.name}">
+                        </option>
+                    </select>
+                    <div class="text-danger" th:if="${#fields.hasErrors('questionnaireId')}" th:errors="*{questionnaireId}"></div>
+                </div>
+
+                <!-- Description of the changes -->
+                <div class="form-group">
+                    <label for="description" 
+                        id="descriptionLabel"
+                        th:text="${messages.get(#locale, 'review.label.description', 'Description of changes')}"
+                        th:title="${messages.get(#locale, 'review.label.description.title', 'Will be displayed in the conversation of the review')}">
+                    </label>
+                    <textarea id="description" 
+                        name="description" 
+                        class="form-control" 
+                        rows="5"
+                        th:field="*{description}">
+                    </textarea>
+                    <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                </div>
+
+               <!-- Buttons -->
+                <div class="d-flex justify-content-start gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Send request')}"></button>
+                    <a href="/review/list" class="btn btn-primary" th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"></a>
+                </div>
+            </form>
+
+        </div>
+    </th:block>
+</th:block>
+<th:block layout:fragment="scriptContainer">
+<script th:inline="javascript" type="text/javascript">
+    document.getElementById("questionnaireId").addEventListener("change", function () {
+        handleQuestionnaireChange();
+    });
+
+    function handleQuestionnaireChange() {
+        const questionnaireSelect = document.getElementById("questionnaireId");
+        const selectedOption = questionnaireSelect.options[questionnaireSelect.selectedIndex];
+        const version = parseInt(selectedOption.dataset.version, 10); // Read version
+        const descriptionField = document.getElementById("description");
+        const descriptionLabel = document.getElementById("descriptionLabel");
+
+        if (version > 1) {
+            // Set the field to “required” and add the asterisk
+            descriptionField.setAttribute("required", "true");
+            descriptionLabel.classList.add("required");
+        } else {
+            // Remove “required” and the asterisk
+            descriptionField.removeAttribute("required");
+            descriptionLabel.classList.remove("required");
+        }
+    }
+</script> 
+</th:block>

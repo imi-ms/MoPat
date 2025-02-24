@@ -49,6 +49,7 @@ public class QuestionnaireDTO {
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
     private int version;
+    private Boolean isApproved = false;
 
     @JsonIgnore
     private Set<ExportTemplate> exportTemplates = new HashSet<>();
@@ -193,5 +194,13 @@ public class QuestionnaireDTO {
     @JsonIgnore
     public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
         this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
+    }
+
+    public Boolean isApproved() {
+        return isApproved;
+    }
+
+    public void setIsApproved(Boolean isApproved) {
+        this.isApproved = isApproved;
     }
 }

@@ -817,4 +817,8 @@ public class QuestionnaireService {
         questionnaires.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
         return questionnaires;
     }
+
+    public Questionnaire getQuestionnaireById(Long questionnaireId) {
+        return questionnaireDao.getElementById(questionnaireId);
+    }
 }
