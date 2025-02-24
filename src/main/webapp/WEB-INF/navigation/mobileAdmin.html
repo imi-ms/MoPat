@@ -254,9 +254,15 @@
 				>
 				</a>
 				<a
-					class="link borderBottom"
+					class="link"
 					th:href="@{/questionnaire/import/upload}"
 					th:text="${messages.get(#locale, 'questionnaire.button.import', 'Import questionnaire')}"
+				>
+				</a>
+				<a
+						class="link borderBottom"
+						th:href="@{/review/list}"
+						th:text="${messages.get(#locale, 'admin.navigation.review', 'Manage reviews')}"
 				>
 				</a>
 			</th:block>

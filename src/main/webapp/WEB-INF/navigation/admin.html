@@ -49,6 +49,14 @@
 										>Import questionnaire</a
 									>
 								</li>
+								<li>
+									<a
+										class="dropdown-item"
+										th:href="@{/review/list}"
+										th:text="${messages.get(#locale, 'admin.navigation.review', 'Manage reviews')}"
+									>
+									</a>
+								</li>
 							</ul>
 						</li>
 						<li class="nav-item">
