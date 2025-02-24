@@ -29,6 +29,7 @@ class NavigationBarSelectors:
         MANAGE_SURVEY_LINK = (By.ID, "manageSurveyLink")
         SCHEDULE_SURVEY_LINK = (By.ID, "scheduleSurveyLink")
         EXECUTE_SURVEY_LINK = (By.ID, "executeSurveyLink")
+        CONFIGURATION_LINK = (By.ID, "configurationLink")
 
 class QuestionTableSelectors:
     EDIT_QUESTION_LINK = lambda question_id: (By.XPATH, f'//a[@href="fill?id={question_id}"]')
@@ -143,3 +144,9 @@ class NavigationHelper:
             self.utils.click_element(NavigationBarSelectors.UserMenu.MANAGE_INVITATIONS_LINK)
         except Exception as e:
             raise Exception(f"Failed to navigate to 'Manage Invitations': {e}")
+        
+    def navigate_to_configuration(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.SurveysMenu.CONFIGURATION_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'Configuration': {e}")
