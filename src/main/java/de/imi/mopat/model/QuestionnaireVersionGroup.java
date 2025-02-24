@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -28,6 +29,9 @@ public class QuestionnaireVersionGroup implements Serializable {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "main_questionnaire_id")
+    private Long mainQuestionnaireId;
 
     @OneToMany(mappedBy = "questionnaireVersionGroup", fetch = FetchType.LAZY)
     private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
@@ -67,5 +71,23 @@ public class QuestionnaireVersionGroup implements Serializable {
 
     public void addQuestionnaires(List<Questionnaire> questionnaires) {
         this.questionnaires.addAll(questionnaires);
+    }
+
+    public void setMainQuestionnaire(Questionnaire questionnaire) {
+        if (!questionnaires.contains(questionnaire)) {
+            throw new IllegalArgumentException("The questionnaire does not belong to this group.");
+        }
+        this.mainQuestionnaireId = questionnaire.getId();
+    }
+
+    public Optional<Questionnaire> getMainQuestionnaire() {
+        if (mainQuestionnaireId == null){
+            return questionnaires.stream()
+                    .min(Comparator.comparingInt(Questionnaire::getVersion));
+        }
+
+        return questionnaires.stream()
+                .filter(q -> q.getId().equals(mainQuestionnaireId))
+                .findFirst();
     }
 }

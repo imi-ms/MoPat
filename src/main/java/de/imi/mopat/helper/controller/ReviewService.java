@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.controller.forms.CreateReviewForm;
+import de.imi.mopat.controller.forms.ReviewDecisionForm;
 import de.imi.mopat.dao.ReviewDao;
 import de.imi.mopat.dao.ReviewMessageDao;
 import de.imi.mopat.helper.model.ReviewDTOMapper;
@@ -9,6 +10,7 @@ import de.imi.mopat.model.Review;
 import de.imi.mopat.model.ReviewMessage;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ReviewDTO;
+import de.imi.mopat.model.dto.ReviewMessageDTO;
 import de.imi.mopat.model.dto.UserDTO;
 import de.imi.mopat.model.enumeration.ReviewStatus;
 import de.imi.mopat.model.user.UserRole;
@@ -19,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
@@ -48,6 +54,9 @@ public class ReviewService {
     private QuestionnaireService questionnaireService;
 
     @Autowired
+    private QuestionnaireVersionGroupService questionnaireVersionGroupService;
+
+    @Autowired
     private MessageSource messageSource;
 
     @Autowired
@@ -55,6 +64,9 @@ public class ReviewService {
 
     @Autowired
     private ApplicationMailer applicationMailer;
+
+    @Autowired
+    private Clock clock;
 
     private static final Comparator<ReviewDTO> REVIEW_COMPARATOR = Comparator
             .comparing((ReviewDTO review) -> review.getStatus() == ReviewStatus.APPROVED ? 1 : 0)
@@ -167,6 +179,183 @@ public class ReviewService {
 
         reviewDao.remove(review);
         return successWithMessage("review.success.deleted", locale, questionnaireName);
+    }
+
+    /*
+     * TODO [LJ] Should there be a reviewer role?
+     */
+    public boolean isUserReviewer() {
+        return authService.hasExactRole(UserRole.ROLE_ADMIN);
+    }
+
+    public ValidationResult approveReview(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {
+        ValidationResult validationResult = processReview(
+                form.reviewId(),
+                form.description(),
+                ReviewStatus.APPROVED,
+                form.isMainVersion(),
+                locale
+        );
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        ReviewDTO reviewDTO = getReviewById(form.reviewId());
+        String reviewLink = generateReviewLink(request, form.reviewId());
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(reviewDTO.getQuestionnaireId());
+
+        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), locale, "approve", form.description(), form.personalMessage(), reviewLink);
+
+        return successWithMessage("review.success.approved", locale);
+    }
+
+    public ValidationResult rejectReview(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {
+        ValidationResult validationResult = processReview(
+                form.reviewId(),
+                form.description(),
+                ReviewStatus.REJECTED,
+                false,
+                locale
+        );
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        ReviewDTO reviewDTO = getReviewById(form.reviewId());
+        String reviewLink = generateReviewLink(request, form.reviewId());
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(reviewDTO.getQuestionnaireId());
+
+        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), locale, "reject", form.description(), form.personalMessage(), reviewLink);
+
+        return successWithMessage("review.success.rejected", locale);
+    }
+
+    public ValidationResult resubmitReview(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {
+        ValidationResult validationResult = validateReview(form.reviewId(), locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        Review review = reviewDao.getElementById(form.reviewId());
+
+        if (!form.description().isBlank()) {
+            addReviewMessage(review, review.getEditorId(), form.description());
+        }
+
+        review.setStatus(ReviewStatus.PENDING);
+        reviewDao.merge(review);
+
+        String questionnaireName = review.getQuestionnaire().getName();
+        String reviewLink = generateReviewLink(request, review.getId());
+        sendReviewActionMail(review.getReviewerId(), questionnaireName, locale, "resubmit", form.description(), form.personalMessage(), reviewLink);
+
+        return successWithMessage("review.success.resubmitted", locale, questionnaireName);
+    }
+
+    public ValidationResult assignReviewer(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {
+        ValidationResult validationResult = validateAuthenticatedUser(locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        validationResult = validateReview(form.reviewId(), locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        Long userId = authService.getAuthenticatedUserId();
+        Review review = reviewDao.getElementById(form.reviewId());
+
+        if (!form.description().isBlank()) {
+            addReviewMessage(review, userId, form.description());
+        }
+
+        review.setReviewerId(form.reviewerId());
+        reviewDao.merge(review);
+
+        String reviewLink = generateReviewLink(request, review.getId());
+        sendReviewActionMail(form.reviewerId(), review.getQuestionnaire().getName(), locale, "assignReviewer", form.description(), form.personalMessage(), reviewLink);
+
+        return successWithMessage("review.success.newReviewerAssigned", locale);
+    }
+
+    public ValidationResult processReview(Long reviewId, String description, ReviewStatus status, boolean isMainVersion, Locale locale) {
+
+        ValidationResult validationResult = validateAuthenticatedUser(locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        validationResult = validateReview(reviewId, locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+
+        Long userId = authService.getAuthenticatedUserId();
+        Review review = reviewDao.getElementById(reviewId);
+
+        if (!description.isBlank()) {
+            addReviewMessage(review, userId, description);
+        }
+
+        updateReviewStatus(review, status, isMainVersion);
+        return ValidationResult.SUCCESS;
+    }
+
+    private void addReviewMessage(Review review, Long userId, String description) {
+        ReviewMessage reviewMessage = new ReviewMessage(review, userId, review.getEditorId(), description);
+        reviewMessageDao.merge(reviewMessage);
+
+        List<ReviewMessage> conversation = review.getConversation();
+        conversation.add(reviewMessage);
+        review.setConversation(conversation);
+    }
+
+    private void updateReviewStatus(Review review, ReviewStatus status, boolean isMainVersion) {
+        review.setStatus(status);
+
+        review.setUpdatedAt(Timestamp.from(Instant.now(clock)));
+
+        if (status == ReviewStatus.APPROVED && isMainVersion) {
+            questionnaireVersionGroupService.setMainVersionForGroup(review.getQuestionnaire());
+            questionnaireService.approveQuestionnaire(review.getQuestionnaire());
+        }
+        reviewDao.merge(review);
+    }
+
+    public ReviewDTO getReviewById(Long reviewId) {
+        Review review = reviewDao.getElementById(reviewId);
+        if (review == null) {
+            throw new IllegalArgumentException("Review with ID " + reviewId + " not found.");
+        }
+
+        ReviewDTO reviewDTO = reviewDTOMapper.apply(review);
+        addUserDetailsInConversations(reviewDTO.getConversation());
+        return reviewDTO;
+    }
+
+    private void addUserDetailsInConversations(List<ReviewMessageDTO> conversation) {
+        Map<Long, UserDTO> userMap = userService.getAllUser().stream()
+                .collect(Collectors.toMap(
+                        UserDTO::getId,
+                        user -> user,
+                        (existing, replacement) -> existing
+                ));
+
+        for (ReviewMessageDTO reviewMessage : conversation) {
+            UserDTO sender = userMap.get(reviewMessage.getSenderId());
+            UserDTO receiver = userMap.get(reviewMessage.getReceiverId());
+
+            if (sender != null) {
+                reviewMessage.setSenderName(sender.getFirstname() + " " + sender.getLastname());
+                reviewMessage.setSenderInitials(getInitials(sender.getFirstname(), sender.getLastname()));
+            }
+
+            if (receiver != null) {
+                reviewMessage.setReceiverName(receiver.getFirstname() + " " + receiver.getLastname());
+                reviewMessage.setReceiverInitials(getInitials(receiver.getFirstname(), receiver.getLastname()));
+            }
+        }
     }
 
     private String getInitials(String firstname, String lastname) {
@@ -363,7 +552,7 @@ public class ReviewService {
         return result;
     }
 
-    private ValidationResult validateReview(Long reviewId, Locale locale) {
+    public ValidationResult validateReview(Long reviewId, Locale locale) {
         if (reviewId == null || reviewId <= 0) {
             return failureWithMessage(ValidationResult.INVALID_REVIEW_ID, locale);
         }

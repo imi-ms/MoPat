@@ -206,4 +206,13 @@ public class QuestionnaireVersionGroupService {
             questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
         }
     }
+
+    public void setMainVersionForGroup(Questionnaire questionnaire) {
+        Optional<QuestionnaireVersionGroup> groupForQuestionnaire = findGroupForQuestionnaire(questionnaire);
+        if (groupForQuestionnaire.isPresent()) {
+            QuestionnaireVersionGroup questionnaireVersionGroup = groupForQuestionnaire.get();
+            questionnaireVersionGroup.setMainQuestionnaire(questionnaire);
+            questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
+        }
+    }
 }

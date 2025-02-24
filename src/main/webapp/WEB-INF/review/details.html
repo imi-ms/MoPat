@@ -1,0 +1,319 @@
+<th:block layout:decorate="~{layout/main}"
+          th:with="title=${messages.get(#locale, 'review.details.heading', 'Review Details')}"
+          xmlns:th="http://hl7.org/fhir" xmlns:sec="http://www.w3.org/1999/xhtml">
+<th:block layout:fragment="content">
+    <div class="panel-body">
+
+        <!-- Review Details -->
+        <div class="form-group">
+            <label for="questionnaire" th:text="${messages.get(#locale, 'review.details.label.questionnaire', 'Questionnaire')}"></label>
+            <div id="questionnaire" class="form-control bg-light">
+                <a
+                    th:href="@{/questionnaire/fill?id=__${review.getQuestionnaireId()}__}"
+                    th:text="${review.getQuestionnaireName()}"
+                    class="text-primary text-decoration-none"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                ></a>
+            </div>
+        </div>
+
+        <!-- Reviewer Selection -->
+        <div th:object="${reviewDecisionForm}">
+            <div class="form-group">
+                <label for="reviewer" th:text="${messages.get(#locale, 'review.label.reviewer', 'Reviewer')}"></label>
+                <select
+                        id="reviewer"
+                        name="reviewId"
+                        class="form-control"
+                        th:disabled="${!isReviewer}"
+                        onchange="handleReviewerChange()"
+                        th:data-current-reviewer-id="${review.reviewerId}">
+                    <option
+                            th:each="reviewer : ${reviewers}"
+                            th:value="${reviewer.id}"
+                            th:selected="${reviewer.id == review.reviewerId}"
+                            th:text="${reviewer.firstname + ' ' + reviewer.lastname + 
+                                (reviewer.id == review.reviewerId ? ' (' + messages.get(#locale, 'review.details.label.currentReviewer', 'Current') + ')' : '')}"
+                            >
+                    </option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('reviewerId')}" th:errors="*{reviewerId}"></div>
+            </div>
+        </div>
+        
+
+        <!-- Review Conversation -->
+        <div class="form-group">
+            <label for="conversation" th:text="${messages.get(#locale, 'review.details.label.conversation', 'Conversation')}"></label>
+            <div id="conversation" class="card">
+                <div class="card-body">
+                    <div th:each="reviewMessage : ${review.conversation}">
+                        <!-- Message container -->
+                        <div class="d-flex mb-4" th:classappend="${reviewMessage.senderId == currentUserId ? 'justify-content-end' : 'justify-content-start'}">
+                            <div class="d-flex align-items-center">
+                                
+                                <!-- Messages from other users (left) -->
+                                <div 
+                                    class="circle bg-secondary text-white fw-bold d-flex align-items-center justify-content-center me-3"
+                                    th:if="${reviewMessage.senderId != currentUserId}"
+                                    th:title="${reviewMessage.senderName}">
+                                    <span th:text="${reviewMessage.senderInitials}"></span>
+                                </div>
+
+                                <!-- Message -->
+                                <div class="w-auto">
+                                    <p class="message p-2 rounded-3 mb-1"
+                                        th:classappend="${reviewMessage.senderId == currentUserId ? 'bg-primary text-white' : 'bg-body-tertiary'}"
+                                        th:text="${reviewMessage.message}">
+                                    </p>
+                                    <p class="text-muted small mb-0"
+                                        th:class="${reviewMessage.senderId == currentUserId ? 'text-end' : 'text-start'}"
+                                        th:text="${#dates.format(reviewMessage.sentAt, 'dd.MM.yyyy HH:mm')}">
+                                    </p>
+                                </div>
+                                
+                                <!-- Messages from the logged-in user (right) -->
+                                <div 
+                                    class="circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center ms-3"
+                                    th:if="${reviewMessage.senderId == currentUserId}"
+                                    th:title="${reviewMessage.senderName}">
+                                    <span th:text="${reviewMessage.senderInitials}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <form th:action="@{/review/details}" method="POST" th:object="${reviewDecisionForm}">
+            <input type="hidden" name="reviewId" th:value="${review.id}" th:field="*{reviewId}"/>
+            <input type="hidden" id="hiddenReviewerId" name="reviewerId" value="">
+
+            <div id="approvalAndMainVersionContainer" sec:authorize="hasRole('ROLE_ADMIN')">
+                <div class="form-group">
+
+                    <label for="approvalOptions" class="form-label d-block mb-2" 
+                        th:text="${messages.get(#locale, 'review.details.label.approvalActions', 'Select an Action')}">
+                    </label>
+                    <div id="approvalOptions" class="btn-group" role="group" aria-label="Approval options">
+                        <!-- Approved Option -->
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="approvalOptions"
+                            id="approveOption"
+                            value="approve"
+                            autocomplete="off"
+                            checked
+                            onclick="updateApprovalUI()"
+                        >
+                        <label class="btn btn-outline-success" for="approveOption" 
+                            th:text="${messages.get(#locale, 'review.details.label.approve', 'Approve')}">
+                        </label>
+    
+                        <!-- Reject Option -->
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="approvalOptions"
+                            id="rejectOption"
+                            value="reject"
+                            autocomplete="off"
+                            onclick="updateApprovalUI()"
+                        >
+                        <label class="btn btn-outline-danger" for="rejectOption"
+                            th:text="${messages.get(#locale, 'review.details.label.reject', 'Reject')}">
+                        </label>
+                    </div>
+                </div>
+            
+                <!-- Checkbox for Main Version -->
+                <div id="mainVersionCheckbox" class="form-group mt-3">
+                    <input
+                        type="checkbox"
+                        th:field="*{isMainVersion}"
+                        id="isMainVersion"
+                        name="isMainVersion"
+                        th:checked="${reviewDecisionForm.isMainVersion}"
+                    >
+                    <label for="isMainVersion"
+                        th:text="${messages.get(#locale, 'review.details.label.mainVersion', 'Set Version as Main Version')}">
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description" 
+                    id="descriptionLabel" 
+                    th:classappend="${(currentUserId == review.editorId && currentUserId != review.reviewerId) ? 'required' : ''}"
+                    th:text="${messages.get(#locale, 'review.label.description', 'Description of changes')}"
+                    th:title="${messages.get(#locale, 'review.label.description.title', 'Will be displayed in the conversation of the review')}">
+                </label>
+                <textarea
+                    id="description"
+                    name="description"
+                    class="form-control"
+                    rows="3"
+                    th:field="*{description}"
+                    th:attr="required=${currentUserId == review.editorId}">
+                </textarea>
+                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="personalMessage" th:text="${messages.get(#locale, 'review.label.personalMessage', 'Personal Message (Email only)')}"></label>
+                <textarea
+                    id="personalMessage"
+                    name="personalMessage"
+                    class="form-control"
+                    rows="3"
+                    th:field="*{personalMessage}">
+                </textarea>
+                <div class="text-danger" th:if="${#fields.hasErrors('personalMessage')}" th:errors="*{personalMessage}"></div>
+            </div>
+
+            <!-- Reviewer -->
+            <div id="approvalButtonGroup" class="mt-3" sec:authorize="hasRole('ROLE_ADMIN')">
+                <div id="submitApproveContainer">
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                        name="action"
+                        value="approve"
+                        th:text="${messages.get(#locale, 'review.details.button.approve', 'Submit approve')}">
+                    </button>
+                </div>
+                <div id="submitRejectContainer" style="display: none;">
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                        name="action"
+                        value="reject"
+                        th:text="${messages.get(#locale, 'review.details.button.reject', 'Submit rejection')}">
+                    </button>
+                </div>
+            </div>                
+
+            <!-- assign new reviewer-->
+            <div id="assign-button" style="display: none;">
+                <button
+                        type="submit"
+                        class="btn btn-warning w-45"
+                        name="action"
+                        value="assignReviewer"
+                        th:text="${messages.get(#locale, 'review.details.label.assignReviewer', 'Assign New Reviewer')}">
+                </button>
+            </div>
+
+            <!-- Button for Edtitor -->
+            <div class="mt-3" sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN')">
+                <button
+                    type="submit"
+                    class="btn btn-primary w-45"
+                    name="action"
+                    value="review"
+                    th:text="${messages.get(#locale, 'review.details.label.resubmitReview', 'Resubmit')}">
+                </button>
+            </div>
+        </form>
+    </div>
+</th:block>
+</th:block>
+<th:block layout:fragment="scriptContainer">
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const conversation = document.querySelector("#conversation .card-body");
+        if (conversation) {
+            conversation.scrollTo({
+                top: conversation.scrollHeight,
+                behavior: "smooth"
+            });
+        }
+    });
+
+    function handleReviewerChange() {
+        const reviewerSelect = document.getElementById("reviewer");
+        const currentReviewerId = reviewerSelect.dataset.currentReviewerId;
+        const selectedReviewerId = reviewerSelect.value;
+        const hiddenReviewerField = document.getElementById('hiddenReviewerId');
+
+        const assignButton = $("#assign-button");
+        const approvalAndMainVersionContainer = $("#approvalAndMainVersionContainer");
+        const approvalButtonGroup = $("#approvalButtonGroup");
+
+        console.log(currentReviewerId);
+        console.log(selectedReviewerId);
+        hiddenReviewerField.value = selectedReviewerId;
+
+        if (selectedReviewerId !== currentReviewerId) {
+            assignButton.slideDown(); 
+            approvalAndMainVersionContainer.slideUp(); 
+            approvalButtonGroup.slideUp(); 
+        } else {
+            assignButton.slideUp(); 
+            approvalAndMainVersionContainer.slideDown(); 
+            approvalButtonGroup.slideDown(); 
+        }
+    }
+
+    function updateApprovalUI() {
+        const approveOption = document.getElementById("approveOption").checked;
+        const rejectOption = document.getElementById("rejectOption").checked;
+        const descriptionField = document.getElementById("description");
+        const descriptionLabel = document.getElementById("descriptionLabel");
+
+        const submitApproveContainer = $("#submitApproveContainer");
+        const submitRejectContainer = $("#submitRejectContainer");
+        const mainVersionCheckbox = $("#mainVersionCheckbox");
+
+        if (approveOption) {
+            descriptionLabel.classList.remove("required");
+            submitApproveContainer.show(); 
+            submitRejectContainer.hide();
+            mainVersionCheckbox.slideDown(); 
+            descriptionField.removeAttribute("required"); 
+        } else if (rejectOption) {
+            descriptionLabel.classList.add("required");
+            submitRejectContainer.show(); 
+            submitApproveContainer.hide();
+            mainVersionCheckbox.slideUp();
+            descriptionField.setAttribute("required", "true");
+        }
+    }
+</script>
+
+<style>
+    .message {
+        white-space: pre-wrap; 
+    }
+
+    .bg-body-tertiary {
+        background-color: #cfcfcf !important;
+        color: #000000;
+    }
+
+    #conversation .card-body {
+        position: relative;
+        height: 300px;
+        overflow-y: auto;
+    }
+
+    #conversation .rounded-3 {
+        border-radius: 0.75rem;
+    }
+
+    .circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 45px;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+</style>
+</th:block>

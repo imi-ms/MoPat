@@ -11,6 +11,9 @@ import org.springframework.validation.Validator;
 public class ConditionalValidatorDispatcher implements ConstraintValidator<ConditionalValidation, Object> {
 
     @Autowired
+    private ReviewDecisionValidator reviewDecisionValidator;
+
+    @Autowired
     private CreateReviewValidator createReviewValidator;
 
 
@@ -44,7 +47,9 @@ public class ConditionalValidatorDispatcher implements ConstraintValidator<Condi
     }
 
     private Validator getValidatorFor(Object target) {
-        if (createReviewValidator.supports(target.getClass())) {
+        if (reviewDecisionValidator.supports(target.getClass())) {
+            return reviewDecisionValidator;
+        } else if (createReviewValidator.supports(target.getClass())) {
             return createReviewValidator;
         }
         return null;

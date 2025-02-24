@@ -139,7 +139,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
     private QuestionnaireVersionGroup questionnaireVersionGroup;
 
     @Column(name = "is_approved", nullable = false)
-    private Boolean isApproved = false;
+    private Boolean is_approved = false;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -862,6 +862,14 @@ public class Questionnaire implements ConditionTarget, Serializable {
     }
 
     public Boolean isApproved() {
-        return isApproved;
+        return is_approved;
+    }
+
+    public void approve() {
+        this.is_approved = true;
+    }
+
+    public void disapprove() {
+        this.is_approved = false;
     }
 }

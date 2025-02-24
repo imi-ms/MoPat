@@ -1,10 +1,12 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.controller.forms.CreateReviewForm;
+import de.imi.mopat.controller.forms.ReviewDecisionForm;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.ValidationResult;
+import de.imi.mopat.model.dto.ReviewDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -81,6 +83,70 @@ public class ReviewController {
         Locale locale = LocaleContextHolder.getLocale();
         ValidationResult validationResult = reviewService.addReview(form, locale, request);
 
+        redirectAttributes.addFlashAttribute(
+                validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
+        );
+        return "redirect:/review/list";
+    }
+
+    @RequestMapping(value = "review/details", method = RequestMethod.GET)
+    public String getReviewById(@RequestParam Long id, Model model) {
+
+        Locale locale = LocaleContextHolder.getLocale();
+        ValidationResult validatedReview = reviewService.validateReview(id, locale);
+
+        if (validatedReview.hasErrors()) {
+            model.addAttribute("messageFail", validatedReview.getLocalizedMessage());
+            return "review/list";
+        }
+
+        ReviewDTO reviewDTO = reviewService.getReviewById(id);
+
+        model.addAttribute("isReviewer", reviewService.isUserReviewer());
+        model.addAttribute("reviewers", reviewService.getAllReviewers());
+        model.addAttribute("review", reviewDTO);
+        model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
+
+        if (!model.containsAttribute("reviewDecisionForm")) {
+            model.addAttribute("reviewDecisionForm", new ReviewDecisionForm(id, null, null, null, false, null));
+        }
+        return "review/details";
+    }
+
+    @PostMapping("/review/details")
+    @PreAuthorize("@reviewService.canModifyReview(#form.reviewId)")
+    public String handleReviewAction(@Valid @ModelAttribute("reviewDecisionForm") ReviewDecisionForm form,
+                                     BindingResult bindingResult,
+                                     Model model,
+                                     RedirectAttributes redirectAttributes,
+                                     final HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("reviewDecisionForm", form);
+            return getReviewById(form.reviewId(), model);
+        }
+
+        Locale locale = LocaleContextHolder.getLocale();
+        ValidationResult validationResult;
+        switch (form.action()) {
+            case "approve":
+                validationResult = reviewService.approveReview(form, locale, request);
+                break;
+            case "reject":
+                validationResult = reviewService.rejectReview(form, locale, request);
+                break;
+            case "review":
+                validationResult = reviewService.resubmitReview(form, locale, request);
+                break;
+            case "assignReviewer":
+                validationResult = reviewService.assignReviewer(form, locale, request);
+                break;
+            default:
+                /**
+                 * TODO [LJ] message for this?
+                 */
+                redirectAttributes.addFlashAttribute("messageFail", "Invalid action: "+form.action());
+                return "redirect:/review/list";
+        }
         redirectAttributes.addFlashAttribute(
                 validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
         );

@@ -203,9 +203,7 @@
 													 (item.getStatus().name() == 'REJECTED' ? 'bi-x-circle-fill text-danger' : 
 													 (item.getStatus().name() == 'APPROVED' ? 'bi-check-circle-fill text-success' : ''))}"
 										   th:attr="data-bs-toggle='tooltip', data-bs-placement='top'"
-										   th:title="${item.getStatus().name() == 'PENDING' ? 'Pending' : 
-													 (item.getStatus().name() == 'REJECTED' ? 'Rejected' : 
-													 (item.getStatus().name() == 'APPROVED' ? 'Approved' : ''))}">
+										   th:title="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}">
 										</i>
 									</td>
 									<td>

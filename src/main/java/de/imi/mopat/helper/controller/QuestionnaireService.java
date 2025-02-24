@@ -821,4 +821,9 @@ public class QuestionnaireService {
     public Questionnaire getQuestionnaireById(Long questionnaireId) {
         return questionnaireDao.getElementById(questionnaireId);
     }
+
+    public void approveQuestionnaire(Questionnaire questionnaire) {
+        questionnaire.approve();
+        questionnaireDao.merge(questionnaire);
+    }
 }
