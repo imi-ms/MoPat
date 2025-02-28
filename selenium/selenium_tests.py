@@ -826,7 +826,6 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.utils.check_visibility_of_element(ConfigurationSelectors.SELECT_LANGUAGE, "Select Language not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_CASE_NUMBER_TYPE, "Case Number Type input not found")
-        self.configuration_helper.add_additional_logo()
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_STORAGE_PATH_FOR_UPLOADS, "Storage Path for Uploads input not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_BASE_URL, "Base URL input not found")
         self.utils.fill_text_field(ConfigurationSelectors.INPUT_PATH_UPLOAD_IMAGES, self.configuration_helper.DEFAUL_EXPORT_IMAGE_UPLOAD_PATH)
@@ -900,6 +899,16 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_MAIL_SUPPORT, "Mail Support input not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_PHONE_SUPPORT, "Phone Support input not found")
 
+        self.configuration_helper.save_configuration()
+
+        # Count all divs with class config_error
+        error_divs = self.driver.find_elements(By.CLASS_NAME, "config_error")
+        error_count = len(error_divs)
+
+        # Expect 7 and throw error if less
+        expected_error_count = 7
+        if error_count < expected_error_count:
+            raise AssertionError(f"Expected at least {expected_error_count} divs with class 'config_error', but found {error_count}")
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_AD_AUTH, False)
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_PATIENT_LOOKUP, False)
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_EXPORT_HL7_INTO_DIRECTORY, False)
@@ -916,6 +925,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_SMTP_AUTHENTICATION, False)
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_ENABLE_TLS, False)
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_UTILIZE_MAILER, False)
+
+        self.configuration_helper.add_additional_logo()
 
         self.configuration_helper.save_configuration()
         self.utils.scroll_to_bottom()
