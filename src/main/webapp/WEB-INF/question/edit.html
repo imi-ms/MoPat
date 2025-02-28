@@ -1193,6 +1193,7 @@
 												</div>
 											</div>
 											<button
+												th:id="|selectAllBodyPartsButton-${vars['imageType']}|"
 												type="button"
 												class="btn btn-primary"
 												onclick="selectAllBodyPartAnswers($(this));"
@@ -1200,6 +1201,7 @@
 											>
 											</button>
 											<button
+												th:id="|deleteAllBodyPartsButton-${vars['imageType']}|"
 												type="button"
 												class="btn btn-primary"
 												onclick="deleteAllBodyPartAnswers($(this));"

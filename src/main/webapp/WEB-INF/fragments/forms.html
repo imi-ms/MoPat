@@ -178,7 +178,7 @@
 	<div
 		th:if="${#fields.hasErrors(path)}"
 		th:errors="*{__${path}__}"
-		th:class="${not #strings.isEmpty(errorClazz)} ? ${errorClazz} : ''"
+		th:class="${not #strings.isEmpty(errorClazz)} ? ${errorClazz} : 'validationError'"
 		th:text="${#fields.errors(path)}"
 		style="color: red"
 	>
