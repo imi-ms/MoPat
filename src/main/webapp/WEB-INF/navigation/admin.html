@@ -181,6 +181,7 @@
 							data-bs-toggle="dropdown"
 							role="button"
 							aria-expanded="false"
+							id="statisticDropdownLink"
 						>
 							<span
 								th:text="${messages.get(#locale, 'admin.navigation.header.statistic', 'Statistics')}"
@@ -192,6 +193,7 @@
 						<ul class="dropdown-menu">
 							<li>
 								<a
+									id="manageStatisticLink"
 									class="dropdown-item"
 									th:href="@{/statistic/index}"
 									th:text="${messages.get(#locale, 'admin.navigation.statistics', 'Statistics')}"
@@ -200,6 +202,7 @@
 							</li>
 							<li>
 								<a
+									id="oneTimeStatisticLink"
 									class="dropdown-item"
 									th:href="@{/statistic/onetimestatistic}"
 									th:text="#{admin.navigation.statistics.oneTimeStatistics}"

@@ -30,6 +30,10 @@ class NavigationBarSelectors:
         SCHEDULE_SURVEY_LINK = (By.ID, "scheduleSurveyLink")
         EXECUTE_SURVEY_LINK = (By.ID, "executeSurveyLink")
         CONFIGURATION_LINK = (By.ID, "configurationLink")
+        
+    class StatisticMenu:
+        BUTTON = (By.ID, "statisticDropdownLink")
+        ONE_TIME_STATISTIC_LINK = (By.ID, "oneTimeStatisticLink")
 
 class QuestionTableSelectors:
     EDIT_QUESTION_LINK = lambda question_id: (By.XPATH, f'//a[@href="fill?id={question_id}"]')
@@ -150,3 +154,10 @@ class NavigationHelper:
             self.utils.click_element(NavigationBarSelectors.SurveysMenu.CONFIGURATION_LINK)
         except Exception as e:
             raise Exception(f"Failed to navigate to 'Configuration': {e}")
+        
+    def navigate_to_one_time_statistic(self):
+        try:
+            self.utils.click_element(NavigationBarSelectors.StatisticMenu.BUTTON)
+            self.utils.click_element(NavigationBarSelectors.StatisticMenu.ONE_TIME_STATISTIC_LINK)
+        except Exception as e:
+            raise Exception(f"Failed to navigate to 'One-Time Statistic': {e}")
