@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class QuestionnaireVersionGroup implements Serializable {
     private Long mainQuestionnaireId;
 
     @OneToMany(mappedBy = "questionnaireVersionGroup", fetch = FetchType.LAZY)
-    private Set<Questionnaire> questionnaires = new HashSet<Questionnaire>();
+    private Set<Questionnaire> questionnaires = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -74,6 +75,10 @@ public class QuestionnaireVersionGroup implements Serializable {
     }
 
     public void setMainQuestionnaire(Questionnaire questionnaire) {
+        if (questionnaire == null){
+            this.mainQuestionnaireId = null;
+            return;
+        }
         if (!questionnaires.contains(questionnaire)) {
             throw new IllegalArgumentException("The questionnaire does not belong to this group.");
         }
@@ -81,13 +86,35 @@ public class QuestionnaireVersionGroup implements Serializable {
     }
 
     public Optional<Questionnaire> getMainQuestionnaire() {
-        if (mainQuestionnaireId == null){
-            return questionnaires.stream()
-                    .min(Comparator.comparingInt(Questionnaire::getVersion));
+        if (questionnaires.isEmpty()){
+            return Optional.empty();
         }
 
+        // Search for the questionnaire marked as "main"
         return questionnaires.stream()
                 .filter(q -> q.getId().equals(mainQuestionnaireId))
                 .findFirst();
+    }
+
+    public Optional<Questionnaire> determineNewMainQuestionnaire() {
+        return questionnaires.stream()
+                .filter(Questionnaire::isApproved) // preferred approved questionnaires
+                .max(Comparator.comparingInt(Questionnaire::getVersion)); // choose the highest version
+    }
+
+    public int getHighestVersionInGroup() {
+        int defaultVersionNumber = 1;
+        return questionnaires.stream()
+                .map(Questionnaire::getVersion)
+                .filter(Objects::nonNull)
+                .max(Integer::compareTo)
+                .orElse(defaultVersionNumber);
+    }
+
+    public boolean isMainQuestionnaire(Questionnaire questionnaire) {
+        if (questionnaire == null || questionnaire.getId() == null) {
+            return false;
+        }
+        return Objects.equals(this.mainQuestionnaireId, questionnaire.getId());
     }
 }

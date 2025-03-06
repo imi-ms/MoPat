@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -68,29 +70,60 @@ public class ReviewService {
     @Autowired
     private Clock clock;
 
-    private static final Comparator<ReviewDTO> REVIEW_COMPARATOR = Comparator
-            .comparing((ReviewDTO review) -> review.getStatus() == ReviewStatus.APPROVED ? 1 : 0)
-            .thenComparing(ReviewDTO::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
+    private static final Comparator<Review> REVIEW_COMPARATOR = Comparator
+            .comparing((Review review) -> review.getStatus() == ReviewStatus.APPROVED ? 1 : 0)
+            .thenComparing(Review::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
 
 
-    public List<ReviewDTO> getAllReviews() {
+    public List<Review> getAllReviews() {
         return reviewDao.getAllElements().stream()
-                .map(reviewDTOMapper)
                 .sorted(REVIEW_COMPARATOR)
+                .toList();
+    }
+
+    public List<ReviewDTO> getAllPendingReviews() {
+        return getAllReviews().stream()
+                .filter(Review::isUnfinished)
+                .map(reviewDTOMapper)
                 .peek(this::addUserDetailsToReviewDTO)
                 .toList();
     }
 
-    public List<ReviewDTO> getAssignedReviews() {
+    public Object getAllCompletedReviews() {
+        return getAllReviews().stream()
+                .filter(Review::isFinished)
+                .map(reviewDTOMapper)
+                .peek(this::addUserDetailsToReviewDTO)
+                .toList();
+    }
+
+    public List<ReviewDTO> getAssignedPendingReviews() {
         Long userId = authService.getAuthenticatedUserId();
 
-        Predicate<ReviewDTO> isAssignedToUser = reviewDTO ->
-                Objects.equals(reviewDTO.getEditorId(), userId) ||
-                        Objects.equals(reviewDTO.getReviewerId(), userId);
+        Predicate<Review> isAssignedToUser = review ->
+                Objects.equals(review.getEditorId(), userId) ||
+                Objects.equals(review.getReviewerId(), userId);
 
         return getAllReviews().stream()
+                .filter(Review::isUnfinished)
                 .filter(isAssignedToUser)
-                .sorted(REVIEW_COMPARATOR)
+                .map(reviewDTOMapper)
+                .peek(this::addUserDetailsToReviewDTO)
+                .toList();
+    }
+
+    public List<ReviewDTO> getAssignedCompletedReviews() {
+        Long userId = authService.getAuthenticatedUserId();
+
+        Predicate<Review> isAssignedToUser = review ->
+                Objects.equals(review.getEditorId(), userId) ||
+                Objects.equals(review.getReviewerId(), userId);
+
+        return getAllReviews().stream()
+                .filter(Review::isFinished)
+                .filter(isAssignedToUser)
+                .map(reviewDTOMapper)
+                .peek(this::addUserDetailsToReviewDTO)
                 .toList();
     }
 
@@ -102,15 +135,26 @@ public class ReviewService {
     }
 
     public List<QuestionnaireDTO> getUnapprovedQuestionnaires() {
+        Set<Long> questionnairesWithRunningReview = reviewDao.getAllElements().stream()
+                .filter(Review::isUnfinished)
+                .map(review -> review.getQuestionnaire().getId())
+                .collect(Collectors.toSet());
         /*
           TODO [LJ]: meaningful sorting? only return the questionnaires that were created by the user?
          */
         return questionnaireService.getAllQuestionnaireDTOs().stream()
                 .filter(questionnaireDTO -> !questionnaireDTO.isApproved())
+                .filter(questionnaireDTO -> !questionnairesWithRunningReview.contains(questionnaireDTO.getId()))
                 .toList();
     }
 
     public  ValidationResult addReview(CreateReviewForm form, Locale locale, HttpServletRequest request) {
+
+        // Check whether the questionnaire is already in the review process
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(form.questionnaireId());
+        if (questionnaire.isUnderReview()) {
+            return failureWithMessage(ValidationResult.REVIEW_ALREADY_EXISTS, locale);
+        }
 
         ValidationResult validationResult = validateAuthenticatedUser(locale);
         if (validationResult.hasErrors()){
@@ -125,11 +169,12 @@ public class ReviewService {
         Long editorId = authService.getAuthenticatedUserId();
         Long reviewerId = form.reviewerId();
 
-        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(form.questionnaireId());
+        questionnaire.setStatusUnderReview();
+        questionnaireService.updateQuestionnaire(questionnaire);
 
         Review review = createReview(questionnaire, editorId, reviewerId, form.description());
         String reviewLink = generateReviewLink(request, review.getId());
-        sendReviewActionMail(reviewerId, questionnaire.getName(), locale, "invitation", form.description(), form.personalMessage(), reviewLink);
+        sendReviewActionMail(reviewerId, questionnaire.getName(), form.language(), "invitation", form.description(), form.personalMessage(), reviewLink);
 
         return successWithMessage("review.success.created", locale, questionnaire.getName());
     }
@@ -163,24 +208,6 @@ public class ReviewService {
         }
     }
 
-    public ValidationResult deleteReviewById(Long reviewId, Locale locale) {
-        ValidationResult validationResult = validateReview(reviewId, locale);
-        if (validationResult.hasErrors()) {
-            return validationResult;
-        }
-
-        validationResult = validateReviewAccess(reviewId, locale);
-        if(validationResult.hasErrors()){
-            return validationResult;
-        }
-
-        Review review = reviewDao.getElementById(reviewId);
-        String questionnaireName = review.getQuestionnaire().getName();
-
-        reviewDao.remove(review);
-        return successWithMessage("review.success.deleted", locale, questionnaireName);
-    }
-
     /*
      * TODO [LJ] Should there be a reviewer role?
      */
@@ -204,7 +231,7 @@ public class ReviewService {
         String reviewLink = generateReviewLink(request, form.reviewId());
         Questionnaire questionnaire = questionnaireService.getQuestionnaireById(reviewDTO.getQuestionnaireId());
 
-        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), locale, "approve", form.description(), form.personalMessage(), reviewLink);
+        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), form.language(), "approve", form.description(), form.personalMessage(), reviewLink);
 
         return successWithMessage("review.success.approved", locale);
     }
@@ -225,7 +252,7 @@ public class ReviewService {
         String reviewLink = generateReviewLink(request, form.reviewId());
         Questionnaire questionnaire = questionnaireService.getQuestionnaireById(reviewDTO.getQuestionnaireId());
 
-        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), locale, "reject", form.description(), form.personalMessage(), reviewLink);
+        sendReviewActionMail(reviewDTO.getEditorId(), questionnaire.getName(), form.language(), "reject", form.description(), form.personalMessage(), reviewLink);
 
         return successWithMessage("review.success.rejected", locale);
     }
@@ -247,7 +274,7 @@ public class ReviewService {
 
         String questionnaireName = review.getQuestionnaire().getName();
         String reviewLink = generateReviewLink(request, review.getId());
-        sendReviewActionMail(review.getReviewerId(), questionnaireName, locale, "resubmit", form.description(), form.personalMessage(), reviewLink);
+        sendReviewActionMail(review.getReviewerId(), questionnaireName, form.language(), "resubmit", form.description(), form.personalMessage(), reviewLink);
 
         return successWithMessage("review.success.resubmitted", locale, questionnaireName);
     }
@@ -274,7 +301,7 @@ public class ReviewService {
         reviewDao.merge(review);
 
         String reviewLink = generateReviewLink(request, review.getId());
-        sendReviewActionMail(form.reviewerId(), review.getQuestionnaire().getName(), locale, "assignReviewer", form.description(), form.personalMessage(), reviewLink);
+        sendReviewActionMail(form.reviewerId(), review.getQuestionnaire().getName(), form.language(), "assignReviewer", form.description(), form.personalMessage(), reviewLink);
 
         return successWithMessage("review.success.newReviewerAssigned", locale);
     }
@@ -320,6 +347,9 @@ public class ReviewService {
             questionnaireVersionGroupService.setMainVersionForGroup(review.getQuestionnaire());
             questionnaireService.approveQuestionnaire(review.getQuestionnaire());
         }
+        if (status == ReviewStatus.APPROVED) {
+            questionnaireService.approveQuestionnaire(review.getQuestionnaire());
+        }
         reviewDao.merge(review);
     }
 
@@ -330,11 +360,11 @@ public class ReviewService {
         }
 
         ReviewDTO reviewDTO = reviewDTOMapper.apply(review);
-        addUserDetailsInConversations(reviewDTO.getConversation());
+        addUserDetailsInConversations(reviewDTO);
         return reviewDTO;
     }
 
-    private void addUserDetailsInConversations(List<ReviewMessageDTO> conversation) {
+    private void addUserDetailsInConversations(ReviewDTO reviewDTO) {
         Map<Long, UserDTO> userMap = userService.getAllUser().stream()
                 .collect(Collectors.toMap(
                         UserDTO::getId,
@@ -342,7 +372,17 @@ public class ReviewService {
                         (existing, replacement) -> existing
                 ));
 
-        for (ReviewMessageDTO reviewMessage : conversation) {
+        UserDTO reviewer = userMap.get(reviewDTO.getReviewerId());
+        UserDTO editor = userMap.get(reviewDTO.getEditorId());
+
+        if (reviewer != null) {
+            reviewDTO.setReviewerName(reviewer.getFirstname() + " " + reviewer.getLastname());
+        }
+        if (editor != null) {
+            reviewDTO.setEditorName(editor.getFirstname() + " " + editor.getLastname());
+        }
+
+        for (ReviewMessageDTO reviewMessage : reviewDTO.getConversation()) {
             UserDTO sender = userMap.get(reviewMessage.getSenderId());
             UserDTO receiver = userMap.get(reviewMessage.getReceiverId());
 
@@ -377,19 +417,6 @@ public class ReviewService {
             return failureWithMessage(ValidationResult.NOT_AUTHENTICATED, locale);
         }
         return ValidationResult.SUCCESS;
-    }
-
-    private ValidationResult failureWithMessage(ValidationResult validationResult, Locale locale, Object... args) {
-        String localizedMessage = messageSource.getMessage(
-                validationResult.getCode(),
-                args,
-                validationResult.getDefaultMessage(),
-                locale
-        );
-        validationResult.setLocalizedMessage(
-                localizedMessage
-        );
-        return validationResult;
     }
 
     private ValidationResult validateUserId(Long reviewerId, Locale locale) {
@@ -427,6 +454,19 @@ public class ReviewService {
         return validationResult;
     }
 
+    private ValidationResult failureWithMessage(ValidationResult validationResult, Locale locale, Object... args) {
+        String localizedMessage = messageSource.getMessage(
+                validationResult.getCode(),
+                args,
+                validationResult.getDefaultMessage(),
+                locale
+        );
+        validationResult.setLocalizedMessage(
+                localizedMessage
+        );
+        return validationResult;
+    }
+
     private String generateReviewLink(HttpServletRequest request, Long reviewId) {
         String baseUrl = getBaseUrl(request);
         Map<String, String> queryParams = Map.of("id", String.valueOf(reviewId));
@@ -436,7 +476,7 @@ public class ReviewService {
     private boolean sendReviewActionMail(
             Long userId,
             String questionnaireName,
-            Locale locale,
+            String localeString,
             String actionType,
             String description,
             String personalMessage,
@@ -444,6 +484,8 @@ public class ReviewService {
     ) {
         UserDTO user = userService.getUserDTOById(userId);
         if (user == null) return false;
+
+        Locale locale = LocaleHelper.getLocaleFromString(localeString);
 
         try {
             // Determine subject and content based on action type
@@ -618,7 +660,47 @@ public class ReviewService {
             return false;
         }
 
-        // Check if the user is the editor of the review
-        return currentUserId.equals(review.getEditorId());
+        // Check if the user is the editor/reviewer of the review
+        return currentUserId.equals(review.getEditorId()) ||
+                currentUserId.equals(review.getReviewerId());
+
+    }
+
+    public void deleteReview(Questionnaire questionnaire) {
+        Locale locale = LocaleContextHolder.getLocale();
+        reviewDao.getAllElements().stream()
+                .filter(review -> review.getQuestionnaire().equals(questionnaire))
+                .map(Review::getId)
+                .forEach(id -> deleteReviewById(id, locale));
+    }
+
+    public ValidationResult deleteReviewById(Long reviewId, Locale locale) {
+
+        ValidationResult validationResult = validateReview(reviewId, locale);
+        if (validationResult.hasErrors()) {
+            return validationResult;
+        }
+        Review review = reviewDao.getElementById(reviewId);
+        Questionnaire questionnaire = review.getQuestionnaire();
+
+        if (review.isUnfinished()) {
+            questionnaire.setStatusDraft();
+            questionnaireService.updateQuestionnaire(questionnaire);
+        }
+
+        reviewDao.remove(review);
+
+        return successWithMessage("review.success.deleted", locale, questionnaire.getName());
+    }
+
+    public void completeReviewIfPresent(Questionnaire questionnaire) {
+        reviewDao.getAllElements().stream()
+                .filter(review -> review.getQuestionnaire().equals(questionnaire))
+                .filter(Review::isUnfinished)
+                .findFirst()
+                .ifPresent(review -> {
+                    review.setStatus(ReviewStatus.APPROVED);
+                    reviewDao.merge(review);
+                });
     }
 }

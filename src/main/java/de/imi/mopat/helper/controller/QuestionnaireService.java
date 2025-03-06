@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -42,12 +43,15 @@ import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
@@ -102,6 +106,9 @@ public class QuestionnaireService {
     
     @Autowired
     private ConditionService conditionService;
+
+    @Autowired
+    private ReviewService reviewService;
     
     @Autowired
     private ConditionDTOMapper conditionDTOMapper;
@@ -310,10 +317,12 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+            newQuestionnaire.setStatusApprove();
+        }
         questionnaireDao.merge(newQuestionnaire);
 
-        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(newQuestionnaire.getName());
-        questionnaireVersionGroupService.addQuestionnaireToGroup(questionnaireVersionGroup, newQuestionnaire);
+        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(newQuestionnaire);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
@@ -336,6 +345,9 @@ public class QuestionnaireService {
         existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
         existingQuestionnaire.setName(questionnaireDTO.getName());
         existingQuestionnaire.setChangedBy(userId);
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+            existingQuestionnaire.setStatusDraft();
+        }
 
         copyLocalizedTextsToQuestionnaire(existingQuestionnaire, questionnaireDTO);
         handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
@@ -361,6 +373,10 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+            newQuestionnaire.setStatusApprove();
+        }
+
         questionnaireDao.merge(newQuestionnaire);
 
         newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
@@ -418,7 +434,7 @@ public class QuestionnaireService {
         Optional<QuestionnaireVersionGroup> groupForQuestionnaire = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
 
         if (groupForQuestionnaire.isPresent()) {
-            int maxVersionInGroup = questionnaireVersionGroupService.findMaxVersionInGroup(groupForQuestionnaire.get());
+            int maxVersionInGroup = groupForQuestionnaire.get().getHighestVersionInGroup();
             version = maxVersionInGroup + 1;
         } else {
             version = existingQuestionnaire.getVersion() + 1;
@@ -648,7 +664,7 @@ public class QuestionnaireService {
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
         Optional<QuestionnaireVersionGroup> group = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
         if (group.isPresent()) {
-            return questionnaireVersionGroupService.findMaxVersionInGroup(group.get()) + 1;
+            return group.get().getHighestVersionInGroup() + 1;
         } else {
             return existingQuestionnaire.getVersion() + 1;
         }
@@ -823,7 +839,50 @@ public class QuestionnaireService {
     }
 
     public void approveQuestionnaire(Questionnaire questionnaire) {
-        questionnaire.approve();
+        questionnaire.setStatusApprove();
+        questionnaireDao.merge(questionnaire);
+    }
+
+    public void disapproveQuestionnaire(Long questionnaireId, Locale locale) {
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)){
+            throw new AccessDeniedException(
+                    messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
+        }
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        if (questionnaire == null){
+            throw new EntityNotFoundException(messageSource.getMessage(
+                    "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
+        }
+        if (!questionnaire.isApproved()){
+            throw new IllegalStateException(messageSource.getMessage(
+                    "questionnaire.error.notApproved", null, locale));
+        }
+
+        if (isQuestionnairePartOfEnabledBundle(questionnaire)){
+            throw new IllegalStateException(messageSource.getMessage(
+                    "questionnaire.error.enabledBundle", new Object[]{questionnaire.getName()}, locale));
+        }
+        questionnaire.setStatusDraft();
+        questionnaireDao.merge(questionnaire);
+
+    }
+
+    public void approveQuestionnaire(Long questionnaireId, Locale locale) {
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)){
+            throw new AccessDeniedException(
+                    messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
+        }
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        if (questionnaire == null){
+            throw new EntityNotFoundException(messageSource.getMessage(
+                    "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
+        }
+        questionnaire.setStatusApprove();
+        questionnaireDao.merge(questionnaire);
+        reviewService.completeReviewIfPresent(questionnaire);
+    }
+
+    public void updateQuestionnaire(Questionnaire questionnaire) {
         questionnaireDao.merge(questionnaire);
     }
 }

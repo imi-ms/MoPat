@@ -7,7 +7,7 @@
         <!-- Review Details -->
         <div class="form-group">
             <label for="questionnaire" th:text="${messages.get(#locale, 'review.details.label.questionnaire', 'Questionnaire')}"></label>
-            <div id="questionnaire" class="form-control bg-light">
+            <div id="questionnaire" class="form-control">
                 <a
                     th:href="@{/questionnaire/fill?id=__${review.getQuestionnaireId()}__}"
                     th:text="${review.getQuestionnaireName()}"
@@ -15,6 +15,13 @@
                     target="_blank"
                     rel="noopener noreferrer"
                 ></a>
+            </div>
+        </div>
+
+        <!-- Editor Name -->
+        <div class="form-group">
+            <label for="editor" th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}"></label>
+            <div id="editor" class="form-control" th:text="${review.editorName}">
             </div>
         </div>
 
@@ -26,7 +33,7 @@
                         id="reviewer"
                         name="reviewId"
                         class="form-control"
-                        th:disabled="${!isReviewer}"
+                        th:disabled="${!isReviewer || currentUserId == review.editorId}"
                         onchange="handleReviewerChange()"
                         th:data-current-reviewer-id="${review.reviewerId}">
                     <option
@@ -93,7 +100,8 @@
             <input type="hidden" name="reviewId" th:value="${review.id}" th:field="*{reviewId}"/>
             <input type="hidden" id="hiddenReviewerId" name="reviewerId" value="">
 
-            <div id="approvalAndMainVersionContainer" sec:authorize="hasRole('ROLE_ADMIN')">
+            <div id="approvalAndMainVersionContainer" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
+                 sec:authorize="hasRole('ROLE_ADMIN')">
                 <div class="form-group">
 
                     <label for="approvalOptions" class="form-label d-block mb-2" 
@@ -146,6 +154,21 @@
                 </div>
             </div>
 
+            <!-- Select mail language -->
+            <div class="form-group">
+                <label class="required"
+                       for="language"
+                       th:text="${messages.get(#locale, 'review.create.label.language', 'Language')}"
+                       th:title="${messages.get(#locale, 'review.create.label.language.title', 'Select mail language')}"
+                ></label>
+                <select id="language" name="language" class="form-control" th:field="*{language}">
+                    <option value="en_GB" th:selected="${language == 'en_GB'}">English (GB)</option>
+                    <option value="de_DE" th:selected="${language == 'de_DE'}">Deutsch (DE)</option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('language')}" th:errors="*{language}"></div>
+            </div>
+
+            <!-- Description of the changes -->
             <div class="form-group">
                 <label for="description" 
                     id="descriptionLabel" 
@@ -164,6 +187,7 @@
                 <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
             </div>
 
+            <!-- Personal message -->
             <div class="form-group">
                 <label for="personalMessage" th:text="${messages.get(#locale, 'review.label.personalMessage', 'Personal Message (Email only)')}"></label>
                 <textarea
@@ -176,8 +200,32 @@
                 <div class="text-danger" th:if="${#fields.hasErrors('personalMessage')}" th:errors="*{personalMessage}"></div>
             </div>
 
+            <!-- Preview area -->
+            <div>
+                <div id="previewArea" style="display: none; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+                    <h4 th:text="${messages.get(#locale, 'review.create.label.previewArea', 'Preview')}"></h4>
+                    <!-- Subject -->
+                    <div class="form-group">
+                        <label th:text="${messages.get(#locale, 'review.create.label.previewSubject', 'Subject')}"></label>
+                        <pre
+                                id="previewSubject"
+                                style="white-space: pre; padding: 10px; overflow-x: auto;"
+                        ></pre>
+                    </div>
+                    <!-- Content -->
+                    <div class="form-group">
+                        <label th:text="${messages.get(#locale, 'review.create.label.previewContent', 'Content')}"></label>
+                        <pre
+                                id="previewContent"
+                                style="white-space: pre; padding: 10px; overflow-x: auto;"
+                        ></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- Reviewer -->
-            <div id="approvalButtonGroup" class="mt-3" sec:authorize="hasRole('ROLE_ADMIN')">
+            <div id="approvalButtonGroup" class="mt-3" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
+                 sec:authorize="hasRole('ROLE_ADMIN')">
                 <div id="submitApproveContainer">
                     <button
                         type="submit"
@@ -186,6 +234,7 @@
                         value="approve"
                         th:text="${messages.get(#locale, 'review.details.button.approve', 'Submit approve')}">
                     </button>
+                    <button type="button" class="btn btn-primary preview-button" data-action="approve" th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"></button>
                 </div>
                 <div id="submitRejectContainer" style="display: none;">
                     <button
@@ -195,8 +244,9 @@
                         value="reject"
                         th:text="${messages.get(#locale, 'review.details.button.reject', 'Submit rejection')}">
                     </button>
+                    <button type="button" class="btn btn-primary preview-button" data-action="reject" th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"></button>
                 </div>
-            </div>                
+            </div>
 
             <!-- assign new reviewer-->
             <div id="assign-button" style="display: none;">
@@ -207,10 +257,11 @@
                         value="assignReviewer"
                         th:text="${messages.get(#locale, 'review.details.label.assignReviewer', 'Assign New Reviewer')}">
                 </button>
+                <button type="button" class="btn btn-primary preview-button" data-action="assignReviewer" th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"></button>
             </div>
 
             <!-- Button for Edtitor -->
-            <div class="mt-3" sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN')">
+            <div class="mt-3" th:if="${currentUserId == review.editorId}">
                 <button
                     type="submit"
                     class="btn btn-primary w-45"
@@ -218,6 +269,7 @@
                     value="review"
                     th:text="${messages.get(#locale, 'review.details.label.resubmitReview', 'Resubmit')}">
                 </button>
+                <button type="button" class="btn btn-primary preview-button" data-action="resubmit" th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"></button>
             </div>
         </form>
     </div>
@@ -234,6 +286,45 @@
             });
         }
     });
+
+    document.querySelectorAll(".preview-button").forEach(button => {
+        button.addEventListener("click", function () {
+            const language = document.getElementById("language")?.value || "default";
+            const questionnaireName = document.querySelector("#questionnaire a")?.textContent.trim() || "";
+            const description = document.getElementById("description")?.value.trim() || "";
+            const personalMessage = document.getElementById("personalMessage")?.value.trim() || "";
+            const action = this.getAttribute("data-action");
+
+            // Encode data into URL parameters
+            const params = new URLSearchParams({
+                language: language,
+                action: action,
+                questionnaireName: questionnaireName,
+                description: description,
+                personalMessage: personalMessage
+            });
+
+            // Fetch the preview data
+            fetch(`/review/preview-email?${params}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to load email preview");
+                    }
+                    return response.json();
+                })
+                .then(preview => {
+                    // Update the preview fields
+                    document.getElementById("previewSubject").textContent = preview.subject;
+                    document.getElementById("previewContent").textContent = preview.content;
+                    document.getElementById("previewArea").style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Failed to load email preview. Please try again.");
+                });
+        });
+    });
+
 
     function handleReviewerChange() {
         const reviewerSelect = document.getElementById("reviewer");

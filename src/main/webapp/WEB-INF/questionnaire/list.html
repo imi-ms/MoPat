@@ -43,9 +43,10 @@
 			>
 				<colgroup>
 					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
+					<col width="17%" />
+					<col width="17%" />
 					<col width="22%" />
+					<col width="6%" />
 					<col width="18%" />
 				</colgroup>
 				<thead>
@@ -63,6 +64,9 @@
 						<th
 							th:text="${messages.get(#locale, 'questionnaire.label.containedInBundles', 'Contained in bundles:')}"
 						></th>
+						<th
+								th:text="${messages.get(#locale, 'questionnaire.label.status', 'Status')}">
+						</th>
 						<th
 							data-priority="2"
 							class="actionColumn"
@@ -124,6 +128,22 @@
 											</li>
 										</th:block>
 									</ul>
+								</td>
+								<td style="text-align: left">
+									<a th:if="${item.isDraft()}"
+									   class="badge bg-warning rounded-pill text-dark ms-2 text-decoration-none"
+									   th:href="@{/review/create(questionnaireId=${item.id})}"
+									   th:title="${messages.get(#locale, 'questionnaire.requestReview', 'Request Review')}">
+										<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
+									</a>
+									<span th:if="${item.isUnderReview()}"
+										  class="badge bg-info rounded-pill text-dark ms-2 text-decoration-none">
+                        				<th:block th:text="${messages.get(#locale, 'questionnaire.status.underReview', 'Under Review')}" />
+                    				</span>
+									<span th:if="${item.isApproved()}"
+										  class="badge bg-success rounded-pill text-white ms-2 text-decoration-none">
+										<th:block th:text="${messages.get(#locale, 'questionnaire.status.approved', 'Approved')}" />
+									</span>
 								</td>
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
@@ -203,6 +223,22 @@
 													>
 												</div>
 											</div>
+											<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+												<a class="link approveQuestionnaireLink"
+												   th:if="${!item.isApproved()}"
+												   th:href="@{/questionnaire/approve(id=${item.id})}">
+													<i class="bi bi-check-circle-fill"
+													th:title="${messages.get(#locale, 'questionnaire.button.approve', 'Approve questionnaire')}"
+													></i>
+												</a>
+												<a class="link disapproveQuestionnaireLink"
+												   th:if="${item.isApproved()}"
+												   th:href="@{/questionnaire/disapprove(id=${item.id})}">
+													<i class="bi bi-x-circle-fill"
+													   th:title="${messages.get(#locale, 'questionnaire.button.disapprove', 'Disapprove questionnaire')}"
+													></i>
+												</a>
+											</th:block>
 											<a
 												class="link removeQuestionnaireLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}"
@@ -250,6 +286,19 @@
 													th:href="@{/score/list?id=__${item.id}__}"
 													th:text="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
 												></a>
+												<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+													<a
+															class="link"
+															th:if="${!item.isApproved()}"
+															th:href="@{/questionnaire/approve(id=${item.id})}"
+															th:text="${messages.get(#locale, 'questionnaire.button.approve', 'Approve Questionnaire')}"
+													></a>
+													<a class="link"
+													   th:if="${item.isApproved()}"
+													   th:href="@{/questionnaire/disapprove(id=${item.id})}"
+													   th:text="${messages.get(#locale, 'questionnaire.button.approve', 'Disapprove Questionnaire')}"
+													></a>
+												</th:block>
 												<a
 													class="link"
 													th:attr="data-hasConditions=${item.isHasConditions()}"
@@ -362,5 +411,25 @@
 				e.preventDefault();
 			}
 		});
+
+
+    function disapproveQuestionnaire(questionnaireId) {
+        if (!confirm('Are you sure you want to disapprove this questionnaire?')) {
+            return;
+        }
+
+        fetch(`/questionnaire/disapprove?id=${questionnaireId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Aktualisiert die Seite nach Disapprove
+            } else {
+                alert('Error disapproving questionnaire.');
+            }
+        })
+        .catch(error => alert('Request failed: ' + error));
+    }
 	</script>
 </th:block>

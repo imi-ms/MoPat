@@ -11,7 +11,6 @@ import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
@@ -20,7 +19,6 @@ import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.FHIRHelper;
 import de.imi.mopat.helper.controller.FHIRToMoPatConverter;
-import de.imi.mopat.helper.controller.GraphicsUtilities;
 import de.imi.mopat.helper.controller.ImportQuestionnaireResult;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ODMProcessingBean;
@@ -28,6 +26,7 @@ import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
@@ -56,16 +55,14 @@ import de.imi.mopat.model.score.Operator;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.user.User;
-import de.imi.mopat.validator.MoPatValidator;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.QuestionValidator;
-import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionFormDef;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionMetaDataVersion;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -84,7 +81,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -161,6 +157,9 @@ public class QuestionnaireController {
 
     @Autowired
     private ODMProcessingBean odmReader;
+
+    @Autowired
+    private ReviewService reviewService;
 
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
@@ -370,6 +369,7 @@ public class QuestionnaireController {
                     bundleDao.merge(bundle);
                 }
                 questionnaire.removeAllBundleQuestionnaires();
+                reviewService.deleteReview(questionnaire);
                 questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
                 questionnaireDao.remove(questionnaire);
                 model.addAttribute("messageSuccess",
@@ -652,13 +652,13 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + new Timestamp(new Date().getTime()));
                 }
-
+                if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                    questionnaire.setStatusApprove();
+                }
                 questionnaireDao.merge(questionnaire);
 
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                 questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 //Loop through all persisted questions to get the
                 // imageAnswers and save the images
@@ -818,12 +818,13 @@ public class QuestionnaireController {
                                             questionnaire.getName() + " " + dateFormat.format(
                                                 calendar.getTime()));
                                     }
+                                    if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                                        questionnaire.setStatusApprove();
+                                    }
                                     questionnaireDao.merge(questionnaire);
 
-                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                                     questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                                    questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                                    questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         exportTemplate.setQuestionnaire(questionnaire);
@@ -996,14 +997,15 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + dateFormat.format(new Date()));
                 }
+                if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                    questionnaire.setStatusApprove();
+                }
 
                 // Merge questionnaire
                 questionnaireDao.merge(questionnaire);
 
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                 questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 // Merge the export templates
                 for (ExportTemplate exportTemplate : exportTemplates) {
@@ -1041,4 +1043,35 @@ public class QuestionnaireController {
         }
         return "questionnaire/import/result";
     }
+
+    @RequestMapping("/questionnaire/disapprove")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String disapproveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                          RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.disapproveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.disapproved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
+    @RequestMapping("/questionnaire/approve")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String approveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                       RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.approveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.approved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
 }

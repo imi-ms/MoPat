@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -49,7 +51,7 @@ public class QuestionnaireDTO {
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
     private int version;
-    private Boolean isApproved = false;
+    private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
 
     @JsonIgnore
     private Set<ExportTemplate> exportTemplates = new HashSet<>();
@@ -197,10 +199,18 @@ public class QuestionnaireDTO {
     }
 
     public Boolean isApproved() {
-        return isApproved;
+        return approvalStatus.equals(ApprovalStatus.APPROVED);
     }
 
-    public void setIsApproved(Boolean isApproved) {
-        this.isApproved = isApproved;
+    public boolean isDraft() {
+        return this.approvalStatus == ApprovalStatus.DRAFT;
+    }
+
+    public boolean isUnderReview() {
+        return this.approvalStatus == ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public void setApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 }

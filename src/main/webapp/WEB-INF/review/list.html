@@ -22,7 +22,7 @@
 			</div>
 		</th:block>
 
-		<!-- Tabs for Assigned and All Reviews -->
+		<!-- Tabs for Assigned Reviews -->
 		<ul
 			class="nav nav-tabs"
 			id="reviewTabs"
@@ -42,7 +42,8 @@
 					<th:block th:text="${messages.get(#locale, 'review.list.label.assignedReviews', 'Assigned Reviews')}"/>
 				</button>
 			</li>
-			<li class="nav-item" role="presentation">
+			<!-- Tabs for All Reviews -->
+			<li class="nav-item" role="presentation" sec:authorize="hasRole('ROLE_ADMIN')">
 				<button
 					class="nav-link"
 					id="all-reviews-tab"
@@ -55,6 +56,12 @@
 				>
 					<th:block th:text="${messages.get(#locale, 'review.list.label.allReviews', 'All Reviews')}"/>
 				</button>
+			</li>
+			<!--Tab for Completed Reviews -->
+			<li class="nav-item" role="presentation">
+				<a class="nav-link" id="completed-reviews-tab" href="/review/completed">
+					<th:block th:text="${messages.get(#locale, 'review.list.label.completedReviews', 'Completed Reviews')}"/>
+				</a>
 			</li>
 		</ul>
 

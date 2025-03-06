@@ -5,16 +5,11 @@ import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
-import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class QuestionnaireVersionGroupService {
@@ -35,38 +30,19 @@ public class QuestionnaireVersionGroupService {
      * Creates a new questionnaire version group where the name of the group is always
      * the same as the name of the questionnaire for which the group is being created.
      *
-     * @param name the name of the questionnaire, which will also be the name of the group
+     * @param questionnaire the questionnaire for which a new group will be created
      * @return the newly created QuestionnaireVersionGroup
      */
-    public QuestionnaireVersionGroup createQuestionnaireGroup(String name) {
+    public QuestionnaireVersionGroup getOrCreateQuestionnaireGroup(Questionnaire questionnaire) {
+        if (questionnaire.getQuestionnaireVersionGroupId() != null){
+            return questionnaire.getQuestionnaireVersionGroup();
+        }
         QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
-        questionnaireVersionGroup.setName(name);
+        questionnaireVersionGroup.setName(questionnaire.getName());
+        questionnaireVersionGroup.addQuestionnaire(questionnaire);
+        questionnaireVersionGroup.setMainQuestionnaire(questionnaire);
         questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
         return questionnaireVersionGroup;
-    }
-
-    /**
-     * Creates a new questionnaire group or finds an existing one based on the QuestionnaireDTO.
-     * If the DTO contains a valid group ID, the corresponding group is retrieved. If not,
-     * a new group is created with the name provided in the DTO.
-     *
-     * @param questionnaireDTO the DTO containing questionnaire group details
-     * @return the existing or newly created QuestionnaireVersionGroup
-     */
-    public QuestionnaireVersionGroup createOrFindQuestionnaireGroup(QuestionnaireDTO questionnaireDTO) {
-        if (questionnaireDTO.getQuestionnaireVersionGroupId() != null) {
-            return getQuestionnaireGroupById(questionnaireDTO.getQuestionnaireVersionGroupId()).orElseGet(() -> {
-                QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
-                newGroup.setName(questionnaireDTO.getName());
-                questionnaireVersionGroupDao.merge(newGroup);
-                return newGroup;
-            });
-        } else {
-            QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
-            newGroup.setName(questionnaireDTO.getName());
-            questionnaireVersionGroupDao.merge(newGroup);
-            return newGroup;
-        }
     }
 
     /**
@@ -95,50 +71,6 @@ public class QuestionnaireVersionGroupService {
                 .findFirst();
     }
 
-    public int findMaxVersionInGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
-        return questionnaireVersionGroup.getQuestionnaires().stream()
-                .map(Questionnaire::getVersion)
-                .max(Integer::compareTo)
-                .orElse(1);
-    }
-
-    public Set<Long> getAllGroupIds() {
-        return questionnaireVersionGroupDao.getAllElements().stream()
-                .map(QuestionnaireVersionGroup::getId)
-                .collect(Collectors.toSet());
-    }
-
-    public List<QuestionnaireVersionGroup> getQuestionnaireGroups(Set<Long> groupIds) {
-        return groupIds.stream()
-                .map(this::getQuestionnaireGroupById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieves all unique group IDs.
-     *
-     * @return a set of all unique group IDs
-     */
-    public Set<Long> getAllUniqueGroupIds() {
-        return questionnaireVersionGroupDao.getAllElements().stream()
-                .map(QuestionnaireVersionGroup::getId)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Retrieves all QuestionnaireGroupDTOs.
-     *
-     * @return a list of all QuestionnaireGroupDTOs
-     */
-    public List<QuestionnaireVersionGroupDTO> getAllQuestionnaireGroupDTOs() {
-        return questionnaireVersionGroupDao.getAllElements().stream()
-                .map(questionnaireGroupDTOMapper)
-                .sorted(Comparator.comparing(QuestionnaireVersionGroupDTO::getGroupName))
-                .toList();
-    }
-
     /**
      * Validates that the provided questionnaires are not null.
      *
@@ -150,14 +82,6 @@ public class QuestionnaireVersionGroupService {
                 throw new IllegalArgumentException("Questionnaires must not be null");
             }
         }
-    }
-
-    public List<QuestionnaireVersionGroup> getAllQuestionnaireGroups() {
-        return questionnaireVersionGroupDao.getAllElements();
-    }
-
-    public void add(QuestionnaireVersionGroup questionnaireVersionGroup) {
-        questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
     }
 
     /**
@@ -188,6 +112,12 @@ public class QuestionnaireVersionGroupService {
         }
 
         QuestionnaireVersionGroup questionnaireVersionGroup = optionalGroup.get();
+
+        if (questionnaireVersionGroup.isMainQuestionnaire(questionnaire)) {
+            questionnaireVersionGroup.setMainQuestionnaire(
+                    questionnaireVersionGroup.determineNewMainQuestionnaire().orElse(null)
+            );
+        }
 
         // Remove the questionnaire from the group if it exists
         Set<Questionnaire> questionnairesInGroup = questionnaireVersionGroup.getQuestionnaires();

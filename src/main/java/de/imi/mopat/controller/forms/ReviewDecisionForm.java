@@ -10,5 +10,12 @@ public record ReviewDecisionForm(
         String description,
         String personalMessage,
         Boolean isMainVersion,
-        Long reviewerId
-){}
+        Long reviewerId,
+        String language
+){
+    public ReviewDecisionForm {
+        if (language == null || language.isBlank()) {
+            language = "de_DE";
+        }
+    }
+}

@@ -5,6 +5,7 @@ import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.enumeration.QuestionType;
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import de.imi.mopat.model.score.Score;
 
 import java.io.Serializable;
@@ -26,6 +27,8 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -138,8 +141,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
 
-    @Column(name = "is_approved", nullable = false)
-    private Boolean is_approved = false;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status", nullable = false)
+    private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
 
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
@@ -861,15 +866,38 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
     }
 
+    public ApprovalStatus getApprovalStatus() {
+        return approvalStatus;
+    }
+
     public Boolean isApproved() {
-        return is_approved;
+        return approvalStatus.equals(ApprovalStatus.APPROVED);
     }
 
-    public void approve() {
-        this.is_approved = true;
+    public boolean isDraft() {
+        return this.approvalStatus == ApprovalStatus.DRAFT;
     }
 
-    public void disapprove() {
-        this.is_approved = false;
+    public boolean isUnderReview() {
+        return this.approvalStatus == ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public void setStatusApprove() {
+        this.approvalStatus = ApprovalStatus.APPROVED;
+    }
+
+    public void setStatusDraft() {
+        this.approvalStatus = ApprovalStatus.DRAFT;
+    }
+
+    public void setStatusUnderReview() {
+        this.approvalStatus = ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public boolean isMainQuestionnaire() {
+        if (questionnaireVersionGroup == null){
+            return false;
+        }
+        return questionnaireVersionGroup.isMainQuestionnaire(this);
     }
 }

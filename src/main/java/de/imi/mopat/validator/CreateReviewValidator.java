@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import de.imi.mopat.controller.forms.CreateReviewForm;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -37,6 +38,11 @@ public class CreateReviewValidator implements Validator {
         Questionnaire questionnaire = questionnaireDao.getElementById(form.questionnaireId());
         if (questionnaire == null) {
             addError(errors, "questionnaireId", "review.error.questionnaire.not.found");
+            return;
+        }
+
+        if (questionnaire.isUnderReview()) {
+            addError(errors, "questionnaireId", "review.error.questionnaire.alreadyUnderReview");
             return;
         }
 

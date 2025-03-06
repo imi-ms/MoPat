@@ -129,4 +129,12 @@ public class ReviewDTO {
     public List<ReviewMessageDTO> getConversation() {
         return conversation;
     }
+
+    public boolean isUnfinished() {
+        return status.isUnfinished();
+    }
+
+    public boolean isFinished() {
+        return status.isFinished();
+    }
 }

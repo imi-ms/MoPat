@@ -43,15 +43,25 @@ public class ReviewController {
     @RequestMapping(value = "/review/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listReview(final Model model) {
-        model.addAttribute("allReviews", reviewService.getAllReviews());
-        model.addAttribute("assignedReviews", reviewService.getAssignedReviews());
+        model.addAttribute("allReviews", reviewService.getAllPendingReviews());
+        model.addAttribute("assignedReviews", reviewService.getAssignedPendingReviews());
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         return "review/list";
+    }
+
+    @RequestMapping(value = "/review/completed", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ROLE_EDITOR')")
+    public String listArchivedReviews(final Model model) {
+        model.addAttribute("allReviews", reviewService.getAllCompletedReviews());
+        model.addAttribute("assignedReviews", reviewService.getAssignedCompletedReviews());
+        model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
+        return "review/completed";
     }
 
     @GetMapping("review/create")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showCreateReviewForm(@RequestParam(value = "language", required = false) final Locale language,
+                                       @RequestParam(value = "questionnaireId", required = false) final Long questionnaireId,
                                        Model model) {
 
         Locale currentLanguage = Optional.ofNullable(language).orElse(LocaleContextHolder.getLocale());
@@ -62,7 +72,7 @@ public class ReviewController {
         model.addAttribute("questionnaires", reviewService.getUnapprovedQuestionnaires());
 
         if (!model.containsAttribute("createReviewForm")) {
-            model.addAttribute("createReviewForm", new CreateReviewForm(null, null, null, null, null));
+            model.addAttribute("createReviewForm", new CreateReviewForm(questionnaireId, null, null, null, null));
         }
         return "review/create";
     }
@@ -77,7 +87,7 @@ public class ReviewController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("createReviewForm", form);
-            return showCreateReviewForm(null, model);
+            return showCreateReviewForm(null, null, model);
         }
 
         Locale locale = LocaleContextHolder.getLocale();
@@ -90,7 +100,9 @@ public class ReviewController {
     }
 
     @RequestMapping(value = "review/details", method = RequestMethod.GET)
-    public String getReviewById(@RequestParam Long id, Model model) {
+    @PreAuthorize("@reviewService.canModifyReview(#id)")
+    public String getReviewById(@RequestParam(value = "language", required = false) final Locale language,
+                                @RequestParam Long id, Model model) {
 
         Locale locale = LocaleContextHolder.getLocale();
         ValidationResult validatedReview = reviewService.validateReview(id, locale);
@@ -101,14 +113,16 @@ public class ReviewController {
         }
 
         ReviewDTO reviewDTO = reviewService.getReviewById(id);
+        Locale currentLanguage = Optional.ofNullable(language).orElse(LocaleContextHolder.getLocale());
 
+        model.addAttribute("language", currentLanguage);
         model.addAttribute("isReviewer", reviewService.isUserReviewer());
         model.addAttribute("reviewers", reviewService.getAllReviewers());
         model.addAttribute("review", reviewDTO);
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
 
         if (!model.containsAttribute("reviewDecisionForm")) {
-            model.addAttribute("reviewDecisionForm", new ReviewDecisionForm(id, null, null, null, false, null));
+            model.addAttribute("reviewDecisionForm", new ReviewDecisionForm(id, null, null, null, false, null, null));
         }
         return "review/details";
     }
@@ -122,7 +136,7 @@ public class ReviewController {
                                      final HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("reviewDecisionForm", form);
-            return getReviewById(form.reviewId(), model);
+            return getReviewById(null, form.reviewId(), model);
         }
 
         Locale locale = LocaleContextHolder.getLocale();
@@ -161,7 +175,6 @@ public class ReviewController {
 
         Locale locale = LocaleContextHolder.getLocale();
         ValidationResult validationResult = reviewService.deleteReviewById(id, locale);
-
         redirectAttributes.addFlashAttribute(
                 validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
         );
