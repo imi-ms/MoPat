@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/review")
 public class ReviewController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ReviewController.class);
@@ -40,25 +41,25 @@ public class ReviewController {
     @Autowired
     AuthService authService;
 
-    @RequestMapping(value = "/review/list", method = RequestMethod.GET)
+    @GetMapping("/pending/list")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listReview(final Model model) {
         model.addAttribute("allReviews", reviewService.getAllPendingReviews());
         model.addAttribute("assignedReviews", reviewService.getAssignedPendingReviews());
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        return "review/list";
+        return "review/pending-list";
     }
 
-    @RequestMapping(value = "/review/completed", method = RequestMethod.GET)
+    @GetMapping("/completed/list")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listArchivedReviews(final Model model) {
         model.addAttribute("allReviews", reviewService.getAllCompletedReviews());
         model.addAttribute("assignedReviews", reviewService.getAssignedCompletedReviews());
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
-        return "review/completed";
+        return "review/completed-list";
     }
 
-    @GetMapping("review/create")
+    @GetMapping("/create")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showCreateReviewForm(@RequestParam(value = "language", required = false) final Locale language,
                                        @RequestParam(value = "questionnaireId", required = false) final Long questionnaireId,
@@ -77,7 +78,7 @@ public class ReviewController {
         return "review/create";
     }
 
-    @PostMapping("review/create")
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String createReview(@Valid @ModelAttribute("createReviewForm") CreateReviewForm form,
                                BindingResult bindingResult,
@@ -96,10 +97,10 @@ public class ReviewController {
         redirectAttributes.addFlashAttribute(
                 validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
         );
-        return "redirect:/review/list";
+        return "redirect:/review/pending/list";
     }
 
-    @RequestMapping(value = "review/details", method = RequestMethod.GET)
+    @GetMapping("/pending/details")
     @PreAuthorize("@reviewService.canModifyReview(#id)")
     public String getReviewById(@RequestParam(value = "language", required = false) final Locale language,
                                 @RequestParam Long id, Model model) {
@@ -124,10 +125,33 @@ public class ReviewController {
         if (!model.containsAttribute("reviewDecisionForm")) {
             model.addAttribute("reviewDecisionForm", new ReviewDecisionForm(id, null, null, null, false, null, null));
         }
-        return "review/details";
+        return "review/pending-details";
     }
 
-    @PostMapping("/review/details")
+    @GetMapping("/completed/details")
+    @PreAuthorize("@reviewService.canModifyReview(#id)")
+    public String getCompletedReviewById(@RequestParam(value = "language", required = false) final Locale language,
+                                @RequestParam Long id, Model model) {
+
+        Locale locale = LocaleContextHolder.getLocale();
+        ValidationResult validatedReview = reviewService.validateReview(id, locale);
+
+        if (validatedReview.hasErrors()) {
+            model.addAttribute("messageFail", validatedReview.getLocalizedMessage());
+            return "review/list";
+        }
+
+        ReviewDTO reviewDTO = reviewService.getReviewById(id);
+        Locale currentLanguage = Optional.ofNullable(language).orElse(LocaleContextHolder.getLocale());
+
+        model.addAttribute("language", currentLanguage);
+        model.addAttribute("review", reviewDTO);
+        model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
+
+        return "review/completed-details";
+    }
+
+    @PostMapping("/details")
     @PreAuthorize("@reviewService.canModifyReview(#form.reviewId)")
     public String handleReviewAction(@Valid @ModelAttribute("reviewDecisionForm") ReviewDecisionForm form,
                                      BindingResult bindingResult,
@@ -159,15 +183,15 @@ public class ReviewController {
                  * TODO [LJ] message for this?
                  */
                 redirectAttributes.addFlashAttribute("messageFail", "Invalid action: "+form.action());
-                return "redirect:/review/list";
+                return "redirect:/review/pending/list";
         }
         redirectAttributes.addFlashAttribute(
                 validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
         );
-        return "redirect:/review/list";
+        return "redirect:/review/pending/list";
     }
 
-    @RequestMapping(value = "/review/remove")
+    @RequestMapping(value = "/remove")
     @PreAuthorize("@reviewService.canModifyReview(#id)")
     public String removeReview(@RequestParam(value = "id", required = true) final Long id,
                                final Model model,
@@ -178,7 +202,7 @@ public class ReviewController {
         redirectAttributes.addFlashAttribute(
                 validationResult.hasNoErrors() ? "messageSuccess" : "messageFail", validationResult.getLocalizedMessage()
         );
-        return "redirect:/review/list";
+        return "redirect:/review/pending/list";
     }
 
     /**
@@ -192,7 +216,7 @@ public class ReviewController {
      * @param personalMessage An optional personal message to be included in the email.
      * @return A `ResponseEntity` containing a map with `subject` and `content` keys for the email preview.
      */
-    @GetMapping("/review/preview-email")
+    @GetMapping("/preview-email")
     public ResponseEntity<Map<String, String>> getEmailPreview(
             @RequestParam String language,
             @RequestParam String action,

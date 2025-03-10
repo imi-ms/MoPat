@@ -1,6 +1,6 @@
 <th:block
 		layout:decorate="~{layout/main}"
-		th:with="title=${messages.get(#locale, 'review.list.label.heading', 'Questionnaire reviews')}"
+		th:with="title=${messages.get(#locale, 'review.pending.list.label.heading', 'Pending Questionnaire reviews')}"
 		xmlns:th="http://www.w3.org/1999/xhtml">
 	<th:block layout:fragment="content">
 
@@ -59,8 +59,8 @@
 			</li>
 			<!--Tab for Completed Reviews -->
 			<li class="nav-item" role="presentation">
-				<a class="nav-link" id="completed-reviews-tab" href="/review/completed">
-					<th:block th:text="${messages.get(#locale, 'review.list.label.completedReviews', 'Completed Reviews')}"/>
+				<a class="nav-link" id="completed-reviews-tab" href="/review/completed/list">
+					<th:block th:text="${messages.get(#locale, 'review.pending.list.label.completedReviews', 'Completed Reviews')}"/>
 				</a>
 			</li>
 		</ul>
@@ -135,7 +135,7 @@
 											<!-- Remove-Button -->
 											<a
 													class="btn btn-sm btn-danger"
-													th:href="@{remove?id=__${item.id}__}"
+													th:href="@{/review/remove?id=__${item.id}__}"
 													th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
 											>
 												<i class="bi-trash"></i>
@@ -153,7 +153,7 @@
 				<!-- Create Review Button -->
 				<div class="d-flex justify-content-start mt-3">
 					<a
-							href="create"
+							href="/review/create"
 							class="btn btn-primary"
 							id="createReviewAssigned"
 							th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
@@ -230,7 +230,7 @@
 											<!-- Remove-Button -->
 											<a
 													class="btn btn-sm btn-danger"
-													th:href="@{remove?id=__${item.id}__}"
+													th:href="@{/review/remove?id=__${item.id}__}"
 													th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
 											>
 												<i class="bi-trash"></i>
@@ -247,7 +247,7 @@
 				<!-- Create Review Button -->
 				<div class="d-flex justify-content-start mt-3">
 					<a
-							href="create"
+							href="/review/create"
 							class="btn btn-primary"
 							id="createReviewAll"
 							th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
