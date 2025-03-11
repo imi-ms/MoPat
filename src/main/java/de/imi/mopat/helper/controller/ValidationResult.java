@@ -8,6 +8,7 @@ public enum ValidationResult {
     UNAUTHORIZED("review.error.unauthorized", "You are not authorized to perform this action."),
     INVALID_REVIEW_ID("review.error.invalidId", "Invalid reviewId."),
     REVIEW_ALREADY_EXISTS("review.error.questionnaire.alreadyUnderReview", "A review already exists for this questionnaire."),
+    MAIL_SEND_FAILURE("review.mail.error.sendFailure", "Failed to send email."),
     USER_NOT_FOUND("review.error.user.notFound", "User not found.");
 
     private final String code;

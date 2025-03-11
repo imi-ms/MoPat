@@ -58,9 +58,8 @@ public class Review implements Serializable {
     public Review() {
     }
 
-    public Review(Questionnaire questionnaire, ReviewStatus status, Long editorId, Long reviewerId) {
+    public Review(Questionnaire questionnaire, Long editorId, Long reviewerId) {
         this.questionnaire = questionnaire;
-        this.status = status;
         this.editorId = editorId;
         this.reviewerId = reviewerId;
     }
@@ -69,21 +68,28 @@ public class Review implements Serializable {
         return id;
     }
 
-    public Questionnaire getQuestionnaire() {
-        return questionnaire;
-    }
-
     public void setQuestionnaire(Questionnaire questionnaire) {
         this.questionnaire = questionnaire;
+    }
+
+    public Questionnaire getQuestionnaire() {
+        return questionnaire;
     }
 
     public ReviewStatus getStatus() {
         return status;
     }
 
+    public void setEditorId(Long editorId) {
+        this.editorId = editorId;
+    }
 
     public Long getEditorId() {
         return editorId;
+    }
+
+    public void setReviewerId(Long reviewerId) {
+        this.reviewerId = reviewerId;
     }
 
     public Long getReviewerId() {
@@ -112,10 +118,6 @@ public class Review implements Serializable {
 
     public void setConversation(List<ReviewMessage> conversation) {
         this.conversation = conversation;
-    }
-
-    public void setReviewerId(Long reviewerId) {
-        this.reviewerId = reviewerId;
     }
 
     public void setUpdatedAt(Timestamp updatedAt) {

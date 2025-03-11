@@ -197,15 +197,8 @@ public class ReviewService {
         UserDTO editor = userService.getUserDTOById(reviewDTO.getEditorId());
         UserDTO reviewer = userService.getUserDTOById(reviewDTO.getReviewerId());
 
-        if (editor != null) {
-            reviewDTO.setEditorName(editor.getFirstname() + " " + editor.getLastname());
-            reviewDTO.setEditorInitials(getInitials(editor.getFirstname(), editor.getLastname()));
-        }
-
-        if (reviewer != null) {
-            reviewDTO.setReviewerName(reviewer.getFirstname() + " " + reviewer.getLastname());
-            reviewDTO.setReviewerInitials(getInitials(reviewer.getFirstname(), reviewer.getLastname()));
-        }
+        reviewDTO.setEditorDetails(editor);
+        reviewDTO.setReviewerDetails(reviewer);
     }
 
     /*
@@ -385,16 +378,8 @@ public class ReviewService {
         for (ReviewMessageDTO reviewMessage : reviewDTO.getConversation()) {
             UserDTO sender = userMap.get(reviewMessage.getSenderId());
             UserDTO receiver = userMap.get(reviewMessage.getReceiverId());
-
-            if (sender != null) {
-                reviewMessage.setSenderName(sender.getFirstname() + " " + sender.getLastname());
-                reviewMessage.setSenderInitials(getInitials(sender.getFirstname(), sender.getLastname()));
-            }
-
-            if (receiver != null) {
-                reviewMessage.setReceiverName(receiver.getFirstname() + " " + receiver.getLastname());
-                reviewMessage.setReceiverInitials(getInitials(receiver.getFirstname(), receiver.getLastname()));
-            }
+            reviewMessage.setSenderDetails(sender);
+            reviewMessage.setReceiverDetails(receiver);
         }
     }
 
@@ -427,7 +412,7 @@ public class ReviewService {
     }
 
     private Review createReview(Questionnaire questionnaire, Long editorId, Long reviewerId, String description) {
-        Review review = new Review(questionnaire, ReviewStatus.PENDING, editorId, reviewerId);
+        Review review = new Review(questionnaire, editorId, reviewerId);
         reviewDao.merge(review);
 
         if (StringUtils.isNotBlank(description)) {
@@ -473,7 +458,7 @@ public class ReviewService {
         return buildUrlWithParams(baseUrl, "/review/details", queryParams);
     }
 
-    private boolean sendReviewActionMail(
+    private ValidationResult sendReviewActionMail(
             Long userId,
             String questionnaireName,
             String localeString,
@@ -482,12 +467,16 @@ public class ReviewService {
             String personalMessage,
             String link
     ) {
-        UserDTO user = userService.getUserDTOById(userId);
-        if (user == null) return false;
 
         Locale locale = LocaleHelper.getLocaleFromString(localeString);
 
         try {
+            UserDTO user = userService.getUserDTOById(userId);
+
+            if (user == null) {
+                return failureWithMessage(ValidationResult.MAIL_SEND_FAILURE, locale);
+            }
+
             // Determine subject and content based on action type
             Map<String, String> emailTexts = getLocalizedActionEmailTexts(
                     actionType,
@@ -503,11 +492,11 @@ public class ReviewService {
 
             // Send email
             applicationMailer.sendMail(user.getEmail(), null, subject, content, null);
-            return true;
+            return ValidationResult.SUCCESS;
 
         } catch (Exception e) {
-            LOGGER.error("Failed to send {} email to {}", actionType, user.getEmail(), e);
-            return false;
+            LOGGER.error("Failed to send {} email to {}", actionType, userId, e);
+            return failureWithMessage(ValidationResult.MAIL_SEND_FAILURE, locale, e.getMessage());
         }
     }
 

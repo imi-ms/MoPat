@@ -3,6 +3,7 @@ package de.imi.mopat.model.dto;
 import de.imi.mopat.model.enumeration.ReviewStatus;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReviewDTO {
@@ -19,7 +20,7 @@ public class ReviewDTO {
     private String reviewerName;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    private List<ReviewMessageDTO> conversation;
+    private List<ReviewMessageDTO> conversation = new ArrayList<>();
 
 
     public Long getId() {
@@ -136,5 +137,32 @@ public class ReviewDTO {
 
     public boolean isFinished() {
         return status.isFinished();
+    }
+
+    public void setEditorDetails(UserDTO editor) {
+        if (editor != null) {
+            this.editorName = editor.getFirstname() + " " + editor.getLastname();
+            this.editorInitials = getInitials(editor.getFirstname(), editor.getLastname());
+        }
+    }
+
+    public void setReviewerDetails(UserDTO reviewer) {
+        if (reviewer != null) {
+            this.reviewerName = reviewer.getFirstname() + " " + reviewer.getLastname();
+            this.reviewerInitials = getInitials(reviewer.getFirstname(), reviewer.getLastname());
+        }
+    }
+
+    private String getInitials(String firstname, String lastname) {
+        StringBuilder initials = new StringBuilder();
+
+        if (firstname != null && !firstname.isBlank()) {
+            initials.append(firstname.charAt(0));
+        }
+        if (lastname != null && !lastname.isBlank()) {
+            initials.append(lastname.charAt(0));
+        }
+
+        return initials.toString().toUpperCase();
     }
 }

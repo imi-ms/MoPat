@@ -18,32 +18,17 @@ public class ReviewMessageDTO {
         return senderName;
     }
 
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
-    }
 
     public String getSenderInitials() {
         return senderInitials;
-    }
-
-    public void setSenderInitials(String senderInitials) {
-        this.senderInitials = senderInitials;
     }
 
     public String getReceiverName() {
         return receiverName;
     }
 
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
-    }
-
     public String getReceiverInitials() {
         return receiverInitials;
-    }
-
-    public void setReceiverInitials(String receiverInitials) {
-        this.receiverInitials = receiverInitials;
     }
 
     public Long getId() {
@@ -85,4 +70,32 @@ public class ReviewMessageDTO {
     public void setSentAt(Timestamp sentAt) {
         this.sentAt = sentAt;
     }
+
+    public void setSenderDetails(UserDTO sender) {
+        if (sender != null) {
+            this.senderName = sender.getFirstname() + " " + sender.getLastname();
+            this.senderInitials = getInitials(sender.getFirstname(), sender.getLastname());
+        }
+    }
+
+    public void setReceiverDetails(UserDTO receiver) {
+        if (receiver != null) {
+            this.senderName = receiver.getFirstname() + " " + receiver.getLastname();
+            this.senderInitials = getInitials(receiver.getFirstname(), receiver.getLastname());
+        }
+    }
+
+    private String getInitials(String firstname, String lastname) {
+        StringBuilder initials = new StringBuilder();
+
+        if (firstname != null && !firstname.isBlank()) {
+            initials.append(firstname.charAt(0));
+        }
+        if (lastname != null && !lastname.isBlank()) {
+            initials.append(lastname.charAt(0));
+        }
+
+        return initials.toString().toUpperCase();
+    }
+
 }
