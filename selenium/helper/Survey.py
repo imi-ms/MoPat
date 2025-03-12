@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import Select
 from helper.Navigation import NavigationHelper
 from helper.Question import QuestionType
 from helper.SeleniumUtils import SeleniumUtils, DropdownMethod
+import random
 
 
 class SurveySelectors:
@@ -15,11 +16,14 @@ class SurveySelectors:
     BUTTON_START_SURVEY = (By.ID, "startSurveyButton")
     BUTTON_NEXT_QUESTION = (By.ID, "buttonNext")
     BUTTON_CHECK_CASE = (By.ID, "checkButton")
+    BUTTON_ADDITIONAL_INFORMATION = (By.ID, "additionalInformationButton")
+    BUTTON_CHECK_CASE_NUMBER = (By.ID, "checkButton")
 
     DROPDOWN_CLINIC_SELECTION = (By.ID, "clinic-selection")
     DROPDOWN_BUNDLE_SELECTION = (By.ID, "bundle-selection")
     DROPDOWN_LANGUAGE_SELECTION = (By.ID, "bundle-language-selection")
     DROPDOWN_GENERIC = (By.ID, "dropDown")
+    DROPDOWN_LANGUAGE_SELECTOR = (By.ID, "localeChanger")
 
     INPUT_CASE_NUMBER = (By.ID, "caseNumber")
     INPUT_NUMBER = (By.ID, "numberInput")
@@ -37,6 +41,11 @@ class SurveySelectors:
 
     LABEL_FOR_CHECKBOX = lambda selected_value: (By.CSS_SELECTOR, f"label[for='numberedCheckbox_{selected_value}']")
     LABEL_BY_OPTION_TEXT = lambda option_text: (By.XPATH, f"//div[@class='right' and text()='{option_text}']/..")
+    
+    TAB_PATIENT_REGISTRATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(2)")
+    TAB_PATIENT_DATA_AUTOMATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(4)")
+    TAB_PATIENT_PSEUDONYMIZATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(6)")
+    
 
 class SurveyHelper:
 
@@ -44,7 +53,7 @@ class SurveyHelper:
     DEFAULT_LANGUAGE_CODE = "de_DE"
     DEFAULT_FREETEXT = "Default answer for freetext questions"
     DEFAULT_SLIDER_POSITION = 0.5
-    DEFAULT_DATE = "1970-01-01"
+    DEFAULT_DATE = "2025-12-12"
 
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
         self.driver = driver
@@ -54,7 +63,7 @@ class SurveyHelper:
     def click_next_button(self):
         self.utils.click_element(SurveySelectors.BUTTON_NEXT_QUESTION)
 
-    def start_survey(self, configuration, clinic_name, case_number):
+    def start_survey(self,clinic_name, configuration=None, case_number=None):
         """
         Starts a survey as a user by interacting with the clinic selection,
         configuration options, and case number input.
@@ -81,9 +90,13 @@ class SurveyHelper:
                 self.utils.select_dropdown(SurveySelectors.DROPDOWN_CLINIC_SELECTION, clinic_name, DropdownMethod.VISIBLE_TEXT)
 
             # Select configuration
-            config_selector = configuration['config_selector']
-            self.utils.click_element(config_selector)
+            if configuration is not None:
+                config_selector = configuration['config_selector']
+                self.utils.click_element(config_selector)
 
+            # Generate a random 5-digit case number if not provided
+            if case_number is None:
+                case_number = str(random.randint(10000, 99999))
             # Input case number
             self.utils.fill_text_field(SurveySelectors.INPUT_CASE_NUMBER, case_number)
 
@@ -137,9 +150,10 @@ class SurveyHelper:
         """
         :param question: A dictionary containing the question details.
         """
-        options = question.get("options")
-        min_answers = question.get("min_answers")
-        max_answers = question.get("max_answers")
+        # Ensure options is always a valid list
+        options = question.get("options", []) if isinstance(question.get("options"), list) else ["Option 1"]
+        min_answers = question.get("min_answers",0)
+        max_answers = question.get("max_answers",1)
 
         # Validate min_answers and max_answers
         if min_answers < 0 or max_answers > len(options) or min_answers > max_answers:
@@ -162,8 +176,8 @@ class SurveyHelper:
             raise ValueError("slider_position must be a value between 0 and 1.")
 
         # Extract slider properties from the question
-        min_value = question.get("min_value")
-        max_value = question.get("max_value")
+        min_value = question.get("min_value",0)
+        max_value = question.get("max_value",10)
 
         # Calculate the target value for the slider
         target_value = min_value + (slider_position * (max_value - min_value))
@@ -182,9 +196,9 @@ class SurveyHelper:
         :param selected_value: A numeric value to select, between min_value and max_value.
         """
         # Extract the min, max, and step values from the question
-        min_value = question.get("min_value")
-        max_value = question.get("max_value")
-        step_size = question.get("step_size")
+        min_value = question.get("min_value",0)
+        max_value = question.get("max_value",10)
+        step_size = question.get("step_size",1)
         selected_value = selected_value or min_value
 
         if not (min_value <= selected_value <= max_value):
@@ -212,7 +226,7 @@ class SurveyHelper:
         self.answer_number_checkbox_question(question, selected_value)
         self.answer_text_question(text)
 
-    def answer_date_question(self, question, date=None):
+    def answer_date_question(self, date=None):
         """
         :param question: A dictionary containing question details. The function uses a default date if none is specified.
         :param date: A string representing the date to set (e.g., "2024-12-20").
@@ -227,7 +241,7 @@ class SurveyHelper:
         :param option_text: The visible text of the dropdown option to select. If not provided,
             the first option from the "options" list in the question will be selected.
         """
-        options = question.get("options")
+        options = question.get("options", []) if isinstance(question.get("options"), list) else ["Option 1"]
         option_text = option_text or options[0]
 
         Select(self.driver.find_element(*SurveySelectors.DROPDOWN_GENERIC)).select_by_visible_text(option_text)
