@@ -61,6 +61,8 @@ public class QuestionnaireDTO {
     @JsonIgnore
     private QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO;
 
+    private Long createdBy;
+
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
     }
@@ -212,5 +214,13 @@ public class QuestionnaireDTO {
 
     public void setApprovalStatus(ApprovalStatus approvalStatus) {
         this.approvalStatus = approvalStatus;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
     }
 }

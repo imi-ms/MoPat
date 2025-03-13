@@ -139,10 +139,12 @@ public class ReviewService {
                 .filter(Review::isUnfinished)
                 .map(review -> review.getQuestionnaire().getId())
                 .collect(Collectors.toSet());
-        /*
-          TODO [LJ]: meaningful sorting? only return the questionnaires that were created by the user?
-         */
+
+        Long currentUserId = authService.getAuthenticatedUserId();
+        boolean isModeratorOrAbove = authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR);
+
         return questionnaireService.getAllQuestionnaireDTOs().stream()
+                .filter(questionnaireDTO -> isModeratorOrAbove || questionnaireDTO.getCreatedBy().equals(currentUserId))
                 .filter(questionnaireDTO -> !questionnaireDTO.isApproved())
                 .filter(questionnaireDTO -> !questionnairesWithRunningReview.contains(questionnaireDTO.getId()))
                 .toList();

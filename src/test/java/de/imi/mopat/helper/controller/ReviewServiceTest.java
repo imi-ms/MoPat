@@ -12,8 +12,11 @@ import de.imi.mopat.helper.model.ReviewDTOMapper;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireTest;
 import de.imi.mopat.model.Review;
+import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.model.dto.QuestionnaireDTOTest;
 import de.imi.mopat.model.dto.ReviewDTO;
 import de.imi.mopat.model.dto.UserDTO;
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import de.imi.mopat.model.enumeration.ReviewStatus;
 import de.imi.mopat.model.user.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
@@ -408,5 +411,90 @@ public class ReviewServiceTest {
 
         // Assert
         assertEquals(ValidationResult.REVIEW_NOT_FOUND, result);
+    }
+
+    @Test
+    public void testGetUnapprovedQuestionnaires_EditorOnlySeesOwn() {
+        // Arrange
+        Long editorId = 1L;
+        when(authService.getAuthenticatedUserId()).thenReturn(editorId);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
+
+        QuestionnaireDTO ownQuestionnaire = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        ownQuestionnaire.setCreatedBy(editorId);
+        ownQuestionnaire.setApprovalStatus(ApprovalStatus.DRAFT);
+
+        QuestionnaireDTO otherQuestionnaire = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        otherQuestionnaire.setCreatedBy(2L);
+        otherQuestionnaire.setApprovalStatus(ApprovalStatus.DRAFT);
+
+        when(questionnaireService.getAllQuestionnaireDTOs()).thenReturn(List.of(
+                ownQuestionnaire,
+                otherQuestionnaire
+        ));
+        when(reviewDao.getAllElements()).thenReturn(List.of());
+
+        // Act
+        List<QuestionnaireDTO> result = reviewService.getUnapprovedQuestionnaires();
+
+        // Assert
+        assertEquals(1, result.size());
+        assertEquals(editorId, result.get(0).getCreatedBy());
+    }
+
+    @Test
+    public void testGetUnapprovedQuestionnaires_ModeratorSeesAll() {
+        // Arrange
+        Long moderatorId = 1L;
+        when(authService.getAuthenticatedUserId()).thenReturn(moderatorId);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+
+        QuestionnaireDTO questionnaire1 = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaire1.setCreatedBy(1L);
+        questionnaire1.setApprovalStatus(ApprovalStatus.DRAFT);
+
+        QuestionnaireDTO questionnaire2 = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaire2.setCreatedBy(2L);
+        questionnaire2.setApprovalStatus(ApprovalStatus.DRAFT);
+
+        when(questionnaireService.getAllQuestionnaireDTOs()).thenReturn(List.of(
+                questionnaire1,
+                questionnaire2
+        ));
+        when(reviewDao.getAllElements()).thenReturn(List.of());
+
+        // Act
+        List<QuestionnaireDTO> result = reviewService.getUnapprovedQuestionnaires();
+
+        // Assert
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    public void testGetUnapprovedQuestionnaires_QuestionnaireWithRunningReviewIsExcluded() {
+        // Arrange
+        Long editorId = 1L;
+        when(authService.getAuthenticatedUserId()).thenReturn(editorId);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
+
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaire.setCreatedBy(editorId);
+        questionnaire.setStatusDraft();
+        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
+        questionnaireDTO.setCreatedBy(questionnaire.getCreatedBy());
+        questionnaireDTO.setApprovalStatus(questionnaire.getApprovalStatus());
+
+        Review activeReview = new Review();
+        activeReview.setQuestionnaire(questionnaire);
+        activeReview.setStatus(ReviewStatus.PENDING);
+
+        when(questionnaireService.getAllQuestionnaireDTOs()).thenReturn(List.of(questionnaireDTO));
+        when(reviewDao.getAllElements()).thenReturn(List.of(activeReview));
+
+        // Act
+        List<QuestionnaireDTO> result = reviewService.getUnapprovedQuestionnaires();
+
+        // Assert
+        assertTrue(result.isEmpty());
     }
 }

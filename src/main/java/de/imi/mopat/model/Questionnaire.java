@@ -91,6 +91,9 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Column(name = "changed_by", nullable = false)
     private Long changedBy;
     @JsonIgnore
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+    @JsonIgnore
     @Column(name = "updated_at")
     private Timestamp updatedAt;
     @Column(name = "logo")
@@ -161,17 +164,18 @@ public class Questionnaire implements ConditionTarget, Serializable {
      * @param description The new description for this questionnaire object. Must not be
      *                    <code>null</code>. Has to be at least 3 and at most 255 characters in
      *                    length (after trimming).
-     * @param changedBy   The given changedBy must be not null and must be positive
+     * @param createdBy   The given createdBy must be not null and must be positive
      * @param isPublished <code>true</code> if the questionnaire should be
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy,
+    public Questionnaire(final String name, final String description, final Long createdBy,
         final Boolean isPublished) {
 
         setName(name);
         setDescription(description);
-        setChangedBy(changedBy);
+        setCreatedBy(createdBy);
+        setChangedBy(createdBy);
         setPublished(isPublished);
     }
 
@@ -472,6 +476,27 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    /**
+     * Returns the id of the user that created this questionnaire object.
+     *
+     * @return The id of the user that created this questionnaire object. Is never
+     * <code>null</code>. Is never <code> &lt;=0</code>.
+     */
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    /**
+     * Sets the id of the user that created this questionnaire object
+     *
+     * @param createdBy The given createdBy must be not null and must be positive
+     */
+    public void setCreatedBy(Long createdBy) {
+        assert createdBy != null : "The given createdBy-ID was null";
+        assert createdBy > 0 : "The given Id is <= 0";
+        this.createdBy = createdBy;
     }
 
     /**

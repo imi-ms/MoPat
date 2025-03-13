@@ -523,6 +523,7 @@ public class QuestionnaireController {
                 questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
                 User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
                     .getPrincipal();
+                questionnaire.setCreatedBy(currentUser.getId());
                 questionnaire.setChangedBy(currentUser.getId());
                 // Collect all questions and answers in a map to access those
                 // ones who are target and trigger of a condition easily
