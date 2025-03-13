@@ -18,6 +18,10 @@ class SurveySelectors:
     BUTTON_CHECK_CASE = (By.ID, "checkButton")
     BUTTON_ADDITIONAL_INFORMATION = (By.ID, "additionalInformationButton")
     BUTTON_CHECK_CASE_NUMBER = (By.ID, "checkButton")
+    BUTTON_RECHECK_CASE_NUMBER = (By.ID, "gotoCheckButton")
+    BUTTON_HELP = (By.ID, "helpButton")
+    BUTTON_FONT_SIZE = (By.ID, "fontSizeButton")
+
 
     DROPDOWN_CLINIC_SELECTION = (By.ID, "clinic-selection")
     DROPDOWN_BUNDLE_SELECTION = (By.ID, "bundle-selection")
@@ -38,6 +42,7 @@ class SurveySelectors:
 
     TEXT_QUESTION_CONTENT = (By.ID, "questionContent")
     TEXT_QUESTION_TITLE = (By.ID, "questionTitle")
+    TEXT_QUESTIONNAIRE_TITLE = (By.ID, "questionnaireTitle")
 
     LABEL_FOR_CHECKBOX = lambda selected_value: (By.CSS_SELECTOR, f"label[for='numberedCheckbox_{selected_value}']")
     LABEL_BY_OPTION_TEXT = lambda option_text: (By.XPATH, f"//div[@class='right' and text()='{option_text}']/..")
@@ -45,6 +50,11 @@ class SurveySelectors:
     TAB_PATIENT_REGISTRATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(2)")
     TAB_PATIENT_DATA_AUTOMATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(4)")
     TAB_PATIENT_PSEUDONYMIZATION = (By.CSS_SELECTOR, "#radioSelectHIS > div > label:nth-child(6)")
+    
+    BLOCK_CASE_NUMBER = (By.ID, "caseNumber")
+    BLOCK_HELP_MODE = (By.ID, "helpModeNext")
+    BLOCK_PROGRESS_BAR = (By.ID, "progressContainer")
+    
     
 
 class SurveyHelper:
@@ -125,11 +135,16 @@ class SurveyHelper:
         """
         :param bundle_name: The name of the bundle to select.
         :param language_code: The code of the language to select (e.g., "de_DE") (optional).
+        :param pre_selection_func: A function to call before proceeding to bundle selection (optional).
         """
         language_code = language_code or self.DEFAULT_LANGUAGE_CODE
         try:
             # Click "Show Bundles" button to proceed
             self.utils.click_element(SurveySelectors.BUTTON_SHOW_BUNDLES)
+            
+            self.utils.check_visibility_of_element(SurveySelectors.BLOCK_CASE_NUMBER, "Case Number block not found")
+            
+            self.utils.check_visibility_of_element(SurveySelectors.BUTTON_RECHECK_CASE_NUMBER, "Check Case Number Button not found")
 
             # Select bundle
             self.utils.select_dropdown(SurveySelectors.DROPDOWN_BUNDLE_SELECTION, bundle_name, DropdownMethod.VISIBLE_TEXT)
