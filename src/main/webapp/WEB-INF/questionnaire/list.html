@@ -223,7 +223,7 @@
 													>
 												</div>
 											</div>
-											<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+											<th:block sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_MODERATOR')">
 												<a class="link approveQuestionnaireLink"
 												   th:if="${!item.isApproved()}"
 												   th:href="@{/questionnaire/approve(id=${item.id})}">
@@ -286,7 +286,7 @@
 													th:href="@{/score/list?id=__${item.id}__}"
 													th:text="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
 												></a>
-												<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+												<th:block sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_MODERATOR')">
 													<a
 															class="link"
 															th:if="${!item.isApproved()}"

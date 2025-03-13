@@ -653,7 +653,7 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + new Timestamp(new Date().getTime()));
                 }
-                if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
                     questionnaire.setStatusApprove();
                 }
                 questionnaireDao.merge(questionnaire);
@@ -819,7 +819,7 @@ public class QuestionnaireController {
                                             questionnaire.getName() + " " + dateFormat.format(
                                                 calendar.getTime()));
                                     }
-                                    if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                                    if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
                                         questionnaire.setStatusApprove();
                                     }
                                     questionnaireDao.merge(questionnaire);
@@ -998,7 +998,7 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + dateFormat.format(new Date()));
                 }
-                if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+                if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
                     questionnaire.setStatusApprove();
                 }
 
@@ -1046,7 +1046,7 @@ public class QuestionnaireController {
     }
 
     @RequestMapping("/questionnaire/disapprove")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     public String disapproveQuestionnaire(@RequestParam("id") final Long questionnaireId,
                                           RedirectAttributes redirectAttributes) {
         Locale locale = LocaleContextHolder.getLocale();
@@ -1061,7 +1061,7 @@ public class QuestionnaireController {
     }
 
     @RequestMapping("/questionnaire/approve")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     public String approveQuestionnaire(@RequestParam("id") final Long questionnaireId,
                                        RedirectAttributes redirectAttributes) {
         Locale locale = LocaleContextHolder.getLocale();

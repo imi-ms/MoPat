@@ -297,7 +297,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and admin can edit the questionnaire without executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() {
+    public void testSaveOrUpdateQuestionnaire_AdminCanEditQuestionnaireWithoutExecutedSurveys() {
         // Arrange
         Questionnaire newValidQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
@@ -305,7 +305,7 @@ public class QuestionnaireServiceTest {
         Long validUserId = Helper.generatePositiveNonZeroLong();
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
-        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(modifiableQuestionnaire).getId();
 
@@ -828,7 +828,7 @@ public class QuestionnaireServiceTest {
         questionnaire.setStatusApprove();
         questionnaireDao.merge(questionnaire);
 
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
 
         // Act
         questionnaireService.disapproveQuestionnaire(questionnaire.getId(), Locale.getDefault());
@@ -841,7 +841,7 @@ public class QuestionnaireServiceTest {
     @Test(expected = AccessDeniedException.class)
     public void testDisapproveQuestionnaire_AccessDenied() {
         // Arrange
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(false);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
         when(messageSource.getMessage(eq("questionnaire.error.unauthorized"), any(), any()))
                 .thenReturn("Unauthorized");
 
@@ -852,7 +852,7 @@ public class QuestionnaireServiceTest {
     @Test(expected = EntityNotFoundException.class)
     public void testDisapproveQuestionnaire_QuestionnaireNotFound() {
         // Arrange
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(messageSource.getMessage(eq("questionnaire.error.notFound"), any(), any()))
                 .thenReturn("Questionnaire not found");
 
@@ -866,7 +866,7 @@ public class QuestionnaireServiceTest {
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
         questionnaire.setStatusDraft();
         questionnaireDao.merge(questionnaire);
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(messageSource.getMessage(eq("questionnaire.error.notApproved"), any(), any()))
                 .thenReturn("Questionnaire is not approved");
 
@@ -888,7 +888,7 @@ public class QuestionnaireServiceTest {
         List<BundleQuestionnaire> bundleQuestionnaireList = List.of(enabledBundleQuestionnaire);
 
         when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(messageSource.getMessage(eq("questionnaire.error.enabledBundle"), any(), any()))
                 .thenReturn("Questionnaire is part of an enabled bundle");
 
@@ -901,7 +901,7 @@ public class QuestionnaireServiceTest {
         // Arrange
         Questionnaire exsitingQuestionnaire = createAndPersistQuestionnaire();
 
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
 
         // Act
         questionnaireService.approveQuestionnaire(exsitingQuestionnaire.getId(), Locale.getDefault());
@@ -914,7 +914,7 @@ public class QuestionnaireServiceTest {
     @Test(expected = AccessDeniedException.class)
     public void testApproveQuestionnaire_AccessDenied() {
         // Arrange
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(false);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
         when(messageSource.getMessage(eq("questionnaire.error.unauthorized"), any(), any()))
                 .thenReturn("Unauthorized");
 
@@ -925,7 +925,7 @@ public class QuestionnaireServiceTest {
     @Test(expected = EntityNotFoundException.class)
     public void testApproveQuestionnaire_QuestionnaireNotFound() {
         // Arrange
-        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
         when(messageSource.getMessage(eq("questionnaire.error.notFound"), any(), any()))
                 .thenReturn("Questionnaire not found");
 

@@ -204,12 +204,12 @@ public class QuestionnaireService {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
         // Admins and moderators can edit if there are no encounters
-        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
             return questionnaire.isModifiable();
         }
 
-        // Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
-        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
+        // Moderators and Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
+        if (authService.hasExactRole(UserRole.ROLE_MODERATOR) || authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
 
@@ -235,11 +235,11 @@ public class QuestionnaireService {
         boolean isModifiable = questionnaire.isModifiable();
         boolean partOfEnabledBundle = isQuestionnairePartOfEnabledBundle(questionnaire);
 
-        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR) && !isModifiable) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN) && !isModifiable) {
             return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncounters"));
         }
 
-        if (authService.hasExactRole(UserRole.ROLE_EDITOR)) {
+        if (authService.hasExactRole(UserRole.ROLE_MODERATOR) || authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             if (!isModifiable && partOfEnabledBundle) {
                 return Pair.of(false, getLocalizedMessage("questionnaire.message.executedEncountersAndEnabledBundle"));
             }
@@ -317,7 +317,7 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
-        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             newQuestionnaire.setStatusApprove();
         }
         questionnaireDao.merge(newQuestionnaire);
@@ -345,7 +345,7 @@ public class QuestionnaireService {
         existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
         existingQuestionnaire.setName(questionnaireDTO.getName());
         existingQuestionnaire.setChangedBy(userId);
-        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             existingQuestionnaire.setStatusDraft();
         }
 
@@ -373,7 +373,7 @@ public class QuestionnaireService {
                 userId,
                 Boolean.TRUE
         );
-        if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             newQuestionnaire.setStatusApprove();
         }
 
@@ -844,7 +844,7 @@ public class QuestionnaireService {
     }
 
     public void disapproveQuestionnaire(Long questionnaireId, Locale locale) {
-        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)){
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
             throw new AccessDeniedException(
                     messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
         }
@@ -868,7 +868,7 @@ public class QuestionnaireService {
     }
 
     public void approveQuestionnaire(Long questionnaireId, Locale locale) {
-        if (!authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)){
+        if (!authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
             throw new AccessDeniedException(
                     messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
         }
