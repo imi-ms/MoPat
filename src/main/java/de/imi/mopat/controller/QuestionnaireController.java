@@ -204,6 +204,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
+        model.addAttribute("isModOrAbove", authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR));
+        model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
         model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);

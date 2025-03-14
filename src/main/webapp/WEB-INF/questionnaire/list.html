@@ -130,12 +130,18 @@
 									</ul>
 								</td>
 								<td style="text-align: left">
-									<a th:if="${item.isDraft()}"
-									   class="badge bg-warning rounded-pill text-dark ms-2 text-decoration-none"
-									   th:href="@{/review/create(questionnaireId=${item.id})}"
-									   th:title="${messages.get(#locale, 'questionnaire.requestReview', 'Request Review')}">
-										<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
-									</a>
+									<th:block th:if="${item.isDraft()}">
+										<a th:if="${isModOrAbove or item.isCreatedOrModifiedBy(currentUserId)}"
+											 class="badge bg-warning rounded-pill text-dark ms-2 text-decoration-none"
+											 th:href="@{/review/create(questionnaireId=${item.id})}"
+											 th:title="${messages.get(#locale, 'questionnaire.requestReview', 'Request Review')}">
+											<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
+										</a>
+										<span th:unless="${isModOrAbove or item.isCreatedOrModifiedBy(currentUserId)}"
+													class="badge bg-warning rounded-pill text-dark ms-2 text-decoration-none">
+												<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
+										</span>
+									</th:block>
 									<span th:if="${item.isUnderReview()}"
 										  class="badge bg-info rounded-pill text-dark ms-2 text-decoration-none">
                         				<th:block th:text="${messages.get(#locale, 'questionnaire.status.underReview', 'Under Review')}" />

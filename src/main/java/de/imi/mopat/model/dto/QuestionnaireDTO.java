@@ -63,6 +63,8 @@ public class QuestionnaireDTO {
 
     private Long createdBy;
 
+    private Long changedBy;
+
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
     }
@@ -223,4 +225,17 @@ public class QuestionnaireDTO {
     public Long getCreatedBy() {
         return createdBy;
     }
+
+    public Long getChangedBy() {
+        return changedBy;
+    }
+
+    public void setChangedBy(Long changedBy) {
+        this.changedBy = changedBy;
+    }
+
+    public boolean isCreatedOrModifiedBy(Long userId) {
+        return this.createdBy.equals(userId) || this.changedBy.equals(userId);
+    }
+
 }

@@ -101,7 +101,7 @@
             <input type="hidden" id="hiddenReviewerId" name="reviewerId" value="">
 
             <div id="approvalAndMainVersionContainer" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
-                 sec:authorize="hasRole('ROLE_ADMIN')">
+                 sec:authorize="hasRole('ROLE_MODERATOR')">
                 <div class="form-group">
 
                     <label for="approvalOptions" class="form-label d-block mb-2" 
@@ -225,7 +225,7 @@
 
             <!-- Reviewer -->
             <div id="approvalButtonGroup" class="mt-3" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
-                 sec:authorize="hasRole('ROLE_ADMIN')">
+                 sec:authorize="hasRole('ROLE_MODERATOR')">
                 <div id="submitApproveContainer">
                     <button
                         type="submit"

@@ -925,4 +925,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
         }
         return questionnaireVersionGroup.isMainQuestionnaire(this);
     }
+
+    public boolean isCreatedOrModifiedBy(Long userId) {
+        return this.createdBy.equals(userId) || this.changedBy.equals(userId);
+    }
 }

@@ -183,12 +183,11 @@ public class UserService {
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
 
-    public List<UserDTO> getUsersByRole(UserRole userRole) {
+    public Set<UserDTO> getUsersByRole(UserRole userRole) {
         return userDao.getAllElements().stream()
                 .filter(user -> user.getAuthorities().stream()
                         .anyMatch(authority -> authority.getAuthority().equals(userRole.getTextValue())))
                 .map(userDTOMapper)
-                .distinct()
-                .toList();
+                .collect(Collectors.toSet());
     }
 }

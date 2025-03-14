@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -128,10 +129,10 @@ public class ReviewService {
     }
 
     public List<UserDTO> getAllReviewers() {
-        /*
-         * TODO [LJ]: Who should be a reviewer?
-         */
-        return userService.getUsersByRole(UserRole.ROLE_ADMIN);
+        List<UserDTO> reviewers = new ArrayList<>();
+        reviewers.addAll(userService.getUsersByRole(UserRole.ROLE_ADMIN));
+        reviewers.addAll(userService.getUsersByRole(UserRole.ROLE_MODERATOR));
+        return reviewers;
     }
 
     public List<QuestionnaireDTO> getUnapprovedQuestionnaires() {
@@ -144,7 +145,9 @@ public class ReviewService {
         boolean isModeratorOrAbove = authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR);
 
         return questionnaireService.getAllQuestionnaireDTOs().stream()
-                .filter(questionnaireDTO -> isModeratorOrAbove || questionnaireDTO.getCreatedBy().equals(currentUserId))
+                .filter(questionnaireDTO -> isModeratorOrAbove
+                        || questionnaireDTO.getCreatedBy().equals(currentUserId)
+                        || questionnaireDTO.getChangedBy().equals(currentUserId))
                 .filter(questionnaireDTO -> !questionnaireDTO.isApproved())
                 .filter(questionnaireDTO -> !questionnairesWithRunningReview.contains(questionnaireDTO.getId()))
                 .toList();
@@ -203,11 +206,8 @@ public class ReviewService {
         reviewDTO.setReviewerDetails(reviewer);
     }
 
-    /*
-     * TODO [LJ] Should there be a reviewer role?
-     */
     public boolean isUserReviewer() {
-        return authService.hasExactRole(UserRole.ROLE_ADMIN);
+        return authService.hasExactRole(UserRole.ROLE_MODERATOR);
     }
 
     public ValidationResult approveReview(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {

@@ -75,6 +75,7 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         questionnaireDTO.setDescription(questionnaire.getDescription());
         questionnaireDTO.setVersion(questionnaire.getVersion());
         questionnaireDTO.setApprovalStatus(questionnaire.getApprovalStatus());
+        questionnaireDTO.setChangedBy(questionnaire.getChangedBy());
         questionnaireDTO.setCreatedBy(questionnaire.getCreatedBy());
 
         Map<String, String> localizedWelcomeMap = questionnaire.getLocalizedWelcomeText();
