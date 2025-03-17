@@ -43,6 +43,7 @@ class SurveySelectors:
     TEXT_QUESTION_CONTENT = (By.ID, "questionContent")
     TEXT_QUESTION_TITLE = (By.ID, "questionTitle")
     TEXT_QUESTIONNAIRE_TITLE = (By.ID, "questionnaireTitle")
+    TEXT_BUNDLE_FINAL_INFO = (By.ID, "bundleFinalInfo")
 
     LABEL_FOR_CHECKBOX = lambda selected_value: (By.CSS_SELECTOR, f"label[for='numberedCheckbox_{selected_value}']")
     LABEL_BY_OPTION_TEXT = lambda option_text: (By.XPATH, f"//div[@class='right' and text()='{option_text}']/..")

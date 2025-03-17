@@ -1062,6 +1062,8 @@ class CustomTest(IMISeleniumBaseTest):
         
         self.survey_helper.click_next_button()
         
+        self.utils.check_visibility_of_element(SurveySelectors.TEXT_BUNDLE_FINAL_INFO, "Bundle final info not found")
+
         self.survey_helper.end_survey()
         
         self.authentication_helper.logout()
