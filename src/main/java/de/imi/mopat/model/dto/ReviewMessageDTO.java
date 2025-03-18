@@ -80,8 +80,8 @@ public class ReviewMessageDTO {
 
     public void setReceiverDetails(UserDTO receiver) {
         if (receiver != null) {
-            this.senderName = receiver.getFirstname() + " " + receiver.getLastname();
-            this.senderInitials = getInitials(receiver.getFirstname(), receiver.getLastname());
+            this.receiverName = receiver.getFirstname() + " " + receiver.getLastname();
+            this.receiverInitials = getInitials(receiver.getFirstname(), receiver.getLastname());
         }
     }
 

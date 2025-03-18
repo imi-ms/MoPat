@@ -2,7 +2,9 @@ package de.imi.mopat.validator;
 
 import de.imi.mopat.controller.forms.CreateReviewForm;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.dto.UserDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -12,6 +14,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.Assert.*;
@@ -27,6 +30,9 @@ public class CreateReviewValidatorTest {
 
     @Mock
     private MessageSource messageSource;
+
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private CreateReviewValidator validator;
@@ -45,9 +51,14 @@ public class CreateReviewValidatorTest {
 
     @Test
     public void testValidate_ValidReview() {
-        CreateReviewForm form = new CreateReviewForm(1L, 2L, "Valid review", "message", null);
+
+        UserDTO reviewer = new UserDTO();
+        long reviewerId = 2L;
+        reviewer.setId(reviewerId);
+        CreateReviewForm form = new CreateReviewForm(1L, reviewerId, "Valid review", "message", null);
         Questionnaire mockQuestionnaire = mock(Questionnaire.class);
 
+        when(userService.getAllReviewers()).thenReturn(List.of(reviewer));
         when(questionnaireDao.getElementById(1L)).thenReturn(mockQuestionnaire);
         when(mockQuestionnaire.isUnderReview()).thenReturn(false);
         when(mockQuestionnaire.getVersion()).thenReturn(1);

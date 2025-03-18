@@ -422,10 +422,12 @@ public class ReviewServiceTest {
 
         QuestionnaireDTO ownQuestionnaire = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         ownQuestionnaire.setCreatedBy(editorId);
+        ownQuestionnaire.setChangedBy(editorId);
         ownQuestionnaire.setApprovalStatus(ApprovalStatus.DRAFT);
 
         QuestionnaireDTO otherQuestionnaire = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         otherQuestionnaire.setCreatedBy(2L);
+        otherQuestionnaire.setChangedBy(2L);
         otherQuestionnaire.setApprovalStatus(ApprovalStatus.DRAFT);
 
         when(questionnaireService.getAllQuestionnaireDTOs()).thenReturn(List.of(

@@ -190,4 +190,11 @@ public class UserService {
                 .map(userDTOMapper)
                 .collect(Collectors.toSet());
     }
+
+    public List<UserDTO> getAllReviewers() {
+        List<UserDTO> reviewers = new ArrayList<>();
+        reviewers.addAll(getUsersByRole(UserRole.ROLE_ADMIN));
+        reviewers.addAll(getUsersByRole(UserRole.ROLE_MODERATOR));
+        return reviewers;
+    }
 }

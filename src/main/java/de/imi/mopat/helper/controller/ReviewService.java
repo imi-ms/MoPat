@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +77,9 @@ public class ReviewService {
 
     public List<Review> getAllReviews() {
         return reviewDao.getAllElements().stream()
-                .sorted(REVIEW_COMPARATOR)
+                .sorted(Comparator
+                        .comparing((Review review) -> review.getStatus() == ReviewStatus.APPROVED ? 1 : 0)
+                        .thenComparing(Review::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
     }
 
@@ -128,12 +129,6 @@ public class ReviewService {
                 .toList();
     }
 
-    public List<UserDTO> getAllReviewers() {
-        List<UserDTO> reviewers = new ArrayList<>();
-        reviewers.addAll(userService.getUsersByRole(UserRole.ROLE_ADMIN));
-        reviewers.addAll(userService.getUsersByRole(UserRole.ROLE_MODERATOR));
-        return reviewers;
-    }
 
     public List<QuestionnaireDTO> getUnapprovedQuestionnaires() {
         Set<Long> questionnairesWithRunningReview = reviewDao.getAllElements().stream()
@@ -162,11 +157,6 @@ public class ReviewService {
         }
 
         ValidationResult validationResult = validateAuthenticatedUser(locale);
-        if (validationResult.hasErrors()){
-            return validationResult;
-        }
-
-        validationResult = validateUserId(form.reviewerId(), locale);
         if (validationResult.hasErrors()){
             return validationResult;
         }
@@ -207,7 +197,7 @@ public class ReviewService {
     }
 
     public boolean isUserReviewer() {
-        return authService.hasExactRole(UserRole.ROLE_MODERATOR);
+        return authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR);
     }
 
     public ValidationResult approveReview(ReviewDecisionForm form, Locale locale, HttpServletRequest request) {
@@ -261,7 +251,7 @@ public class ReviewService {
         Review review = reviewDao.getElementById(form.reviewId());
 
         if (!form.description().isBlank()) {
-            addReviewMessage(review, review.getEditorId(), form.description());
+            addReviewMessage(review, review.getEditorId(), review.getReviewerId(), form.description());
         }
 
         review.setStatus(ReviewStatus.PENDING);
@@ -289,7 +279,7 @@ public class ReviewService {
         Review review = reviewDao.getElementById(form.reviewId());
 
         if (!form.description().isBlank()) {
-            addReviewMessage(review, userId, form.description());
+            addReviewMessage(review, userId, form.reviewerId(), form.description());
         }
 
         review.setReviewerId(form.reviewerId());
@@ -317,15 +307,15 @@ public class ReviewService {
         Review review = reviewDao.getElementById(reviewId);
 
         if (!description.isBlank()) {
-            addReviewMessage(review, userId, description);
+            addReviewMessage(review, userId, review.getEditorId(), description);
         }
 
         updateReviewStatus(review, status, isMainVersion);
         return ValidationResult.SUCCESS;
     }
 
-    private void addReviewMessage(Review review, Long userId, String description) {
-        ReviewMessage reviewMessage = new ReviewMessage(review, userId, review.getEditorId(), description);
+    private void addReviewMessage(Review review, Long senderId, Long receiverId, String description) {
+        ReviewMessage reviewMessage = new ReviewMessage(review, senderId, receiverId, description);
         reviewMessageDao.merge(reviewMessage);
 
         List<ReviewMessage> conversation = review.getConversation();
@@ -385,30 +375,10 @@ public class ReviewService {
         }
     }
 
-    private String getInitials(String firstname, String lastname) {
-        StringBuilder initials = new StringBuilder();
-
-        if (firstname != null && !firstname.isEmpty()) {
-            initials.append(firstname.charAt(0));
-        }
-        if (lastname != null && !lastname.isEmpty()) {
-            initials.append(lastname.charAt(0));
-        }
-
-        return initials.toString().toUpperCase();
-    }
-
     private ValidationResult validateAuthenticatedUser(Locale locale) {
         Long userId = authService.getAuthenticatedUserId();
         if (userId == null) {
             return failureWithMessage(ValidationResult.NOT_AUTHENTICATED, locale);
-        }
-        return ValidationResult.SUCCESS;
-    }
-
-    private ValidationResult validateUserId(Long reviewerId, Locale locale) {
-        if (userService.getUserDTOById(reviewerId) == null) {
-            return failureWithMessage(ValidationResult.USER_NOT_FOUND, locale);
         }
         return ValidationResult.SUCCESS;
     }

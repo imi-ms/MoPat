@@ -109,6 +109,7 @@ public class QuestionnaireDTOValidatorTest {
         //case 1: questionnaireNameInUse
         Questionnaire questionnaire = new Questionnaire();
         questionnaire.setName(questionnaireDTO.getName());
+        questionnaire.setCreatedBy(Math.abs(random.nextLong()));
         questionnaire.setChangedBy(Math.abs(random.nextLong()));
         questionnaire.setDescription(Helper.getRandomAlphanumericString(random.nextInt(251) + 3));
         questionnaire.setPublished(random.nextBoolean());

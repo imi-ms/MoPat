@@ -102,7 +102,7 @@
                 <div class="d-flex justify-content-start gap-2">
                     <button type="submit" class="btn btn-primary" th:text="${messages.get(#locale, 'review.create.button.sendRequest', 'Send request')}"></button>
                     <button type="button" id="previewButton" class="btn btn-primary" data-action="invitation" th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"></button>
-                    <a href="/review/list" class="btn btn-primary" th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"></a>
+                    <a href="/review/pending/list" class="btn btn-primary" th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"></a>
                 </div>
             </form>
 

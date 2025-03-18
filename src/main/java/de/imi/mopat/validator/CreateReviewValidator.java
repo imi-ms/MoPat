@@ -2,8 +2,8 @@ package de.imi.mopat.validator;
 
 import de.imi.mopat.controller.forms.CreateReviewForm;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.enumeration.ApprovalStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -20,6 +20,9 @@ public class CreateReviewValidator implements Validator {
     @Autowired
     private QuestionnaireDao questionnaireDao;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public boolean supports(Class<?> clazz) {
         return CreateReviewForm.class.equals(clazz);
@@ -33,6 +36,13 @@ public class CreateReviewValidator implements Validator {
 
         if (form.reviewerId() == null) {
             addError(errors, "reviewerId", "review.error.reviewer.empty");
+        } else{
+            boolean isReviewer = userService.getAllReviewers().stream()
+                    .anyMatch(user -> user.getId().equals(form.reviewerId()));
+
+            if (!isReviewer) {
+                addError(errors, "reviewerId", "review.error.reviewer.invalid");
+            }
         }
 
         Questionnaire questionnaire = questionnaireDao.getElementById(form.questionnaireId());

@@ -5,6 +5,7 @@ import de.imi.mopat.controller.forms.ReviewDecisionForm;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ReviewService;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.helper.controller.ValidationResult;
 import de.imi.mopat.model.dto.ReviewDTO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -37,6 +37,9 @@ public class ReviewController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     AuthService authService;
@@ -69,7 +72,7 @@ public class ReviewController {
         model.addAttribute("language", currentLanguage);
 
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
-        model.addAttribute("reviewers", reviewService.getAllReviewers());
+        model.addAttribute("reviewers", userService.getAllReviewers());
         model.addAttribute("questionnaires", reviewService.getUnapprovedQuestionnaires());
 
         if (!model.containsAttribute("createReviewForm")) {
@@ -118,7 +121,7 @@ public class ReviewController {
 
         model.addAttribute("language", currentLanguage);
         model.addAttribute("isReviewer", reviewService.isUserReviewer());
-        model.addAttribute("reviewers", reviewService.getAllReviewers());
+        model.addAttribute("reviewers", userService.getAllReviewers());
         model.addAttribute("review", reviewDTO);
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
 
@@ -179,9 +182,6 @@ public class ReviewController {
                 validationResult = reviewService.assignReviewer(form, locale, request);
                 break;
             default:
-                /**
-                 * TODO [LJ] message for this?
-                 */
                 redirectAttributes.addFlashAttribute("messageFail", "Invalid action: "+form.action());
                 return "redirect:/review/pending/list";
         }
