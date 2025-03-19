@@ -31,6 +31,7 @@ from helper.Survey import SurveyHelper, SurveyAssertHelper, SurveySelectors
 from helper.Language import LanguageSelectors, LanguageHelper
 from helper.User import UserHelper, UserRoles, UserSelector, EmailSelectors
 from helper.Statistic import StatisticSelector
+from helper.Dashboard import DashboardHelper, DashboardSelectors
 
 loginHelper = LoginHelper()
 
@@ -159,6 +160,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.condition_assert_helper = ConditionAssertHelper(self.driver, self.navigation_helper)
         self.language_helper = LanguageHelper(self.driver, self.navigation_helper)
         self.encounter_helper = EncounterHelper(self.driver, self.navigation_helper)
+        self.dashboard_helper = DashboardHelper(self.driver, self.navigation_helper)
 
     def test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
@@ -1065,6 +1067,23 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(SurveySelectors.TEXT_BUNDLE_FINAL_INFO, "Bundle final info not found")
 
         self.survey_helper.end_survey()
+        
+        self.authentication_helper.logout()
+        
+    def test_git_info(self):
+        # Arrange
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+        
+        self.dashboard_helper.open_git_info()
+        
+        self.utils.check_visibility_of_element(DashboardSelectors.TABLE_GITINFO,"Git Information Table not found")
+        
+        # Assert git information elements are present
+        self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_BUILD_VERSION, "Git Build Version not found")
+        self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_BRANCH, "Git Branch not found")
+        self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_COMMIT_ID, "Git Commit ID not found")
+        self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_COMMIT_MESSAGE, "Git Commit Message not found")
         
         self.authentication_helper.logout()
     def tearDown(self): 
