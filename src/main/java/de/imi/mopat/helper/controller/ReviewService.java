@@ -710,4 +710,11 @@ public class ReviewService {
                     reviewDao.merge(review);
                 });
     }
+
+    public List<UserDTO> getAvailableReviewersExcludingSelf() {
+        Long currentUserId = authService.getAuthenticatedUserId();
+        return userService.getAllReviewers().stream()
+                .filter(user -> !user.getId().equals(currentUserId))
+                .toList();
+    }
 }

@@ -93,7 +93,7 @@ public class ReviewController {
         model.addAttribute("language", currentLanguage);
 
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
-        model.addAttribute("reviewers", userService.getAllReviewers());
+        model.addAttribute("reviewers", reviewService.getAvailableReviewersExcludingSelf());
         model.addAttribute("questionnaires", reviewService.getUnapprovedQuestionnaires());
 
         if (!model.containsAttribute("createReviewForm")) {
