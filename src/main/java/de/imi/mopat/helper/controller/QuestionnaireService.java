@@ -1,20 +1,27 @@
 package de.imi.mopat.helper.controller;
 
+import de.imi.mopat.dao.AnswerDao;
+import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.conditions.Condition;
-import de.imi.mopat.model.QuestionnaireVersionGroup;
+import de.imi.mopat.model.conditions.ConditionTrigger;
+import de.imi.mopat.model.conditions.SelectAnswerCondition;
+import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.score.BinaryExpression;
 import de.imi.mopat.model.score.BinaryOperator;
 import de.imi.mopat.model.score.Expression;
@@ -30,21 +37,11 @@ import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.TreeMap;
 import javax.imageio.ImageIO;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -112,6 +109,15 @@ public class QuestionnaireService {
     
     @Autowired
     private ConditionDTOMapper conditionDTOMapper;
+
+    @Autowired
+    private AnswerDao answerDao;
+
+    @Autowired
+    private ScoreDao scoreDao;
+
+    @Autowired
+    private BundleDao bundleDao;
 
     /**
      * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
@@ -884,5 +890,76 @@ public class QuestionnaireService {
 
     public void updateQuestionnaire(Questionnaire questionnaire) {
         questionnaireDao.merge(questionnaire);
+    }
+
+    public Pair<Boolean, String> removeQuestionnaire(Long questionnaireId) {
+        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        Locale locale = LocaleContextHolder.getLocale();
+        Long currentUserId = authService.getAuthenticatedUserId();
+
+        if (questionnaire == null) {
+            return Pair.of(false,
+                messageSource.getMessage("questionnaire.error.notFound", new Object[]{questionnaireId}, locale)
+            );
+        }
+
+        if (!questionnaire.isDeletable()){
+            return Pair.of(false,
+                    messageSource.getMessage("questionnaire.error.deleteQuestionnaireNotPossible", new Object[]{questionnaire.getName()}, locale)
+            );
+        }
+
+        if (!questionnaire.getCreatedBy().equals(currentUserId) && !authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
+            return Pair.of(false,
+                    messageSource.getMessage("questionnaire.error.unauthorized", new Object[]{questionnaireId}, locale)
+            );
+        }
+
+        // Delete the associated conditions
+        conditionDao.getConditionsByTarget(questionnaire).forEach(condition -> {
+            if (condition instanceof SelectAnswerCondition || condition instanceof SliderAnswerThresholdCondition) {
+                // Refresh the trigger so that multiple conditions of the same trigger will be deleted correctly
+                ConditionTrigger conditionTrigger = answerDao.getElementById(condition.getTrigger().getId());
+                conditionTrigger.removeCondition(condition);
+                answerDao.merge((Answer) conditionTrigger);
+            }
+            conditionDao.remove(condition);
+        });
+
+        // Collect all scores in an array list to make sure they will be removed in correct order
+        Set<Score> scoresToDelete = new LinkedHashSet<>();
+        questionnaire.getScores().forEach(score -> {
+            List<Score> dependingScores = score.getDependingScores();
+            // Sort depending scores by amount of their depending scores to prevent database errors
+            dependingScores.sort(Comparator.comparingInt(s -> s.getDependingScores().size()));
+            scoresToDelete.addAll(dependingScores);
+            scoresToDelete.add(score);
+        });
+
+        scoresToDelete.forEach(scoreDao::remove);
+
+
+        // Delete connection to the bundles
+        questionnaire.getBundleQuestionnaires().forEach(bundleQuestionnaire -> {
+            Bundle bundle = bundleQuestionnaire.getBundle();
+            bundle.removeBundleQuestionnaire(bundleQuestionnaire);
+            bundle.getBundleQuestionnaires().forEach(bq -> {
+                if (bq.getPosition() > bundleQuestionnaire.getPosition()) {
+                    bq.setPosition(bq.getPosition() - 1);
+                }
+            });
+            bundleDao.merge(bundle);
+        });
+
+        questionnaire.removeAllBundleQuestionnaires();
+
+        // Delete Review, Version Group and finally the questionnaire
+        reviewService.deleteReview(questionnaire);
+        questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
+        questionnaireDao.remove(questionnaire);
+
+        return Pair.of(true,
+                messageSource.getMessage("questionnaire.error.deleteQuestionnairePossible", new Object[]{questionnaire.getName()}, locale)
+        );
     }
 }

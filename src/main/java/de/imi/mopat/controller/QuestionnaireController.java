@@ -308,81 +308,9 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String removeQuestionnaire(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
-        if (questionnaire != null) {
-            if (questionnaire.isDeletable()) {
-                // Delete the associated conditions
-                for (Condition condition : conditionDao.getConditionsByTarget(questionnaire)) {
-                    if (condition instanceof SelectAnswerCondition
-                        || condition instanceof SliderAnswerThresholdCondition) {
-                        // Refresh the trigger so that multiple conditions of
-                        // the same trigger will be deleted correctly
-                        ConditionTrigger conditionTrigger = answerDao.getElementById(
-                            condition.getTrigger().getId());
-                        conditionTrigger.removeCondition(condition);
-                        answerDao.merge((Answer) conditionTrigger);
-                    }
-                    conditionDao.remove(condition);
-                }
-
-                // Collect all scores in an array list to make sure they will
-                // be removed in correct order
-                List<Score> scoresToDelete = new ArrayList<>();
-                for (Score scoreToDelete : questionnaire.getScores()) {
-                    List<Score> dependingScores = scoreToDelete.getDependingScores();
-                    // Sort depending scores by amount of their depending
-                    // scores to prevent database errors
-                    Collections.sort(dependingScores,
-                        (Score o1, Score o2) -> o1.getDependingScores().size()
-                            - o2.getDependingScores().size());
-                    // First add all depending scores
-                    for (Score dependingScore : dependingScores) {
-                        if (!scoresToDelete.contains(dependingScore)) {
-                            scoresToDelete.add(dependingScore);
-                        }
-                    }
-                    // Add the score that actually has to be deleted
-                    if (!scoresToDelete.contains(scoreToDelete)) {
-                        scoresToDelete.add(scoreToDelete);
-                    }
-                }
-
-                // Delete the associated scores
-                Iterator<Score> iterator = scoresToDelete.iterator();
-                while (iterator.hasNext()) {
-                    Score scoreToDelete = iterator.next();
-                    iterator.remove();
-                    scoreDao.remove(scoreToDelete);
-                }
-
-                // Delete connection to the bundles
-                for (BundleQuestionnaire bundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
-                    Bundle bundle = bundleQuestionnaire.getBundle();
-                    bundle.removeBundleQuestionnaire(bundleQuestionnaire);
-                    //Update the position of all following bundleQuestionnaires
-                    for (BundleQuestionnaire bundleQuestionnaireToChangePosition : bundle.getBundleQuestionnaires()) {
-                        if (bundleQuestionnaireToChangePosition.getPosition()
-                            > bundleQuestionnaire.getPosition()) {
-                            bundleQuestionnaireToChangePosition.setPosition(
-                                bundleQuestionnaireToChangePosition.getPosition() - 1);
-                        }
-                    }
-                    bundleDao.merge(bundle);
-                }
-                questionnaire.removeAllBundleQuestionnaires();
-                reviewService.deleteReview(questionnaire);
-                questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
-                questionnaireDao.remove(questionnaire);
-                model.addAttribute("messageSuccess",
-                    messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
-                        new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
-            } else {
-                model.addAttribute("messageFail", messageSource.getMessage(
-                    "questionnaire.error" + ".deleteQuestionnaireNotPossible",
-                    new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
-            }
-        }
+                                      final Model model) {
+        Pair<Boolean, String> removeResult = questionnaireService.removeQuestionnaire(id);
+        model.addAttribute(removeResult.getLeft() ? "messageSuccess" : "messageFail", removeResult.getRight());
         return listQuestionnaires(model);
     }
 

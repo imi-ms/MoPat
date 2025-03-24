@@ -245,7 +245,7 @@
 													></i>
 												</a>
 											</th:block>
-											<a
+											<a th:if="${isModOrAbove or item.getCreatedBy() == currentUserId}"
 												class="link removeQuestionnaireLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}"
 												th:href="@{remove?id=__${item.id}__}"
@@ -305,7 +305,7 @@
 													   th:text="${messages.get(#locale, 'questionnaire.button.approve', 'Disapprove Questionnaire')}"
 													></a>
 												</th:block>
-												<a
+												<a th:if="${isModOrAbove or item.getCreatedBy() == currentUserId}"
 													class="link"
 													th:attr="data-hasConditions=${item.isHasConditions()}"
 													th:href="@{remove?id=__${item.id}__}"
