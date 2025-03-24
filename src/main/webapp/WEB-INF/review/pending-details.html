@@ -100,10 +100,8 @@
             <input type="hidden" name="reviewId" th:value="${review.id}" th:field="*{reviewId}"/>
             <input type="hidden" id="hiddenReviewerId" name="reviewerId" value="">
 
-            <div id="approvalAndMainVersionContainer" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
-                 sec:authorize="hasRole('ROLE_MODERATOR')">
+            <div id="approvalAndMainVersionContainer" th:if="${(currentUserId == review.reviewerId || isAdmin) && currentUserId != review.editorId}">
                 <div class="form-group">
-
                     <label for="approvalOptions" class="form-label d-block mb-2" 
                         th:text="${messages.get(#locale, 'review.details.label.approvalActions', 'Select an Action')}">
                     </label>
@@ -224,8 +222,7 @@
             </div>
 
             <!-- Reviewer -->
-            <div id="approvalButtonGroup" class="mt-3" th:if="${currentUserId == review.reviewerId && currentUserId != review.editorId}"
-                 sec:authorize="hasRole('ROLE_MODERATOR')">
+            <div id="approvalButtonGroup" class="mt-3" th:if="${(currentUserId == review.reviewerId || isAdmin) && currentUserId != review.editorId}">
                 <div id="submitApproveContainer">
                     <button
                         type="submit"

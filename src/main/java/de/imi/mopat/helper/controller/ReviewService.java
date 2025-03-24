@@ -70,11 +70,11 @@ public class ReviewService {
     @Autowired
     private Clock clock;
 
-    private static final Comparator<Review> REVIEW_COMPARATOR = Comparator
-            .comparing((Review review) -> review.getStatus() == ReviewStatus.APPROVED ? 1 : 0)
-            .thenComparing(Review::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
-
-
+    /**
+     * Retrieves all reviews sorted by their status and update time.
+     *
+     * @return A list of all reviews.
+     */
     public List<Review> getAllReviews() {
         return reviewDao.getAllElements().stream()
                 .sorted(Comparator
@@ -83,6 +83,11 @@ public class ReviewService {
                 .toList();
     }
 
+    /**
+     * Retrieves all pending reviews that have not been completed.
+     *
+     * @return A list of pending reviews as DTOs.
+     */
     public List<ReviewDTO> getAllPendingReviews() {
         return getAllReviews().stream()
                 .filter(Review::isUnfinished)
@@ -91,6 +96,11 @@ public class ReviewService {
                 .toList();
     }
 
+    /**
+     * Retrieves all completed reviews.
+     *
+     * @return A list of completed reviews as DTOs.
+     */
     public Object getAllCompletedReviews() {
         return getAllReviews().stream()
                 .filter(Review::isFinished)
@@ -99,6 +109,11 @@ public class ReviewService {
                 .toList();
     }
 
+    /**
+     * Retrieves all pending reviews assigned to the authenticated user.
+     *
+     * @return A list of pending reviews assigned to the user.
+     */
     public List<ReviewDTO> getAssignedPendingReviews() {
         Long userId = authService.getAuthenticatedUserId();
 
@@ -114,6 +129,11 @@ public class ReviewService {
                 .toList();
     }
 
+    /**
+     * Retrieves all completed reviews assigned to the authenticated user.
+     *
+     * @return A list of completed reviews assigned to the user.
+     */
     public List<ReviewDTO> getAssignedCompletedReviews() {
         Long userId = authService.getAuthenticatedUserId();
 
@@ -130,6 +150,17 @@ public class ReviewService {
     }
 
 
+    /**
+     * Retrieves all questionnaires that are not yet approved and are not currently under review.
+     * <p>
+     * The returned list includes:
+     * - **For regular users (Editors):** Only questionnaires that they have created or modified.
+     * - **For Moderators/Admins:** All unapproved questionnaires.
+     * <p>
+     * Additionally, questionnaires that are currently under an active review are excluded.
+     *
+     * @return A list of unapproved questionnaires that are not currently under review.
+     */
     public List<QuestionnaireDTO> getUnapprovedQuestionnaires() {
         Set<Long> questionnairesWithRunningReview = reviewDao.getAllElements().stream()
                 .filter(Review::isUnfinished)
@@ -349,6 +380,11 @@ public class ReviewService {
         return reviewDTO;
     }
 
+    /**
+     * Adds editor and reviewer details to the conversation messages in the review DTO.
+     *
+     * @param reviewDTO The review DTO to enrich with user details.
+     */
     private void addUserDetailsInConversations(ReviewDTO reviewDTO) {
         Map<Long, UserDTO> userMap = userService.getAllUser().stream()
                 .collect(Collectors.toMap(
@@ -427,7 +463,7 @@ public class ReviewService {
     private String generateReviewLink(HttpServletRequest request, Long reviewId) {
         String baseUrl = getBaseUrl(request);
         Map<String, String> queryParams = Map.of("id", String.valueOf(reviewId));
-        return buildUrlWithParams(baseUrl, "/review/details", queryParams);
+        return buildUrlWithParams(baseUrl, "/review/pending/details", queryParams);
     }
 
     private ValidationResult sendReviewActionMail(
@@ -635,6 +671,16 @@ public class ReviewService {
                 .forEach(id -> deleteReviewById(id, locale));
     }
 
+    /**
+     * Deletes a review by its ID.
+     * <p>
+     * If the review is not yet completed, the associated questionnaire's status is reset to **Draft**.
+     * </p>
+     *
+     * @param reviewId The ID of the review to be deleted.
+     * @param locale   The locale for error messages.
+     * @return A `ValidationResult` indicating success or failure.
+     */
     public ValidationResult deleteReviewById(Long reviewId, Locale locale) {
 
         ValidationResult validationResult = validateReview(reviewId, locale);

@@ -8,6 +8,7 @@ import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.helper.controller.ValidationResult;
 import de.imi.mopat.model.dto.ReviewDTO;
+import de.imi.mopat.model.user.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -44,6 +45,12 @@ public class ReviewController {
     @Autowired
     AuthService authService;
 
+    /**
+     * Displays a list of all pending reviews for the current user.
+     *
+     * @param model The model used to populate the view with pending reviews.
+     * @return The view name for the pending review list.
+     */
     @GetMapping("/pending/list")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listReview(final Model model) {
@@ -53,6 +60,12 @@ public class ReviewController {
         return "review/pending-list";
     }
 
+    /**
+     * Displays a list of all completed (archived) reviews for the current user.
+     *
+     * @param model The model used to populate the view with completed reviews.
+     * @return The view name for the completed review list.
+     */
     @GetMapping("/completed/list")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listArchivedReviews(final Model model) {
@@ -62,6 +75,14 @@ public class ReviewController {
         return "review/completed-list";
     }
 
+    /**
+     * Displays the form for creating a new review.
+     *
+     * @param language The language to use for the form.
+     * @param questionnaireId The ID of the questionnaire for which the review is requested.
+     * @param model The model used to populate the form.
+     * @return The view name for creating a review.
+     */
     @GetMapping("/create")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showCreateReviewForm(@RequestParam(value = "language", required = false) final Locale language,
@@ -120,6 +141,7 @@ public class ReviewController {
         Locale currentLanguage = Optional.ofNullable(language).orElse(LocaleContextHolder.getLocale());
 
         model.addAttribute("language", currentLanguage);
+        model.addAttribute("isAdmin", authService.hasExactRole(UserRole.ROLE_ADMIN));
         model.addAttribute("isReviewer", reviewService.isUserReviewer());
         model.addAttribute("reviewers", userService.getAllReviewers());
         model.addAttribute("review", reviewDTO);
