@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class QuestionnaireFactory {
-    public Questionnaire createQuestionnaire(String name, String description, Long changedBy, Boolean isPublished) {
+    public Questionnaire createQuestionnaire(String name, String description, Long createdBy, Boolean isPublished) {
         return new Questionnaire(
                 name,
                 description,
-                changedBy,
+                createdBy,
                 isPublished
         );
     }

@@ -182,4 +182,19 @@ public class UserService {
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
+
+    public Set<UserDTO> getUsersByRole(UserRole userRole) {
+        return userDao.getAllElements().stream()
+                .filter(user -> user.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals(userRole.getTextValue())))
+                .map(userDTOMapper)
+                .collect(Collectors.toSet());
+    }
+
+    public List<UserDTO> getAllReviewers() {
+        List<UserDTO> reviewers = new ArrayList<>();
+        reviewers.addAll(getUsersByRole(UserRole.ROLE_ADMIN));
+        reviewers.addAll(getUsersByRole(UserRole.ROLE_MODERATOR));
+        return reviewers;
+    }
 }

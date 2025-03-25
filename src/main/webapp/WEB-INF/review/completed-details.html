@@ -1,0 +1,113 @@
+<th:block layout:decorate="~{layout/main}"
+          th:with="title=${messages.get(#locale, 'review.details.heading', 'Review Details')}"
+          xmlns:th="http://hl7.org/fhir" xmlns:sec="http://www.w3.org/1999/xhtml">
+    <th:block layout:fragment="content">
+        <div class="panel-body">
+
+            <!-- Review Details -->
+            <div class="form-group">
+                <label for="questionnaire" th:text="${messages.get(#locale, 'review.details.label.questionnaire', 'Questionnaire')}"></label>
+                <div id="questionnaire" class="form-control">
+                    <a
+                            th:href="@{/questionnaire/fill?id=__${review.getQuestionnaireId()}__}"
+                            th:text="${review.getQuestionnaireName()}"
+                            class="text-primary text-decoration-none"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                    ></a>
+                </div>
+            </div>
+
+            <!-- Editor Name -->
+            <div class="form-group">
+                <label for="editor" th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}"></label>
+                <div id="editor" class="form-control" th:text="${review.editorName}">
+                </div>
+            </div>
+
+            <!-- Reviewer Name -->
+            <div class="form-group">
+                <label for="reviewer" th:text="${messages.get(#locale, 'review.label.reviewer', 'Reviewer')}"></label>
+                <div id="reviewer" class="form-control" th:text="${review.reviewerName}">
+                </div>
+            </div>
+
+            <!-- Review Conversation -->
+            <div class="form-group">
+                <label for="conversation" th:text="${messages.get(#locale, 'review.details.label.conversation', 'Conversation')}"></label>
+                <div id="conversation" class="card">
+                    <div class="card-body">
+                        <div th:each="reviewMessage : ${review.conversation}">
+                            <!-- Message container -->
+                            <div class="d-flex mb-4" th:classappend="${reviewMessage.senderId == currentUserId ? 'justify-content-end' : 'justify-content-start'}">
+                                <div class="d-flex align-items-center">
+
+                                    <!-- Messages from other users (left) -->
+                                    <div
+                                            class="circle bg-secondary text-white fw-bold d-flex align-items-center justify-content-center me-3"
+                                            th:if="${reviewMessage.senderId != currentUserId}"
+                                            th:title="${reviewMessage.senderName}">
+                                        <span th:text="${reviewMessage.senderInitials}"></span>
+                                    </div>
+
+                                    <!-- Message -->
+                                    <div class="w-auto">
+                                        <p class="message p-2 rounded-3 mb-1"
+                                           th:classappend="${reviewMessage.senderId == currentUserId ? 'bg-primary text-white' : 'bg-body-tertiary'}"
+                                           th:text="${reviewMessage.message}">
+                                        </p>
+                                        <p class="text-muted small mb-0"
+                                           th:class="${reviewMessage.senderId == currentUserId ? 'text-end' : 'text-start'}"
+                                           th:text="${#dates.format(reviewMessage.sentAt, 'dd.MM.yyyy HH:mm')}">
+                                        </p>
+                                    </div>
+
+                                    <!-- Messages from the logged-in user (right) -->
+                                    <div
+                                            class="circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center ms-3"
+                                            th:if="${reviewMessage.senderId == currentUserId}"
+                                            th:title="${reviewMessage.senderName}">
+                                        <span th:text="${reviewMessage.senderInitials}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>
+<th:block layout:fragment="scriptContainer">
+
+    <style>
+        .message {
+            white-space: pre-wrap;
+        }
+
+        .bg-body-tertiary {
+            background-color: #cfcfcf !important;
+            color: #000000;
+        }
+
+        #conversation .card-body {
+            position: relative;
+            height: 300px;
+            overflow-y: auto;
+        }
+
+        #conversation .rounded-3 {
+            border-radius: 0.75rem;
+        }
+
+        .circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 45px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+    </style>
+</th:block>

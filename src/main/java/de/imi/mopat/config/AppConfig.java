@@ -34,6 +34,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -339,4 +340,8 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
         this.environment = environment;
     }
 
+    @Bean
+    public Clock systemClock() {
+        return Clock.systemDefaultZone();
+    }
 }

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -49,6 +51,7 @@ public class QuestionnaireDTO {
     private Boolean hasConditionsAsTarget;
     private Boolean hasScores;
     private int version;
+    private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
 
     @JsonIgnore
     private Set<ExportTemplate> exportTemplates = new HashSet<>();
@@ -57,6 +60,10 @@ public class QuestionnaireDTO {
 
     @JsonIgnore
     private QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO;
+
+    private Long createdBy;
+
+    private Long changedBy;
 
     public List<QuestionDTO> getQuestionDTOs() {
         return questionDTOs;
@@ -194,4 +201,41 @@ public class QuestionnaireDTO {
     public void setQuestionnaireGroupDTO(QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO) {
         this.questionnaireVersionGroupDTO = questionnaireVersionGroupDTO;
     }
+
+    public Boolean isApproved() {
+        return approvalStatus.equals(ApprovalStatus.APPROVED);
+    }
+
+    public boolean isDraft() {
+        return this.approvalStatus == ApprovalStatus.DRAFT;
+    }
+
+    public boolean isUnderReview() {
+        return this.approvalStatus == ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public void setApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public Long getChangedBy() {
+        return changedBy;
+    }
+
+    public void setChangedBy(Long changedBy) {
+        this.changedBy = changedBy;
+    }
+
+    public boolean isCreatedOrModifiedBy(Long userId) {
+        return this.createdBy.equals(userId) || this.changedBy.equals(userId);
+    }
+
 }

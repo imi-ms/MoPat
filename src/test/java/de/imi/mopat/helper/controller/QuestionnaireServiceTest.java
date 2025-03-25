@@ -10,11 +10,14 @@ import de.imi.mopat.helper.model.QuestionnaireFactory;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTOTest;
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.utils.Helper;
 import de.imi.mopat.utils.MultipartFileUtils;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
+import jakarta.persistence.EntityNotFoundException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +46,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -51,6 +56,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.AssertionErrors.assertFalse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AppConfig.class, ApplicationSecurityConfig.class,
@@ -291,7 +297,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, and admin can edit the questionnaire without executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_AdminModeratorCanEditQuestionnaireWithoutExecutedSurveys() {
+    public void testSaveOrUpdateQuestionnaire_AdminCanEditQuestionnaireWithoutExecutedSurveys() {
         // Arrange
         Questionnaire newValidQuestionnaire = createAndPersistQuestionnaire();
         QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
@@ -299,7 +305,7 @@ public class QuestionnaireServiceTest {
         Long validUserId = Helper.generatePositiveNonZeroLong();
         Questionnaire modifiableQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
 
-        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
         doReturn(true).when(modifiableQuestionnaire).isModifiable();
         doReturn(Helper.generatePositiveNonZeroLong()).when(modifiableQuestionnaire).getId();
 
@@ -780,6 +786,151 @@ public class QuestionnaireServiceTest {
 
         questionnaireDao.remove(existingQuestionnaire);
         questionnaireDao.remove(newQuestionnaire);
+    }
+
+    @Test
+    public void testCanEditQuestionnaireWithReason_ReturnsCorrectMessages() {
+        // Arrange
+        Questionnaire existingQUestionnaire = createAndPersistQuestionnaire();
+        Question testQuestion = QuestionTest.getNewValidQuestion(existingQUestionnaire);
+        questionDao.merge(testQuestion);
+        SliderFreetextAnswer testAnswer = SliderFreetextAnswerTest.getNewValidSliderFreetextAnswer();
+        testAnswer.setQuestion(testQuestion);
+        answerDao.merge(testAnswer);
+        Bundle testBundle = BundleTest.getNewValidBundle();
+        bundleDao.merge(testBundle);
+        Encounter testEncounter = EncounterTest.getNewValidEncounter(testBundle);
+        encounterDao.merge(testEncounter);
+        Response testResponse = new Response(testAnswer, testEncounter);
+        responseDao.merge(testResponse);
+        questionnaireDao.merge(existingQUestionnaire);
+
+        when(authService.hasExactRole(UserRole.ROLE_EDITOR)).thenReturn(true);
+        String errorMessage = "Questionnaire has executed Encounters";
+        when(messageSource.getMessage(eq("questionnaire.message.executedEncounters"), any(), any(), any()))
+                .thenReturn(errorMessage);
+
+        QuestionnaireDTO dto = new QuestionnaireDTO();
+        dto.setId(existingQUestionnaire.getId());
+
+        // Act
+        Pair<Boolean, String> result = questionnaireService.canEditQuestionnaireWithReason(dto);
+
+        // Assert
+        assertFalse("Editor should not be allowed to edit questionnaires with executed encounters", result.getLeft());
+        assertEquals("The error message should be set", errorMessage, result.getRight());
+    }
+
+    @Test
+    public void testDisapproveQuestionnaire_Success() {
+        // Arrange
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaire.setStatusApprove();
+        questionnaireDao.merge(questionnaire);
+
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+
+        // Act
+        questionnaireService.disapproveQuestionnaire(questionnaire.getId(), Locale.getDefault());
+
+        // Assert
+        Questionnaire updated = questionnaireDao.getElementById(questionnaire.getId());
+        assertEquals(ApprovalStatus.DRAFT, updated.getApprovalStatus());
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testDisapproveQuestionnaire_AccessDenied() {
+        // Arrange
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
+        when(messageSource.getMessage(eq("questionnaire.error.unauthorized"), any(), any()))
+                .thenReturn("Unauthorized");
+
+        // Act
+        questionnaireService.disapproveQuestionnaire(1L, Locale.getDefault());
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void testDisapproveQuestionnaire_QuestionnaireNotFound() {
+        // Arrange
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(messageSource.getMessage(eq("questionnaire.error.notFound"), any(), any()))
+                .thenReturn("Questionnaire not found");
+
+        // Act
+        questionnaireService.disapproveQuestionnaire(null, Locale.ENGLISH);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testDisapproveQuestionnaire_AlreadyDraft() {
+        // Arrange
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaire.setStatusDraft();
+        questionnaireDao.merge(questionnaire);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(messageSource.getMessage(eq("questionnaire.error.notApproved"), any(), any()))
+                .thenReturn("Questionnaire is not approved");
+
+        // Act
+        questionnaireService.disapproveQuestionnaire(questionnaire.getId(), Locale.getDefault());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testDisapproveQuestionnaire_PartOfEnabledBundle() {
+        // Arrange
+        Questionnaire exsitingQuestionnaire = createAndPersistQuestionnaire();
+        exsitingQuestionnaire.setStatusApprove();
+        questionnaireDao.merge(exsitingQuestionnaire);
+        QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(exsitingQuestionnaire.getId());
+
+        BundleQuestionnaire enabledBundleQuestionnaire = BundleQuestionnaireTest.getNewValidBundleQuestionnaire();
+        enabledBundleQuestionnaire.setIsEnabled(true);
+        List<BundleQuestionnaire> bundleQuestionnaireList = List.of(enabledBundleQuestionnaire);
+
+        when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(messageSource.getMessage(eq("questionnaire.error.enabledBundle"), any(), any()))
+                .thenReturn("Questionnaire is part of an enabled bundle");
+
+        // Act
+        questionnaireService.disapproveQuestionnaire(exsitingQuestionnaire.getId(), Locale.getDefault());
+    }
+
+    @Test
+    public void testApproveQuestionnaire_Success() {
+        // Arrange
+        Questionnaire exsitingQuestionnaire = createAndPersistQuestionnaire();
+
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+
+        // Act
+        questionnaireService.approveQuestionnaire(exsitingQuestionnaire.getId(), Locale.getDefault());
+
+        // Assert
+        Questionnaire updated = questionnaireDao.getElementById(exsitingQuestionnaire.getId());
+        assertEquals(ApprovalStatus.APPROVED, updated.getApprovalStatus());
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testApproveQuestionnaire_AccessDenied() {
+        // Arrange
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(false);
+        when(messageSource.getMessage(eq("questionnaire.error.unauthorized"), any(), any()))
+                .thenReturn("Unauthorized");
+
+        // Act
+        questionnaireService.approveQuestionnaire(1L, Locale.getDefault());
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void testApproveQuestionnaire_QuestionnaireNotFound() {
+        // Arrange
+        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(messageSource.getMessage(eq("questionnaire.error.notFound"), any(), any()))
+                .thenReturn("Questionnaire not found");
+
+        // Act
+        questionnaireService.approveQuestionnaire(null, Locale.getDefault());
     }
 
     @After

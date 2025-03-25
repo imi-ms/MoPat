@@ -5,7 +5,7 @@ import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
-import jakarta.interceptor.AroundInvoke;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,10 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         questionnaireDTO.setName(questionnaire.getName());
         questionnaireDTO.setDescription(questionnaire.getDescription());
         questionnaireDTO.setVersion(questionnaire.getVersion());
-        
+        questionnaireDTO.setApprovalStatus(questionnaire.getApprovalStatus());
+        questionnaireDTO.setChangedBy(questionnaire.getChangedBy());
+        questionnaireDTO.setCreatedBy(questionnaire.getCreatedBy());
+
         Map<String, String> localizedWelcomeMap = questionnaire.getLocalizedWelcomeText();
         if (localizedWelcomeMap != null) {
             questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(localizedWelcomeMap));

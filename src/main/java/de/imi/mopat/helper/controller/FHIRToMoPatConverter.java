@@ -89,6 +89,7 @@ public class FHIRToMoPatConverter {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
             .getPrincipal();
         mopatQuestionnaire.setPublished(false);
+        mopatQuestionnaire.setCreatedBy(currentUser.getId());
         mopatQuestionnaire.setChangedBy(currentUser.getId());
         mopatQuestionnaire.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 

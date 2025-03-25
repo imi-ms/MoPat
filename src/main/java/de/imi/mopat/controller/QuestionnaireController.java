@@ -11,7 +11,6 @@ import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
@@ -20,7 +19,6 @@ import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.FHIRHelper;
 import de.imi.mopat.helper.controller.FHIRToMoPatConverter;
-import de.imi.mopat.helper.controller.GraphicsUtilities;
 import de.imi.mopat.helper.controller.ImportQuestionnaireResult;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ODMProcessingBean;
@@ -28,6 +26,7 @@ import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
@@ -56,16 +55,14 @@ import de.imi.mopat.model.score.Operator;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.user.User;
-import de.imi.mopat.validator.MoPatValidator;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.QuestionValidator;
-import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionFormDef;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionMetaDataVersion;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -84,7 +81,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -162,6 +158,9 @@ public class QuestionnaireController {
     @Autowired
     private ODMProcessingBean odmReader;
 
+    @Autowired
+    private ReviewService reviewService;
+
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
      * questionnaires.
@@ -205,6 +204,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
+        model.addAttribute("isModOrAbove", authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR));
+        model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
         model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
@@ -307,80 +308,9 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String removeQuestionnaire(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
-        if (questionnaire != null) {
-            if (questionnaire.isDeletable()) {
-                // Delete the associated conditions
-                for (Condition condition : conditionDao.getConditionsByTarget(questionnaire)) {
-                    if (condition instanceof SelectAnswerCondition
-                        || condition instanceof SliderAnswerThresholdCondition) {
-                        // Refresh the trigger so that multiple conditions of
-                        // the same trigger will be deleted correctly
-                        ConditionTrigger conditionTrigger = answerDao.getElementById(
-                            condition.getTrigger().getId());
-                        conditionTrigger.removeCondition(condition);
-                        answerDao.merge((Answer) conditionTrigger);
-                    }
-                    conditionDao.remove(condition);
-                }
-
-                // Collect all scores in an array list to make sure they will
-                // be removed in correct order
-                List<Score> scoresToDelete = new ArrayList<>();
-                for (Score scoreToDelete : questionnaire.getScores()) {
-                    List<Score> dependingScores = scoreToDelete.getDependingScores();
-                    // Sort depending scores by amount of their depending
-                    // scores to prevent database errors
-                    Collections.sort(dependingScores,
-                        (Score o1, Score o2) -> o1.getDependingScores().size()
-                            - o2.getDependingScores().size());
-                    // First add all depending scores
-                    for (Score dependingScore : dependingScores) {
-                        if (!scoresToDelete.contains(dependingScore)) {
-                            scoresToDelete.add(dependingScore);
-                        }
-                    }
-                    // Add the score that actually has to be deleted
-                    if (!scoresToDelete.contains(scoreToDelete)) {
-                        scoresToDelete.add(scoreToDelete);
-                    }
-                }
-
-                // Delete the associated scores
-                Iterator<Score> iterator = scoresToDelete.iterator();
-                while (iterator.hasNext()) {
-                    Score scoreToDelete = iterator.next();
-                    iterator.remove();
-                    scoreDao.remove(scoreToDelete);
-                }
-
-                // Delete connection to the bundles
-                for (BundleQuestionnaire bundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
-                    Bundle bundle = bundleQuestionnaire.getBundle();
-                    bundle.removeBundleQuestionnaire(bundleQuestionnaire);
-                    //Update the position of all following bundleQuestionnaires
-                    for (BundleQuestionnaire bundleQuestionnaireToChangePosition : bundle.getBundleQuestionnaires()) {
-                        if (bundleQuestionnaireToChangePosition.getPosition()
-                            > bundleQuestionnaire.getPosition()) {
-                            bundleQuestionnaireToChangePosition.setPosition(
-                                bundleQuestionnaireToChangePosition.getPosition() - 1);
-                        }
-                    }
-                    bundleDao.merge(bundle);
-                }
-                questionnaire.removeAllBundleQuestionnaires();
-                questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
-                questionnaireDao.remove(questionnaire);
-                model.addAttribute("messageSuccess",
-                    messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
-                        new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
-            } else {
-                model.addAttribute("messageFail", messageSource.getMessage(
-                    "questionnaire.error" + ".deleteQuestionnaireNotPossible",
-                    new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
-            }
-        }
+                                      final Model model) {
+        Pair<Boolean, String> removeResult = questionnaireService.removeQuestionnaire(id);
+        model.addAttribute(removeResult.getLeft() ? "messageSuccess" : "messageFail", removeResult.getRight());
         return listQuestionnaires(model);
     }
 
@@ -523,6 +453,7 @@ public class QuestionnaireController {
                 questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
                 User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
                     .getPrincipal();
+                questionnaire.setCreatedBy(currentUser.getId());
                 questionnaire.setChangedBy(currentUser.getId());
                 // Collect all questions and answers in a map to access those
                 // ones who are target and trigger of a condition easily
@@ -652,13 +583,13 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + new Timestamp(new Date().getTime()));
                 }
-
+                if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+                    questionnaire.setStatusApprove();
+                }
                 questionnaireDao.merge(questionnaire);
 
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                 questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 //Loop through all persisted questions to get the
                 // imageAnswers and save the images
@@ -818,12 +749,13 @@ public class QuestionnaireController {
                                             questionnaire.getName() + " " + dateFormat.format(
                                                 calendar.getTime()));
                                     }
+                                    if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+                                        questionnaire.setStatusApprove();
+                                    }
                                     questionnaireDao.merge(questionnaire);
 
-                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                                     questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                                    questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                                    questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         exportTemplate.setQuestionnaire(questionnaire);
@@ -996,14 +928,15 @@ public class QuestionnaireController {
                     questionnaire.setName(
                         questionnaire.getName() + " " + dateFormat.format(new Date()));
                 }
+                if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+                    questionnaire.setStatusApprove();
+                }
 
                 // Merge questionnaire
                 questionnaireDao.merge(questionnaire);
 
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
+                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
                 questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
                 // Merge the export templates
                 for (ExportTemplate exportTemplate : exportTemplates) {
@@ -1041,4 +974,35 @@ public class QuestionnaireController {
         }
         return "questionnaire/import/result";
     }
+
+    @RequestMapping("/questionnaire/disapprove")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    public String disapproveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                          RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.disapproveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.disapproved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
+    @RequestMapping("/questionnaire/approve")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    public String approveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                       RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.approveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.approved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
 }

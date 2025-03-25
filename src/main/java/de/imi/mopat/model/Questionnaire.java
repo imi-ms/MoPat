@@ -5,6 +5,7 @@ import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.enumeration.QuestionType;
+import de.imi.mopat.model.enumeration.ApprovalStatus;
 import de.imi.mopat.model.score.Score;
 
 import java.io.Serializable;
@@ -26,6 +27,8 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -88,6 +91,9 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Column(name = "changed_by", nullable = false)
     private Long changedBy;
     @JsonIgnore
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+    @JsonIgnore
     @Column(name = "updated_at")
     private Timestamp updatedAt;
     @Column(name = "logo")
@@ -137,7 +143,12 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
-    
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status", nullable = false)
+    private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
+
     public Questionnaire() { //default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
@@ -153,17 +164,18 @@ public class Questionnaire implements ConditionTarget, Serializable {
      * @param description The new description for this questionnaire object. Must not be
      *                    <code>null</code>. Has to be at least 3 and at most 255 characters in
      *                    length (after trimming).
-     * @param changedBy   The given changedBy must be not null and must be positive
+     * @param createdBy   The given createdBy must be not null and must be positive
      * @param isPublished <code>true</code> if the questionnaire should be
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy,
+    public Questionnaire(final String name, final String description, final Long createdBy,
         final Boolean isPublished) {
 
         setName(name);
         setDescription(description);
-        setChangedBy(changedBy);
+        setCreatedBy(createdBy);
+        setChangedBy(createdBy);
         setPublished(isPublished);
     }
 
@@ -464,6 +476,27 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    /**
+     * Returns the id of the user that created this questionnaire object.
+     *
+     * @return The id of the user that created this questionnaire object. Is never
+     * <code>null</code>. Is never <code> &lt;=0</code>.
+     */
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    /**
+     * Sets the id of the user that created this questionnaire object
+     *
+     * @param createdBy The given createdBy must be not null and must be positive
+     */
+    public void setCreatedBy(Long createdBy) {
+        assert createdBy != null : "The given createdBy-ID was null";
+        assert createdBy > 0 : "The given Id is <= 0";
+        this.createdBy = createdBy;
     }
 
     /**
@@ -856,5 +889,44 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     public Long getQuestionnaireVersionGroupId() {
         return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
+    }
+
+    public ApprovalStatus getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public Boolean isApproved() {
+        return approvalStatus.equals(ApprovalStatus.APPROVED);
+    }
+
+    public boolean isDraft() {
+        return this.approvalStatus == ApprovalStatus.DRAFT;
+    }
+
+    public boolean isUnderReview() {
+        return this.approvalStatus == ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public void setStatusApprove() {
+        this.approvalStatus = ApprovalStatus.APPROVED;
+    }
+
+    public void setStatusDraft() {
+        this.approvalStatus = ApprovalStatus.DRAFT;
+    }
+
+    public void setStatusUnderReview() {
+        this.approvalStatus = ApprovalStatus.UNDER_REVIEW;
+    }
+
+    public boolean isMainQuestionnaire() {
+        if (questionnaireVersionGroup == null){
+            return false;
+        }
+        return questionnaireVersionGroup.isMainQuestionnaire(this);
+    }
+
+    public boolean isCreatedOrModifiedBy(Long userId) {
+        return this.createdBy.equals(userId) || this.changedBy.equals(userId);
     }
 }

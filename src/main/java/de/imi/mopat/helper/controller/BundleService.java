@@ -60,6 +60,7 @@ public class BundleService {
 
         return unassignedQuestionnaires.stream()
                 .filter(questionnaire -> !questionnaire.getQuestions().isEmpty())
+                .filter(Questionnaire::isApproved)
                 .map(questionnaire -> {
                     QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
                     questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
