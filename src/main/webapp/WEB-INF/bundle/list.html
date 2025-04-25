@@ -130,7 +130,7 @@
 							</td>
 							<td style="text-align: left">
 								<th:block th:if="not ${#strings.isEmpty(item.createdAt)}">
-										<th:block th:text="${localHelper.formatTimestampToLocaleDate(item.createdAt)}" />
+										<th:block th:text="${localeHelper.formatTimestampToLocaleDate(item.createdAt)}" />
 								</th:block>
 							</td>
 							<td class="actionColumn">
@@ -259,7 +259,16 @@
 				"deferRender": true,
 				"paging": true,
 				"ordering": true,
-				"columnDefs": [{ orderable: false, targets: [1,3,5] }],
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [1,2,3,5] 
+					},
+					{ 
+						type: 'date',
+						targets: 4
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none");

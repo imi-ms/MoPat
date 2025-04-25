@@ -149,14 +149,14 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startTime)}"
-												th:text="${localHelper.formatTimestampToLocaleDate(item.startTime)}"
+												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.startTime)}"
 											>
 											</th:block>
 										</td>
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.endTime)}"
-												th:text="${localHelper.formatTimestampToLocaleDate(item.endTime)}"
+												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.endTime)}"
 											>
 											</th:block>
 										</td>
@@ -302,7 +302,7 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startDate)}"
-												th:text="${localHelper.formatDateToLocaleDate(item.startDate)}"
+												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.startDate)}"
 											>
 											</th:block>
 										</td>
@@ -310,7 +310,7 @@
 											<th:block
 												th:if="${item.encounterScheduledSerialType != 'UNIQUELY' && not #strings.isEmpty(item.endDate)}"
 											>
-												<th:block th:text="${localHelper.formatDateToLocaleDate(item.endDate)}" />
+												<th:block th:text="${localeHelper.formatTimstampToLocaleDateTime(item.endDate)}" />
 											</th:block>
 											<th:block
 												th:if="${item.encounterScheduledSerialType == 'UNIQUELY'}"
@@ -714,25 +714,43 @@
 				"deferRender": true,
 				"paging": true,
 				"ordering": true,
-				"columnDefs": [{ orderable: false, targets: [0,5,6] }],
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [5] 
+					},
+					{ 
+						type: 'datetime',
+						targets: [2,3]
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")
 					$('#encounterTable').fadeIn(); // Show the table
 				}
-			});
+			}).column(2).order('asc').draw();
 
 			$('#encounterScheduled').DataTable({
 				"deferRender": true,
 				"paging": true,
 				"ordering": true,
-				"columnDefs": [{ orderable: false, targets: [0,7] }],
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [0,7] 
+					},
+					{ 
+						type: 'datetime',
+						targets: [3,4]
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinnerScheduled').fadeOut(); // Hide the loading indicator
 					$('#loadingContainerScheduled').addClass("d-none")
 					$('#encounterScheduled').fadeIn(); // Show the table
 				}
-			});
+			}).column(3).order('asc').draw();;
 
 			$(".interruptLink").click(function (e) {
 				if (

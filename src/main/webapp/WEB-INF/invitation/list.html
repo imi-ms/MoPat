@@ -72,12 +72,12 @@
                                     <th:block th:if="${item.expirationDate < #dates.createNow()}">
                                         <font
                                             color="red"
-                                            th:text="${localHelper.formatDateToLocaleDate(item.expirationDate)}"
+                                            th:text="${localeHelper.formatDateToLocaleDate(item.expirationDate)}"
                                         ></font>
                                     </th:block>
                                     <th:block
                                         th:unless="${item.expirationDate < #dates.createNow()}"
-                                        th:text="${localHelper.formatDateToLocaleDate(item.expirationDate)}"
+                                        th:text="${localeHelper.formatDateToLocaleDate(item.expirationDate)}"
                                     />
                                 </th:block>
                             </td>
