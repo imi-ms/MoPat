@@ -6,6 +6,8 @@ import datetime
 import unittest
 import json
 import os
+import sys
+import io
 import traceback
 import time
 from abc import ABC, abstractmethod
@@ -84,22 +86,34 @@ class IMISeleniumBaseTest(ABC):
         test_name = self._testMethodName
         number_of_failures_old = len(result.failures)
         number_of_errors_old = len(result.errors)
-        print(f"=================== RUNNING TEST '{test_name}' ===================")
+
+        # Printing the start of the test with Markdown-friendly format
+        print(f"\n### Running Test: `{test_name}`\n")
+
+        # Running the actual test
         self.currentResult = result
         unittest.TestCase.run(self, result)
+
         number_of_failures_new = len(result.failures)
         number_of_errors_new = len(result.errors)
-        
-        if result.wasSuccessful() or (number_of_failures_old==number_of_failures_new and number_of_errors_old==number_of_errors_new):
-            print("Successfully ran Test without Errors")
+
+        # Success or error handling
+        if result.wasSuccessful() or (number_of_failures_old == number_of_failures_new and number_of_errors_old == number_of_errors_new):
+            # Successfully ran the test without errors
+            print("```txt\nSuccessfully ran Test without Errors\n```")
         else:
-            print("Test ran with errors:")
+            # Test ran with errors
+            print("```txt\nTest ran with errors:\n")
             for failed, error in result.failures + result.errors:
                 if failed == self:
                     print("\n--- Stack Trace ---")
-                    self._printError(error)
+                    # Printing the stack trace in a code block
+                    print(f"```\n{self._printError(error)}\n```")
                     print("--- End of Trace ---")
-        print(f"=================== END OF '{test_name}' ===================\n")
+            print("```")
+
+        # Printing the end of the test with Markdown-friendly format
+        #print(f"\n### End of Test: `{test_name}`\n")
 
     def tearDown(self) -> None:
         """
@@ -114,7 +128,16 @@ class IMISeleniumBaseTest(ABC):
         
     def _printError(self, error):
         exc_type, exc_value, tb = error
-        traceback.print_exception(exc_type, exc_value, tb)
+    
+        captured_stderr = io.StringIO()
+        sys.stderr = captured_stderr
+
+        formatted_exception = ''.join(traceback.format_exception(exc_type, exc_value, tb))
+        
+        sys.stderr = sys.__stderr__
+
+        print(formatted_exception)
+        print(captured_stderr.getvalue()) 
 
     def _loadSecretFile(self, filename):
         """
