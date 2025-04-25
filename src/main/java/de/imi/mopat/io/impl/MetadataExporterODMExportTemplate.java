@@ -84,6 +84,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for an ODMExportTemplate representation of the metadata of a {@link Questionnaire}.
@@ -96,6 +98,7 @@ import org.springframework.context.MessageSource;
  * [BaseOID].[questionID].1 and [BaseOID] .[questionID].2 - other questiontypes:
  * [BaseOID].[questionID] - CodeListOID: [BaseOID] .[questionID].1
  */
+@Service
 public class MetadataExporterODMExportTemplate implements MetadataExporter {
 
     private BigInteger orderNumber = BigInteger.ONE;
@@ -940,21 +943,20 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      * @return The {@link CLDataType} of the given {@link Question}.
      */
     private CLDataType getCLDataType(Question question) {
-        switch (question.getCodedValueType()) {
-            case STRING:
-                return CLDataType.STRING;
-            case INTEGER:
-                return CLDataType.INTEGER;
-            case FLOAT:
-                return CLDataType.FLOAT;
-            default:
-                for (Answer answer : question.getAnswers()) {
-                    if (answer instanceof BodyPartAnswer) {
-                        return CLDataType.STRING;
-                    }
+        if (question.getCodedValueType() == null) {
+            for (Answer answer : question.getAnswers()) {
+                if (answer instanceof BodyPartAnswer) {
+                    return CLDataType.STRING;
                 }
-                return CLDataType.INTEGER;
+            }
+            return CLDataType.INTEGER;
         }
+
+        return switch (question.getCodedValueType()) {
+            case INTEGER -> CLDataType.INTEGER;
+            case FLOAT -> CLDataType.FLOAT;
+            default -> CLDataType.STRING;
+        };
     }
 
     /**
