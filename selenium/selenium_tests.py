@@ -1154,31 +1154,35 @@ class CustomTestResult(unittest.TextTestResult):
         pass
 
     def printSummary(self):
-        print("\n======================== TEST SUMMARY ========================")
-        print(f"Total Tests Run: {self.testsRun}")
+        # Total Tests
+        print(f"# Test Summary\n")
+        print(f"**Total Tests Run:** {self.testsRun}\n")
         
-        print(f"\nSuccessful Tests ({len(self.successful_tests)}/{self.testsRun}):")
+        # Successful Tests
+        print(f"**Successful Tests ({len(self.successful_tests)}/{self.testsRun}):**")
         if self.successful_tests:
             for test in self.successful_tests:
-                print(f" - {test}")
+                print(f"- `{test}`")
         else:
             print(" None")
-
-        print(f"\nFailed Tests ({len(self.failures)}/{self.testsRun}):")
+        
+        # Failed Tests
+        print(f"\n**Failed Tests ({len(self.failures)}/{self.testsRun}):**")
         if self.failures:
             for test, _ in self.failures:
-                print(f" - {test}")
+                print(f"- `{test}`")
         else:
             print(" None")
-
-        print(f"\nErrored Tests ({len(self.errors)}/{self.testsRun}):")
+        
+        # Errored Tests
+        print(f"\n**Errored Tests ({len(self.errors)}/{self.testsRun}):**")
         if self.errors:
             for test, _ in self.errors:
-                print(f" - {test}")
+                print(f"- `{test}`")
         else:
             print(" None")
-
-        print("=============================================================\n")
+        
+        print("\n---\n")
 
 class CustomTestRunner(unittest.TextTestRunner):
     def _makeResult(self):
