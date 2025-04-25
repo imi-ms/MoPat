@@ -125,5 +125,17 @@ public class BundleService {
         return resultSet;
     }
 
+    /**
+     * Returns the list of bundles sorted by their name property (ascending).
+     *
+     * @param bundles to sort
+     * @return sorted List<Bundle>
+     */
+    public List<Bundle> sortBundlesByNameAsc(List<Bundle> bundles) {
+        bundles.sort(Comparator.comparing(Bundle::getName));
+        return bundles;
+    }
+
+
 
 }

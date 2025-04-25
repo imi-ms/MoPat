@@ -54,6 +54,9 @@
 							th:text="${messages.get(#locale, 'bundle.label.status', 'Status')}"
 						></th>
 						<th
+							th:text="${messages.get(#locale, 'bundle.label.createdAt', 'Created At')}"
+						></th>
+						<th
 							data-priority="2"
 							class="actionColumn"
 							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
@@ -123,6 +126,11 @@
 										</a
 										>)
 									</th:block>
+								</th:block>
+							</td>
+							<td style="text-align: left">
+								<th:block th:if="not ${#strings.isEmpty(item.createdAt)}">
+										<th:block th:text="${localeHelper.formatTimestampToLocaleDate(item.createdAt)}" />
 								</th:block>
 							</td>
 							<td class="actionColumn">
@@ -250,7 +258,17 @@
 			$('#bundleTable').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [1,2,3,5] 
+					},
+					{ 
+						type: 'date',
+						targets: 4
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none");
