@@ -83,12 +83,14 @@ class IMISeleniumBaseTest(ABC):
     def run(self, result=None):
         test_name = self._testMethodName
         number_of_failures_old = len(result.failures)
+        number_of_errors_old = len(result.errors)
         print(f"=================== RUNNING TEST '{test_name}' ===================")
         self.currentResult = result
         unittest.TestCase.run(self, result)
         number_of_failures_new = len(result.failures)
+        number_of_errors_new = len(result.errors)
         
-        if result.wasSuccessful() or (number_of_failures_old==number_of_failures_new):
+        if result.wasSuccessful() or (number_of_failures_old==number_of_failures_new and number_of_errors_old==number_of_errors_new):
             print("Successfully ran Test without Errors")
         else:
             print("Test ran with errors:")
