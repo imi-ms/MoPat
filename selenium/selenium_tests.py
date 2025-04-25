@@ -9,7 +9,7 @@ import os
 import traceback
 import time
 from abc import ABC, abstractmethod
-import unittest
+import unittest 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -82,11 +82,13 @@ class IMISeleniumBaseTest(ABC):
 
     def run(self, result=None):
         test_name = self._testMethodName
+        number_of_failures_old = len(result.failures)
         print(f"=================== RUNNING TEST '{test_name}' ===================")
         self.currentResult = result
         unittest.TestCase.run(self, result)
+        number_of_failures_new = len(result.failures)
         
-        if result.wasSuccessful():
+        if result.wasSuccessful() or (number_of_failures_old==number_of_failures_new):
             print("Successfully ran Test without Errors")
         else:
             print("Test ran with errors:")
