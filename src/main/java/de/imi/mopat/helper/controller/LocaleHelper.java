@@ -1,9 +1,17 @@
 package de.imi.mopat.helper.controller;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -93,4 +101,41 @@ public class LocaleHelper {
         }
         return locale;
     }
+    
+    /**
+     * Formats a timestamp to a date fitting the Locale
+     * @param timestamp to format
+     * @return String of date with the correct format
+     */
+    public static String formatTimestampToLocaleDate(Timestamp timestamp) {
+        Locale locale = Locale.getDefault();
+        Date date = new Date(timestamp.getTime());
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
+        return dateFormat.format(date);
+    }
+    
+    /**
+     * Formats a timestamp to a datetime fitting the Locale
+     * @param timestamp to format
+     * @return String of datetime with the correct format
+     */
+    public static String formatTimstampToLocaleDateTime(Timestamp timestamp) {
+        Locale locale = Locale.getDefault();
+        LocalDateTime dateTime = timestamp.toLocalDateTime();
+        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.systemDefault());
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(locale);
+        return myFormatObj.format(zonedDateTime);
+    }
+    
+    /**
+     * Formats a data to fit to the locale
+     * @param date to format
+     * @return String of date with the correct format
+     */
+    public static String formatDateToLocaleDate(Date date) {
+        Locale locale = Locale.getDefault();
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
+        return dateFormat.format(date);
+    }
+    
 }
