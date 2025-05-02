@@ -58,6 +58,7 @@ class EncounterSelectors:
     TABLE_ALL_ENCOUNTERS = (By.ID, "encounterTable")
     TABLE_SCHEDULED_ENCOUNTERS = (By.ID, "encounterScheduled")
     TABLE_ACTION_COLUMN=(By.CSS_SELECTOR, "td.actionColumn")
+    TABLE_ENCOUNTER_SCHEDULED_ACTION_COLUMN=(By.XPATH, "//table[@id='encounterScheduled']//td[contains(@class, 'actionColumn')]")
 
     PAGINATION_ENCOUNTER_SCHEDULE_TABLE = (By.ID, "encounterScheduled_paginate")
     PAGINATION_ENCOUNTER_TABLE = (By.ID, "encounterTable_paginate")

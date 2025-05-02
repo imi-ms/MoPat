@@ -109,7 +109,11 @@ class SurveyHelper:
             if case_number is None:
                 case_number = str(random.randint(10000, 99999))
             # Input case number
-            self.utils.fill_text_field(SurveySelectors.INPUT_CASE_NUMBER, case_number)
+            try:
+                self.utils.check_interactability_of_element(SurveySelectors.INPUT_CASE_NUMBER, 'The Input field for the case number was not clickable')
+                self.utils.fill_text_field(SurveySelectors.INPUT_CASE_NUMBER, case_number)
+            except Exception as e:
+                raise Exception(f"Failed to fill text field ('id', 'caseNumber'): {e}")
 
             # Click check button
             self.utils.click_element(SurveySelectors.BUTTON_CHECK_CASE)

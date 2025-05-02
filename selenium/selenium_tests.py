@@ -64,7 +64,8 @@ class IMISeleniumBaseTest(ABC):
         cls.base_url = url
         cls.https_base_url = f"http://{url}"
         # secret used in the subclass
-        cls.secret = cls._loadSecretFile(cls, "secret")
+        secret_filename = os.getenv('SECRET_FILENAME', "secret")
+        cls.secret = cls._loadSecretFile(cls, secret_filename)
         cls.selenium_grid_url = f"http://localhost:4444/wd/hub/"
 
 
@@ -613,7 +614,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
 
-        self.utils.check_visibility_of_element(EncounterSelectors.TABLE_ACTION_COLUMN, "Action column for Scheduled Encounters table not found")
+        self.utils.check_presence_of_element(EncounterSelectors.TABLE_ENCOUNTER_SCHEDULED_ACTION_COLUMN, "Action column for Scheduled Encounters table not found")
 
         #TODO: number of exports [after survey schedule function implementation]
 
@@ -1044,6 +1045,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.click_element(SurveySelectors.TAB_PATIENT_PSEUDONYMIZATION)
         self.utils.check_visibility_of_element(SurveySelectors.BUTTON_CHECK_CASE_NUMBER, "Check Case Number Button not found in Patient Pseudonymization tab")
         assert self.driver.find_element(*SurveySelectors.BUTTON_CHECK_CASE_NUMBER).text != button_text, "Button text changed in Patient Pseudonymization tab"    
+        
+        self.utils.click_element(SurveySelectors.TAB_PATIENT_REGISTRATION)
             
         self.survey_helper.start_survey(clinic_name=clinic["name"])
         
