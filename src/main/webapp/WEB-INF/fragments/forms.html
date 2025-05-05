@@ -173,12 +173,16 @@
 	/>
 </th:block>
 
-<!--/* Fragment that shows the error for a specific path */-->
-<th:block layout:fragment="errorField(path, errorClazz)">
+<!--/* 
+	* Fragment that shows the error for a specific path 
+	* Optional: id
+*/-->
+<th:block layout:fragment="errorField(path, errorClazz, id)">
 	<div
 		th:if="${#fields.hasErrors(path)}"
 		th:errors="*{__${path}__}"
-		th:class="${not #strings.isEmpty(errorClazz)} ? ${errorClazz} : 'validationError'"
+		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
+		th:class="${not #strings.isEmpty(errorClazz)} ? ${errorClazz} : ''"
 		th:text="${#fields.errors(path)}"
 		style="color: red"
 	>

@@ -582,15 +582,15 @@
 										class="alert alert-danger"
 									>
 										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue')}"
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue', id='errorSliderMin')}"
 										/>
 
 										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue')}"
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue', id='errorSliderMax')}"
 										/>
 
 										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize')}"
+											layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize', id='errorSliderStep')}"
 										/>
 									</div>
 								</div>
