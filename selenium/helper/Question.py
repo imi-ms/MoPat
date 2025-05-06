@@ -89,6 +89,9 @@ class QuestionSelectors:
     ERROR_END_DATE = lambda id_selector: (By.XPATH, f"//div[@id='{id_selector}']//input[@id='answers0.endDate']/following-sibling::div[@style='color: red']")
     ERROR_FILE_PATH = lambda id_selector: (By.XPATH, f"//div[@id='{id_selector}']//div[@style='color: red']")
     ERROR_TEXTAREA_ANSWER = lambda id_selector, index, language_code: (By.XPATH, f"//div[@id='{id_selector}']//textarea[@name='answers[{index}].localizedLabel[{language_code}]']/following-sibling::div[@style='color: red']")
+    ERROR_SLIDER_MIN_TEXT = (By.ID, "errorSliderMin")
+    ERROR_SLIDER_MAX_TEXT = (By.ID, "errorSliderMax")
+    ERROR_SLIDER_STEP_TEXT = (By.ID, "errorSliderStep")
 
     INPUT_MIN_NUMBER_ANSWERS = lambda id_selector: (By.CSS_SELECTOR, f"#{id_selector} input[id='minNumberAnswers']")
     INPUT_MAX_NUMBER_ANSWERS = lambda id_selector: (By.CSS_SELECTOR, f"#{id_selector} input[id='maxNumberAnswers']")
@@ -1433,17 +1436,14 @@ class QuestionAssertHelper(QuestionHelper):
 
     def validate_min_max_step_errors(self, expected_errors):
 
-        error_slider_container = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
-            QuestionSelectors.ERROR_SLIDER_CONTAINER))
-        error_messages = error_slider_container.find_elements(By.XPATH, "./div")
-        assert len(error_messages) > 0, "No error messages displayed under the sliderErrors container."
 
-        # Extract actual error messages
-        actual_errors = [error.text.strip() for error in error_messages]
+        error_text_div_min = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_MIN_TEXT))
+        error_text_div_max = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_MAX_TEXT))
+        error_text_div_step = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_STEP_TEXT))
+        assert error_text_div_min.text == expected_errors[0]
+        assert error_text_div_max.text == expected_errors[1]
+        assert error_text_div_step.text == expected_errors[2]      
 
-        # Validate each expected error is present
-        for expected_error in expected_errors:
-            assert expected_error in actual_errors, f"Expected error message '{expected_error}' not found. Actual: {actual_errors}"
 
     def assert_question_table_functionality(self, expected_count=11):
         """
