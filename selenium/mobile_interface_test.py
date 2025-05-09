@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 import time
 import unittest
 
@@ -60,6 +61,9 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         super().setUpClass()
         cls.base_url = "localhost:8080"
         cls.https_base_url = "http://localhost:8080"
+        # secret used in the subclass
+        secret_filename = os.getenv('SECRET_FILENAME', "secret")
+        cls.secret = cls._loadSecretFile(cls, secret_filename)
 
     def setUp(self):
         chrome_options = Options()
@@ -193,6 +197,18 @@ class CustomTest(IMISeleniumChromeTest, unittest.TestCase):
         self.survey_helper.end_survey()
         
         self.authentication_helper.logout()
+
+    
+    
+    def test_logo_present(self):
+        # Arrange
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+
+        self.utils.check_visibility_of_element( (By.ID, "navbar-logo"), "MoPat logo not visible in navbar")
+        self.utils.check_presence_of_element( (By.ID, "mopatImageFooter"), "MoPat logo not visible in footer")
+        self.authentication_helper.logout()
+
 
     def tearDown(self):
         if self.driver:
