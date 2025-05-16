@@ -650,8 +650,9 @@
 					.decodeFromInputVideoDevice(videoDeviceId, "video")
 					.then(function (result) {
 						document.getElementById("caseNumber").value = result.text;
-						$("#videoModal").hide();
+						$("#videoModal").modal('hide');
 						codeReader.reset();
+						checkCaseNumber($("#caseNumber"))
 						$("#checkButton").click();
 					})
 					.catch(function (err) {});
