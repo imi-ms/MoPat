@@ -20,7 +20,6 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Clinic;
-import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -29,20 +28,11 @@ import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.user.AclObjectIdentity;
-import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.BundleDTOValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.stream.Collectors;
 import jakarta.validation.Valid;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -72,8 +62,6 @@ public class BundleController {
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
-    private ExportTemplateDao exportTemplateDao;
-    @Autowired
     private QuestionnaireDao questionnaireDao;
     @Autowired
     private BundleDTOValidator bundleDTOValidator;
@@ -82,74 +70,7 @@ public class BundleController {
     @Autowired
     private BundleService bundleService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ClinicService clinicService;
-    @Autowired
-    private QuestionnaireDTOMapper questionnaireDTOMapper;
-    @Autowired
-    private BundleDTOMapper bundleDTOMapper;
-    @Autowired
-    private AuthService authService;
-
-    /**
-     * @param id for bundle
-     * @return resulting bundle for id
-     */
-    public BundleDTO getBundleDTO(final Long id) {
-        BundleDTO result;
-        BundleDTO bundleDTO;
-        if (id == null || id <= 0) {
-            result = new BundleDTO();
-        } else {
-            Bundle bundle = bundleDao.getElementById(id);
-            if (bundle == null) {
-                result = new BundleDTO();
-            } else {
-                bundleDTO = bundleDTOMapper.apply(true,bundle);
-                for (BundleQuestionnaireDTO bundleQuestionnaireDTO
-                        : bundleDTO.getBundleQuestionnaireDTOs()) {
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                          .setHasScores(scoreDao.hasScore(questionnaireDao.getElementById(bundleQuestionnaireDTO.getQuestionnaireDTO()
-                                                                                                                                .getId())));
-                }
-                result = bundleDTO;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @param id is id of the {@link Bundle Bundle} object
-     * @return Returns all {@link Questionnaire Questionnaire} objects that are not already present
-     * in the bundle with the given id.
-     */
-    private List<QuestionnaireDTO> getAvailableQuestionnaires(final Long bundleId) {
-        // Fetch questionnaires not linked with the given bundle
-        List<Questionnaire> availableQuestionnaires = bundleDao.getAvailableQuestionnairesForBundle(bundleId);
-
-        // Collect IDs for fetching scores
-        Set<Long> questionnaireIds = availableQuestionnaires.stream().map(Questionnaire::getId).collect(Collectors.toSet());
-        Set<Long> questionnairesWithScores = new HashSet<>();
-        if (!questionnaireIds.isEmpty()) {
-            questionnairesWithScores.addAll(
-                scoreDao.findQuestionnairesWithScores(
-                    new ArrayList<>(questionnaireIds)
-                )
-            );
-        }
-
-        // Map to DTO and sort
-        return availableQuestionnaires.stream()
-            .filter(q -> !q.getQuestions().isEmpty())
-            .map(q -> {
-                QuestionnaireDTO dto = questionnaireDTOMapper.apply(q);
-                dto.setHasScores(questionnairesWithScores.contains(q.getId()));
-                return dto;
-            })
-            .sorted(Comparator.comparing(QuestionnaireDTO::getName, String.CASE_INSENSITIVE_ORDER))
-            .collect(Collectors.toList());
-    }
 
     /**
      * Controls the HTTP GET requests for the URL <i>/bundle/list</i>. Shows the list of bundles.
@@ -187,7 +108,7 @@ public class BundleController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         final Model model) {
-        BundleDTO bundleDTO = getBundleDTO(bundleId);
+        BundleDTO bundleDTO = bundleService.getBundleDTO(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("availableQuestionnaireDTOs", bundleService.getAvailableQuestionnaires(bundleId));
@@ -215,65 +136,14 @@ public class BundleController {
             return "redirect:/bundle/list";
         }
 
-        // If the bundle has any incomplete encounters, it may not be edited
-        if (bundleDTO.getId() != null && !bundleDao.getElementById(bundleDTO.getId())
-            .isModifiable()) {
+        if (!bundleService.isBundleModifiable(bundleDTO)) {
             return "redirect:/bundle/fill?id=" + bundleDTO.getId();
         }
 
-        // Check if one of the welcome texts has only one newline and
-        // change it to an empty string
-        SortedMap<String, String> tempLocalizedWelcomeText = bundleDTO.getLocalizedWelcomeText();
-        for (SortedMap.Entry entry : tempLocalizedWelcomeText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        bundleDTO.setLocalizedWelcomeText(tempLocalizedWelcomeText);
+        bundleService.prepareBundleForEdit(bundleDTO);
 
-        // Check if one of the final texts has only one newline and
-        // change it to an empty string
-        SortedMap<String, String> tempLocalizedFinalText = bundleDTO.getLocalizedFinalText();
-        for (SortedMap.Entry entry : tempLocalizedFinalText.entrySet()) {
-            if (entry.getValue().equals("<p><br></p>") || entry.getValue().equals("<br>")) {
-                entry.setValue("");
-            }
-        }
-        bundleDTO.setLocalizedFinalText(tempLocalizedFinalText);
-
-        List<QuestionnaireDTO> availableQuestionnaireDTOs = getAvailableQuestionnaires(null);
-        List<BundleQuestionnaireDTO> assignedBundleQuestionnaireDTOs = new ArrayList<>(
-            bundleDTO.getBundleQuestionnaireDTOs());
-        List<QuestionnaireDTO> questionnaireDTOsToDelete = new ArrayList<>();
-
-        //make sure the changes in the bundleQuestionnaireDTO list of
-        // bundleDTO are detained
-        for (QuestionnaireDTO questionnaireDTO : new ArrayList<>(availableQuestionnaireDTOs)) {
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : assignedBundleQuestionnaireDTOs) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
-                    || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
-                    // Delete empty entries
-                    bundleDTO.getBundleQuestionnaireDTOs().remove(bundleQuestionnaireDTO);
-                    // If this available questionnaire is in the assigned
-                    // questionnaire list as well,
-                    // remove it from the available list
-                } else if (questionnaireDTO.getId().longValue()
-                    == bundleQuestionnaireDTO.getQuestionnaireDTO().getId().longValue()) {
-                    // Remove this questionnaire from the list with available
-                    // questionnaires
-                    questionnaireDTOsToDelete.add(questionnaireDTO);
-                    // Set the export templates to the assigned questionnaire
-                    bundleQuestionnaireDTO.getQuestionnaireDTO()
-                        .setExportTemplates(questionnaireDTO.getExportTemplates());
-                }
-            }
-        }
-        availableQuestionnaireDTOs.removeAll(questionnaireDTOsToDelete);
-
-        // Sort assigned bundle questionnaires by position
-        Collections.sort(bundleDTO.getBundleQuestionnaireDTOs(),
-            (BundleQuestionnaireDTO o1, BundleQuestionnaireDTO o2) -> o1.getPosition()
-                .compareTo(o2.getPosition()));
+        List<QuestionnaireDTO> availableQuestionnaireDTOs = bundleService.getAvailableQuestionnaires(null);
+        bundleService.syncAssignedAndAvailableQuestionnaires(bundleDTO.getBundleQuestionnaireDTOs(), availableQuestionnaireDTOs);
 
         // Validate the bundle object
         bundleDTOValidator.validate(bundleDTO, result);
@@ -285,100 +155,7 @@ public class BundleController {
             return "bundle/edit";
         }
 
-        // Set property of the Bundle to current user
-        User principal = authService.getAuthenticatedUser();
-
-        Bundle bundle;
-        if (bundleDTO.getId() != null) {
-            bundle = bundleDao.getElementById(bundleDTO.getId());
-            bundle.setName(bundleDTO.getName());
-            bundle.setChangedBy(principal.getId());
-            bundle.setDescription(bundleDTO.getDescription());
-            bundle.setIsPublished(bundleDTO.getIsPublished());
-            bundle.setShowProgressPerBundle(bundleDTO.getShowProgressPerBundle());
-            bundle.setDeactivateProgressAndNameDuringSurvey(
-                bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        } else {
-            bundle = new Bundle(bundleDTO.getName(), bundleDTO.getDescription(), principal.getId(),
-                bundleDTO.getIsPublished(), bundleDTO.getShowProgressPerBundle(),
-                bundleDTO.getdeactivateProgressAndNameDuringSurvey());
-        }
-        bundle.setLocalizedWelcomeText(bundleDTO.getLocalizedWelcomeText());
-        bundle.setLocalizedFinalText(bundleDTO.getLocalizedFinalText());
-
-        if (bundle.getId() == null) { // the bundle is completely new, thus
-            // no removal of BundleQuestionnaire objects necessary and in the
-            // end persist (not merge)
-            bundleDao.merge(bundle);
-            // Get the current user, which is the owner of the bundle
-            User currentUser = authService.getAuthenticatedUser();
-            // Create a new ACLObjectIdentity for the bundle and save it
-            AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(bundle.getId(),
-                Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser,
-                null);
-            aclObjectIdentityDao.persist(bundleObjectIdentity);
-        } else {
-            // the bundle is not new,
-            // thus BundleQuestionnaire objects might have been removed or
-            // repositioned.
-            // To avoid complex code, we remove all BundleQuestionnaire
-            // objects from the bundle and (re-)add them.
-            // In the end: merge (not persist) (since the bundle already has
-            // an ID)
-            for (BundleQuestionnaire toDelete : bundle.getBundleQuestionnaires()) {
-                HashSet<ExportTemplate> exportTemplates = new HashSet<>(
-                    toDelete.getExportTemplates());
-                toDelete.removeExportTemplates();
-                for (ExportTemplate exportTemplate : exportTemplates) {
-                    exportTemplateDao.merge(exportTemplate);
-                }
-                Questionnaire questionnaire = toDelete.getQuestionnaire();
-                questionnaire.removeBundleQuestionnaire(toDelete);
-                questionnaireDao.merge(questionnaire);
-            }
-            bundle.removeAllBundleQuestionnaires();
-            bundleDao.merge(bundle);
-        }
-        // Save the bundle questionnaire relationships
-        if (bundleDTO.getBundleQuestionnaireDTOs() != null
-            && !bundleDTO.getBundleQuestionnaireDTOs().isEmpty()) {
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleDTO.getBundleQuestionnaireDTOs()) {
-                if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
-                    || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
-                    continue;
-                }
-                Questionnaire questionnaire = questionnaireDao.getElementById(
-                    bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
-
-                if (bundleQuestionnaireDTO.getIsEnabled() == null) {
-                    bundleQuestionnaireDTO.setIsEnabled(false);
-                }
-
-                if (bundleQuestionnaireDTO.getShowScores() == null) {
-                    bundleQuestionnaireDTO.setShowScores(false);
-                }
-
-                BundleQuestionnaire bundleQuestionnaire = new BundleQuestionnaire(bundle,
-                    questionnaire, bundleQuestionnaireDTO.getPosition().intValue(),
-                    bundleQuestionnaireDTO.getIsEnabled(), bundleQuestionnaireDTO.getShowScores());
-                for (Long id : bundleQuestionnaireDTO.getExportTemplates()) {
-                    ExportTemplate exportTemplate = exportTemplateDao.getElementById(id);
-                    if (exportTemplate != null) {
-                        bundleQuestionnaire.addExportTemplate(exportTemplate);
-                        exportTemplateDao.merge(exportTemplate);
-                    }
-                }
-                bundle.addBundleQuestionnaire(bundleQuestionnaire);
-                questionnaire.addBundleQuestionnaire(bundleQuestionnaire);
-                questionnaireDao.merge(questionnaire);
-            }
-        }
-        // If the bundle has no questionnaire change isPublished to false
-        if (Boolean.TRUE.equals(bundle.getIsPublished()) && bundle.getBundleQuestionnaires()
-            .isEmpty()) {
-            bundle.setIsPublished(Boolean.FALSE);
-        }
-        bundleDao.merge(bundle);
+        bundleService.saveOrUpdateBundle(bundleDTO);
 
         return "redirect:/bundle/list";
     }
