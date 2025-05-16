@@ -162,6 +162,9 @@ public class QuestionnaireController {
     @Autowired
     private ODMProcessingBean odmReader;
 
+    @Autowired
+    private MetadataExporterFactory metadataExporterFactory;
+
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
      * questionnaires.
@@ -205,7 +208,7 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
+        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
         model.addAttribute("localizedDisplayNamesForQuestionnaire",
@@ -410,7 +413,7 @@ public class QuestionnaireController {
         }
 
         // Get the bytearray of the selected questionnaire in the selected type
-        MetadataExporter exporter = MetadataExporterFactory.getMetadataExporter(
+        MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(
             MetadataFormat.valueOf(type));
 
         for (Question question : questionnaire.getQuestions()) {

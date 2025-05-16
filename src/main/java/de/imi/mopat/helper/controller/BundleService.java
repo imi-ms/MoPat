@@ -323,8 +323,8 @@ public class BundleService {
     private void createAclEntry(Bundle bundle, User currentUser) {
         AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(
                 bundle.getId(),
-                Boolean.TRUE, 
-                aclClassDao.getElementByClass(Bundle.class.getName()), 
+                Boolean.TRUE,
+                aclClassDao.getElementByClass(Bundle.class.getName()),
                 currentUser,
                 null
         );
@@ -344,5 +344,16 @@ public class BundleService {
         }
         bundle.removeAllBundleQuestionnaires();
         bundleDao.merge(bundle);
+    }
+    
+    /**
+     * Returns the list of bundles sorted by their name property (ascending).
+     *
+     * @param bundles to sort
+     * @return sorted List<Bundle>
+     */
+    public List<Bundle> sortBundlesByNameAsc(List<Bundle> bundles) {
+        bundles.sort(Comparator.comparing(Bundle::getName));
+        return bundles;
     }
 }
