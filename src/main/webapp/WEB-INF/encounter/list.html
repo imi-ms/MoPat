@@ -302,7 +302,7 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startDate)}"
-												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.startDate)}"
+												th:text="${localeHelper.formatDateToLocaleDate(item.startDate)}"
 											>
 											</th:block>
 										</td>
@@ -310,7 +310,7 @@
 											<th:block
 												th:if="${item.encounterScheduledSerialType != 'UNIQUELY' && not #strings.isEmpty(item.endDate)}"
 											>
-												<th:block th:text="${localeHelper.formatTimstampToLocaleDateTime(item.endDate)}" />
+												<th:block th:text="${localeHelper.formatDateToLocaleDate(item.endDate)}" />
 											</th:block>
 											<th:block
 												th:if="${item.encounterScheduledSerialType == 'UNIQUELY'}"
