@@ -2,12 +2,7 @@ package de.imi.mopat.helper.controller;
 
 import java.io.File;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,41 +96,60 @@ public class LocaleHelper {
         }
         return locale;
     }
-    
+
     /**
-     * Formats a timestamp to a date fitting the Locale
-     * @param timestamp to format
-     * @return String of date with the correct format
+     * Formats a {@link Timestamp} object into a date string.
+     * Uses "dd-MM-yyyy" format for German locale, otherwise ISO "yyyy-MM-dd".
+     *
+     * @param timestamp the {@link Timestamp} to format
+     * @return formatted date string
      */
-    public static String formatTimestampToLocaleDate(Timestamp timestamp) {
+    public static String formatDate(Timestamp timestamp) {
+        if (timestamp == null) {
+            throw new NullPointerException("Timestamp cannot be null.");
+        }
         Locale locale = Locale.getDefault();
-        Date date = new Date(timestamp.getTime());
-        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
-        return dateFormat.format(date);
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(timestamp);
     }
-    
+
     /**
-     * Formats a timestamp to a datetime fitting the Locale
-     * @param timestamp to format
-     * @return String of datetime with the correct format
+     * Formats a {@link Date} object into a date string.
+     * Uses "dd-MM-yyyy" format for German locale, otherwise ISO "yyyy-MM-dd".
+     *
+     * @param date the {@link Date} to format
+     * @return formatted date string
      */
-    public static String formatTimstampToLocaleDateTime(Timestamp timestamp) {
+    public static String formatDate(Date date) {
+        if (date == null) {
+            throw new NullPointerException("Date cannot be null.");
+        }
         Locale locale = Locale.getDefault();
-        LocalDateTime dateTime = timestamp.toLocalDateTime();
-        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(locale);
-        return myFormatObj.format(zonedDateTime);
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(date);
     }
-    
+
     /**
-     * Formats a data to fit to the locale
-     * @param date to format
-     * @return String of date with the correct format
+     * Formats a {@link Timestamp} object into a date-time string.
+     * Uses "dd-MM-yyyy'T'HH:mm:ss" format for German locale, otherwise ISO "yyyy-MM-dd'T'HH:mm:ss".
+     *
+     * @param timestamp the {@link Timestamp} to format
+     * @return formatted date-time string
      */
-    public static String formatDateToLocaleDate(Date date) {
+    public static String formatDateTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            throw new NullPointerException("Timestamp cannot be null.");
+        }
         Locale locale = Locale.getDefault();
-        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
-        return dateFormat.format(date);
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy' - 'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm:ss";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(timestamp);
     }
-    
+
+    private static boolean isGermanLocale(Locale locale) {
+        return locale != null && ("de".equals(locale.getLanguage()) || Locale.GERMANY.equals(locale));
+    }
+
 }
