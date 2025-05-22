@@ -24,25 +24,25 @@
 		<!--/* WYSIWYG Editor */-->
 		<link
 			rel="stylesheet"
-			th:href="@{/css/wysiwyg/summernote-bs5.min.css?version=3.2.2}"
+			th:href="@{/css/wysiwyg/summernote-bs5.min.css?version=3.2.3}"
 		/>
 		<!--/* dataTables */-->
 		<link
 			rel="stylesheet"
-			th:href="@{/css/jQuery/dataTables/datatables.min.css?version=3.2.2}"
+			th:href="@{/css/jQuery/dataTables/datatables.min.css?version=3.2.3}"
 		/>
 		<!--/* Bootstrap */-->
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.2.2}"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.2.3}"
 		/>
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.2.2}"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.2.3}"
 		/>
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/fileinput.min.css?version=3.2.2}"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.2.3}"
 		/>
 
 
@@ -54,70 +54,70 @@
 		<th:block layout:fragment="links"></th:block>
 
 		<!--/* JQuery Basics */-->
-		<script th:src="@{/js/jQuery/jquery.min.js?version=3.2.2}"></script>
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.2.3}"></script>
 		<script
 			defer
-			th:src="@{/js/modernizr/modernizr-custom.js?version=3.2.2}"
+			th:src="@{/js/modernizr/modernizr-custom.js?version=3.2.3}"
 		></script>
 		<!--/* Sortable + jquery bindings */-->
-		<script th:src="@{/js/sortable/Sortable.min.js?version=3.2.2}"></script>
-		<script th:src="@{/js/sortable/jquery-sortable.js?version=3.2.2}"></script>
+		<script th:src="@{/js/sortable/Sortable.min.js?version=3.2.3}"></script>
+		<script th:src="@{/js/sortable/jquery-sortable.js?version=3.2.3}"></script>
 
 		<!--/* WYSIWYG Editor */-->
 		<script
 			defer
-			th:src="@{/js/wysiwyg/summernote-bs5.min.js?version=3.2.2}"
+			th:src="@{/js/wysiwyg/summernote-bs5.min.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/wysiwyg/summernote-de-DE.min.js?version=3.2.2}"
+			th:src="@{/js/wysiwyg/summernote-de-DE.min.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/wysiwyg/summernote-es-ES.min.js?version=3.2.2}"
+			th:src="@{/js/wysiwyg/summernote-es-ES.min.js?version=3.2.3}"
 		></script>
 
 
 		<!--/* dataTables */-->
 		<script
 			defer
-			th:src="@{/js/jQuery/dataTables/jquery.dataTables.min.js?version=3.2.2}"
+			th:src="@{/js/jQuery/dataTables/jquery.dataTables.min.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/jQuery/dataTables/datatables.min.js?version=3.2.2}"
+			th:src="@{/js/jQuery/dataTables/datatables.min.js?version=3.2.3}"
 		></script>
 		<!--/* Bootstrap */-->
 		<script
 			defer
-			th:src="@{/js/bootstrap/bootstrap.min.js?version=3.2.2}"
+			th:src="@{/js/bootstrap/bootstrap.min.js?version=3.2.3}"
 		></script>
 		<!--/* file upload */-->
 		<script
 			defer
-			th:src="@{/js/bootstrap/fileinput.min.js?version=3.2.2}"
+			th:src="@{/js/bootstrap/fileinput.min.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/bootstrap/locales/de.js?version=3.2.2}"
+			th:src="@{/js/bootstrap/locales/de.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/bootstrap/locales/es.js?version=3.2.2}"
+			th:src="@{/js/bootstrap/locales/es.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/helper/dialog.js?version=3.2.2}"
+			th:src="@{/js/helper/dialog.js?version=3.2.3}"
 		></script>
 		<script
 			defer
-			th:src="@{/js/helper/image.js?version=3.2.2}"
+			th:src="@{/js/helper/image.js?version=3.2.3}"
 		></script>
 		<!--/* Iconpicker for slider questions */-->
 		<script
 			type="module"
 			defer
-			th:src="@{/js/iconpicker.js?version=3.2.2}"
+			th:src="@{/js/iconpicker.js?version=3.2.3}"
 		></script>
 
 		<th:block
@@ -143,6 +143,52 @@
 			th:inline="javascript"
 		>
 			$(document).ready(function () {
+
+				// Helper: parse date string and return timestamp (ms)
+				function parseDateString(dateStr) {
+					// Trim whitespace
+					dateStr = dateStr.trim();
+
+					// Check German date format (dd.MM.yyyy or dd.MM.yyyy - HH:mm:ss)
+					// Regex to detect German date (with or without time)
+					const germanDateTimeRegex = /^(\d{2})\.(\d{2})\.(\d{4})(?: - (\d{2}):(\d{2}):(\d{2}))?$/;
+					// ISO date regex (yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss)
+					const isoDateTimeRegex = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}):(\d{2}))?$/;
+
+					let match;
+
+					if ((match = germanDateTimeRegex.exec(dateStr))) {
+						// German date parts
+						const day = parseInt(match[1], 10);
+						const month = parseInt(match[2], 10) - 1; // JS months 0-11
+						const year = parseInt(match[3], 10);
+						const hour = match[4] ? parseInt(match[4], 10) : 0;
+						const minute = match[5] ? parseInt(match[5], 10) : 0;
+						const second = match[6] ? parseInt(match[6], 10) : 0;
+
+						return new Date(year, month, day, hour, minute, second).getTime();
+					} 
+					else if ((match = isoDateTimeRegex.exec(dateStr))) {
+						// ISO date parts
+						const year = parseInt(match[1], 10);
+						const month = parseInt(match[2], 10) - 1;
+						const day = parseInt(match[3], 10);
+						const hour = match[4] ? parseInt(match[4], 10) : 0;
+						const minute = match[5] ? parseInt(match[5], 10) : 0;
+						const second = match[6] ? parseInt(match[6], 10) : 0;
+
+						return new Date(year, month, day, hour, minute, second).getTime();
+					}
+
+					// Fallback: invalid date, return minimal timestamp so it sorts first
+					return -Infinity;
+				}
+
+				// Register a custom DataTables sorting type for these date formats
+				$.fn.dataTable.ext.type.order['custom-date-pre'] = function(dateStr) {
+					return parseDateString(dateStr);
+				};
+
 				/*[- Get the current used language -]*/
 				var currentLanguage = /*[[${#locale.language.toString()}]]*/ "en";
 
