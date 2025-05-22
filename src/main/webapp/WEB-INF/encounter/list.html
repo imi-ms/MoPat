@@ -149,14 +149,14 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startTime)}"
-												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.startTime)}"
+												th:text="${localeHelper.formatDateTime(item.startTime)}"
 											>
 											</th:block>
 										</td>
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.endTime)}"
-												th:text="${localeHelper.formatTimstampToLocaleDateTime(item.endTime)}"
+												th:text="${localeHelper.formatDateTime(item.endTime)}"
 											>
 											</th:block>
 										</td>
@@ -302,7 +302,7 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startDate)}"
-												th:text="${localeHelper.formatDateToLocaleDate(item.startDate)}"
+												th:text="${localeHelper.formatDate(item.startDate)}"
 											>
 											</th:block>
 										</td>
@@ -310,7 +310,7 @@
 											<th:block
 												th:if="${item.encounterScheduledSerialType != 'UNIQUELY' && not #strings.isEmpty(item.endDate)}"
 											>
-												<th:block th:text="${localeHelper.formatDateToLocaleDate(item.endDate)}" />
+												<th:block th:text="${localeHelper.formatDate(item.endDate)}" />
 											</th:block>
 											<th:block
 												th:if="${item.encounterScheduledSerialType == 'UNIQUELY'}"
@@ -720,7 +720,7 @@
 						targets: [5] 
 					},
 					{ 
-						type: 'datetime',
+						type: 'custom-date',
 						targets: [2,3]
 					}
 				],
@@ -729,7 +729,7 @@
 					$('#loadingContainer').addClass("d-none")
 					$('#encounterTable').fadeIn(); // Show the table
 				}
-			}).column(2).order('asc').draw();
+			}).column(2).order('desc').draw();
 
 			$('#encounterScheduled').DataTable({
 				"deferRender": true,
@@ -741,7 +741,7 @@
 						targets: [0,7] 
 					},
 					{ 
-						type: 'datetime',
+						type: 'custom-date',
 						targets: [3,4]
 					}
 				],
@@ -750,7 +750,7 @@
 					$('#loadingContainerScheduled').addClass("d-none")
 					$('#encounterScheduled').fadeIn(); // Show the table
 				}
-			}).column(3).order('asc').draw();;
+			}).column(3).order('desc').draw();
 
 			$(".interruptLink").click(function (e) {
 				if (

@@ -67,17 +67,10 @@
                                     th:text="${item.email}"
                                 />
                             </td>
-                            <td>
+                            <td th:classappend="${item.expirationDate < #dates.createNow()} ? 'text-danger' : ''">
                                 <th:block th:if="${item.expirationDate != null}">
-                                    <th:block th:if="${item.expirationDate < #dates.createNow()}">
-                                        <font
-                                            color="red"
-                                            th:text="${localeHelper.formatDateToLocaleDate(item.expirationDate)}"
-                                        ></font>
-                                    </th:block>
                                     <th:block
-                                        th:unless="${item.expirationDate < #dates.createNow()}"
-                                        th:text="${localeHelper.formatDateToLocaleDate(item.expirationDate)}"
+                                        th:text="${localeHelper.formatDate(item.expirationDate)}"
                                     />
                                 </th:block>
                             </td>
@@ -193,8 +186,17 @@
                 deferRender: true,
                 paging: true,
                 ordering: true,
-                columnDefs: [{ orderable: false, targets: [4] }],
-            });
+                columnDefs: [
+                    { 
+                        orderable: false, 
+                        targets: [4] 
+                    },
+                    {
+                        type: 'custom-date',
+						targets: 3,
+                    } 
+            ],
+            }).column(3).order('desc').draw();
         });
     </script>
 </th:block>
