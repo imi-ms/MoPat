@@ -131,7 +131,7 @@
 								</td>
 								<td style="text-align: left">
 									<th:block th:if="not ${#strings.isEmpty(item.createdAt)}">
-											<th:block th:text="${localeHelper.formatTimestampToLocaleDate(item.createdAt)}" />
+											<th:block th:text="${localeHelper.formatDate(item.createdAt)}" />
 									</th:block>
 								</td>
 								<td class="actionColumn">
@@ -348,7 +348,7 @@
 						targets: [1,2,3,5] 
 					},
 					{ 
-						type: 'date',
+						type: 'custom-date',
 						targets: 4
 					}
 				],
@@ -357,7 +357,7 @@
 					$('#loadingContainer').addClass("d-none")
 					$('#questionnaireTable').fadeIn(); // Show the table
 				}
-			});
+			}).column(4).order('desc').draw();
 		});
 
 		var deleteQuestionnaireWithConditions =

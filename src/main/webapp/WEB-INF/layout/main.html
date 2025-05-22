@@ -143,6 +143,52 @@
 			th:inline="javascript"
 		>
 			$(document).ready(function () {
+
+				// Helper: parse date string and return timestamp (ms)
+				function parseDateString(dateStr) {
+					// Trim whitespace
+					dateStr = dateStr.trim();
+
+					// Check German date format (dd.MM.yyyy or dd.MM.yyyy - HH:mm:ss)
+					// Regex to detect German date (with or without time)
+					const germanDateTimeRegex = /^(\d{2})\.(\d{2})\.(\d{4})(?: - (\d{2}):(\d{2}):(\d{2}))?$/;
+					// ISO date regex (yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss)
+					const isoDateTimeRegex = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}):(\d{2}))?$/;
+
+					let match;
+
+					if ((match = germanDateTimeRegex.exec(dateStr))) {
+						// German date parts
+						const day = parseInt(match[1], 10);
+						const month = parseInt(match[2], 10) - 1; // JS months 0-11
+						const year = parseInt(match[3], 10);
+						const hour = match[4] ? parseInt(match[4], 10) : 0;
+						const minute = match[5] ? parseInt(match[5], 10) : 0;
+						const second = match[6] ? parseInt(match[6], 10) : 0;
+
+						return new Date(year, month, day, hour, minute, second).getTime();
+					} 
+					else if ((match = isoDateTimeRegex.exec(dateStr))) {
+						// ISO date parts
+						const year = parseInt(match[1], 10);
+						const month = parseInt(match[2], 10) - 1;
+						const day = parseInt(match[3], 10);
+						const hour = match[4] ? parseInt(match[4], 10) : 0;
+						const minute = match[5] ? parseInt(match[5], 10) : 0;
+						const second = match[6] ? parseInt(match[6], 10) : 0;
+
+						return new Date(year, month, day, hour, minute, second).getTime();
+					}
+
+					// Fallback: invalid date, return minimal timestamp so it sorts first
+					return -Infinity;
+				}
+
+				// Register a custom DataTables sorting type for these date formats
+				$.fn.dataTable.ext.type.order['custom-date-pre'] = function(dateStr) {
+					return parseDateString(dateStr);
+				};
+
 				/*[- Get the current used language -]*/
 				var currentLanguage = /*[[${#locale.language.toString()}]]*/ "en";
 
