@@ -18,7 +18,7 @@
 </th:block>
 
 <!--/* Input field. Clazz and id are optional */-->
-<th:block layout:fragment="input(clazz, id, path, showErrors)">
+<th:block layout:fragment="input(clazz, id, path, showErrors, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -26,7 +26,7 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
@@ -42,7 +42,7 @@
 </th:block>
 
 <!--/*Optional: id, clazz*/-->
-<th:block layout:fragment="numberInput(clazz, id, path, min, step, showErrors)">
+<th:block layout:fragment="numberInput(clazz, id, path, min, step, showErrors, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -53,12 +53,12 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/* Date field. Clazz and id are optional */-->
-<th:block layout:fragment="dateInput(clazz, id, path, min, max, showErrors)">
+<th:block layout:fragment="dateInput(clazz, id, path, min, max, showErrors, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -69,12 +69,12 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/* File field. Clazz and id are optional */-->
-<th:block layout:fragment="fileInput(clazz, id, path, showErrors, imageBase64, accept)">
+<th:block layout:fragment="fileInput(clazz, id, path, showErrors, imageBase64, accept, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -86,12 +86,12 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/* Input field. Clazz and id are optional */-->
-<th:block layout:fragment="emailInput(clazz, id, path, showErrors)">
+<th:block layout:fragment="emailInput(clazz, id, path, showErrors, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -100,12 +100,12 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/* Password field. Clazz and id are optional */-->
-<th:block layout:fragment="passwordInput(clazz, id, path, showErrors)">
+<th:block layout:fragment="passwordInput(clazz, id, path, showErrors, errorId)">
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
@@ -114,12 +114,12 @@
 	/>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/*Optional: clazz*/-->
-<th:block layout:fragment="textarea(clazz, path, showErrors)">
+<th:block layout:fragment="textarea(clazz, path, showErrors, errorId)">
 	<textarea
 		th:field="*{__${path}__}"
 		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
@@ -127,12 +127,12 @@
 	</textarea>
 	<!--/* Error block */-->
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
 <!--/*Optional: text, clazz, onclick*/-->
-<th:block layout:fragment="checkbox(path, text, showErrors, clazz, onclick)">
+<th:block layout:fragment="checkbox(path, text, showErrors, clazz, onclick, errorId)">
 	<div class="checkbox">
 		<label>
 			<input
@@ -145,14 +145,14 @@
 			<!--/* Error block */-->
 			<th:block th:if="${#bools.isTrue(showErrors)}">
 				<th:block
-					layout:insert="~{fragments/forms :: errorField(path=${path})}"
+					layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}"
 				/>
 			</th:block>
 		</label>
 	</div>
 </th:block>
 
-<th:block layout:fragment="select(path, items, showErrors)">
+<th:block layout:fragment="select(path, items, showErrors, errorId)">
 	<select th:field="*{__${path}__}">
 		<option
 			th:each="i: ${items}"
@@ -162,7 +162,7 @@
 	</select>
 
 	<th:block th:if="${#bools.isTrue(showErrors)}">
-		<th:block layout:insert="~{fragments/forms :: errorField(path=${path})}" />
+		<th:block layout:insert="~{fragments/forms :: errorField(path=${path}, id=${errorId})}" />
 	</th:block>
 </th:block>
 
@@ -195,14 +195,14 @@
 
 <!--/* Combine input and label fragments */-->
 <th:block
-	layout:fragment="inputWithLabel(text, for, required, clazz, id, path, showErrors)"
+	layout:fragment="inputWithLabel(text, for, required, clazz, id, path, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: input(clazz=${clazz}, id=${id}, path=${path}, showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: input(clazz=${clazz}, id=${id}, path=${path}, showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
@@ -221,91 +221,91 @@
 
 <!--/* Combine number and label fragments */-->
 <th:block
-	layout:fragment="numberWithLabel(for, text, required, clazz, id, path, min, step, showErrors)"
+	layout:fragment="numberWithLabel(for, text, required, clazz, id, path, min, step, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: numberInput(clazz=${clazz},id=${id},path=${path},min=${min},step=${step},showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: numberInput(clazz=${clazz},id=${id},path=${path},min=${min},step=${step},showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combine date and label fragments */-->
 <th:block
-	layout:fragment="dateWithLabel(for, text, required, clazz, id, path, min, max, showErrors)"
+	layout:fragment="dateWithLabel(for, text, required, clazz, id, path, min, max, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: dateInput(clazz=${clazz},id=${id},path=${path},max=${max}, min=${min}, showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: dateInput(clazz=${clazz},id=${id},path=${path},max=${max}, min=${min}, showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combine file and label fragments */-->
 <th:block
-	layout:fragment="fileWithLabel(for, text, required, clazz, id, path, showErrors, imageBase64, accept)"
+	layout:fragment="fileWithLabel(for, text, required, clazz, id, path, showErrors, imageBase64, accept, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 	<th:block
-		layout:insert="~{fragments/forms :: fileInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors},imageBase64=${imageBase64},accept=${accept})}"
+		layout:insert="~{fragments/forms :: fileInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors},imageBase64=${imageBase64},accept=${accept}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combine email and label fragments */-->
 <th:block
-	layout:fragment="emailWithLabel(for, text, required, clazz, id, path, showErrors)"
+	layout:fragment="emailWithLabel(for, text, required, clazz, id, path, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: emailInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: emailInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combine password and label fragments */-->
 <th:block
-	layout:fragment="passwordWithLabel(for, text, required, clazz, id, path, showErrors)"
+	layout:fragment="passwordWithLabel(for, text, required, clazz, id, path, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for}, text=${text}, required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: passwordInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: passwordInput(clazz=${clazz},id=${id},path=${path},showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combines textarea and label fragments */-->
 <th:block
-	layout:fragment="textareaWithLabel(for, text, required, clazz, path, showErrors)"
+	layout:fragment="textareaWithLabel(for, text, required, clazz, path, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: textarea(clazz=${clazz},path=${path},showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: textarea(clazz=${clazz},path=${path},showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 
 <!--/* Combines textarea and label fragments */-->
 <th:block
-	layout:fragment="selectWithLabel(for, text, required, path, items, showErrors)"
+	layout:fragment="selectWithLabel(for, text, required, path, items, showErrors, errorId)"
 >
 	<th:block
 		layout:insert="~{fragments/forms :: label(for=${for},text=${text},required=${required})}"
 	/>
 
 	<th:block
-		layout:insert="~{fragments/forms :: select(path=${path}, items=${items}, showErrors=${showErrors})}"
+		layout:insert="~{fragments/forms :: select(path=${path}, items=${items}, showErrors=${showErrors}, errorId=${errorId})}"
 	/>
 </th:block>
 

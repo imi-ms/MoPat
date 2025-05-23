@@ -40,7 +40,8 @@
 										layout:replace="~{fragments/forms :: inputWithLabel(
 											for='firstName', required=true, path='invitationUsers[__${loop.index}__].firstName',
 											clazz='form-control personalDataInput firstname', showErrors=true,
-											text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+											text=${messages.get(#locale, 'user.label.firstname', 'Firstname')},
+											errorId='validationError')}"
 
 									/>
 								</div>
@@ -49,7 +50,8 @@
 										layout:replace="~{fragments/forms :: inputWithLabel(
 											for='lastName', required=true, path='invitationUsers[__${loop.index}__].lastName',
 											clazz='form-control personalDataInput lastname', showErrors=true,
-											text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+											text=${messages.get(#locale, 'user.label.lastname', 'Lastname')},
+											errorId='validationError')}"
 
 									/>
 								</div>
@@ -79,7 +81,7 @@
 										/>
 									</th:block>
 									<error
-										layout:replace="~{fragments/forms :: errorField(path='invitationUsers[__${loop.index}__].email')}"
+										layout:replace="~{fragments/forms :: errorField(path='invitationUsers[__${loop.index}__].email', id='validationError')}"
 									/>
 								</div>
 
@@ -120,7 +122,8 @@
 									layout:replace="~{fragments/forms :: inputWithLabel(
 									for='firstName', required=true, path='invitationUsers[0].firstName',
 									clazz='form-control personalDataInput firstname', showErrors=true,
-									text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+									text=${messages.get(#locale, 'user.label.firstname', 'Firstname')},
+									errorId='validationError')}"
 
 								/>
 							</div>
@@ -129,7 +132,8 @@
 									layout:replace="~{fragments/forms :: inputWithLabel(
 									for='lastName', required=true, path='invitationUsers[0].lastName',
 									clazz='form-control personalDataInput lastname', showErrors=true,
-									text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+									text=${messages.get(#locale, 'user.label.lastname', 'Lastname')},
+									errorId='validationError')}"
 
 								/>
 							</div>
@@ -159,7 +163,7 @@
 									/>
 								</th:block>
 								<error
-									layout:replace="~{fragments/forms :: errorField(path='invitationUsers[0].email')}"
+									layout:replace="~{fragments/forms :: errorField(path='invitationUsers[0].email', id='validationError')}"
 								/>
 							</div>
 							<div class="col-lg-2">

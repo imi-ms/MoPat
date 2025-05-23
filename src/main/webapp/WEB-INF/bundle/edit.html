@@ -65,7 +65,8 @@
 						layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
                         clazz='form-control', showErrors=true,
-                        text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')})}"
+                        text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')},
+						errorId='validationError')}"
 
 					/>
 				</div>
@@ -75,7 +76,8 @@
 						layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
                         clazz='wysiwyg', showErrors=true,
-                        text=${messages.get(#locale, 'bundle.label.description', 'Description')})}"
+                        text=${messages.get(#locale, 'bundle.label.description', 'Description')},
+						errorId='validationError')}"
 					>
 					</textarea>
 				</div>

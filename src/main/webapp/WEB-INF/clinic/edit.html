@@ -28,21 +28,24 @@
                     <input
                         layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required='true', clazz='form-control', path='name', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.name', 'Name:')})}"
+                        text=${messages.get(#locale, 'clinic.label.name', 'Name:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div class="form-group">
                     <input
                         layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required='true', path='description', clazz='wysiwyg', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.description', 'Description:')})}"
+                        text=${messages.get(#locale, 'clinic.label.description', 'Description:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div class="form-group">
                     <input
                         layout:replace="~{fragments/forms :: inputWithLabel(
                         for='email', required=false, path='email', clazz='form-control', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.email', 'Email:')})}"
+                        text=${messages.get(#locale, 'clinic.label.email', 'Email:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div
