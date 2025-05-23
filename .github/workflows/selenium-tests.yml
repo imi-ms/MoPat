@@ -68,9 +68,7 @@ jobs:
         run: |
           decoded_results=$(echo "${{ env.SELENIUM_TEST_SUMMARY }}" | base64 --decode)
           echo "### Selenium Test Results" > comment_body.md
-          echo "\`\`\`plaintext" >> comment_body.md
           echo "$decoded_results" >> comment_body.md
-          echo "\`\`\`" >> comment_body.md
 
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
         env:

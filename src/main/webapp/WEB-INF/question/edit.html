@@ -513,7 +513,6 @@
 											type="number"
 											step="0.01"
 											class="form-control"
-											onblur="checkSlider(false)"
 											th:field="*{answers[0].minValue}"
 											id="min"
 										/>
@@ -530,7 +529,6 @@
 											type="number"
 											step="0.01"
 											class="form-control"
-											onblur="checkSlider(false)"
 											th:field="*{answers[0].maxValue}"
 											id="max"
 										/>
@@ -547,7 +545,6 @@
 											type="number"
 											min="0.01"
 											step="0.01"
-											onblur="checkSlider(false)"
 											class="form-control"
 											id="stepsize"
 											th:field="*{answers[0].stepsize}"
@@ -577,22 +574,18 @@
 									>
 									</addVar>
 
-									<div
-										id="sliderErrors"
-										class="alert alert-danger"
-									>
-										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue')}"
-										/>
+									<error
+										layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue', id='errorSlider')}"
+									/>
 
-										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue')}"
-										/>
+									<error
+										layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue', id='errorSlider')}"
+									/>
 
-										<error
-											layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize')}"
-										/>
-									</div>
+									<error
+										layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize', id='errorSlider')}"
+									/>
+
 								</div>
 
 								<div class="row my-1" id="iconField">
@@ -1193,6 +1186,7 @@
 												</div>
 											</div>
 											<button
+												th:id="|selectAllBodyPartsButton-${vars['imageType']}|"
 												type="button"
 												class="btn btn-primary"
 												onclick="selectAllBodyPartAnswers($(this));"
@@ -1200,6 +1194,7 @@
 											>
 											</button>
 											<button
+												th:id="|deleteAllBodyPartsButton-${vars['imageType']}|"
 												type="button"
 												class="btn btn-primary"
 												onclick="deleteAllBodyPartAnswers($(this));"
@@ -1321,8 +1316,6 @@
 		});
 
 		$(document).ready(function () {
-			checkSlider(true);
-
 			if(numberOfIcons){
 				$('#numberOfIcons').val(numberOfIcons)
 			}
@@ -1517,47 +1510,6 @@
 						.append(isOtherWarningDiv);
 					$("#isOtherWarning").css("padding-top", "10px");
 				}
-			}
-		}
-
-		function checkSlider(first) {
-			var max = $("#max").val();
-			var min = $("#min").val();
-			var stepsize = $("#stepsize").val();
-			/*[- At first call server error messages are displayed -]*/
-			if (
-				first === true &&
-				(errorStepsize !== "" || errorMinValue !== "" || errorMaxValue !== "")
-			) {
-				$("#sliderErrors").show();
-			} else if (max !== "" && min !== "" && stepsize !== "") {
-			/*[- Afterwards browser validation -]*/
-				$("#sliderErrors").show();
-				/*[- Must be multiplied to whole numbers, otherwise there will be rounding errors -]*/
-				if (stepsize <= 0) {
-					$("#sliderErrors").html(errorSliderStepsizeLessOrEqualToZero);
-					$("#sliderErrors")
-						.removeClass("alert-warning")
-						.addClass("alert-danger");
-				} else if (
-					(parseInt(max * 100) - parseInt(min) * 100) %
-						parseInt(stepsize * 100) !==
-					0
-				) {
-					$("#sliderErrors").html(errorSliderStepsizeDoesNotMatch);
-					$("#sliderErrors")
-						.removeClass("alert-warning")
-						.addClass("alert-danger");
-				} else if ((max - min) / stepsize + 1 > 200) {
-					$("#sliderErrors").html(warningSliderTooMuchSteps);
-					$("#sliderErrors")
-						.removeClass("alert-danger")
-						.addClass("alert-warning");
-				} else {
-					$("#sliderErrors").hide();
-				}
-			} else {
-				$("#sliderErrors").hide();
 			}
 		}
 

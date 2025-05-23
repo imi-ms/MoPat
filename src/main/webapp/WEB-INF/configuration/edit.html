@@ -31,6 +31,7 @@
 						<!--/* <c:set var="nameKey" value="${entry.key}" /> */-->
 						<div
 							class="configurationGroup"
+							th:id="${configurationGroup.labelMessageCode}"
 							th:attr="data-deletable=${configurationGroup.deletable}"
 						>
 							<th:block th:if="${configurationGroup.referringId != null}">

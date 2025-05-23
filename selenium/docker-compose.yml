@@ -34,6 +34,13 @@ services:
       - "8080:8080"
     networks:
       - selenoid-network
+    volumes:
+      - /var/lib/mopatImages
+      - /var/lib/mopatExport
+      - /var/lib/mopatExport/ODM
+      - /var/lib/mopatExport/FHIR
+      - /var/lib/mopatExport/REDCap
+
     environment:
       - MYSQL_USER=mopat
       - MYSQL_PASSWORD=mopat
