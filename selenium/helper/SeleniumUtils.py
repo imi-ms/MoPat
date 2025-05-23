@@ -27,7 +27,7 @@ class DropdownMethod(Enum):
     INDEX = "index"
 
 class ErrorSelectors:
-    INPUT_VALIDATION_SELECTOR=(By.CLASS_NAME, "validationError")
+    INPUT_VALIDATION_SELECTOR=(By.ID, "validationError")
     CONFIGURATION_ERROR_SELECTOR=(By.CLASS_NAME, "configurationError")
 
 class SeleniumUtils:

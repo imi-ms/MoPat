@@ -89,9 +89,7 @@ class QuestionSelectors:
     ERROR_END_DATE = lambda id_selector: (By.XPATH, f"//div[@id='{id_selector}']//input[@id='answers0.endDate']/following-sibling::div[@style='color: red']")
     ERROR_FILE_PATH = lambda id_selector: (By.XPATH, f"//div[@id='{id_selector}']//div[@style='color: red']")
     ERROR_TEXTAREA_ANSWER = lambda id_selector, index, language_code: (By.XPATH, f"//div[@id='{id_selector}']//textarea[@name='answers[{index}].localizedLabel[{language_code}]']/following-sibling::div[@style='color: red']")
-    ERROR_SLIDER_MIN_TEXT = (By.ID, "errorSliderMin")
-    ERROR_SLIDER_MAX_TEXT = (By.ID, "errorSliderMax")
-    ERROR_SLIDER_STEP_TEXT = (By.ID, "errorSliderStep")
+    ERROR_SLIDER_FIELD = (By.ID, "errorSlider")
 
     INPUT_MIN_NUMBER_ANSWERS = lambda id_selector: (By.CSS_SELECTOR, f"#{id_selector} input[id='minNumberAnswers']")
     INPUT_MAX_NUMBER_ANSWERS = lambda id_selector: (By.CSS_SELECTOR, f"#{id_selector} input[id='maxNumberAnswers']")
@@ -1320,6 +1318,7 @@ class QuestionAssertHelper(QuestionHelper):
         # Set invalid step size (greater than max-min difference)
         self.set_min_max_step_inputs(min_value="1.0", max_value="4.0", step_size="10", question_type=question_type)
         self.utils.click_element(QuestionSelectors.BUTTON_SAVE)
+        # Second click validates spring
         self.validate_min_max_step_errors(
             expected_errors=[
                 "Die Schrittweite der Frage war größer als der Abstand zwischen Minimum und Maximum\nDer Abstand zwischen Minimum und Maximum ist nicht restlos durch die Schrittweite teilbar"
@@ -1435,14 +1434,17 @@ class QuestionAssertHelper(QuestionHelper):
         assert actual_message == expected_message, f"Unexpected error message: '{actual_message}'"
 
     def validate_min_max_step_errors(self, expected_errors):
+        # Wait for all matching elements to be visible
+        elements = WebDriverWait(self.driver, 30).until(
+            lambda d: [el for el in d.find_elements(*QuestionSelectors.ERROR_SLIDER_FIELD) if el.is_displayed()]
+        )
 
+        element_texts = [el.get_attribute("innerHTML").replace("<br>", "\n").strip() for el in elements]
+        # Extract the text from all visible elements
 
-        error_text_div_min = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_MIN_TEXT))
-        error_text_div_max = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_MAX_TEXT))
-        error_text_div_step = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.ERROR_SLIDER_STEP_TEXT))
-        assert error_text_div_min.text == expected_errors[0]
-        assert error_text_div_max.text == expected_errors[1]
-        assert error_text_div_step.text == expected_errors[2]      
+        for text in expected_errors:
+            assert any(text in element_text for element_text in element_texts), f"'{text}' was not found in any element."
+
 
 
     def assert_question_table_functionality(self, expected_count=11):

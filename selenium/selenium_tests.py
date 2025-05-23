@@ -340,7 +340,7 @@ class CustomTest(IMISeleniumBaseTest):
             bundle_row = self.bundle_helper.get_first_bundle_row()
             bundle_row.find_element(By.CSS_SELECTOR, "td:nth-child(3)")
             clinic_link = bundle_row.find_element(By.CSS_SELECTOR, "ul > li > a")
-            self.assertEqual(clinic_link.text, clinic["name"], f"Clinic name '{clinic["name"]}' not found in bundle row.")
+            self.assertEqual(clinic_link.text, clinic["name"], f'Clinic name "{clinic["name"]}" not found in bundle row.')
 
         except Exception as e:
             self.fail(f"Failed to find clinic assigned to bundle: {e}")
