@@ -70,10 +70,15 @@ class NavigationHelper:
 
     def navigate_to_scores_of_questionnaire(self, questionnaire_id, questionnaire_name):
         self.navigate_to_manage_questionnaires()
-
+        
         WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.FILTER_INPUT))
         self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+        
+        # Wait for table rows to update
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//table/tbody/tr"))
+        )
 
         scores_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id)))

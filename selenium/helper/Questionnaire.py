@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from helper.Navigation import NavigationHelper
+from helper.Navigation import QuestionnaireTableSelectors
 from helper.Question import QuestionHelper, QuestionType, QuestionSelectors
 from helper.SeleniumUtils import SeleniumUtils
 
@@ -147,7 +148,7 @@ class QuestionnaireHelper:
             raise Exception(f"Failed to extract questionnaire ID from URL: {new_url}")
 
 
-    def save_questionnaire(self):
+    def save_questionnaire(self, questionnaire_name):
         """
         :return: The ID of the newly created questionnaire.
         """
@@ -157,6 +158,10 @@ class QuestionnaireHelper:
         # Wait for redirection and extract questionnaire ID
         WebDriverWait(self.driver, 15).until(EC.url_changes(
             current_url))
+        
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.FILTER_INPUT))
+        self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
 
         WebDriverWait(self.driver, 30).until(EC.presence_of_element_located(
             QuestionnaireSelectors.TABLE_FIRST_ROW))
@@ -368,7 +373,7 @@ class QuestionnaireAssertHelper(QuestionnaireHelper):
                 QuestionnaireSelectors.BUTTON_SAVE))
 
             # Validate save button creates a questionnaire and redirects
-            questionnaire_id = self.save_questionnaire()
+            questionnaire_id = self.save_questionnaire(questionnaire_name)
 
             WebDriverWait(self.driver, 10).until(EC.url_contains("/questionnaire/list"))
 
