@@ -59,14 +59,22 @@ class NavigationHelper:
 
     def navigate_to_questions_of_questionnaire(self, questionnaire_id, questionnaire_name):
         self.navigate_to_manage_questionnaires()
+        
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.FILTER_INPUT))
         self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+        
         link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.EDIT_QUESTIONS_LINK(questionnaire_id)))
         link.click()
 
     def navigate_to_scores_of_questionnaire(self, questionnaire_id, questionnaire_name):
         self.navigate_to_manage_questionnaires()
+
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            QuestionnaireTableSelectors.FILTER_INPUT))
         self.utils.fill_text_field(QuestionnaireTableSelectors.FILTER_INPUT, questionnaire_name)
+
         scores_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.EDIT_SCORES_LINK(questionnaire_id)))
         scores_link.click()
