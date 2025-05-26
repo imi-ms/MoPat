@@ -2,6 +2,7 @@ from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from datetime import datetime
 
 class URLPathsAuthentication:
     MOBILE_USER_LOGIN = "/mobile/user/login"
@@ -46,7 +47,7 @@ class AdminIndexSelectors:
 
 class AdminIndexExpectedContent:
     LOGO_SRC = "/images/logo.svg"
-    FOOTER_TEXT = "© 2024 Institut für Medizinische Informatik,\nUniversität Münster"
+    FOOTER_TEXT = f"© {str(datetime.now().year)} Institut für Medizinische Informatik,\nUniversität Münster"
     EXPECTED_LANGUAGES = ["Deutsch (Deutschland)", "Englisch (Vereinigtes Königreich)", "Spanisch (Spanien)"]
     FORGOT_PASSWORD_TEXT = "Passwort vergessen?"
     PHONE_NUMBER = "+49 (251) 83-55262"
