@@ -42,8 +42,8 @@ class QuestionTableSelectors:
 class QuestionnaireTableSelectors:
     FILTER_INPUT = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     FIRST_RESULT_LINK = (By.CSS_SELECTOR, "#questionnaireTable tbody tr td a")
-    EDIT_QUESTIONS_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/question/list?id={questionnaire_id}"]')
-    EDIT_SCORES_LINK = lambda questionnaire_id: (By.XPATH, f'//a[@href="/score/list?id={questionnaire_id}"]')
+    EDIT_QUESTIONS_LINK = lambda questionnaire_id: (By.XPATH, f'//td[@class="actionColumn"]//div[contains(@class, "d-none d-xl-block")]//a[@href="/question/list?id={questionnaire_id}"]')
+    EDIT_SCORES_LINK = lambda questionnaire_id: (By.XPATH, f'//td[@class="actionColumn"]//div[contains(@class, "d-none d-xl-block")]//a[@href="/score/list?id={questionnaire_id}"]')
 
 class NavigationHelper:
     def __init__(self, driver):
