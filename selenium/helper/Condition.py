@@ -143,7 +143,8 @@ class ConditionHelper(QuestionnaireHelper):
 
         # Increment the threshold value using the arrow key
         for _ in range(threshold_steps):
-            threshold_input = self.driver.find_element(*ConditionSelectors.INPUT_THRESHOLD)
+            threshold_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                ConditionSelectors.INPUT_THRESHOLD))
             threshold_input.click()
             threshold_input.send_keys(Keys.ARROW_UP)
             self.utils.handle_popup_alert(True)
