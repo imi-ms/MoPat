@@ -51,6 +51,7 @@
 
 		<div class="table-responsive">
 			<table
+				id="questionTable"
 				class="sortable table table-hover responsive"
 				style="width: 100%"
 			>
@@ -103,7 +104,7 @@
 					<th:block th:each="item, questionCounter: ${questionnaire.questions}">
 						<tr th:id="${item.id}">
 							<td>
-								<i class="bi bi-large bi-grip-vertical bi-action"></i>
+								<i th:id="|grip-${item.id}|" class="bi bi-large bi-grip-vertical bi-action"></i>
 							</td>
 							<td>
 								<th:block th:text="|${item.position}.|" />

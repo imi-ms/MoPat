@@ -16,6 +16,11 @@ MoPat.iml
 data
 selenium/driver
 selenium/logs
+selenium/**/__pycache__/
+selenium/.wdm
+selenium/test_results
+*_secrets.json
+*_test-results.log
 
 
 src/main/resources/less/mobile/includes
