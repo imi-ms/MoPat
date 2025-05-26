@@ -229,7 +229,8 @@
 			$('#userTable').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [{ orderable: false, targets: [7] }],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")

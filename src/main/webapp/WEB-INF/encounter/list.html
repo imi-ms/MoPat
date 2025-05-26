@@ -149,14 +149,14 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startTime)}"
-												th:text="${#dates.format(item.startTime)}"
+												th:text="${localeHelper.formatDateTime(item.startTime)}"
 											>
 											</th:block>
 										</td>
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.endTime)}"
-												th:text="${#dates.format(item.endTime)}"
+												th:text="${localeHelper.formatDateTime(item.endTime)}"
 											>
 											</th:block>
 										</td>
@@ -302,7 +302,7 @@
 										<td>
 											<th:block
 												th:if="${not #strings.isEmpty(item.startDate)}"
-												th:text="${#dates.format(item.startDate)}"
+												th:text="${localeHelper.formatDate(item.startDate)}"
 											>
 											</th:block>
 										</td>
@@ -310,7 +310,7 @@
 											<th:block
 												th:if="${item.encounterScheduledSerialType != 'UNIQUELY' && not #strings.isEmpty(item.endDate)}"
 											>
-												<th:block th:text="${#dates.format(item.endDate)}" />
+												<th:block th:text="${localeHelper.formatDate(item.endDate)}" />
 											</th:block>
 											<th:block
 												th:if="${item.encounterScheduledSerialType == 'UNIQUELY'}"
@@ -714,24 +714,44 @@
 			$('#encounterTable').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [5] 
+					},
+					{ 
+						type: 'custom-date',
+						targets: [2,3]
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")
 					$('#encounterTable').fadeIn(); // Show the table
 				}
-			});
+			}).column(2).order('desc').draw();
 
 			$('#encounterScheduled').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [0,7] 
+					},
+					{ 
+						type: 'custom-date',
+						targets: [3,4]
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinnerScheduled').fadeOut(); // Hide the loading indicator
 					$('#loadingContainerScheduled').addClass("d-none")
 					$('#encounterScheduled').fadeIn(); // Show the table
 				}
-			});
+			}).column(3).order('desc').draw();
 
 			$(".interruptLink").click(function (e) {
 				if (
