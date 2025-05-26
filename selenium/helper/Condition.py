@@ -346,8 +346,11 @@ class ConditionAssertHelper(ConditionHelper):
         self.reorder_question(info_text_question['id'], number_of_questions-1)
 
         try:
+            idx = 0
             for question in questions:
                 if question['type'] not in [QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.NUMBER_CHECKBOX, QuestionType.DROP_DOWN, QuestionType.NUMBER_INPUT]:
+                    continue
+                if idx == (len(questions) - 1):
                     continue
                 # Open the 'Add Condition' page
                 self.open_conditions_of_question(question['id'])
@@ -356,6 +359,7 @@ class ConditionAssertHelper(ConditionHelper):
                 self.validate_condition_inputs(question)
                 self.cancel_condition_editing()
                 self.navigate_back_to_questions_of_questionnaire()
+                idx += 1
 
             question = next((question for question in questions if question['type'] in [QuestionType.SLIDER, QuestionType.MULTIPLE_CHOICE, QuestionType.NUMBER_CHECKBOX, QuestionType.DROP_DOWN, QuestionType.NUMBER_INPUT]),None)
             self.open_conditions_of_question(question['id'])

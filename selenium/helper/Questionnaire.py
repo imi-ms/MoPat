@@ -223,8 +223,6 @@ class QuestionnaireHelper:
         self.utils.drag_and_drop(QuestionSelectors.GRIP_SELECTOR(source_question_id),
                                  QuestionSelectors.GRIP_SELECTOR(target_question_id))
 
-        self.driver.refresh()
-
         # Validate the reordering
         reordered_rows = WebDriverWait(self.driver, 10).until(
             lambda d: d.find_elements(*QuestionSelectors.TABLE_ROWS)
