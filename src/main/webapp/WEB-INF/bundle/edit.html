@@ -65,16 +65,19 @@
 						layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
                         clazz='form-control', showErrors=true,
-                        text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')})}"
+                        text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')},
+						errorId='validationError')}"
 
 					/>
 				</div>
 				<div class="form-group">
 					<textarea
+						id="description"
 						layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
                         clazz='wysiwyg', showErrors=true,
-                        text=${messages.get(#locale, 'bundle.label.description', 'Description')})}"
+                        text=${messages.get(#locale, 'bundle.label.description', 'Description')},
+						errorId='validationError')}"
 					>
 					</textarea>
 				</div>
@@ -413,6 +416,7 @@
 												</div>
 												<div class="col-1">
 													<a
+															th:id="|move_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
 															data-bs-toggle="collapse"
 															onClick="moveItem($(this))"
 													>
@@ -433,6 +437,7 @@
 												</div>
 												<input
 													type="hidden"
+													th:id="|questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
 													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
 													th:value="${bundleQuestionnaireDTO.questionnaireDTO.id}"
 												/>
@@ -587,6 +592,7 @@
 												 th:style="			${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? '' : 'display:none;'">
 												<div class="col-1">
 													<a
+														th:id="|move_${availableQuestionnaireDTO.id}|"
 														data-bs-toggle="collapse"
 														onClick="moveItem($(this))"
 													>
@@ -664,6 +670,7 @@
 												</div>
 												<input
 													type="hidden"
+													th:id="|questionnaire_${availableQuestionnaireDTO.id}|"
 													disabled="true"
 													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
 													th:value="${availableQuestionnaireDTO.id}"

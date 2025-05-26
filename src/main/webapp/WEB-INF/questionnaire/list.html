@@ -77,7 +77,7 @@
 				<tbody>
 					<th:block th:if="not ${#lists.isEmpty(allQuestionnaires)}">
 						<th:block th:each="item: ${allQuestionnaires}">
-							<tr>
+							<tr th:id="${item.id}">
 								<td>
 									<th:block th:if="not ${#strings.isEmpty(item.name)}">
 										<a
@@ -213,6 +213,7 @@
 												</div>
 											</div>
 											<a
+												th:id="'removeQuestionnaire_' + ${item.id}"
 												class="link removeQuestionnaireLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}"
 												th:href="@{remove?id=__${item.id}__}"
