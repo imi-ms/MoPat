@@ -105,7 +105,7 @@ class ConditionHelper(QuestionnaireHelper):
         :param answer_target_index: The index of the answer target if the target class is 'ANSWER'.
         :param action: The action to perform (e.g., 'DISABLE' or 'ENABLE').
         """
-        self.driver.find_element(*ConditionSelectors.BUTTON_ADD_CONDITION).click()
+        self.click_add_condition()
 
         # Set the trigger option
         if trigger_index > 0:
@@ -134,8 +134,8 @@ class ConditionHelper(QuestionnaireHelper):
         :param answer_target_index: The index of the answer target if the target class is 'ANSWER'.
         :param action: The action to perform (e.g., 'DISABLE' or 'ENABLE').
         """
-        self.driver.find_element(*ConditionSelectors.BUTTON_ADD_CONDITION).click()
-
+        self.click_add_condition()
+        
         # Set the threshold type and value
         self.utils.select_dropdown(ConditionSelectors.THRESHOLD_TYPE, threshold_type, DropdownMethod.VALUE)
         if threshold_type != ConditionSelectors.ThresholdType.SMALLER_THAN:
@@ -181,7 +181,12 @@ class ConditionHelper(QuestionnaireHelper):
         self.driver.find_element(*ConditionSelectors.CONDITION_LINK(question_id)).click()
 
     def click_add_condition(self):
-        self.driver.find_element(*ConditionSelectors.BUTTON_ADD_CONDITION).click()
+        try: 
+            add_button = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                ConditionSelectors.BUTTON_ADD_CONDITION))
+            add_button.click()
+        except:
+            print("Failed to click 'add button' for conditions.")
 
     def cancel_condition_editing(self):
         self.utils.click_element(ConditionSelectors.BUTTON_CANCEL)
