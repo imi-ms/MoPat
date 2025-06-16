@@ -1,8 +1,9 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.io.importer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.imi.mopat.helper.controller.ValidationMessage;
 import de.imi.mopat.model.Question;
 
 /**

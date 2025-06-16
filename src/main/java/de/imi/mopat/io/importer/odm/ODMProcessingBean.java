@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.io.importer.odm;
 
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import jakarta.xml.bind.JAXBContext;

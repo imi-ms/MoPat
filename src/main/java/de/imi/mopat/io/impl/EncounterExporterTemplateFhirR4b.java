@@ -3,12 +3,15 @@ package de.imi.mopat.io.impl;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.FHIRHelper;
 import de.imi.mopat.io.EncounterExporterTemplate;
+import de.imi.mopat.io.importer.fhir.FhirR4bHelper;
 import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.enumeration.ExportStatus;
+import org.hl7.fhir.r4b.model.*;
+import org.hl7.fhir.r4b.model.OperationOutcome.OperationOutcomeIssueComponent;
+import org.hl7.fhir.r4b.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,25 +19,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.DateType;
-import org.hl7.fhir.dstu3.model.DecimalType;
-import org.hl7.fhir.dstu3.model.Identifier;
-import org.hl7.fhir.dstu3.model.IntegerType;
-import org.hl7.fhir.dstu3.model.OperationOutcome;
-import org.hl7.fhir.dstu3.model.OperationOutcome.OperationOutcomeIssueComponent;
-import org.hl7.fhir.dstu3.model.Patient;
-import org.hl7.fhir.dstu3.model.Questionnaire;
-import org.hl7.fhir.dstu3.model.QuestionnaireResponse;
-import org.hl7.fhir.dstu3.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent;
-import org.hl7.fhir.dstu3.model.Reference;
-import org.hl7.fhir.dstu3.model.StringType;
-
 /**
  *
  */
-public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate {
+public class EncounterExporterTemplateFhirR4b implements EncounterExporterTemplate {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         EncounterExporterTemplateHL7v2.class);
@@ -47,7 +35,7 @@ public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate 
     private ExportTemplate exportTemplate;
     private QuestionnaireResponse questionnaireResponse;
 
-    public EncounterExporterTemplateFHIR(final ConfigurationDao configurationDao) {
+    public EncounterExporterTemplateFhirR4b(final ConfigurationDao configurationDao) {
         this.configurationDao = configurationDao;
     }
 
@@ -74,8 +62,8 @@ public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate 
         File file = new File(templatePath, filename);
 
         // Create questionnaireResponse and set patientID and caseNumber
-        questionnaireResponse = FHIRHelper.getQuestionnaireResponse(
-            (Questionnaire) FHIRHelper.parseResourceFromFile(new FileInputStream(file)));
+        questionnaireResponse = FhirR4bHelper.getQuestionnaireResponse(
+            (Questionnaire) FhirR4bHelper.parseResourceFromFile(new FileInputStream(file)));
         Patient patient = new Patient();
         patient.addIdentifier(new Identifier().setValue(encounter.getCaseNumber()));
         questionnaireResponse.addContained(patient);
@@ -93,7 +81,7 @@ public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate 
         }
 
         // Search all answers for the exportField and write the value
-        for (QuestionnaireResponseItemAnswerComponent answer : FHIRHelper.getAllAnswersOfQuestionnaireResponse(
+        for (QuestionnaireResponseItemAnswerComponent answer : FhirR4bHelper.getAllAnswersOfQuestionnaireResponse(
             questionnaireResponse)) {
             if (value != null && !value.isEmpty()) {
                 if (answer.getId().equalsIgnoreCase(splitExportField[0])) {
@@ -249,7 +237,7 @@ public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate 
                     + FILENAMEDATEFORMAT.format(new Date()) + ".xml";
             // Write to disk
             File exportFile = new File(subDirectory, result);
-            FHIRHelper.writeResourceToFile(questionnaireResponse, exportFile);
+            FhirR4bHelper.writeResourceToFile(questionnaireResponse, exportFile);
         }
 
         if (exportViaREST && exportUrl != null && !exportUrl.isEmpty()) {
@@ -269,7 +257,7 @@ public class EncounterExporterTemplateFHIR implements EncounterExporterTemplate 
      */
     public ExportStatus exportViaREST(final String serverBase) {
         ExportStatus status = ExportStatus.SUCCESS;
-        IGenericClient client = FHIRHelper.getContext().newRestfulGenericClient(serverBase);
+        IGenericClient client = FhirR4bHelper.getContext().newRestfulGenericClient(serverBase);
         OperationOutcome outcome = (OperationOutcome) client.create()
             .resource(questionnaireResponse).execute().getOperationOutcome();
 

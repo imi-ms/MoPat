@@ -1,19 +1,22 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.io.importer.fhir;
 
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.IValidatorModule;
+import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationResult;
+import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.model.enumeration.FHIRExtensionType;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -29,29 +32,26 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
-import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.CodeType;
-import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.DateType;
-import org.hl7.fhir.dstu3.model.DecimalType;
-import org.hl7.fhir.dstu3.model.Element;
-import org.hl7.fhir.dstu3.model.Extension;
-import org.hl7.fhir.dstu3.model.IntegerType;
-import org.hl7.fhir.dstu3.model.Questionnaire;
-import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemComponent;
-import org.hl7.fhir.dstu3.model.QuestionnaireResponse;
-import org.hl7.fhir.dstu3.model.QuestionnaireResponse.QuestionnaireResponseStatus;
-import org.hl7.fhir.dstu3.model.Reference;
-import org.hl7.fhir.dstu3.model.Resource;
-import org.hl7.fhir.dstu3.model.StringType;
-import org.hl7.fhir.dstu3.model.TimeType;
-import org.hl7.fhir.dstu3.model.ValueSet;
+import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4b.model.BooleanType;
+import org.hl7.fhir.r4b.model.CodeType;
+import org.hl7.fhir.r4b.model.Coding;
+import org.hl7.fhir.r4b.model.DateType;
+import org.hl7.fhir.r4b.model.DecimalType;
+import org.hl7.fhir.r4b.model.Element;
+import org.hl7.fhir.r4b.model.Extension;
+import org.hl7.fhir.r4b.model.IntegerType;
+import org.hl7.fhir.r4b.model.Questionnaire;
+import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemComponent;
+import org.hl7.fhir.r4b.model.QuestionnaireResponse;
+import org.hl7.fhir.r4b.model.QuestionnaireResponse.QuestionnaireResponseStatus;
+import org.hl7.fhir.r4b.model.Resource;
+import org.hl7.fhir.r4b.model.StringType;
+import org.hl7.fhir.r4b.model.TimeType;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
-import org.springframework.validation.Errors;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -59,12 +59,12 @@ import org.xml.sax.SAXException;
 /**
  * This class contains methods, which aren't fixed to a specific class.
  */
-public class FHIRHelper {
-
+public class FhirR4bHelper implements FhirHelper {
+    
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirR4bHelper.class);
     private static FhirContext context;
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FHIRHelper.class);
     private static final IParser PARSER = getContext().newXmlParser();
-
+    
     /**
      * Set the error handler to the fhir parser.
      *
@@ -73,43 +73,37 @@ public class FHIRHelper {
     public static void setParserValidator(final IParserErrorHandler errorHandler) {
         PARSER.setParserErrorHandler(errorHandler);
     }
-
+    
     /**
      * This method validates a file against a XML-Schema-Definition file.
      *
      * @param fileToValidate                {@link File} instance that has to be validated.
      * @param validationSchemaFileDirectory The directory where the schema file is saved.
      * @param validationSchemaFileName      The name of the schema file.
-     * @param errors                        Stores the errors occuring during the validation
-     *                                      process.
-     * @param messageSource                 Spring messageSource instance containing validation
-     *                                      messages.
-     * @return True, if the validation was successfull, otherwise there's a
-     * {@link DataFormatException} thrown.
+     * @param errors                        Stores the errors occuring during the validation process.
+     * @param messageSource                 Spring messageSource instance containing validation messages.
+     * @return True, if the validation was successfull, otherwise there's a {@link DataFormatException} thrown.
      */
     public static boolean validateFileAgainstSchema(final MultipartFile fileToValidate,
         final String validationSchemaFileDirectory, final String validationSchemaFileName,
-        final Errors errors, final MessageSource messageSource) {
+        final ImportQuestionnaireValidation errors, final MessageSource messageSource) {
         LOGGER.info("Validating questionnaire resource file against xml " + "schema definition...");
-
-        if (validationSchemaFileDirectory == null || validationSchemaFileDirectory.trim()
-            .isEmpty()) {
+        
+        if (validationSchemaFileDirectory == null || validationSchemaFileDirectory.trim().isEmpty()) {
             errors.reject("import.fhir.validate.schemaFileDirectoryNull");
             LOGGER.info("ERROR: Directory of xsd is empty or null.");
             return false;
         }
-
+        
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = null;
         Document document = null;
-        File validationSchemaFile = new File(validationSchemaFileDirectory,
-            validationSchemaFileName);
+        File validationSchemaFile = new File(validationSchemaFileDirectory, validationSchemaFileName);
         try {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             document = documentBuilder.parse(fileToValidate.getInputStream());
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(
-                "http://www.w3.org/2001/XMLSchema");
+            SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             Schema schema = schemaFactory.newSchema(validationSchemaFile);
             documentBuilderFactory.setSchema(schema);
             Validator schemaValidator = schema.newValidator();
@@ -117,8 +111,8 @@ public class FHIRHelper {
             try {
                 schemaValidator.validate(source);
             } catch (SAXException e) {
-                errors.reject("import.fhir.validate.invalidFile",
-                    new Object[]{e.getLocalizedMessage()}, "File is invalid: {}");
+                errors.reject("import.fhir.validate.invalidFile", new Object[]{e.getLocalizedMessage()},
+                    "File is invalid: {}");
                 LOGGER.info("Validation failed. File is invalid. {}", e.getMessage());
                 return false;
             }
@@ -131,7 +125,34 @@ public class FHIRHelper {
         LOGGER.info("Validation succeeded. File is valid.");
         return true;
     }
-
+    
+    /**
+     * Validates a given resource string with
+     * the HAPI resource instance validators.
+     * @param fhirResourceString to validate
+     * @param errors validation object to store error messages in
+     * @return true, if valid; false otherwise
+     */
+    public static boolean validateFileWithFhirInstanceValidator(final String fhirResourceString,
+        final ImportQuestionnaireValidation errors) {
+        
+        FhirValidator validator = getContext().newValidator();
+        
+        // Create a validation module and register it
+        IValidatorModule module = new FhirInstanceValidator(FhirR4bHelper::getContext);
+        validator.registerValidatorModule(module);
+        
+        
+        ValidationResult result = validator.validateWithResult(fhirResourceString);
+        List<SingleValidationMessage> messages = result.getMessages();
+        
+        for (SingleValidationMessage message: messages) {
+            errors.reject(message.getMessage());
+        }
+        
+        return messages.isEmpty();
+    }
+    
     /**
      * Returns a singleton instance of class {@link FhirContext}.
      *
@@ -139,11 +160,11 @@ public class FHIRHelper {
      */
     public static FhirContext getContext() {
         if (context == null) {
-            context = FhirContext.forDstu3();
+            context = FhirContext.forR4B();
         }
         return context;
     }
-
+    
     /**
      * Encodes the given resource to XML format and writes it to the given file.
      *
@@ -159,7 +180,7 @@ public class FHIRHelper {
             LOGGER.error("Error while writing resource...", e);
         }
     }
-
+    
     /**
      * Parses the given inputStream to a {@link IBaseResource IBaseResource} object.
      *
@@ -170,29 +191,28 @@ public class FHIRHelper {
         throws ConfigurationException, DataFormatException {
         return PARSER.parseResource(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     }
-
+    
     /**
      * Sets {@link QuestionnaireResponse} object which consists of {@link Questionnaire} object.
      *
      * @param questionnaire Object the questionnaireResponse is created of.
      * @return The {@link QuestionnaireResponse} object appropriate to the questionnaire.
      */
-    public static QuestionnaireResponse getQuestionnaireResponse(
-        final Questionnaire questionnaire) {
+    public static QuestionnaireResponse getQuestionnaireResponse(final Questionnaire questionnaire) {
         QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setQuestionnaire(new Reference(questionnaire.getUrl()));
+        questionnaireResponse.setQuestionnaire(questionnaire.getUrl());
         questionnaireResponse.addContained(questionnaire);
         questionnaireResponse.setStatus(QuestionnaireResponseStatus.INPROGRESS);
-
-        for (Questionnaire.QuestionnaireItemComponent currentItem : questionnaire.getItem()) {
+        
+        for (QuestionnaireItemComponent currentItem : questionnaire.getItem()) {
             questionnaireResponse.addItem(transferItemToResponseItem(currentItem));
         }
         return questionnaireResponse;
     }
-
+    
     /**
-     * Collects all answer as instance of {QuestionnaireResponseItemAnswerComponent} of
-     * {@link QuestionnaireResponse} in a plain list.
+     * Collects all answer as instance of {QuestionnaireResponseItemAnswerComponent} of {@link QuestionnaireResponse} in
+     * a plain list.
      *
      * @param questionnaireResponse {@link QuestionnaireResponse} object containing the answers.
      * @return List of all answers.
@@ -200,13 +220,13 @@ public class FHIRHelper {
     public static List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> getAllAnswersOfQuestionnaireResponse(
         final QuestionnaireResponse questionnaireResponse) {
         List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> answers = new ArrayList<>();
-
+        
         for (QuestionnaireResponse.QuestionnaireResponseItemComponent currentItem : questionnaireResponse.getItem()) {
             answers.addAll(getAllAnswersOfResponseItem(currentItem));
         }
         return answers;
     }
-
+    
     /**
      * Collects all answers of given item and returns it as list.
      *
@@ -216,7 +236,7 @@ public class FHIRHelper {
     private static List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> getAllAnswersOfResponseItem(
         final QuestionnaireResponse.QuestionnaireResponseItemComponent item) {
         List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> answers = new ArrayList<>();
-
+        
         for (QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer : item.getAnswer()) {
             answers.add(answer);
         }
@@ -225,31 +245,29 @@ public class FHIRHelper {
         }
         return answers;
     }
-
+    
     /**
-     * Transfers data of FHIR fhirQuestionnaire item as HAPI {@link QuestionnaireItemComponent}
-     * object to FHIR questionnaireResponse item as HAPI {@link QuestionnaireResponseItemComponent}
-     * object.
+     * Transfers data of FHIR fhirQuestionnaire item as HAPI {@link QuestionnaireItemComponent} object to FHIR
+     * questionnaireResponse item as HAPI {@link QuestionnaireResponse.QuestionnaireResponseItemComponent} object.
      *
-     * @param item QuestionnaireItemComponent object which contains data that should be
-     *             transferred.
+     * @param item QuestionnaireItemComponent object which contains data that should be transferred.
      * @return QuestionnaireResponseItemComponent object containing the transferred data.
      */
     private static QuestionnaireResponse.QuestionnaireResponseItemComponent transferItemToResponseItem(
-        final Questionnaire.QuestionnaireItemComponent item) {
+        final QuestionnaireItemComponent item) {
         //if the item type is not supported by mopat ignore it
         QuestionnaireResponse.QuestionnaireResponseItemComponent responseItem = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
         responseItem.setLinkId(item.getLinkId());
         responseItem.setLinkIdElement(item.getLinkIdElement());
         responseItem.setText(item.getText());
         responseItem.setTextElement(item.getTextElement());
-
+        
         if (item.getType() != Questionnaire.QuestionnaireItemType.CHOICE
             && item.getType() != Questionnaire.QuestionnaireItemType.OPENCHOICE) {
             if (item.getType() == Questionnaire.QuestionnaireItemType.GROUP) {
                 //Item has other items, so loop through those ones and call
                 // this method again
-                for (Questionnaire.QuestionnaireItemComponent currentItem : item.getItem()) {
+                for (QuestionnaireItemComponent currentItem : item.getItem()) {
                     responseItem.addItem(transferItemToResponseItem(currentItem));
                 }
             } else {
@@ -278,7 +296,7 @@ public class FHIRHelper {
                         break;
                 }
                 responseItem.addAnswer(answer);
-                for (Questionnaire.QuestionnaireItemComponent currentItem : item.getItem()) {
+                for (QuestionnaireItemComponent currentItem : item.getItem()) {
                     responseItem.addItem(transferItemToResponseItem(currentItem));
                 }
             }
@@ -286,8 +304,8 @@ public class FHIRHelper {
             //Options can be defined as a set of options adhering in the
             // resource file (first option) or as reference or contained
             // reference as valueSet (second option)
-            if (item.getOption() != null && !item.getOption().isEmpty()) {
-                for (Questionnaire.QuestionnaireItemOptionComponent option : item.getOption()) {
+            if (item.getAnswerOption() != null && !item.getAnswerOption().isEmpty()) {
+                for (Questionnaire.QuestionnaireItemAnswerOptionComponent option : item.getAnswerOption()) {
                     QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                     try {
                         if (option.getValue() instanceof Coding) {
@@ -309,14 +327,15 @@ public class FHIRHelper {
                         responseItem.addAnswer(answer);
                     } catch (FHIRException e) {
                         LOGGER.debug(
-                            "Mapping questionnaire option to " + "questionnaire response answer "
-                                + "failed" + ". {}", e);
+                            "Mapping questionnaire option to " + "questionnaire response answer " + "failed" + ". {}",
+                            e);
                     }
                 }
-                for (Questionnaire.QuestionnaireItemComponent currentItem : item.getItem()) {
+                for (QuestionnaireItemComponent currentItem : item.getItem()) {
                     responseItem.addItem(transferItemToResponseItem(currentItem));
                 }
-            } else if (item.getOptions() != null && !item.getOptions().isEmpty()) {
+            } else if (item.getAnswerOption() != null && !item.getAnswerOption().isEmpty()) {
+                /*
                 ValueSet valueSet = (ValueSet) item.getOptions().getResource();
                 if (valueSet != null) {
                     for (ValueSet.ConceptSetComponent conceptComponent : valueSet.getCompose()
@@ -329,6 +348,7 @@ public class FHIRHelper {
                         }
                     }
                 }
+                */
             }
             if (item.getType() == Questionnaire.QuestionnaireItemType.OPENCHOICE) {
                 QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
@@ -339,7 +359,7 @@ public class FHIRHelper {
         }
         return responseItem;
     }
-
+    
     /**
      * Searchs for the {@link QuestionnaireItemComponent item} identified by the given linkId.
      *
@@ -362,16 +382,14 @@ public class FHIRHelper {
         }
         return item;
     }
-
+    
     /**
-     * Collects all {@link QuestionnaireItemComponent items} a item contains and returns it as
-     * list.
+     * Collects all {@link QuestionnaireItemComponent items} a item contains and returns it as list.
      *
      * @param item Object searched for items.
      * @return List of all items that are located at the searched item.
      */
-    public static List<QuestionnaireItemComponent> getAllItems(
-        final QuestionnaireItemComponent item) {
+    public static List<QuestionnaireItemComponent> getAllItems(final QuestionnaireItemComponent item) {
         List<QuestionnaireItemComponent> items = new ArrayList<>();
         for (QuestionnaireItemComponent child : item.getItem()) {
             items.add(child);
@@ -379,7 +397,7 @@ public class FHIRHelper {
         }
         return items;
     }
-
+    
     /**
      * Collects all locales from a translation extension.
      *
@@ -388,10 +406,9 @@ public class FHIRHelper {
      */
     public static List<String> getLocaleAsStringFromLanguageExtension(final Element element) {
         List<String> localesAsString = new ArrayList<>();
-
+        
         loop:
-        for (Extension extension : element.getExtensionsByUrl(
-            FHIRExtensionType.TRANSLATION.getTextValue())) {
+        for (Extension extension : element.getExtensionsByUrl(FHIRExtensionType.TRANSLATION.getTextValue())) {
             List<Extension> languageCode = extension.getExtensionsByUrl("lang");
             if (languageCode.get(0) == null || languageCode.get(0).isEmpty()) {
                 continue loop;
@@ -402,10 +419,10 @@ public class FHIRHelper {
             CodeType locale = (CodeType) languageCode.get(0).getValue();
             localesAsString.add(locale.asStringValue().replace("-", "_"));
         }
-
+        
         return localesAsString;
     }
-
+    
     /**
      * This collects all translations mapped to it's locales as String for single element.
      *
@@ -414,26 +431,23 @@ public class FHIRHelper {
      */
     public static Map<String, String> getLanugageMapFromLanguageExtension(final Element element) {
         Map<String, String> languageMap = new HashMap<>();
-
-        for (Extension extension : element.getExtensionsByUrl(
-            FHIRExtensionType.TRANSLATION.getTextValue())) {
+        
+        for (Extension extension : element.getExtensionsByUrl(FHIRExtensionType.TRANSLATION.getTextValue())) {
             List<Extension> languageCode = extension.getExtensionsByUrl("lang");
             List<Extension> content = extension.getExtensionsByUrl("content");
             if (languageCode.size() == 1 && content.size() == 1) {
                 CodeType locale = (CodeType) languageCode.get(0).getValue();
                 StringType translation = (StringType) content.get(0).getValue();
-                languageMap.put(locale.getValueAsString().replace("-", "_"),
-                    translation.asStringValue());
+                languageMap.put(locale.getValueAsString().replace("-", "_"), translation.asStringValue());
             } else {
-                LOGGER.error("Language extension can't be mapped. Extension "
-                    + "will be ignored because it's invalid. "
+                LOGGER.error("Language extension can't be mapped. Extension " + "will be ignored because it's invalid. "
                     + "It contains more or less than one " + "language codes or translations.");
             }
         }
-
+        
         return languageMap;
     }
-
+    
     /**
      * Gets the ordinalValue extension's value.
      *
@@ -441,28 +455,26 @@ public class FHIRHelper {
      * @return {Score Score's} value as double.
      */
     public static Double getScoreFromExtension(final Element element) {
-        List<Extension> extensions = element.getExtensionsByUrl(
-            FHIRExtensionType.SCORE.getTextValue());
+        List<Extension> extensions = element.getExtensionsByUrl(FHIRExtensionType.SCORE.getTextValue());
         if (extensions != null && !extensions.isEmpty()) {
             DecimalType value = null;
             try {
                 value = (DecimalType) extensions.get(0).getValue();
             } catch (Exception e) {
-                LOGGER.debug(
-                    "Casting score (ordinalValue) extension to " + "DecimalType failed. {}", e);
+                LOGGER.debug("Casting score (ordinalValue) extension to " + "DecimalType failed. {}", e);
             }
             return value.getValue().doubleValue();
         }
         return null;
     }
-
+    
     /**
      * Gets the min and the max value of the element's min and max value extensions.
      *
      * @param element            Object containing the extensions.
-     * @param getNumberOfAnswers Differs between the meaning of the extension, either it aims for
-     *                           the min and max number of selectable answers, or it specifies the
-     *                           min and max value of a answer that requires a number as input.
+     * @param getNumberOfAnswers Differs between the meaning of the extension, either it aims for the min and max number
+     *                           of selectable answers, or it specifies the min and max value of a answer that requires
+     *                           a number as input.
      * @return {@link Entry} containing the max value as key and the min value as value.
      */
     public static Entry<Double, Double> getMinAndMaxFromExtension(final Element element,
@@ -472,31 +484,25 @@ public class FHIRHelper {
         Double key = null;
         Double value = null;
         if (getNumberOfAnswers) {
-            if (element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue())
-                != null && !element.getExtensionsByUrl(
-                FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()).isEmpty()) {
-                max = element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue())
-                    .get(0);
+            if (element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()) != null
+                && !element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()).isEmpty()) {
+                max = element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()).get(0);
             }
-            if (element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue())
-                != null && !element.getExtensionsByUrl(
-                FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()).isEmpty()) {
-                min = element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue())
-                    .get(0);
+            if (element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()) != null
+                && !element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()).isEmpty()) {
+                min = element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()).get(0);
             }
         } else {
             if (element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue()) != null
-                && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue())
-                .isEmpty()) {
+                && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue()).isEmpty()) {
                 max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue()).get(0);
             }
             if (element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue()) != null
-                && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue())
-                .isEmpty()) {
+                && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue()).isEmpty()) {
                 min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue()).get(0);
             }
         }
-
+        
         if (max != null) {
             if (max.getValue() instanceof IntegerType intValue) {
                 key = intValue.getValue().doubleValue();
@@ -513,10 +519,10 @@ public class FHIRHelper {
         }
         return new SimpleEntry<>(key, value);
     }
-
+    
     /**
-     * Gets the start date (max value) and the end date (min value) specified by the elements min
-     * and max value extensions.
+     * Gets the start date (max value) and the end date (min value) specified by the elements min and max value
+     * extensions.
      *
      * @param element Object containing the extensions.
      * @return {@link Entry} containing the end date as key and start date as value.
@@ -524,21 +530,21 @@ public class FHIRHelper {
     public static Entry<Date, Date> getMinAndMaxDateFromExtension(final Element element) {
         Extension max = null;
         Extension min = null;
-        if (element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()) != null
-            && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()).isEmpty()) {
+        if (element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()) != null && !element.getExtensionsByUrl(
+            FHIRExtensionType.MAX_VALUE.toString()).isEmpty()) {
             max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()).get(0);
         }
-        if (element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()) != null
-            && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()).isEmpty()) {
+        if (element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()) != null && !element.getExtensionsByUrl(
+            FHIRExtensionType.MIN_VALUE.toString()).isEmpty()) {
             min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()).get(0);
         }
         Date key = null;
         Date value = null;
-
+        
         if (max != null) {
             key = ((DateType) max.getValue()).getValue();
         }
-
+        
         if (min != null) {
             value = ((DateType) max.getValue()).getValue();
         }

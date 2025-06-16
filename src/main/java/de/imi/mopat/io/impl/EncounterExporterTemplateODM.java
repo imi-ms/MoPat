@@ -16,7 +16,7 @@ import ca.uhn.hl7v2.parser.DefaultXMLParser;
 import ca.uhn.hl7v2.parser.PipeParser;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.ODMProcessingBean;
+import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Configuration;

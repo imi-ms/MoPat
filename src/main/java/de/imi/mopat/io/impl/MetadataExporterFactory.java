@@ -22,8 +22,12 @@ public class MetadataExporterFactory {
                 return new MetadataExporterODM();
             case PDF:
                 return new MetadataExporterPDF();
-            case FHIR:
-                return new MetadataExporterFHIR();
+            case FHIRDSTU3:
+                return new MetadataExporterFhirDstu3();
+            case FHIRR4B:
+                return new MetadataExporterFhirR4b();
+            case FHIRR5:
+                return new MetadataExporterFhirR5();
             case ODMExportTemplate:
                 return new MetadataExporterODMExportTemplate();
             default:

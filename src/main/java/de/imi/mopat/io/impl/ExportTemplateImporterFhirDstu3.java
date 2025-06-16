@@ -1,7 +1,7 @@
 package de.imi.mopat.io.impl;
 
 import ca.uhn.fhir.parser.DataFormatException;
-import de.imi.mopat.helper.controller.FHIRHelper;
+import de.imi.mopat.io.importer.fhir.FhirDstu3Helper;
 import de.imi.mopat.io.ExportTemplateImporter;
 
 import java.io.IOException;
@@ -25,10 +25,10 @@ import org.xml.sax.SAXException;
 /**
  *
  */
-public class ExportTemplateImporterFHIR implements ExportTemplateImporter {
+public class ExportTemplateImporterFhirDstu3 implements ExportTemplateImporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterExporterTemplateFHIR.class);
+        ExportTemplateImporterFhirDstu3.class);
 
     @Override
     public List<String> importFile(final InputStream inputStream)
@@ -36,7 +36,7 @@ public class ExportTemplateImporterFHIR implements ExportTemplateImporter {
         List<String> mappingExportFields = new ArrayList<>();
 
         try {
-            Questionnaire questionnaire = (Questionnaire) FHIRHelper.parseResourceFromFile(
+            Questionnaire questionnaire = (Questionnaire) FhirDstu3Helper.parseResourceFromFile(
                 inputStream);
             List<QuestionnaireItemComponent> items = new ArrayList<>();
             for (QuestionnaireItemComponent item : questionnaire.getItem()) {

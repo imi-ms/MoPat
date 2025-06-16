@@ -9,7 +9,6 @@ import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.ServletContextInfo;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.DateAnswer;
@@ -52,7 +51,7 @@ import org.springframework.context.MessageSource;
 /**
  * An exporter for FHIR metadata reprasentation of a {@link Questionnaire}.
  */
-public class MetadataExporterFHIR implements MetadataExporter {
+public class MetadataExporterFhirDstu3 implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(MetadataExporterPDF.class);
