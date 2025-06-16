@@ -1,0 +1,342 @@
+{
+  "type" : "questionnaire",
+  "id" : 1051,
+  "name" : "Fragebogen alle Typen",
+  "description" : "Fragebogen alle Typen",
+  "localizedWelcomeText" : { },
+  "localizedFinalText" : { },
+  "localizedDisplayName" : {
+    "de_DE" : "Fragebogen alle Typen"
+  },
+  "questionDTOs" : {
+    "1052" : {
+      "type" : "question",
+      "id" : 1052,
+      "localizedQuestionText" : {
+        "de_DE" : "Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.<br>Wir wüssten gerne: wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche?"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "NUMBER_CHECKBOX_TEXT",
+      "answers" : {
+        "1053" : {
+          "type" : "answer",
+          "id" : 1053,
+          "jsonQuestionDTO" : 1052,
+          "minValue" : 0.0,
+          "maxValue" : 10.0,
+          "stepsize" : "1.0",
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : {
+            "de_DE" : "Süßigkeiten:"
+          },
+          "vertical" : false,
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 5
+    },
+    "1054" : {
+      "type" : "question",
+      "id" : 1054,
+      "localizedQuestionText" : {
+        "de_DE" : "Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.<br>Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "FREE_TEXT",
+      "answers" : {
+        "1055" : {
+          "type" : "answer",
+          "id" : 1055,
+          "jsonQuestionDTO" : 1054,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 7
+    },
+    "1056" : {
+      "type" : "question",
+      "id" : 1056,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.<br>Die Frage lautet hier: wie gut geht es Ihnen gerade?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "SLIDER",
+      "answers" : {
+        "1057" : {
+          "type" : "answer",
+          "id" : 1057,
+          "jsonQuestionDTO" : 1056,
+          "minValue" : 0.0,
+          "maxValue" : 1.0,
+          "stepsize" : "0.01",
+          "localizedLabel" : { },
+          "localizedMaximumText" : {
+            "de_DE" : "super!"
+          },
+          "localizedMinimumText" : {
+            "de_DE" : "nicht so gut :("
+          },
+          "localizedFreetextLabel" : { },
+          "vertical" : false,
+          "showValueOnButton" : false,
+          "isEnabled" : true,
+          "showIcons" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 3
+    },
+    "1058" : {
+      "type" : "question",
+      "id" : 1058,
+      "localizedQuestionText" : {
+        "de_DE" : "<p>ret<br></p>"
+      },
+      "isRequired" : false,
+      "isEnabled" : false,
+      "questionType" : "INFO_TEXT",
+      "answers" : { },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 8
+    },
+    "1059" : {
+      "type" : "question",
+      "id" : 1059,
+      "localizedQuestionText" : {
+        "de_DE" : "Diese Frage ist eine Info-Text-Frage. Sie soll Ihnen lediglich einen Text anzeigen, bevor es mit der Beantwortung der Fragen losgeht."
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "INFO_TEXT",
+      "answers" : { },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 1
+    },
+    "1060" : {
+      "type" : "question",
+      "id" : 1060,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.<br>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können. In diesem Falle sind es 2. Versuchen Sie ruhig, 1, 2 oder mehr Antworten auszuwählen.<br>Es ist ebenfalls möglich, in MoPat2 die minimale Anzahl zu gebender Antworten zu bestimmen. In diesem Falle ist es 1 Antwort. Sie können zwar weniger als 1 geben, dann zählt die Frage aber als nicht vollständig beantwortet, und Sie werden am Ende des Fragebogens darauf hingewiesen.<br>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "MULTIPLE_CHOICE",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 2,
+      "codedValueType" : "INTEGER",
+      "answers" : {
+        "1061" : {
+          "type" : "answer",
+          "id" : 1061,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "1",
+          "localizedLabel" : {
+            "de_DE" : "Montag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1062" : {
+          "type" : "answer",
+          "id" : 1062,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "2",
+          "localizedLabel" : {
+            "de_DE" : "Dienstag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1063" : {
+          "type" : "answer",
+          "id" : 1063,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "3",
+          "localizedLabel" : {
+            "de_DE" : "Mittwoch"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1064" : {
+          "type" : "answer",
+          "id" : 1064,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "4",
+          "localizedLabel" : {
+            "de_DE" : "Donnerstag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1065" : {
+          "type" : "answer",
+          "id" : 1065,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "5",
+          "localizedLabel" : {
+            "de_DE" : "Freitag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1066" : {
+          "type" : "answer",
+          "id" : 1066,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "6",
+          "localizedLabel" : {
+            "de_DE" : "Samstag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "1067" : {
+          "type" : "answer",
+          "id" : 1067,
+          "jsonQuestionDTO" : 1060,
+          "codedValue" : "7",
+          "localizedLabel" : {
+            "de_DE" : "Sonntag"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 2
+    },
+    "1068" : {
+      "type" : "question",
+      "id" : 1068,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist eine Datumsfrage. Hier können Sie einen bestimmten Tag aus dem Kalender auswählen. Mit Hilfe der Pfeile lassen sich die Monate navigieren, die Drop-Down-Listen erlauben eine direkte Auswahl des Monats und Jahrs. Das Datum wählen Sie aus, indem Sie den entsprechenden Tag antippen.<br>Wann sind Sie geboren?"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "DATE",
+      "answers" : {
+        "1069" : {
+          "type" : "answer",
+          "id" : 1069,
+          "jsonQuestionDTO" : 1068,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 6
+    },
+    "1070" : {
+      "type" : "question",
+      "id" : 1070,
+      "localizedQuestionText" : {
+        "de_DE" : "Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.<br>Wir möchten gerne wissen:<br>Wenn Sie Ihrer bisherigen MoPat2-Erfahrung eine Schulnote geben müssten, welche wäre das?"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "NUMBER_CHECKBOX",
+      "answers" : {
+        "1071" : {
+          "type" : "answer",
+          "id" : 1071,
+          "jsonQuestionDTO" : 1070,
+          "minValue" : 1.0,
+          "maxValue" : 6.0,
+          "stepsize" : "1.0",
+          "localizedLabel" : { },
+          "localizedMaximumText" : {
+            "de_DE" : "Ungenügend"
+          },
+          "localizedMinimumText" : {
+            "de_DE" : "Sehr gut"
+          },
+          "localizedFreetextLabel" : { },
+          "vertical" : false,
+          "showValueOnButton" : false,
+          "isEnabled" : true,
+          "showIcons" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1051,
+      "position" : 4
+    }
+  },
+  "scoreDTOs" : {
+    "1072" : {
+      "type" : "score",
+      "id" : 1072,
+      "name" : "Test",
+      "questionnaireId" : 1051,
+      "expression" : {
+        "expressions" : [ {
+          "operatorId" : 6,
+          "value" : "20.0"
+        }, {
+          "operatorId" : 5,
+          "questionId" : 1056
+        } ],
+        "operatorId" : 1
+      }
+    }
+  }
+}
