@@ -51,8 +51,8 @@ import java.util.Set;
 @EnableScheduling
 @ComponentScan(basePackages = {"de.imi.mopat.auth", "de.imi.mopat.config",
     "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
-    "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl",
-    "de.imi.mopat.model", "de.imi.mopat.validator"})
+    "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl", "de.imi.mopat.io.importer",
+    "de.imi.mopat.io.importer.fhir", "de.imi.mopat.io.importer.odm", "de.imi.mopat.model", "de.imi.mopat.validator"})
 
 @PropertySources({
     @PropertySource("classpath:mopat.properties"),
