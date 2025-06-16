@@ -172,9 +172,21 @@
 												<div class="dropdown-content">
 													<a
 														class="link"
-														th:href="@{download?id=__${item.id}__&type=FHIR}"
+														th:href="@{download?id=__${item.id}__&type=FHIRDSTU3}"
 														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-														>FHIR</a
+														>FHIR STU3</a
+													>
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=FHIRR4B}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
+														>FHIR R4B</a
+													>
+													<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=FHIRR5}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
+														>FHIR R5</a
 													>
 													<a
 														class="link"
