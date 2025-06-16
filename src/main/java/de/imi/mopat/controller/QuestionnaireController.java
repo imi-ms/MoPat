@@ -1,36 +1,30 @@
 package de.imi.mopat.controller;
 
-import ca.uhn.fhir.context.ConfigurationException;
-import ca.uhn.fhir.parser.LenientErrorHandler;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.fhir.rest.client.exceptions.FhirClientConnectionException;
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.FHIRHelper;
-import de.imi.mopat.helper.controller.FHIRToMoPatConverter;
-import de.imi.mopat.helper.controller.GraphicsUtilities;
-import de.imi.mopat.helper.controller.ImportQuestionnaireResult;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.ODMProcessingBean;
-import de.imi.mopat.helper.controller.ODMv132ToMoPatConverter;
-import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.AuthService;
+import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
+import de.imi.mopat.io.importer.ImportQuestionnaireError;
+import de.imi.mopat.io.importer.ImportQuestionnaireResult;
+import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
+import de.imi.mopat.io.importer.fhir.FhirImporter;
+import de.imi.mopat.io.importer.odm.ODMProcessingBean;
+import de.imi.mopat.io.importer.odm.ODMv132ToMoPatConverter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
@@ -56,23 +50,19 @@ import de.imi.mopat.model.score.Operator;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.user.User;
-import de.imi.mopat.validator.MoPatValidator;
 import de.imi.mopat.validator.QuestionValidator;
-import de.imi.mopat.validator.QuestionnaireDTOValidator;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionFormDef;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionMetaDataVersion;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -84,7 +74,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -158,6 +147,8 @@ public class QuestionnaireController {
     private AuthService authService;
     @Autowired
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
+    @Autowired
+    private FhirImporter fhirImporter;
 
     @Autowired
     private ODMProcessingBean odmReader;
@@ -891,145 +882,29 @@ public class QuestionnaireController {
                         new Object[]{}, LocaleContextHolder.getLocale()));
             }
         } else if (exportTemplateType.equals(ExportTemplateType.FHIR)) {
-
-            // Create list of uploadFiles to collect ExportTemplate files for
-            // each configured export configuration group.
-            List<File> uploadFiles = new ArrayList<>();
-            // In case of import fails, collect all ExportTemplate files that
-            // has been created to delete those ones.
-            List<File> deletableFiles = new ArrayList<>();
-            List<ExportTemplate> exportTemplates = new ArrayList<>();
-            FHIRHelper.setParserValidator(new LenientErrorHandler());
+            
+            String webappPath = request.getSession().getServletContext().getRealPath("") + "/";
             try {
-                String objectStoragePath = configurationDao.getObjectStoragePath();
-                // Save uploaded file and update xml filename in template
-                String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
-                String filename = null;
-                SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "HH:mm:ss " + "dd" + ".MM" + ".yyyy");
-                org.hl7.fhir.dstu3.model.Questionnaire fhirQuestionnaire = new org.hl7.fhir.dstu3.model.Questionnaire();
-
-                if (file != null && !file.isEmpty() && file.getSize() > 0) {
-                    filename = stringUtilityHelper.replaceGermanUmlauts(file.getOriginalFilename());
-                    String validationSchemaFilePath =
-                        request.getSession().getServletContext().getRealPath("") + "/"
-                            + Constants.FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY;
-                    // Validate the questionnaire against a xml schema
-                    // definition to check if it's conform with fhir
-                    // specification
-                    FHIRHelper.validateFileAgainstSchema(file, validationSchemaFilePath,
-                        Constants.SCHEMA_QUESTIONNAIRE_FILE, result, messageSource);
-                    if (result.hasErrors()) {
-                        return getImportUpload(model);
+                ImportQuestionnaireValidation importResult = fhirImporter.importFhirQuestionnaire(
+                    file, url, webappPath
+                );
+                
+                if (importResult.hasErrors()) {
+                    for (ImportQuestionnaireError error: importResult.getValidationErrors()) {
+                        if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
+                            result.reject(error.getErrorCode(), error.getErrorArguments(), error.getDefaultErrorMessage());
+                        } else {
+                            result.reject(error.getErrorCode());
+                        }
                     }
-                    exportTemplates = ExportTemplate.createExportTemplates(
-                        "Automatically Generated Exporttemplate", ExportTemplateType.FHIR, file,
-                        configurationGroupDao, exportTemplateDao);
-                    fhirQuestionnaire = (org.hl7.fhir.dstu3.model.Questionnaire) FHIRHelper.parseResourceFromFile(
-                        file.getInputStream());
-
-                } else if (url != null && !url.trim().isEmpty()) {
-
-                    // Check if the url contains "/" otherwise it cannot be
-                    // resolved
-                    if (!url.contains("/")) {
-                        result.reject("import.error.invalidUrl", new Object[]{},
-                            "Input url is not valid");
-                        return getImportUpload(model);
-                    }
-
-                    // Get the serverBase adress to create connection to the
-                    // server
-                    String serverBase = url.substring(0,
-                        url.substring(0, url.lastIndexOf("/")).lastIndexOf("/"));
-                    IGenericClient client = FHIRHelper.getContext()
-                        .newRestfulGenericClient(serverBase);
-                    fhirQuestionnaire = client.read()
-                        .resource(org.hl7.fhir.dstu3.model.Questionnaire.class).withUrl(url)
-                        .execute();
-                    fhirQuestionnaire.setUrl(
-                        url.substring(url.indexOf("Questionnaire")));
-
-                    if (fhirQuestionnaire.getTitle() == null || fhirQuestionnaire.getTitle().trim()
-                        .isEmpty()) {
-                        filename = "Questionnaire default title.xml";
-                        fhirQuestionnaire.setTitle(
-                            "Questionnaire default " + "title " + dateFormat.format(new Date()));
-                    } else {
-                        filename = fhirQuestionnaire.getTitle() + ".xml";
-                    }
-                    exportTemplates = ExportTemplate.createExportTemplates(
-                        "Automatically Generated Exporttemplate", ExportTemplateType.FHIR, null,
-                        configurationGroupDao, exportTemplateDao);
+                    return getImportUpload(model);
+                } else {
+                    model.addAttribute("importQuestionnaireResult", importResult.getImportResult());
                 }
-
-                // The export templates are created for each configuration
-                // group existing for FHIR
-                // For each group there will be created a upload file that
-                // will be exported on the basis of the configurations
-                for (ExportTemplate exportTemplate : exportTemplates) {
-                    String uploadFilename = exportTemplate.getId() + "_" + filename;
-                    File uploadDir = new File(contextPath);
-                    if (!uploadDir.isDirectory()) {
-                        uploadDir.mkdirs();
-                    }
-                    File uploadFile = new File(contextPath, uploadFilename);
-                    uploadFiles.add(uploadFile);
-                    deletableFiles.add(uploadFile);
-                    exportTemplate.setFilename(uploadFilename);
-                }
-
-                // Convert fhir questionnaire to the mopat questionnaire
-                ImportQuestionnaireResult fhirQuestionnaireResult = FHIRToMoPatConverter.convertFHIRQuestionnaireToMoPatQuestionnaire(
-                    fhirQuestionnaire, exportTemplates, messageSource);
-                questionnaire = fhirQuestionnaireResult.getQuestionnaire();
-
-                // Write the questionnaire in each upload file
-                for (File uploadFile : uploadFiles) {
-                    uploadFile.createNewFile();
-                    FHIRHelper.writeResourceToFile(fhirQuestionnaire, uploadFile);
-                }
-
-                // Just append the current date if the questionnaire's name
-                // is already in use
-                if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), null)) {
-                    questionnaire.setName(
-                        questionnaire.getName() + " " + dateFormat.format(new Date()));
-                }
-
-                // Merge questionnaire
-                questionnaireDao.merge(questionnaire);
-
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
-                questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
-
-                // Merge the export templates
-                for (ExportTemplate exportTemplate : exportTemplates) {
-                    exportTemplate.setQuestionnaire(questionnaire);
-                    questionnaire.addExportTemplate(exportTemplate);
-                    exportTemplateDao.merge(exportTemplate);
-                }
-
-                // Merge questionnaire second time
-                questionnaireDao.merge(questionnaire);
-
-                model.addAttribute("importQuestionnaireResult", fhirQuestionnaireResult);
-            } catch (IOException | IllegalStateException | ConfigurationException |
-                     ResourceNotFoundException | FhirClientConnectionException e) {
-                for (ExportTemplate template : exportTemplates) {
-                    exportTemplateDao.remove(template);
-                }
-
-                for (File fileToDelete : deletableFiles) {
-                    fileToDelete.delete();
-                }
-
-                result.reject("import.fhir.error.message", new Object[]{e.getLocalizedMessage()},
-                    "The following error occurred: " + e.getMessage());
-                return getImportUpload(model);
+            } catch (IOException e) {
+                LOGGER.error("Could not upload FHIR questionnaire: ",e);
             }
+            
         }
         // TODO go on implementing here
         LOGGER.debug("Leaving public String postImportUpload(MultipartFile, "
