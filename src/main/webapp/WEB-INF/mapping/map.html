@@ -1166,6 +1166,25 @@
 									th:text="${messages.get(#locale, 'mapping.label.templateFields', 'Template fields')}"
 								>
 								</div>
+								<div class="d-flex mt-2 mb-2 gap-2 w-100">
+									<button
+											type="button"
+											class="btn btn-primary"
+											id="mapDataButton"
+											th:text="${messages.get(#locale, 'map.button.mapData', 'Map Data')}"
+									>
+										Map
+									</button>
+									<button
+											type="button"
+											class="btn btn-secondary"
+											id="clearMappingButton"
+											th:text="${messages.get(#locale, 'map.button.clearMapping', 'Clear Mapping')}"
+									>
+										Clear Mapping
+									</button>
+								</div>
+
 								<th:block th:each="t, indexer: ${doc}">
 									<div
 										th:if="${#strings.endsWith(t, ' ')}"
@@ -1442,6 +1461,50 @@
 					fixedElement.removeClass("scrolledOutNodes"); 
 				}
 			});
+
+
+			$("#mapDataButton").on("click", function () {
+				let $fields = $("#templateNodes .draggable:not(.node-assigned)");
+				let $answers = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node)");
+
+				if ($fields.length === 0 || $answers.length === 0) {
+					alert("No available template fields or questionnaire fields to map.");
+					return;
+				}
+
+				const totalToMap = Math.min($fields.length, $answers.length);
+
+				for (let i = 0; i < totalToMap; i++) {
+					let $field = $("#templateNodes .draggable:not(.node-assigned)").first();
+					let $answer = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node)").first();
+
+					if ($field.length === 0 || $answer.length === 0) break;
+
+					droppedExportField($field, $answer);
+					moveExistingMappingToTarget($field, $answer);
+				}
+			});
+
+			$("#clearMappingButton").on("click", function () {
+				// Clone the array to avoid DOM mutation issues while iterating
+				$(".map-node.node-assigned").toArray().forEach(el => {
+					const $field = $(el);
+					const $parent = $field.parent();
+					const index = $parent.data("index");
+					const exportField = $field.data("exportField");
+
+					$(`#exportRules${index}\\.exportField[value="${exportField}"]`).remove();
+
+					$parent.removeClass("has-node");
+
+					// Return to template list
+					$("#templateNodes").append($field);
+					$field.removeClass("node-assigned");
+				});
+
+				sortNodeList();
+			});
+
 		});
 	</script>
 </th:block>
