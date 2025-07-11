@@ -106,6 +106,16 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 break;
             case WEB_PATH:
                 break;
+            case RICH_TEXT:
+                String richTextValue = clinicConfigurationMappingDTO.getValue();
+                if (richTextValue != null && !richTextValue.isEmpty()) {
+
+                    if (!richTextValue.equals(stripXSS(richTextValue))) {
+                        message = messageSource.getMessage("configuration.validate.xss",
+                            new Object[]{}, LocaleContextHolder.getLocale());
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -116,5 +126,17 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                     new Object[]{}, LocaleContextHolder.getLocale()) + "'");
             errors.rejectValue("value", "errormessage", message);
         }
+    }
+
+    private String stripXSS(String value) {
+        if (value != null) {
+            value = value.replaceAll("(?i)<script[^>]*>.*?</script>", "");
+            value = value.replaceAll("(?i)<iframe[^>]*>.*?</iframe>", "");
+            value = value.replaceAll("(?i)javascript:", "");
+            value = value.replaceAll("(?i)on\\w+\\s*=", "");
+            return value;
+
+        }
+        return null;
     }
 }
