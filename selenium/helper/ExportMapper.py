@@ -139,14 +139,11 @@ class ExportHelper:
             if not os.path.exists(absolute_file_path):
                 raise FileNotFoundError(f"File not found: {absolute_file_path}")
 
-            print(f"Uploading file: {absolute_file_path}")
-
             # Find and use the file input
             file_input = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(ExportSelectors.FILE_INPUT)
             )
             file_input.send_keys(absolute_file_path)
-            print(f"Successfully uploaded file: {file_path}")
 
         except Exception as e:
             print(f"Error uploading file: {e}")
@@ -161,7 +158,6 @@ class ExportHelper:
                 EC.element_to_be_clickable(ExportSelectors.UPLOAD_FORM_SUBMIT)
             )
             submit_button.click()
-            print("Successfully submitted upload form")
         except TimeoutException:
             print("Could not find or click submit button")
             raise
@@ -207,7 +203,6 @@ class ExportHelper:
         try:
             answers = self.driver.find_elements(*ExportSelectors.AVAILABLE_ANSWERS)
             count = len(answers)
-            print(f"Found {count} available answer fields")
             return count
         except Exception as e:
             print(f"Error counting answer fields: {e}")
@@ -220,7 +215,6 @@ class ExportHelper:
         try:
             mapped = self.driver.find_elements(*ExportSelectors.MAPPED_NODES)
             count = len(mapped)
-            print(f"Found {count} mapped nodes")
             return count
         except Exception as e:
             print(f"Error counting mapped nodes: {e}")
