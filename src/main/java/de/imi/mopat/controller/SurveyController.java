@@ -1210,18 +1210,58 @@ public class SurveyController {
     public void finishQuestionnaire(
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
         @RequestBody final EncounterDTO encounterDTO) {
-        if (!encounterDTO.getIsTest() && encounterDTO.getId() != null) {
-            Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-            // If the attached bundle is not in test mode write the changes
-            if (encounter != null && encounter.getBundle().getIsPublished()) {
-                // Store the responses to the database
-                updateEncounter(encounterDTO);
-                // Refresh encounter from database after storing of responses
-                encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-                Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-                if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
-                    encounterExporter.export(encounter, questionnaire);
+        if (!encounterDTO.getIsTest()) {
+
+            if (encounterDTO.getId() != null) {
+                Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
+                // If the attached bundle is not in test mode write the changes
+                if (encounter != null && encounter.getBundle().getIsPublished()) {
+                    // Store the responses to the database
+                    updateEncounter(encounterDTO);
+                    // Refresh encounter from database after storing of responses
+                    encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
+                    Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+                    if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
+                        encounterExporter.export(encounter, questionnaire);
+                    }
                 }
+            }
+        } else {
+            finishQuestionnaireTest(questionnaireId, encounterDTO);
+        }
+    }
+
+    /**
+     * Controls the HTTP POST requests for the URL
+     * <i>/mobile/survey/finishQuestionnaire</i>. Stores/Updates the given
+     * {@link Encounter} and exports the {@link Questionnaire} identified by the given questionnaireId
+     *
+     * @param encounterDTO    The data transfer object containing the responses of the encounter.
+     * @param questionnaireId the id of the questionnaire that has been finished and can be exported.
+     */
+    @RequestMapping(value = "/mobile/survey/finishQuestionnairetest", method = RequestMethod.POST)
+    @ResponseBody
+    public void finishQuestionnaireTest(
+        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+        @RequestBody final EncounterDTO encounterDTO) {
+
+        //check if this is populated
+        Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
+
+        if (bundle != null && !bundle.getIsPublished()) {
+
+            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+            if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
+                Encounter encounter = new Encounter();
+
+//                encounter.setStartTime(new Timestamp(today.getTime()));
+//                encounter.setPatientID(encounterDTO.getPatientID());
+                encounter.setCaseNumber("test");
+                encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
+                encounter.setBundle(bundle);
+                encounter.setResponses(getResponseObjects(encounterDTO, encounter));
+
+                encounterExporter.exportTest(encounter, questionnaire);
             }
         }
     }
@@ -1314,5 +1354,73 @@ public class SurveyController {
             "clinicPatientDataRetriever", clinicId
         );
         return patientDataRetriever;
+    }
+
+    /**
+     * Controls the HTTP POST requests for the URL
+     * <i>/mobile/survey/encounter</i>. Provides the ability to store/update an
+     * {@link Encounter Encounter} object.
+     *
+     * @param encounterDTO The data transfer object containing the responses of the encounter.
+     * @return Returns an empty String.
+     */
+    @RequestMapping(value = "/mobile/survey/encountertest", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    // take encounter export from session
+    public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
+
+        if (!encounterDTO.getBundleDTO().getIsPublished()) {
+
+            // If the encounter is finished
+            if (encounterDTO.getIsCompleted()) {
+                // Wait initially 5 seconds for a possibly runnig export
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException ex) {
+                    LOGGER.debug(
+                        "The waiting of the exporting thread " + "was" + " interrupted");
+                }
+            }
+        }
+        return "";
+
+    }
+
+    private Set<Response> getResponseObjects(EncounterDTO encounterDTO, Encounter encounter) {
+        Set<Response> responses = new HashSet<>();
+        for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
+
+            // Set the current answer
+            Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
+
+            // If the response does not exist create a new one
+            Response response = new Response(currentAnswer, encounter);
+
+            if (responseDTO.getCustomtext() != null) {
+                response.setCustomtext(responseDTO.getCustomtext());
+            }
+
+            if (responseDTO.getValue() != null) {
+                response.setValue(responseDTO.getValue());
+            }
+
+            if (responseDTO.getDate() != null) {
+                response.setDate(responseDTO.getDate());
+            }
+
+            if (responseDTO.getPointsOnImage() != null) {
+
+                List<PointOnImage> pointsOnImage = new ArrayList<>();
+                for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
+                    PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
+                    pointOnImage.setResponse(response);
+                    pointsOnImage.add(pointOnImage);
+                }
+                response.setPointsOnImage(pointsOnImage);
+            }
+            responses.add(response);
+
+        }
+        return responses;
     }
 }
