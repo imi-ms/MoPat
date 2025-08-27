@@ -41,7 +41,9 @@ public class PinAuthorizationFilter extends OncePerRequestFilter {
             path.startsWith("/js") ||
             path.startsWith("/images") ||
             path.startsWith("/mobile/user/pinlogout") ||
-            path.startsWith("/mobile/user/pinlogin");
+            path.startsWith("/mobile/user/pinlogin") ||
+            path.startsWith("/mobile/survey/scores")
+            ;
     }
 
     @Override
