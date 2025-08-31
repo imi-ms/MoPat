@@ -1017,30 +1017,7 @@ public class SurveyController {
                             }
                         } else {
                             // If the response does not exist create a new one
-                            Response response = new Response(currentAnswer, encounter);
-
-                            if (responseDTO.getCustomtext() != null) {
-                                response.setCustomtext(responseDTO.getCustomtext());
-                            }
-
-                            if (responseDTO.getValue() != null) {
-                                response.setValue(responseDTO.getValue());
-                            }
-
-                            if (responseDTO.getDate() != null) {
-                                response.setDate(responseDTO.getDate());
-                            }
-
-                            if (responseDTO.getPointsOnImage() != null) {
-
-                                List<PointOnImage> pointsOnImage = new ArrayList<>();
-                                for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
-                                    PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
-                                    pointOnImage.setResponse(response);
-                                    pointsOnImage.add(pointOnImage);
-                                }
-                                response.setPointsOnImage(pointsOnImage);
-                            }
+                            Response response = createResponseObject(responseDTO, encounter, currentAnswer);
                             existingResponses.add(response);
                         }
                         questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
@@ -1222,7 +1199,7 @@ public class SurveyController {
                     encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
                     Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
                     if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
-                        encounterExporter.export(encounter, questionnaire);
+                        encounterExporter.export(encounter, questionnaire, false);
                     }
                 }
             }
@@ -1231,21 +1208,9 @@ public class SurveyController {
         }
     }
 
-    /**
-     * Controls the HTTP POST requests for the URL
-     * <i>/mobile/survey/finishQuestionnaire</i>. Stores/Updates the given
-     * {@link Encounter} and exports the {@link Questionnaire} identified by the given questionnaireId
-     *
-     * @param encounterDTO    The data transfer object containing the responses of the encounter.
-     * @param questionnaireId the id of the questionnaire that has been finished and can be exported.
-     */
-    @RequestMapping(value = "/mobile/survey/finishQuestionnairetest", method = RequestMethod.POST)
-    @ResponseBody
-    public void finishQuestionnaireTest(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestBody final EncounterDTO encounterDTO) {
+    private void finishQuestionnaireTest(final Long questionnaireId,
+        final EncounterDTO encounterDTO) {
 
-        //check if this is populated
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
         if (bundle != null && !bundle.getIsPublished()) {
@@ -1253,15 +1218,20 @@ public class SurveyController {
             Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
             if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
                 Encounter encounter = new Encounter();
-
-//                encounter.setStartTime(new Timestamp(today.getTime()));
-//                encounter.setPatientID(encounterDTO.getPatientID());
                 encounter.setCaseNumber("test");
                 encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
                 encounter.setBundle(bundle);
-                encounter.setResponses(getResponseObjects(encounterDTO, encounter));
+                Set<Response> responses = new HashSet<>();
+                for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
 
-                encounterExporter.exportTest(encounter, questionnaire);
+                    Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
+
+                    Response response = createResponseObject(responseDTO, encounter, currentAnswer);
+                    responses.add(response);
+
+                }
+                encounter.setResponses(responses);
+                encounterExporter.export(encounter, questionnaire, true);
             }
         }
     }
@@ -1358,27 +1328,23 @@ public class SurveyController {
 
     /**
      * Controls the HTTP POST requests for the URL
-     * <i>/mobile/survey/encounter</i>. Provides the ability to store/update an
-     * {@link Encounter Encounter} object.
+     * <i>/mobile/survey/encountertest</i>. Provides the ability to check export status
      *
      * @param encounterDTO The data transfer object containing the responses of the encounter.
      * @return Returns an empty String.
      */
     @RequestMapping(value = "/mobile/survey/encountertest", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    // take encounter export from session
     public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
 
         if (!encounterDTO.getBundleDTO().getIsPublished()) {
-
             // If the encounter is finished
             if (encounterDTO.getIsCompleted()) {
-                // Wait initially 5 seconds for a possibly runnig export
+                // Wait 5 seconds for a possibly running export
                 try {
                     Thread.sleep(5000L);
                 } catch (InterruptedException ex) {
-                    LOGGER.debug(
-                        "The waiting of the exporting thread " + "was" + " interrupted");
+                    LOGGER.debug("The waiting of the test exporting thread " + "was" + " interrupted");
                 }
             }
         }
@@ -1386,41 +1352,33 @@ public class SurveyController {
 
     }
 
-    private Set<Response> getResponseObjects(EncounterDTO encounterDTO, Encounter encounter) {
-        Set<Response> responses = new HashSet<>();
-        for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
+    private Response createResponseObject(ResponseDTO responseDTO, Encounter encounter, Answer currentAnswer) {
 
-            // Set the current answer
-            Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
+        Response response = new Response(currentAnswer, encounter);
 
-            // If the response does not exist create a new one
-            Response response = new Response(currentAnswer, encounter);
-
-            if (responseDTO.getCustomtext() != null) {
-                response.setCustomtext(responseDTO.getCustomtext());
-            }
-
-            if (responseDTO.getValue() != null) {
-                response.setValue(responseDTO.getValue());
-            }
-
-            if (responseDTO.getDate() != null) {
-                response.setDate(responseDTO.getDate());
-            }
-
-            if (responseDTO.getPointsOnImage() != null) {
-
-                List<PointOnImage> pointsOnImage = new ArrayList<>();
-                for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
-                    PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
-                    pointOnImage.setResponse(response);
-                    pointsOnImage.add(pointOnImage);
-                }
-                response.setPointsOnImage(pointsOnImage);
-            }
-            responses.add(response);
-
+        if (responseDTO.getCustomtext() != null) {
+            response.setCustomtext(responseDTO.getCustomtext());
         }
-        return responses;
+
+        if (responseDTO.getValue() != null) {
+            response.setValue(responseDTO.getValue());
+        }
+
+        if (responseDTO.getDate() != null) {
+            response.setDate(responseDTO.getDate());
+        }
+
+        if (responseDTO.getPointsOnImage() != null) {
+
+            List<PointOnImage> pointsOnImage = new ArrayList<>();
+            for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
+                PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
+                pointOnImage.setResponse(response);
+                pointsOnImage.add(pointOnImage);
+            }
+            response.setPointsOnImage(pointsOnImage);
+        }
+        return response;
     }
+
 }

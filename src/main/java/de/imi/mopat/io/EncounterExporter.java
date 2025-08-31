@@ -90,7 +90,7 @@ public class EncounterExporter {
      * @return <code>true</code> if exporting the given {@link Questionnaire}
      * object worked, <code>false</code> otherwise.
      */
-    public boolean export(final Encounter encounter, final Questionnaire questionnaire) {
+    public boolean export(final Encounter encounter, final Questionnaire questionnaire, boolean isTest) {
         assert encounter != null : "The Encounter was null";
         assert questionnaire != null : "The Questionnaire was null";
         Set<ExportTemplate> exportTemplates = new HashSet<>();
@@ -100,13 +100,17 @@ public class EncounterExporter {
             }
         }
         boolean allSucceeded = true;
+        boolean exportSucceeded;
         for (ExportTemplate exportTemplate : exportTemplates) {
-            boolean exportSucceeded = export(encounter, exportTemplate);
+            if(isTest)
+                exportSucceeded = exportTest(encounter, exportTemplate);
+            else
+                exportSucceeded = export(encounter, exportTemplate);
+
             if (!exportSucceeded) {
                 allSucceeded = false;
             }
         }
-        // only if all exportTemplates succeded return true
         return allSucceeded;
     }
 
@@ -146,31 +150,7 @@ public class EncounterExporter {
         ExportStatus exportStatus = ExportStatus.FAILURE;
         // Instantiate an object based on the exportTemplateType
         try {
-            ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
-            // Instantiate a new object based on the type of the export template
-            // with the ConfigurationGroupDao and ConfigurationDao from the
-            // context
-            EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
-                configurationDao);
-            // If no implementation for the exporter exists throw an exception
-            if (exporter == null) {
-                LOGGER.error("No Implementation found for {}",
-                    exportTemplate.getExportTemplateType());
-                throw new Exception(
-                    "No Implementation found for " + exportTemplate.getExportTemplateType());
-            }
-            // Initialize the exporter
-            exporter.load(encounter, exportTemplate);
-
-            LOGGER.info("Export Encounter: {}", encounter);
-            for (ExportRule rule : exportTemplate.getExportRules()) {
-                String value = this.getFormattedValue(encounter, rule);
-                exporter.write(rule.getExportField(), value);
-            }
-
-            // Flush out the export template to the export folder
-            exportStatus = exporter.flush();
-
+            exportStatus = exportEncounter(encounter, exportTemplate);
         } catch (Exception ex) {
             LOGGER.error(MarkerFactory.getMarker("FATAL"),
                 "fatal error while exporting [exportTemplate={}, " + "Encounter={}]: {}",
@@ -192,27 +172,28 @@ public class EncounterExporter {
         return true;
     }
 
+
     /**
-     * Exports the {@link Questionnaire} objects of a given {@link Encounter} objects.
+     * Exports the {@link ExportTemplate} object of a given {@link Encounter Encounter} object.
      *
-     * @param encounter     An object of {@link Encounter}. Must not be
-     *                      <code>null</code>.
-     * @param questionnaire The {@link Questionnaire} object to export. Must not be
-     *                      <code>null</code>. Will only be exported if it is part of the given
-     *                      encounter's {@link de.imi.mopat.model.Bundle}.
-     * @return <code>true</code> if exporting the given {@link Questionnaire}
-     * object worked, <code>false</code> otherwise.
+     * @param encounter      An object of {@link Encounter}. Must not be
+     *                       <code>null</code>.
+     * @param exportTemplate The {@link ExportTemplate} object to export. Must not be
+     *                       <code>null</code>.
      */
-    public void exportTest(final Encounter encounter, final Questionnaire questionnaire) {
-        Set<ExportTemplate> exportTemplates = new HashSet<>();
-        for (BundleQuestionnaire bs : encounter.getBundle().getBundleQuestionnaires()) {
-            if (bs.getQuestionnaire().equals(questionnaire)) {
-                exportTemplates = bs.getExportTemplates();
-            }
+    public boolean exportTest(final Encounter encounter, final ExportTemplate exportTemplate) {
+        assert exportTemplate != null : "The ExportTemplate was null";
+        answerResponseMap = null;
+
+        try {
+           exportEncounter(encounter, exportTemplate);
+        } catch (Exception ex) {
+            LOGGER.error(MarkerFactory.getMarker("FATAL"),
+                "fatal error while exporting test [exportTemplate={}, " + "Encounter={}]: {}",
+                exportTemplate.getId(), encounter.getId(), ex.toString());
+            return false;
         }
-        for (ExportTemplate exportTemplate : exportTemplates) {
-            exportTest(encounter, exportTemplate, false);
-        }
+        return true;
     }
 
     /**
@@ -222,47 +203,33 @@ public class EncounterExporter {
      *                       <code>null</code>.
      * @param exportTemplate The {@link ExportTemplate} object to export. Must not be
      *                       <code>null</code>.
-     * @param manual         The {@link ExportTemplate} was exported manually from a user.
-     * @return <code>true</code> if exporting the given {@link ExportTemplate}
-     * object worked, <code>false</code> otherwise.
+     * @return {@link ExportStatus} for the given {@link ExportTemplate}.
      */
-    public ExportStatus exportTest(final Encounter encounter, final ExportTemplate exportTemplate,
-        final boolean manual) {
-        assert exportTemplate != null : "The ExportTemplate was null";
-        // Remove reference from answerResponseMap so it gets filled with data
-        // from the recent encounter
-        answerResponseMap = null;
-        // Set initial export status to failure
-        ExportStatus exportStatus = ExportStatus.FAILURE;
-        // Instantiate an object based on the exportTemplateType
-        try {
-            ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
-            EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
-                configurationDao);
-            // If no implementation for the exporter exists throw an exception
-            if (exporter == null) {
-                LOGGER.error("No Implementation found for {}", exportTemplate.getExportTemplateType());
-                throw new Exception(
-                    "No Implementation found for " + exportTemplate.getExportTemplateType());
-            }
-            // Initialize the exporter
-            exporter.load(encounter, exportTemplate);
+    private ExportStatus exportEncounter(final Encounter encounter, final ExportTemplate exportTemplate) throws Exception{
+        ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
+        // Instantiate a new object based on the type of the export template
+        // with the ConfigurationGroupDao and ConfigurationDao from the
+        // context
+        EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
+            configurationDao);
+        // If no implementation for the exporter exists throw an exception
+        if (exporter == null) {
+            LOGGER.error("No Implementation found for {}",
+                exportTemplate.getExportTemplateType());
+            throw new Exception(
+                "No Implementation found for " + exportTemplate.getExportTemplateType());
+        }
+        // Initialize the exporter
+        exporter.load(encounter, exportTemplate);
 
-            for (ExportRule rule : exportTemplate.getExportRules()) {
-                //todo where does the rule come from
-                String value = this.getFormattedValue(encounter, rule);
-                exporter.write(rule.getExportField(), value);
-            }
-            // Flush out the export template to the export folder
-            exportStatus = exporter.flush();
-
-        } catch (Exception ex) {
-            LOGGER.error(MarkerFactory.getMarker("FATAL"),
-                "fatal error while exporting [exportTemplate={}, " + "Encounter={}]: {}",
-                exportTemplate.getId(), encounter.getId(), ex.toString());
+        LOGGER.info("Export Encounter: {}", encounter);
+        for (ExportRule rule : exportTemplate.getExportRules()) {
+            String value = this.getFormattedValue(encounter, rule);
+            exporter.write(rule.getExportField(), value);
         }
 
-        return exportStatus;
+        // Flush out the export template to the export folder
+        return exporter.flush();
     }
 
     /**
