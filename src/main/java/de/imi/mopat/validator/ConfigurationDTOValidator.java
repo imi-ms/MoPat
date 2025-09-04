@@ -90,6 +90,16 @@ public class ConfigurationDTOValidator implements Validator {
                 break;
             case WEB_PATH:
                 break;
+            case RICH_TEXT:
+                String richTextValue = configurationDTO.getValue();
+                if (richTextValue != null && !richTextValue.isEmpty()) {
+
+                    if (!richTextValue.equals(stripXSS(richTextValue))) {
+                        message = messageSource.getMessage("configuration.validate.xss",
+                            new Object[]{}, LocaleContextHolder.getLocale());
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -100,5 +110,17 @@ public class ConfigurationDTOValidator implements Validator {
                     new Object[]{}, LocaleContextHolder.getLocale()) + "'");
             errors.rejectValue("value", "errormessage", message);
         }
+    }
+
+    private String stripXSS(String value) {
+        if (value != null) {
+            value = value.replaceAll("(?i)&lt;script[^&]*&gt;.*?&lt;/script&gt;", "");
+            value = value.replaceAll("(?i)&lt;iframe[^&]*&gt;.*?&lt;/iframe&gt;", "");
+            value = value.replaceAll("(?i)javascript&#x3A;", "");
+            value = value.replaceAll("(?i)on\\w+\\s*&#x3D;", "");
+            return value;
+
+        }
+        return null;
     }
 }

@@ -47,6 +47,11 @@
 							layout:insert="~{helper/var :: add(key='formType', value='NUMBER')}"
 						/>
 					</th:block>
+					<th:block th:case="RICH_TEXT">
+						<th:block
+								layout:insert="~{helper/var :: add(key='formType', value='RICH_TEXT')}"
+						/>
+					</th:block>
 					<th:block th:case="*">
 						<th:block
 							layout:insert="~{helper/var :: add(key='formType', value=${configurationDTO?.configurationType?.toString()})}"
