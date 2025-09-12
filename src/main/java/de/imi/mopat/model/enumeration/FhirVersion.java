@@ -15,25 +15,4 @@ public enum FhirVersion {
     FhirVersion(String versionString) {
         this.versionString = versionString;
     }
-    
-    /**
-     * Helper Function to transform a ExportTemplateType
-     * to a FhirVersion Enum
-     * @param exportTemplateType to get the FhirVersion for
-     * @return FhirVersion, null if none can be found
-     */
-    public static FhirVersion getVersionForExportTemplateType(ExportTemplateType exportTemplateType) {
-        switch (exportTemplateType) {
-            case FHIR_DSTU3 -> {
-                return FhirVersion.DSTU3;
-            }
-            case FHIR_R4B -> {
-                return FhirVersion.R4B;
-            }
-            
-            default -> {
-                return null;
-            }
-        }
-    }
 }
