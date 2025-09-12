@@ -2,16 +2,19 @@ package de.imi.mopat.io.importer.fhir;
 
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
+import ca.uhn.fhir.i18n.HapiLocalizer;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
+import ca.uhn.fhir.validation.ResultSeverityEnum;
 import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationOptions;
 import ca.uhn.fhir.validation.ValidationResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.model.enumeration.FHIRExtensionType;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.parsers.DocumentBuilder;
@@ -33,7 +37,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
+import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
+import org.hl7.fhir.common.hapi.validation.support.PrePopulatedValidationSupport;
+import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
@@ -51,6 +57,7 @@ import org.hl7.fhir.dstu3.model.QuestionnaireResponse.QuestionnaireResponseStatu
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.dstu3.model.StructureDefinition;
 import org.hl7.fhir.dstu3.model.TimeType;
 import org.hl7.fhir.dstu3.model.ValueSet;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -64,10 +71,10 @@ import org.xml.sax.SAXException;
 /**
  * This class contains methods, which aren't fixed to a specific class.
  */
-public class FhirDstu3Helper implements FhirHelper {
+public class FhirDstu3Helper extends FhirHelper {
 
-    private static FhirContext context;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirDstu3Helper.class);
+    private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
 
     /**
@@ -92,6 +99,7 @@ public class FhirDstu3Helper implements FhirHelper {
      * @return True, if the validation was successfull, otherwise there's a
      * {@link DataFormatException} thrown.
      */
+    @Deprecated
     public static boolean validateFileAgainstSchema(final MultipartFile fileToValidate,
         final String validationSchemaFileDirectory, final String validationSchemaFileName,
         final ImportQuestionnaireValidation result, final MessageSource messageSource) {
@@ -136,34 +144,68 @@ public class FhirDstu3Helper implements FhirHelper {
         LOGGER.info("Validation succeeded. File is valid.");
         return true;
     }
-    
+
     /**
-     * Validates a given resource string with
-     * the HAPI resource instance validators.
+     * Validates a given resource string with the HAPI resource instance validators.
+     *
      * @param fhirResourceString to validate
-     * @param errors validation object to store error messages in
+     * @param errors             validation object to store error messages in
+     * @param frontendLocale     locale of the frontend, used to get the correct translation
      * @return true, if valid; false otherwise
      */
     public static boolean validateFileWithFhirInstanceValidator(final String fhirResourceString,
-        final ImportQuestionnaireValidation errors) {
-        
-        FhirValidator validator = getContext().newValidator();
-        
-        // Create a validation module and register it
-        IValidatorModule module = new FhirInstanceValidator(FhirDstu3Helper.getContext());
-        validator.registerValidatorModule(module);
-        
-        
-        ValidationResult result = validator.validateWithResult(fhirResourceString);
-        List<SingleValidationMessage> messages = result.getMessages();
-        
-        for (SingleValidationMessage message: messages) {
-            errors.reject(message.getMessage());
+        final ImportQuestionnaireValidation errors, String frontendLocale) {
+
+        Locale originalLocale = Locale.getDefault();
+
+        try {
+            frontendLocale = frontendLocale.replace("_", "-");
+
+            Locale selectedLocale = Locale.forLanguageTag(frontendLocale);
+            Locale.setDefault(selectedLocale);
+
+            reinitContext();
+
+            ValidationSupportChain validationSupport = new ValidationSupportChain(
+                new DefaultProfileValidationSupport(getContext()),
+                new InMemoryTerminologyServerValidationSupport(getContext()));
+
+            PrePopulatedValidationSupport prePopulated = new PrePopulatedValidationSupport(
+                getContext());
+            StructureDefinition translationExt = getContext().newJsonParser()
+                .parseResource(StructureDefinition.class, FhirDstu3Helper.class.getResourceAsStream(
+                    "/fhir/StructureDefinition-translation.json"));
+
+            prePopulated.addStructureDefinition(translationExt);
+            validationSupport.addValidationSupport(prePopulated);
+
+            FhirInstanceValidator instanceValidator = new FhirInstanceValidator(validationSupport);
+
+            FhirValidator validator = getContext().newValidator();
+            validator.registerValidatorModule(instanceValidator);
+
+            IValidatorModule module = new FhirInstanceValidator(FhirDstu3Helper.getContext());
+            validator.registerValidatorModule(module);
+
+            ValidationResult result = validator.validateWithResult(fhirResourceString);
+
+            List<SingleValidationMessage> messages = result.getMessages().stream().filter(
+                    singleValidationMessage ->
+                        singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
+                            || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
+                .toList();
+
+            for (SingleValidationMessage message : messages) {
+                addDefaultError(errors, message);
+            }
+
+            return messages.isEmpty();
+        } finally {
+            Locale.setDefault(originalLocale);
+            reinitContext();
         }
-        
-        return messages.isEmpty();
     }
-    
+
 
     /**
      * Returns a singleton instance of class {@link FhirContext}.
@@ -175,6 +217,13 @@ public class FhirDstu3Helper implements FhirHelper {
             context = FhirContext.forDstu3();
         }
         return context;
+    }
+
+    /**
+     * Reinitializes the FHIR context  with the DSTU 3 version of FHIR.
+     */
+    public static void reinitContext() {
+        context = FhirContext.forDstu3();
     }
 
     /**
