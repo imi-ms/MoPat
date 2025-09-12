@@ -1,7 +1,8 @@
 package de.imi.mopat.io.importer.fhir;
 
-import static org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType.DISPLAY;
-import static org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType.INTEGER;
+import static org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType.CODING;
+import static org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType.DISPLAY;
+import static org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType.INTEGER;
 
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.ValidationMessage;
@@ -38,24 +39,25 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.hl7.fhir.r4b.model.CanonicalType;
-import org.hl7.fhir.r4b.model.CodeableConcept;
-import org.hl7.fhir.r4b.model.Coding;
-import org.hl7.fhir.r4b.model.DateType;
-import org.hl7.fhir.r4b.model.DecimalType;
-import org.hl7.fhir.r4b.model.IntegerType;
-import org.hl7.fhir.r4b.model.Questionnaire;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemComponent;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemEnableWhenComponent;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemOperator;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType;
-import org.hl7.fhir.r4b.model.Reference;
-import org.hl7.fhir.r4b.model.Resource;
-import org.hl7.fhir.r4b.model.StringType;
-import org.hl7.fhir.r4b.model.TimeType;
-import org.hl7.fhir.r4b.model.ValueSet;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
+import org.hl7.fhir.r5.model.CanonicalType;
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.DateType;
+import org.hl7.fhir.r5.model.DecimalType;
+import org.hl7.fhir.r5.model.IntegerType;
+import org.hl7.fhir.r5.model.Questionnaire;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireAnswerConstraint;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemEnableWhenComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemOperator;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType;
+import org.hl7.fhir.r5.model.Resource;
+import org.hl7.fhir.r5.model.StringType;
+import org.hl7.fhir.r5.model.TimeType;
+import org.hl7.fhir.r5.model.ValueSet;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -65,11 +67,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * This class provides methods to map FHIR resources (questionnaire) to MoPat models. <br> Further
  * it stores data from the latest mapping in maps to assign FHIR elements to MoPat models.
  */
-public class FhirR4bToMoPatConverter {
+public class FhirR5ToMoPatConverter {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        FhirR4bToMoPatConverter.class);
+        FhirR5ToMoPatConverter.class);
     private static Map<String, String> localizedDisplayNames = new HashMap<>();
+
+    private static final FhirR5Helper fhirR5Helper = new FhirR5Helper();
 
     /**
      * Maps FHIR questionnaire to MoPat questionnaire instance.
@@ -96,7 +100,7 @@ public class FhirR4bToMoPatConverter {
 
         setDescriptionText(mopatQuestionnaire, importQuestionnaire, fhirQuestionnaire);
 
-        List<Questionnaire.QuestionnaireItemComponent> items = collectAllItems(fhirQuestionnaire);
+        List<QuestionnaireItemComponent> items = collectAllItems(fhirQuestionnaire);
 
         processItemsToQuestions(fhirQuestionnaire, mopatQuestionnaire, items, exportTemplates,
             messageSource, locale, importQuestionnaire);
@@ -168,7 +172,7 @@ public class FhirR4bToMoPatConverter {
 
         if (fhirQuestionnaire.getTitle() != null) {
             mopatQuestionnaire.setName(fhirQuestionnaire.getTitle());
-            localizedDisplayNames = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+            localizedDisplayNames = FhirR5Helper.getLanugageMapFromLanguageExtension(
                 fhirQuestionnaire.getTitleElement());
             localizedDisplayNames.put(locale, fhirQuestionnaire.getTitle());
             displayName = fhirQuestionnaire.getTitle();
@@ -285,12 +289,12 @@ public class FhirR4bToMoPatConverter {
      * @param fhirQuestionnaire The FHIR Questionnaire from which to collect items.
      * @return A list of all QuestionnaireItemComponent instances, including nested components.
      */
-    private static List<Questionnaire.QuestionnaireItemComponent> collectAllItems(
+    private static List<QuestionnaireItemComponent> collectAllItems(
         Questionnaire fhirQuestionnaire) {
-        List<Questionnaire.QuestionnaireItemComponent> items = new ArrayList<>();
-        for (Questionnaire.QuestionnaireItemComponent item : fhirQuestionnaire.getItem()) {
+        List<QuestionnaireItemComponent> items = new ArrayList<>();
+        for (QuestionnaireItemComponent item : fhirQuestionnaire.getItem()) {
             items.add(item);
-            items.addAll(FhirR4bHelper.getAllItems(item));
+            items.addAll(FhirR5Helper.getAllItems(item));
         }
         return items;
     }
@@ -311,13 +315,13 @@ public class FhirR4bToMoPatConverter {
      */
     private static void processItemsToQuestions(Questionnaire fhirQuestionnaire,
         de.imi.mopat.model.Questionnaire mopatQuestionnaire,
-        List<Questionnaire.QuestionnaireItemComponent> items, List<ExportTemplate> exportTemplates,
+        List<QuestionnaireItemComponent> items, List<ExportTemplate> exportTemplates,
         MessageSource messageSource, String locale, ImportQuestionnaireResult importQuestionnaire) {
 
         ImportQuestionListResult importQuestionListResult = new ImportQuestionListResult();
         Integer position = 0;
 
-        for (Questionnaire.QuestionnaireItemComponent item : items) {
+        for (QuestionnaireItemComponent item : items) {
             ImportQuestionResult importQuestionResult = convertItemToQuestion(fhirQuestionnaire,
                 item, locale, exportTemplates, messageSource);
 
@@ -341,7 +345,7 @@ public class FhirR4bToMoPatConverter {
      *                            questionnaire
      */
     private static void convertEnableWhenComponentsToConditions(
-        List<Questionnaire.QuestionnaireItemComponent> items,
+        List<QuestionnaireItemComponent> items,
         ImportQuestionnaireResult importQuestionnaire) {
 
         for (QuestionnaireItemComponent item : items) {
@@ -359,7 +363,7 @@ public class FhirR4bToMoPatConverter {
      * @param displayName the display name to be used for updating null or empty map entries
      */
     private static void finalizeLocalizedDisplayNames(String locale, String displayName) {
-        for (Map.Entry<String, String> entry : localizedDisplayNames.entrySet()) {
+        for (Entry<String, String> entry : localizedDisplayNames.entrySet()) {
             if (entry.getValue() == null || entry.getValue().isEmpty()) {
                 entry.setValue(displayName);
             }
@@ -385,7 +389,7 @@ public class FhirR4bToMoPatConverter {
      * <code>null</code>.
      */
     public static ImportQuestionResult convertItemToQuestion(final Questionnaire questionnaire,
-        final Questionnaire.QuestionnaireItemComponent item, final String locale,
+        final QuestionnaireItemComponent item, final String locale,
         final List<ExportTemplate> exportTemplates, final MessageSource messageSource) {
         LOGGER.debug(
             "convertItemToQuestion(Questionnaire" + ".QuestionnaireItemComponent item, String "
@@ -452,7 +456,7 @@ public class FhirR4bToMoPatConverter {
 
         // Set the questions text and get the translations
         if (item.getText() != null) {
-            localizedQuestionText = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+            localizedQuestionText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                 item.getTextElement());
 
             // If no text is found but the item has got a coding element,
@@ -460,7 +464,7 @@ public class FhirR4bToMoPatConverter {
         } else if (item.getCode() != null && !item.getCode().isEmpty()) {
             Coding code = item.getCodeFirstRep();
             if (code.getDisplay() != null && !code.getDisplay().isEmpty()) {
-                localizedQuestionText = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+                localizedQuestionText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                     code.getDisplayElement());
 
             } else {
@@ -524,8 +528,7 @@ public class FhirR4bToMoPatConverter {
                     exportTemplates);
                 addConversionMessage(question, importQuestionResult, item);
                 break;
-            case CHOICE:
-            case OPENCHOICE:
+            case CODING:
                 doHandleChoiceAnswer(question, questionnaire, messageSource, importQuestionResult,
                     item, exportTemplates, locale);
                 addConversionMessage(question, importQuestionResult, item);
@@ -602,7 +605,7 @@ public class FhirR4bToMoPatConverter {
         }
         SelectAnswer selectAnswer = new SelectAnswer(question, question.getIsEnabled(),
             localizedAnswerText, Boolean.FALSE);
-        selectAnswer.setValue(FhirR4bHelper.getScoreFromExtension(item));
+        selectAnswer.setValue(FhirR5Helper.getScoreFromExtension(item));
         importQuestionResult.addValidationMessage("import.fhir.option.result", new String[]{
             messageSource.getMessage("survey.question.answer.yes", new Object[]{},
                 LocaleContextHolder.getLocale())});
@@ -634,7 +637,7 @@ public class FhirR4bToMoPatConverter {
         }
         selectAnswer = new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText,
             Boolean.FALSE);
-        selectAnswer.setValue(FhirR4bHelper.getScoreFromExtension(item));
+        selectAnswer.setValue(FhirR5Helper.getScoreFromExtension(item));
         importQuestionResult.addValidationMessage("import.fhir.option.result", new String[]{
             messageSource.getMessage("survey.question.answer.no", new Object[]{},
                 LocaleContextHolder.getLocale())});
@@ -678,7 +681,7 @@ public class FhirR4bToMoPatConverter {
         MessageSource messageSource, ImportQuestionResult importQuestionResult,
         QuestionnaireItemComponent item, List<ExportTemplate> exportTemplates, String locale) {
         // Get if exists the min and max number of necessary answers
-        Entry<Double, Double> maxAndMinEntry = FhirR4bHelper.getMinAndMaxFromExtension(item,
+        Entry<Double, Double> maxAndMinEntry = FhirR5Helper.getMinAndMaxFromExtension(item,
             true);
         question.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         if (maxAndMinEntry.getValue() != null) {
@@ -707,13 +710,16 @@ public class FhirR4bToMoPatConverter {
             new String[]{question.getMaxNumberAnswers().toString()});
 
         // Convert the options of the multiple choice question
-        for (Questionnaire.QuestionnaireItemAnswerOptionComponent option : item.getAnswerOption()) {
+        List<QuestionnaireItemAnswerOptionComponent> answerOptions = item.getAnswerOption();
+        boolean isOpenChoice =
+            (item.getAnswerConstraint() == QuestionnaireAnswerConstraint.OPTIONSORSTRING);
+
+        for (Questionnaire.QuestionnaireItemAnswerOptionComponent option : answerOptions) {
             convertOptionToAnswer(option, question, importQuestionResult,
                 exportTemplates, messageSource, locale, null);
         }
 
         ValueSet containedValueSet = null;
-
         if (item.getAnswerValueSet() != null && questionnaire.getContained() != null
             && !questionnaire.getContained().isEmpty()) {
             // If the item contains a reference to a value set
@@ -744,26 +750,7 @@ public class FhirR4bToMoPatConverter {
 
         Map<String, String> localizedAnswerText;
 
-        // If the item doesn't contain any options create a
-        // default answer
-        if ((item.getAnswerOption() == null || item.getAnswerOption().isEmpty()) && (
-            item.getAnswerValueSet() == null || item.getAnswerValueSet().isEmpty()) && (
-            containedValueSet == null || containedValueSet.getCompose() == null
-                || containedValueSet.getCompose().getInclude() == null
-                || containedValueSet.getCompose().getInclude().isEmpty())) {
-            localizedAnswerText = new HashMap<>();
-            for (Entry<String, String> entry : question.getLocalizedQuestionText()
-                .entrySet()) {
-                localizedAnswerText.put(entry.getKey(),
-                    messageSource.getMessage("import.fhir.item.noOptions",
-                        new Object[]{},
-                        LocaleHelper.getLocaleFromString(entry.getKey())));
-            }
-            new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText,
-                Boolean.FALSE);
-        }
-
-        if (item.getType() == QuestionnaireItemType.OPENCHOICE) {
+        if (item.getAnswerConstraint() == QuestionnaireAnswerConstraint.OPTIONSORSTRING) {
             localizedAnswerText = new HashMap<>();
             for (Entry<String, String> entry : question.getLocalizedQuestionText().entrySet()) {
                 localizedAnswerText.put(entry.getKey(),
@@ -782,6 +769,21 @@ public class FhirR4bToMoPatConverter {
                 freetextAnswer.addExportRule(exportRuleAnswer);
             }
             importQuestionResult.addValidationMessage("import.fhir.item.openchoice.otherFreetext");
+        } else if ((item.getAnswerOption() == null || item.getAnswerOption().isEmpty()) && (
+            item.getAnswerValueSet() == null || item.getAnswerValueSet().isEmpty()) && (
+            containedValueSet == null || containedValueSet.getCompose() == null
+                || containedValueSet.getCompose().getInclude() == null
+                || containedValueSet.getCompose().getInclude().isEmpty())) {
+            localizedAnswerText = new HashMap<>();
+            for (Entry<String, String> entry : question.getLocalizedQuestionText()
+                .entrySet()) {
+                localizedAnswerText.put(entry.getKey(),
+                    messageSource.getMessage("import.fhir.item.noOptions",
+                        new Object[]{},
+                        LocaleHelper.getLocaleFromString(entry.getKey())));
+            }
+            new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText,
+                Boolean.FALSE);
         }
     }
 
@@ -804,7 +806,7 @@ public class FhirR4bToMoPatConverter {
         question.setQuestionType(QuestionType.DATE);
         // Get the min and max value of the date item and set it
         // to the questions start and end date
-        Entry<Date, Date> maxAndMinDateEntry = FhirR4bHelper.getMinAndMaxDateFromExtension(item);
+        Entry<Date, Date> maxAndMinDateEntry = FhirR5Helper.getMinAndMaxDateFromExtension(item);
         Date startDate = maxAndMinDateEntry.getValue();
         Date endDate = maxAndMinDateEntry.getKey();
 
@@ -867,7 +869,7 @@ public class FhirR4bToMoPatConverter {
         }
 
         // Get the min and max value accepted as input
-        maxAndMinEntry = FhirR4bHelper.getMinAndMaxFromExtension(item, false);
+        maxAndMinEntry = FhirR5Helper.getMinAndMaxFromExtension(item, false);
         Double minValue = maxAndMinEntry.getValue();
         Double maxValue = maxAndMinEntry.getKey();
         Double difference = 0.0D;
@@ -1035,7 +1037,7 @@ public class FhirR4bToMoPatConverter {
                         .getDisplay().isEmpty()) {
                         // Get the translations and add it to the localized
                         // labels of the mopat answer
-                        localizedAnswerText = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+                        localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                             item.getValueCoding().getDisplayElement());
 
                     } else {
@@ -1067,7 +1069,7 @@ public class FhirR4bToMoPatConverter {
                         .replace(".", "u002E").replace("_", "u005F");
                 } else if (item.getValue() instanceof StringType) {
                     // Set the translated answer labels
-                    localizedAnswerText = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+                    localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                         item.getValueStringType());
 
                     // Set the exportField value
@@ -1109,7 +1111,7 @@ public class FhirR4bToMoPatConverter {
                 SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(),
                     localizedAnswerText, false);
                 if (item.getValue() instanceof Coding) {
-                    answer.setValue(FhirR4bHelper.getScoreFromExtension(item.getValueCoding()));
+                    answer.setValue(FhirR5Helper.getScoreFromExtension(item.getValueCoding()));
                     scoreValue = answer.getValue();
                 }
                 if (value != null) {
@@ -1128,7 +1130,7 @@ public class FhirR4bToMoPatConverter {
             // The option is specified by a value set
         } else if (option instanceof ValueSet.ConceptReferenceComponent item) {
             // Get the translated answer texts
-            localizedAnswerText = FhirR4bHelper.getLanugageMapFromLanguageExtension(
+            localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                 item.getDisplayElement());
             String displayText;
             if (item.getDisplay() != null) {
@@ -1148,7 +1150,7 @@ public class FhirR4bToMoPatConverter {
             // Create the answer
             SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(),
                 localizedAnswerText, false);
-            answer.setValue(FhirR4bHelper.getScoreFromExtension(item.getDisplayElement()));
+            answer.setValue(FhirR5Helper.getScoreFromExtension(item.getDisplayElement()));
             scoreValue = answer.getValue();
             // Create the exportRules
             for (ExportTemplate exportTemplate : exportTemplates) {
@@ -1203,7 +1205,7 @@ public class FhirR4bToMoPatConverter {
             targetItem.getLinkId());
         ImportQuestionResult triggerQuestionResult = importQuestionListResult.getQuestionResultByIdentifier(
             enableWhen.getQuestion());
-        QuestionnaireItemComponent triggerItem = FhirR4bHelper.getItemByLinkId(
+        QuestionnaireItemComponent triggerItem = FhirR5Helper.getItemByLinkId(
             enableWhen.getQuestion(), items);
 
         // The common case is that the enableWhen element activate the
@@ -1211,94 +1213,99 @@ public class FhirR4bToMoPatConverter {
         targetQuestionResult.getQuestion().setIsEnabled(Boolean.FALSE);
         ConditionActionType action = ConditionActionType.ENABLE;
         switch (triggerItem.getType()) {
-            case CHOICE:
-                if (enableWhen.hasOperator() && enableWhen.getOperator()
-                    .equals(QuestionnaireItemOperator.EXISTS)) {
-                    boolean expectedExistence = enableWhen.getAnswerBooleanType().booleanValue();
+            case CODING:
+                //if (triggerItem.getAnswerConstraint() == QuestionnaireAnswerConstraint.OPTIONSORSTRING) {
+                    if (enableWhen.hasOperator() && enableWhen.getOperator()
+                        .equals(QuestionnaireItemOperator.EXISTS)) {
+                        boolean expectedExistence = enableWhen.getAnswerBooleanType()
+                            .booleanValue();
 
-                    // Logic for when answer must exist to enable the target item
-                    if (!expectedExistence) {
-                        targetQuestionResult.getQuestion().setIsEnabled(Boolean.TRUE);
-                        action = ConditionActionType.DISABLE;
-                    }
+                        // Logic for when answer must exist to enable the target item
+                        if (!expectedExistence) {
+                            targetQuestionResult.getQuestion().setIsEnabled(Boolean.TRUE);
+                            action = ConditionActionType.DISABLE;
+                        }
 
-                    for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
-                        answer.addCondition(
-                            new SelectAnswerCondition(answer, targetQuestionResult.getQuestion(),
-                                action, null));
-                        // Gets the localized answer text by the current
-                        // locale, if the locale doesn't exist in the map, it
-                        // returns the first value, same for the question at
-                        // the next line
-                        // These params have to be set for the
-                        // validationMessage. This way it's more clearly
-                        // arranged.
-                        Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
-                        triggerQuestionResult.addValidationMessage(
-                            "import.fhir.condition.selectAnswerCondition", new String[]{
-                                localizedLabel.getOrDefault(
-                                    LocaleContextHolder.getLocale().toString(),
-                                    localizedLabel.values().toArray()[0].toString()),
-                                targetQuestionResult.getQuestion()
-                                    .getLocalizedQuestionText().getOrDefault(
-                                    LocaleContextHolder.getLocale().toString(),
-                                    targetQuestionResult.getQuestion().getLocalizedQuestionText()
-                                        .values().toArray()[0].toString()), action.name()});
-                    }
-                } else if (enableWhen.hasAnswer()) {
-                    String answerText = null;
-                    if (enableWhen.getAnswer() instanceof StringType) {
-                        try {
-                            answerText = enableWhen.getAnswerStringType().asStringValue();
-                        } catch (FHIRException e) {
-                            return;
-                        }
-                    } else if (enableWhen.getAnswer() instanceof Coding) {
-                        try {
-                            answerText = enableWhen.getAnswerCoding().getDisplay();
-                        } catch (FHIRException e) {
-                            return;
-                        }
-                    }
-                    // Walk through all answers adhering to the
-                    // triggerQuestion and check if there's any answer text
-                    // that fits to the enableWhen's answer text
-                    for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
-                        SelectAnswer selectAnswer = (SelectAnswer) answer;
-                        for (String text : selectAnswer.getLocalizedLabel().values()) {
-                            // If the answer's text fits, create condition
-                            // where answer is the trigger and the
-                            // targetQuestionResult the target
-                            if (text.equals(answerText)) {
-                                answer.addCondition(new SelectAnswerCondition(answer,
-                                    targetQuestionResult.getQuestion(), action, null));
-                                // Gets the localized answer text by the
-                                // current locale, if the locale doesn't
-                                // exist in the map, it returns the first
-                                // value, same for the question at the next line
-                                // These params have to be set for the
-                                // validationMessage. This way it's more
-                                // clearly arranged.
-                                Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
-                                triggerQuestionResult.addValidationMessage(
-                                    "import.fhir.condition" + ".selectAnswerCondition",
-                                    new String[]{localizedLabel.getOrDefault(
+                        for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
+                            answer.addCondition(
+                                new SelectAnswerCondition(answer,
+                                    targetQuestionResult.getQuestion(),
+                                    action, null));
+                            // Gets the localized answer text by the current
+                            // locale, if the locale doesn't exist in the map, it
+                            // returns the first value, same for the question at
+                            // the next line
+                            // These params have to be set for the
+                            // validationMessage. This way it's more clearly
+                            // arranged.
+                            Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
+                            triggerQuestionResult.addValidationMessage(
+                                "import.fhir.condition.selectAnswerCondition", new String[]{
+                                    localizedLabel.getOrDefault(
                                         LocaleContextHolder.getLocale().toString(),
                                         localizedLabel.values().toArray()[0].toString()),
+                                    targetQuestionResult.getQuestion()
+                                        .getLocalizedQuestionText().getOrDefault(
+                                        LocaleContextHolder.getLocale().toString(),
                                         targetQuestionResult.getQuestion()
-                                            .getLocalizedQuestionText().getOrDefault(
-                                            LocaleContextHolder.getLocale().toString(),
-                                            targetQuestionResult.getQuestion()
-                                                .getLocalizedQuestionText().values()
-                                                .toArray()[0].toString()), action.name()});
-                                break;
+                                            .getLocalizedQuestionText()
+                                            .values().toArray()[0].toString()), action.name()});
+                        }
+                    } else if (enableWhen.hasAnswer()) {
+                        String answerText = null;
+                        if (enableWhen.getAnswer() instanceof StringType) {
+                            try {
+                                answerText = enableWhen.getAnswerStringType().asStringValue();
+                            } catch (FHIRException e) {
+                                return;
+                            }
+                        } else if (enableWhen.getAnswer() instanceof Coding) {
+                            try {
+                                answerText = enableWhen.getAnswerCoding().getDisplay();
+                            } catch (FHIRException e) {
+                                return;
                             }
                         }
-                    }
+                        // Walk through all answers adhering to the
+                        // triggerQuestion and check if there's any answer text
+                        // that fits to the enableWhen's answer text
+                        for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
+                            SelectAnswer selectAnswer = (SelectAnswer) answer;
+                            for (String text : selectAnswer.getLocalizedLabel().values()) {
+                                // If the answer's text fits, create condition
+                                // where answer is the trigger and the
+                                // targetQuestionResult the target
+                                if (text.equals(answerText)) {
+                                    answer.addCondition(new SelectAnswerCondition(answer,
+                                        targetQuestionResult.getQuestion(), action, null));
+                                    // Gets the localized answer text by the
+                                    // current locale, if the locale doesn't
+                                    // exist in the map, it returns the first
+                                    // value, same for the question at the next line
+                                    // These params have to be set for the
+                                    // validationMessage. This way it's more
+                                    // clearly arranged.
+                                    Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
+                                    triggerQuestionResult.addValidationMessage(
+                                        "import.fhir.condition" + ".selectAnswerCondition",
+                                        new String[]{localizedLabel.getOrDefault(
+                                            LocaleContextHolder.getLocale().toString(),
+                                            localizedLabel.values().toArray()[0].toString()),
+                                            targetQuestionResult.getQuestion()
+                                                .getLocalizedQuestionText().getOrDefault(
+                                                LocaleContextHolder.getLocale().toString(),
+                                                targetQuestionResult.getQuestion()
+                                                    .getLocalizedQuestionText().values()
+                                                    .toArray()[0].toString()), action.name()});
+                                    break;
+                                }
+                            }
+                        }
 
-                } else {
-                    return;
-                }
+                    } else {
+                        return;
+                    }
+                //}
                 break;
             case DECIMAL:
             case INTEGER:
@@ -1367,4 +1374,5 @@ public class FhirR4bToMoPatConverter {
             convertEnableWhenToCondition(enableWhen, childItem, importQuestionnaireResult, items);
         }
     }
+
 }
