@@ -1,5 +1,7 @@
 package de.imi.mopat.io.importer.fhir;
 
+import static org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType.CODING;
+
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
@@ -39,24 +41,26 @@ import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerVali
 import org.hl7.fhir.common.hapi.validation.support.PrePopulatedValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
-import org.hl7.fhir.r4b.model.StructureDefinition;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4b.model.BooleanType;
-import org.hl7.fhir.r4b.model.CodeType;
-import org.hl7.fhir.r4b.model.Coding;
-import org.hl7.fhir.r4b.model.DateType;
-import org.hl7.fhir.r4b.model.DecimalType;
-import org.hl7.fhir.r4b.model.Element;
-import org.hl7.fhir.r4b.model.Extension;
-import org.hl7.fhir.r4b.model.IntegerType;
-import org.hl7.fhir.r4b.model.Questionnaire;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemComponent;
-import org.hl7.fhir.r4b.model.QuestionnaireResponse;
-import org.hl7.fhir.r4b.model.QuestionnaireResponse.QuestionnaireResponseStatus;
-import org.hl7.fhir.r4b.model.Resource;
-import org.hl7.fhir.r4b.model.StringType;
-import org.hl7.fhir.r4b.model.TimeType;
+import org.hl7.fhir.r5.model.BooleanType;
+import org.hl7.fhir.r5.model.CodeType;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.DateType;
+import org.hl7.fhir.r5.model.DecimalType;
+import org.hl7.fhir.r5.model.Element;
+import org.hl7.fhir.r5.model.Extension;
+import org.hl7.fhir.r5.model.IntegerType;
+import org.hl7.fhir.r5.model.Questionnaire;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType;
+import org.hl7.fhir.r5.model.QuestionnaireResponse;
+import org.hl7.fhir.r5.model.QuestionnaireResponse.QuestionnaireResponseStatus;
+import org.hl7.fhir.r5.model.Resource;
+import org.hl7.fhir.r5.model.StringType;
+import org.hl7.fhir.r5.model.StructureDefinition;
+import org.hl7.fhir.r5.model.TimeType;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,9 +70,9 @@ import org.xml.sax.SAXException;
 /**
  * This class contains methods, which aren't fixed to a specific class.
  */
-public class FhirR4bHelper extends FhirHelper {
+public class FhirR5Helper extends FhirHelper {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirR4bHelper.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirR5Helper.class);
     private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
 
@@ -166,7 +170,7 @@ public class FhirR4bHelper extends FhirHelper {
             PrePopulatedValidationSupport prePopulated = new PrePopulatedValidationSupport(
                 getContext());
             StructureDefinition translationExt = getContext().newJsonParser()
-                .parseResource(StructureDefinition.class, FhirR4bHelper.class.getResourceAsStream(
+                .parseResource(StructureDefinition.class, FhirR5Helper.class.getResourceAsStream(
                     "/fhir/StructureDefinition-translation.json"));
 
             prePopulated.addStructureDefinition(translationExt);
@@ -177,7 +181,7 @@ public class FhirR4bHelper extends FhirHelper {
             FhirValidator validator = getContext().newValidator();
             validator.registerValidatorModule(instanceValidator);
 
-            IValidatorModule module = new FhirInstanceValidator(FhirR4bHelper.getContext());
+            IValidatorModule module = new FhirInstanceValidator(FhirR5Helper.getContext());
             validator.registerValidatorModule(module);
 
             ValidationResult result = validator.validateWithResult(fhirResourceString);
@@ -206,16 +210,16 @@ public class FhirR4bHelper extends FhirHelper {
      */
     public static FhirContext getContext() {
         if (context == null) {
-            context = FhirContext.forR4B();
+            context = FhirContext.forR5();
         }
         return context;
     }
 
     /**
-     * Reinitializes the FHIR context  with the R4B version of FHIR.
+     * Reinitializes the FHIR context  with the R5 version of FHIR.
      */
     public static void reinitContext() {
-        context = FhirContext.forR4B();
+        context = FhirContext.forR5();
     }
 
     /**
@@ -318,8 +322,7 @@ public class FhirR4bHelper extends FhirHelper {
         responseItem.setText(item.getText());
         responseItem.setTextElement(item.getTextElement());
 
-        if (item.getType() != Questionnaire.QuestionnaireItemType.CHOICE
-            && item.getType() != Questionnaire.QuestionnaireItemType.OPENCHOICE) {
+        if (item.getType() != QuestionnaireItemType.CODING) {
             if (item.getType() == Questionnaire.QuestionnaireItemType.GROUP) {
                 //Item has other items, so loop through those ones and call
                 // this method again
@@ -406,7 +409,7 @@ public class FhirR4bHelper extends FhirHelper {
                 }
                 */
             }
-            if (item.getType() == Questionnaire.QuestionnaireItemType.OPENCHOICE) {
+            if (item.getType() == QuestionnaireItemType.CODING) {
                 QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                 answer.setId(item.getLinkId() + "/other");
                 answer.setValue(new StringType());
