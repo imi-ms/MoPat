@@ -1,6 +1,5 @@
 package de.imi.mopat.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
@@ -12,7 +11,7 @@ import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.AuthService;
-import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
@@ -22,51 +21,32 @@ import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
+import de.imi.mopat.io.importer.MoPatQuestionnaireImporter;
 import de.imi.mopat.io.importer.fhir.FhirImporter;
 import de.imi.mopat.io.importer.odm.ODMProcessingBean;
-import de.imi.mopat.io.importer.odm.ODMv132ToMoPatConverter;
+import de.imi.mopat.io.importer.odm.OdmQuestionnaireImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
-import de.imi.mopat.model.ExportTemplate;
-import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.dto.export.JsonAnswerDTO;
-import de.imi.mopat.model.dto.export.JsonConditionDTO;
-import de.imi.mopat.model.dto.export.JsonQuestionDTO;
-import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
-import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
+import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.MetadataFormat;
-import de.imi.mopat.model.enumeration.QuestionType;
-import de.imi.mopat.model.score.Operator;
 import de.imi.mopat.model.score.Score;
-import de.imi.mopat.model.score.UnaryExpression;
-import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.QuestionValidator;
-import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
-import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionFormDef;
-import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionMetaDataVersion;
-import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,9 +57,6 @@ import java.util.SortedMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,8 +67,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -113,6 +88,8 @@ public class QuestionnaireController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         QuestionnaireController.class);
+    @Autowired
+    MoPatQuestionnaireImporter moPatQuestionnaireImporter;
     @Autowired
     private AnswerDao answerDao;
     @Autowired
@@ -149,9 +126,12 @@ public class QuestionnaireController {
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
     @Autowired
     private FhirImporter fhirImporter;
-
     @Autowired
     private ODMProcessingBean odmReader;
+    @Autowired
+    private OdmQuestionnaireImporter odmQuestionnaireImporter;
+    @Autowired
+    private FhirVersionHelper fhirVersionHelper;
 
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
@@ -174,18 +154,15 @@ public class QuestionnaireController {
         // contains the question texts grouped by the country and languages.
         Map<Long, SortedMap<String, Map<String, String>>> localizedDisplayNamesForQuestionnaire = new HashMap<>();
 
-        Set<Long> questionnaireIds = questionnaireService.getUniqueQuestionnaireIds(allQuestionnaires);
-        Set<Long> questionnaireTargetIds =
-            conditionDao.findConditionTargetIds(
-                questionnaireIds.stream().toList(),
-                "Questionnaire"
-            );
+        Set<Long> questionnaireIds = questionnaireService.getUniqueQuestionnaireIds(
+            allQuestionnaires);
+        Set<Long> questionnaireTargetIds = conditionDao.findConditionTargetIds(
+            questionnaireIds.stream().toList(), "Questionnaire");
 
         for (Questionnaire questionnaire : allQuestionnaires) {
             // Get the question texts grouped by country from the current
             // question
-            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry =
-                questionnaire.getLocalizedDisplayNamesGroupedByCountry();
+            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry = questionnaire.getLocalizedDisplayNamesGroupedByCountry();
             // And add the grouped-by-country-map to the map for all questions
             // of the current questionnaire
             localizedDisplayNamesForQuestionnaire.put(questionnaire.getId(),
@@ -196,7 +173,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
+        model.addAttribute("allQuestionnaires",
+            questionnaireService.sortQuestionnairesByCreatedAtDesc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
         model.addAttribute("localizedDisplayNamesForQuestionnaire",
@@ -218,9 +196,10 @@ public class QuestionnaireController {
     public String fillQuestionnaire(
         @RequestParam(value = "id", required = false) final Long questionnaireId,
         final HttpServletRequest request, final Model model) {
-        QuestionnaireDTO questionnaireDTO = questionnaireService.getQuestionnaireDTOById(questionnaireId)
-                .orElse(new QuestionnaireDTO());
-        Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(questionnaireDTO);
+        QuestionnaireDTO questionnaireDTO = questionnaireService.getQuestionnaireDTOById(
+            questionnaireId).orElse(new QuestionnaireDTO());
+        Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(
+            questionnaireDTO);
 
         model.addAttribute("isEditableState", canEditWithReason.getLeft());
         model.addAttribute("infoMessage", canEditWithReason.getRight());
@@ -247,7 +226,8 @@ public class QuestionnaireController {
     public String edit(@RequestParam final String action,
         @RequestParam(value = "logoFile", required = false) final MultipartFile logo,
         @ModelAttribute("questionnaireDTO") @Valid final QuestionnaireDTO questionnaireDTO,
-        final BindingResult result, final Model model, final HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        final BindingResult result, final Model model, final HttpServletRequest request,
+        RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/questionnaire/list";
         }
@@ -261,9 +241,12 @@ public class QuestionnaireController {
         }
 
         Long principalId = authService.getAuthenticatedUserId();
-        Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logo, principalId);
-        Boolean hasQuestionnaireConditions = questionnaireService.hasQuestionnaireConditions(questionnaireDao.getElementById(questionnaireDTO.getId()));
-        redirectAttributes.addFlashAttribute("hasQuestionnaireConditions", hasQuestionnaireConditions);
+        Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(
+            questionnaireDTO, logo, principalId);
+        Boolean hasQuestionnaireConditions = questionnaireService.hasQuestionnaireConditions(
+            questionnaireDao.getElementById(questionnaireDTO.getId()));
+        redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
+            hasQuestionnaireConditions);
         if (action.equals("saveEditButton")) {
             return "redirect:/question/list?id=" + questionnaire.getId();
         } else {
@@ -275,10 +258,12 @@ public class QuestionnaireController {
         boolean isEditableState = true;
 
         if (questionnaireDTO.getId() != null) {
-            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
-            if (existingQuestionnaire != null){
+            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(
+                questionnaireDTO.getId());
+            if (existingQuestionnaire != null) {
                 questionnaireDTO.setLogo(existingQuestionnaire.getLogo());
-                isEditableState = questionnaireService.editingQuestionnaireAllowed(questionnaireDTO);
+                isEditableState = questionnaireService.editingQuestionnaireAllowed(
+                    questionnaireDTO);
             }
         }
         model.addAttribute("isEditableState", isEditableState);
@@ -361,7 +346,8 @@ public class QuestionnaireController {
                     bundleDao.merge(bundle);
                 }
                 questionnaire.removeAllBundleQuestionnaires();
-                questionnaireVersionGroupService.removeQuestionnaire(questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
+                questionnaireVersionGroupService.removeQuestionnaire(
+                    questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
                 questionnaireDao.remove(questionnaire);
                 model.addAttribute("messageSuccess",
                     messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
@@ -434,7 +420,10 @@ public class QuestionnaireController {
         List<String> templateTypes = new ArrayList<>();
         templateTypes.add("ODM");
         templateTypes.add("FHIR");
+
+        List<FhirVersion> fhirVersions = List.of(FhirVersion.DSTU3, FhirVersion.R4B, FhirVersion.R5);
         model.addAttribute("templateTypes", templateTypes);
+        model.addAttribute("fhirVersions", fhirVersions);
         return "questionnaire/import/upload";
     }
 
@@ -456,47 +445,26 @@ public class QuestionnaireController {
     public String postImportUpload(
         @RequestParam(value = "file", required = true) final MultipartFile file,
         @RequestParam(value = "url", required = false) final String url,
+        @RequestParam(value = "fhirVersion", required = false) final FhirVersion fhirVersion,
         @ModelAttribute("questionnaire") Questionnaire questionnaire,
         final HttpServletRequest request, final BindingResult result, final Model model,
         final RedirectAttributes redirectAttributes) {
-        // Get the current locale
-        Locale locale = LocaleContextHolder.getLocale();
-        // Flag for import errors
-        boolean importError = false;
 
-        // Build document from a xml file and check in which standard the
-        // file is formatted
+        Locale locale = LocaleContextHolder.getLocale();
+        boolean importError = false;
         ExportTemplateType exportTemplateType = null;
 
-        // If url is null or empty check the file type
-        if ((url == null || url.trim().isEmpty()) && !file.getOriginalFilename()
+        if (fhirVersion != null) {
+            boolean isSupportedFile =
+                file.getOriginalFilename().contains(".json") || file.getOriginalFilename()
+                    .contains(".xml");
+            model.addAttribute("fileUpload", isSupportedFile);
+            exportTemplateType = fhirVersionHelper.mapFhirVersionToExportTemplateType(fhirVersion);
+        } else if ((url == null || url.trim().isEmpty()) && !file.getOriginalFilename()
             .contains(".json")) {
             model.addAttribute("fileUpload", true);
-
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            DocumentBuilder documentBuilder = null;
-            Document document = null;
             try {
-                documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                document = documentBuilder.parse(file.getInputStream());
-
-                //Check the nodes if it corresponds to a standards specification
-                NodeList nodes = document.getElementsByTagName("ODM");
-                if (nodes == null || nodes.getLength() < 1) {
-                    //Try to also use our custom format odm:ODM
-                    nodes = document.getElementsByTagName("odm:ODM");
-                }
-
-                if (nodes != null && nodes.getLength() > 0) {
-                    exportTemplateType = ExportTemplateType.ODM;
-                }
-
-                nodes = document.getElementsByTagName("Questionnaire");
-                if (nodes != null && nodes.getLength() > 0
-                    && exportTemplateType != ExportTemplateType.ODM) {
-                    exportTemplateType = ExportTemplateType.FHIR;
-                }
+                exportTemplateType = checkXmlUpload(file);
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 LOGGER.info("ERROR while getting the ExportTemplateType: {}", e.getMessage());
                 redirectAttributes.addFlashAttribute("failure",
@@ -504,196 +472,10 @@ public class QuestionnaireController {
                         LocaleContextHolder.getLocale()));
                 return "redirect:/questionnaire/import/upload";
             }
-            //otherwise it's always fhir import
         } else if (file.getOriginalFilename().contains(".json")) {
             try {
                 model.addAttribute("fileUpload", true);
-                ObjectMapper mapper = new ObjectMapper();
-                JsonQuestionnaireDTO jsonQuestionnaireDTO = mapper.readValue(file.getInputStream(),
-                    JsonQuestionnaireDTO.class);
-                questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
-                User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                    .getPrincipal();
-                questionnaire.setChangedBy(currentUser.getId());
-                // Collect all questions and answers in a map to access those
-                // ones who are target and trigger of a condition easily
-                Map<Long, Question> questions = new HashMap<>();
-                Map<Long, Answer> answers = new HashMap<>();
-
-                // Convert all jsonQuestionDTOs and all jsonAnswerDTOs to
-                // their database model counterparts and collect them in a
-                // map for conversion of conditions
-                for (Long questionId : jsonQuestionnaireDTO.getQuestionDTOs().keySet()) {
-                    JsonQuestionDTO jsonQuestionDTO = jsonQuestionnaireDTO.getQuestionDTOs()
-                        .get(questionId);
-                    Question question = jsonQuestionDTO.convertToQuestion();
-                    questions.put(questionId, question);
-                    // If the question is of type multiple choice or drop
-                    // down we have to make sure that the freetext answer is
-                    // added as the last answer
-                    if (question.getQuestionType() == QuestionType.MULTIPLE_CHOICE
-                        || question.getQuestionType() == QuestionType.DROP_DOWN) {
-                        Long freetextAnswerId = null;
-                        for (Long answerId : jsonQuestionDTO.getAnswers().keySet()) {
-                            JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers()
-                                .get(answerId);
-                            // If the current answer has at least one
-                            // localized label it is a select answer
-                            if (jsonAnswerDTO.getLocalizedLabel() != null
-                                && !jsonAnswerDTO.getLocalizedLabel().isEmpty()) {
-                                // Add this direclty to the list of answers
-                                answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
-                            } else {
-                                // Otherwise it is a freetext answer and we
-                                // have to save the answer Id
-                                freetextAnswerId = answerId;
-                            }
-                        }
-                        // If any answer Id of a freetext answer was saved,
-                        // add this answer as the last one of this question
-                        if (freetextAnswerId != null) {
-                            JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers()
-                                .get(freetextAnswerId);
-                            answers.put(freetextAnswerId, jsonAnswerDTO.convertToAnswer(question));
-                        }
-                    } else {
-                        // For all other questiontypes just convert the
-                        // answers and add them
-                        for (Long answerId : jsonQuestionDTO.getAnswers().keySet()) {
-                            JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers()
-                                .get(answerId);
-                            answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
-                        }
-                    }
-
-                }
-
-                questionnaire.addQuestions(questions.values());
-
-                Map<JsonAnswerDTO, JsonQuestionDTO> imageAnswerQuestions = new HashMap<>();
-                // Convert all jsonConditionDTOs to their database model
-                // counterparts
-                for (JsonQuestionDTO jsonQuestionDTO : jsonQuestionnaireDTO.getQuestionDTOs()
-                    .values()) {
-                    for (JsonAnswerDTO jsonAnswerDTO : jsonQuestionDTO.getAnswers().values()) {
-                        if (jsonQuestionDTO.getQuestionType() == QuestionType.IMAGE) {
-                            imageAnswerQuestions.put(jsonAnswerDTO, jsonQuestionDTO);
-                        }
-                        // Allocate the trigger and target objects (question
-                        // and answers) to the conditions
-                        for (JsonConditionDTO jsonConditionDTO : jsonAnswerDTO.getConditions()) {
-                            Condition condition = jsonConditionDTO.convertToCondition();
-                            ConditionTrigger trigger = answers.get(jsonConditionDTO.getTriggerId());
-                            trigger.addCondition(condition);
-                            condition.setTrigger(trigger);
-                            if (jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model" + ".Question")) {
-                                condition.setTarget(questions.get(jsonConditionDTO.getTargetId()));
-                            } else if (jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat" + ".model" + ".SelectAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.ImageAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.SliderAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.SliderFreetextAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.DateAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.FreetextAnswer")
-                                || jsonConditionDTO.getTargetClass()
-                                .equals("de.imi.mopat.model.NumberInputAnswer")) {
-                                condition.setTarget(answers.get(jsonConditionDTO.getTargetId()));
-                                condition.setTargetAnswerQuestion(
-                                    questions.get(jsonConditionDTO.getTargetAnswerQuestionId()));
-                            }
-                        }
-                    }
-                }
-
-                // Get all operators to allocate them to the expressions of
-                // scores
-                Map<Long, Operator> operators = new HashMap<>();
-                for (Operator operator : operatorDao.getAllElements()) {
-                    operators.put(operator.getId(), operator);
-                }
-                // Collect all scoreIds to allocate them to all
-                // unaryExpressions, whose operator is valueOfScore
-                Map<Long, UnaryExpression> scoreIdExpressions = new HashMap<>();
-                // Collect all scores to easily allocate the upper
-                // valueOfScore unaryExpressions
-                Map<Long, Score> scores = new HashMap<>();
-                for (JsonScoreDTO jsonScoreDTO : jsonQuestionnaireDTO.getScoreDTOs().values()) {
-                    // Convert the score and collect it
-                    Score score = jsonScoreDTO.convertToScore(operators, questions,
-                        scoreIdExpressions);
-                    scores.put(jsonScoreDTO.getId(), score);
-                    questionnaire.addScore(score);
-                }
-
-                // Allocate the unaryExpressions containing valueOfScore
-                // operator
-                for (Map.Entry<Long, UnaryExpression> entry : scoreIdExpressions.entrySet()) {
-                    scoreIdExpressions.get(entry.getKey()).setScore(scores.get(entry.getKey()));
-                }
-
-                // Add timestamp to the questionnaire's name if it's used
-                // already
-                if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), 0L)) {
-                    questionnaire.setName(
-                        questionnaire.getName() + " " + new Timestamp(new Date().getTime()));
-                }
-
-                questionnaireDao.merge(questionnaire);
-
-                QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
-                questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                questionnaireVersionGroupService.add(questionnaireVersionGroup);
-
-                //Loop through all persisted questions to get the
-                // imageAnswers and save the images
-                for (Question question : questionnaire.getQuestions()) {
-                    if (question.getQuestionType() == QuestionType.IMAGE) {
-                        ImageAnswer answer = (ImageAnswer) question.getAnswers().get(0);
-                        for (JsonAnswerDTO answerDTO : imageAnswerQuestions.keySet()) {
-                            if (answer.getImagePath().equals(answerDTO.getImagePath())) {
-                                try {
-                                    String imageBase64 = answerDTO.getImageBase64();
-                                    String imagePath = (configurationDao.getImageUploadPath()
-                                        + "/questionnaire/" + questionnaire.getId());
-                                    String fileName = "question" + question.getId() + "."
-                                        + StringUtilities.getMimeTypeFromBase64String(imageBase64);
-                                    answer.setImagePath(questionnaire.getId() + "/" + fileName);
-                                    StringUtilities.convertAndWriteBase64StringToImage(
-                                        answerDTO.getImageBase64(), imagePath, fileName);
-                                } catch (Exception e) {
-                                    LOGGER.info(
-                                        "Converting image failed. " + "Following " + "error "
-                                            + "occurred: {}", e.getMessage());
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (jsonQuestionnaireDTO.getLogoBase64() != null) {
-                    try {
-                        String logoBase64 = jsonQuestionnaireDTO.getLogoBase64();
-                        String imagePath = (configurationDao.getImageUploadPath()
-                            + "/questionnaire/" + questionnaire.getId());
-                        String fileName = Constants.LOGO_PROPERTY + "." + logoBase64.substring(
-                            "data:image/".length(), logoBase64.lastIndexOf(";base64,"));
-                        questionnaire.setLogo(fileName);
-                        StringUtilities.convertAndWriteBase64StringToImage(
-                            jsonQuestionnaireDTO.getLogoBase64(), imagePath, fileName);
-                    } catch (IOException e) {
-                        LOGGER.info("Converting logo failed. Following error " + "occurred: {}",
-                            e.getMessage());
-                    }
-                }
-
-                questionnaireDao.merge(questionnaire);
+                questionnaire = moPatQuestionnaireImporter.importQuestionnaire(file);
             } catch (IOException e) {
                 LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
                     + "failed. The following error occurred: {}", e.getLocalizedMessage());
@@ -703,9 +485,6 @@ public class QuestionnaireController {
                 return "redirect:/questionnaire/import/upload";
             }
             return "redirect:/questionnaire/fill?id=" + questionnaire.getId();
-        } else {
-            model.addAttribute("fileUpload", false);
-            exportTemplateType = ExportTemplateType.FHIR;
         }
 
         if (exportTemplateType == null) {
@@ -716,183 +495,40 @@ public class QuestionnaireController {
         }
 
         if (exportTemplateType.equals(ExportTemplateType.ODM)) {
-            // [bt] Approach:
-            // Check if the file is null or is greater than zero
-            // Look at the file ending
-            // Depending on that, choose the parser
-            // if it's XML, convert it to String
-            // and then let JAXB convert it to Java objects
-            if (file != null && file.getSize() != 0) {
-                LOGGER.debug("File was not null and size is greater than 0");
-                String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-                if (fileExtension.equalsIgnoreCase("xml")) {
-                    LOGGER.debug("File extension discovered: xml");
-                    try {
-                        ODM importedODM = odmReader.unmarshal(file.getInputStream());
-                        List<ODMcomplexTypeDefinitionStudy> studyList = importedODM.getStudy();
-                        if (studyList == null || studyList.isEmpty()) {
-                            LOGGER.debug("The imported ODM did not contain "
-                                + "any Study elements. Will reject" + " it.");
-                            importError = true;
-                            redirectAttributes.addFlashAttribute("failure",
-                                messageSource.getMessage(
-                                    "import.odm.v132" + ".content" + ".noStudy", new Object[]{},
-                                    LocaleContextHolder.getLocale()));
-                        } else {
-                            LOGGER.debug("At least one Study element in the "
-                                + "imported ODM. Will take the " + "first one (1. implementation "
-                                + "version).");
-                            ODMcomplexTypeDefinitionStudy study = studyList.get(0);
-                            List<ODMcomplexTypeDefinitionMetaDataVersion> metaDataVersionList = study.getMetaDataVersion();
-                            if (metaDataVersionList == null || metaDataVersionList.isEmpty()) {
-                                LOGGER.debug(
-                                    "The imported ODM, first Study " + "element, did not contain "
-                                        + "any MetaDataVersion " + "elements. Will reject it.");
-                                importError = true;
-                                redirectAttributes.addFlashAttribute("failure",
-                                    messageSource.getMessage(
-                                        "import.odm.v132" + ".content" + ".noMetaDataVersion",
-                                        new Object[]{}, LocaleContextHolder.getLocale()));
-                            } else {
-                                LOGGER.debug(
-                                    "At least one MetaDataVersion " + "element in the imported "
-                                        + "ODM, first Study element. "
-                                        + "Will take the first one (1."
-                                        + " implementation version).");
-                                ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion = metaDataVersionList.get(
-                                    0);
-                                List<ODMcomplexTypeDefinitionFormDef> formDefList = metaDataVersion.getFormDef();
-                                if (formDefList == null || formDefList.isEmpty()) {
-                                    LOGGER.debug(
-                                        "The imported ODM, first " + "Study element, first "
-                                            + "MetaDataVersion, did " + "not contain any FormDef"
-                                            + " elements. Will reject " + "it.");
-                                    importError = true;
-                                    redirectAttributes.addFlashAttribute("failure",
-                                        messageSource.getMessage(
-                                            "import.odm" + ".v132" + ".content" + ".noFormDef",
-                                            new Object[]{}, LocaleContextHolder.getLocale()));
-                                } else {
-                                    LOGGER.debug(
-                                        "At least one FormDef " + "element in the " + "imported"
-                                            + " ODM, " + "first Study " + "element, first "
-                                            + "MetaDataVersion. " + "Will " + "take the "
-                                            + "first one (1. " + "implementation " + "version)"
-                                            + ".");
-                                    ODMcomplexTypeDefinitionFormDef formDef = formDefList.get(0);
-                                    Authentication authentication = SecurityContextHolder.getContext()
-                                        .getAuthentication();
-                                    User principal = (User) authentication.getPrincipal();
-                                    Long changedBy = principal.getId();
-                                    List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(
-                                        "Automatically Generated " + "Exporttemplate",
-                                        ExportTemplateType.ODM, file, configurationGroupDao,
-                                        exportTemplateDao);
+            List<String> validationErrors = new ArrayList<>();
 
-                                    // Convert the ODM into questionnaire
-                                    // including the export templates
-                                    ImportQuestionnaireResult odmQuestionnaireResult = ODMv132ToMoPatConverter.convertToQuestionnaire(
-                                        file, formDef, changedBy, metaDataVersion, exportTemplates,
-                                        messageSource);
-                                    questionnaire = odmQuestionnaireResult.getQuestionnaire();
-
-                                    // If the questionnaire name is already
-                                    // taken within MoPat
-                                    if (!questionnaireDao.isQuestionnaireNameUnique(
-                                        questionnaire.getName(), 0L)) {
-                                        // Add the current timestamp to the
-                                        // questionnaire name
-                                        DateFormat dateFormat = DateFormat.getDateTimeInstance(
-                                            DateFormat.LONG, DateFormat.LONG, locale);
-                                        Calendar calendar = Calendar.getInstance();
-                                        questionnaire.setName(
-                                            questionnaire.getName() + " " + dateFormat.format(
-                                                calendar.getTime()));
-                                    }
-                                    questionnaireDao.merge(questionnaire);
-
-                                    QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
-                                    questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-                                    questionnaireVersionGroup.addQuestionnaire(questionnaire);
-                                    questionnaireVersionGroupService.add(questionnaireVersionGroup);
-
-                                    for (ExportTemplate exportTemplate : exportTemplates) {
-                                        exportTemplate.setQuestionnaire(questionnaire);
-                                        exportTemplate.setName(questionnaire.getName());
-                                        questionnaire.addExportTemplate(exportTemplate);
-
-                                        LOGGER.debug(
-                                            "This is the questionnaire " + "that " + "has been "
-                                                + "imported: {}", questionnaire);
-
-                                        // Replace umlauts and whitespace
-                                        String filename = stringUtilityHelper.replaceGermanUmlauts(
-                                            file.getOriginalFilename());
-                                        String uploadFilename =
-                                            exportTemplate.getId() + "_" + filename;
-
-                                        try {
-                                            String objectStoragePath = configurationDao.getObjectStoragePath();
-                                            // Save uploaded file and update
-                                            // xml filename in template
-                                            String contextPath = objectStoragePath
-                                                + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
-                                            File uploadDir = new File(contextPath);
-                                            if (!uploadDir.isDirectory()) {
-                                                uploadDir.mkdirs();
-                                            }
-                                            FileUtils.writeByteArrayToFile(
-                                                new File(contextPath, uploadFilename),
-                                                IOUtils.toByteArray(file.getInputStream()));
-                                            exportTemplate.setFilename(uploadFilename);
-                                        } catch (IOException e) {
-                                            // Delete export template on error
-                                            LOGGER.error(
-                                                "error while uploading a " + "new " + "export "
-                                                    + "template {}", e);
-                                            exportTemplateDao.remove(exportTemplate);
-                                        }
-                                        exportTemplateDao.merge(exportTemplate);
-                                    }
-                                    questionnaireDao.merge(questionnaire);
-                                    model.addAttribute("importQuestionnaireResult",
-                                        odmQuestionnaireResult);
-                                }
-                            }
-                        }
-                        LOGGER.debug("This is the imported ODM: {}", importedODM);
-                    } catch (Exception e) {
-                        LOGGER.error("An error occured during importing of ODM: {}", e);
-                        redirectAttributes.addFlashAttribute("failure",
-                            messageSource.getMessage("questionnaire.import" + ".failure",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
-                        return "redirect:/questionnaire/import/upload";
-                    }
-                } else {
-                    LOGGER.debug("File hat some other extension: {}", fileExtension);
-                    importError = true;
-                    redirectAttributes.addFlashAttribute("failure",
-                        messageSource.getMessage("import.odm.v132.content" + ".noXML",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
-                }
-            } else {
-                importError = true;
-                redirectAttributes.addFlashAttribute("failure",
-                    messageSource.getMessage("import.odm.v132.content" + ".nullOrSizeZero",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+            ImportQuestionnaireResult odmQuestionnaireResult = null;
+            try {
+                odmQuestionnaireResult = odmQuestionnaireImporter.importOdmQuestionnaire(file,
+                    validationErrors);
+            } catch (Exception e) {
+                LOGGER.error("An error occured during importing of ODM: {}", e);
+                validationErrors.add(
+                    messageSource.getMessage("questionnaire.import" + ".failure", new Object[]{},
+                        LocaleContextHolder.getLocale()));
             }
-        } else if (exportTemplateType.equals(ExportTemplateType.FHIR)) {
-            
-            String webappPath = request.getSession().getServletContext().getRealPath("") + "/";
+
+            if (!validationErrors.isEmpty()) {
+                validationErrors.forEach(error -> {
+                    redirectAttributes.addFlashAttribute("failure", error);
+                });
+                return "redirect:/questionnaire/import/upload";
+            } else {
+                model.addAttribute("importQuestionnaireResult", odmQuestionnaireResult);
+            }
+
+        } else if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
+
             try {
                 ImportQuestionnaireValidation importResult = fhirImporter.importFhirQuestionnaire(
-                    file, url, webappPath
-                );
-                
+                    file, url, fhirVersion, locale.toString());
+
                 if (importResult.hasErrors()) {
-                    for (ImportQuestionnaireError error: importResult.getValidationErrors()) {
-                        if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
-                            result.reject(error.getErrorCode(), error.getErrorArguments(), error.getDefaultErrorMessage());
+                    for (ImportQuestionnaireError error : importResult.getValidationErrors()) {
+                        if (error.getErrorArguments() != null
+                            && error.getDefaultErrorMessage() != null) {
+                            result.reject(error.getErrorCode(), error.getErrorArguments(),
+                                error.getDefaultErrorMessage());
                         } else {
                             result.reject(error.getErrorCode());
                         }
@@ -902,9 +538,9 @@ public class QuestionnaireController {
                     model.addAttribute("importQuestionnaireResult", importResult.getImportResult());
                 }
             } catch (IOException e) {
-                LOGGER.error("Could not upload FHIR questionnaire: ",e);
+                LOGGER.error("Could not upload FHIR questionnaire: ", e);
             }
-            
+
         }
         // TODO go on implementing here
         LOGGER.debug("Leaving public String postImportUpload(MultipartFile, "
@@ -915,5 +551,37 @@ public class QuestionnaireController {
             return "redirect:/questionnaire/import/upload";
         }
         return "questionnaire/import/result";
+    }
+
+    private ExportTemplateType checkXmlUpload(MultipartFile file)
+        throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        DocumentBuilder documentBuilder = null;
+        Document document = null;
+
+        documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        document = documentBuilder.parse(file.getInputStream());
+
+        //Check the nodes if it corresponds to a standards specification
+        NodeList nodes = document.getElementsByTagName("ODM");
+        if (nodes == null || nodes.getLength() < 1) {
+            //Try to also use our custom format odm:ODM
+            nodes = document.getElementsByTagName("odm:ODM");
+        }
+
+        ExportTemplateType exportTemplateType = null;
+
+        if (nodes != null && nodes.getLength() > 0) {
+            exportTemplateType = ExportTemplateType.ODM;
+        }
+
+        nodes = document.getElementsByTagName("Questionnaire");
+        if (nodes != null && nodes.getLength() > 0
+            && exportTemplateType != ExportTemplateType.ODM) {
+            exportTemplateType = ExportTemplateType.FHIR;
+        }
+
+        return exportTemplateType;
     }
 }
