@@ -2,27 +2,31 @@ package de.imi.mopat.io.impl;
 
 import ca.uhn.fhir.parser.DataFormatException;
 import de.imi.mopat.io.ExportTemplateImporter;
-import de.imi.mopat.io.importer.fhir.FhirR4bHelper;
-import org.hl7.fhir.r4b.model.*;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemComponent;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
-import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType;
-import org.hl7.fhir.exceptions.FHIRException;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
+import de.imi.mopat.io.importer.fhir.FhirR5Helper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.Questionnaire;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireAnswerConstraint;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemComponent;
+import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType;
+import org.hl7.fhir.r5.model.StringType;
+import org.xml.sax.SAXException;
 
 /**
  *
  */
-public class ExportTemplateImporterFhirR4b implements ExportTemplateImporter {
+public class ExportTemplateImporterFhirR5 implements ExportTemplateImporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ExportTemplateImporterFhirR4b.class);
+        ExportTemplateImporterFhirR5.class);
+
+    private static final FhirR5Helper fhirR5Helper = new FhirR5Helper();
 
     @Override
     public List<String> importFile(final InputStream inputStream)
@@ -30,7 +34,7 @@ public class ExportTemplateImporterFhirR4b implements ExportTemplateImporter {
         List<String> mappingExportFields = new ArrayList<>();
 
         try {
-            Questionnaire questionnaire = (Questionnaire) FhirR4bHelper.parseResourceFromFile(
+            Questionnaire questionnaire = (Questionnaire) FhirR5Helper.parseResourceFromFile(
                 inputStream);
             List<QuestionnaireItemComponent> items = new ArrayList<>();
             for (QuestionnaireItemComponent item : questionnaire.getItem()) {
@@ -49,8 +53,7 @@ public class ExportTemplateImporterFhirR4b implements ExportTemplateImporter {
                                 item.getLinkId().replace(".", "u002E").replace("_", "u005F")
                                     + "_false");
                             break;
-                        case OPENCHOICE:
-                        case CHOICE:
+                        case CODING:
                             for (QuestionnaireItemAnswerOptionComponent option : item.getAnswerOption()) {
                                 try {
                                     if (option.getValue() instanceof Coding) {
@@ -91,7 +94,7 @@ public class ExportTemplateImporterFhirR4b implements ExportTemplateImporter {
                             }
                             */
 
-                            if (item.getType() == QuestionnaireItemType.OPENCHOICE) {
+                            if (item.getAnswerConstraint() == QuestionnaireAnswerConstraint.OPTIONSORSTRING) {
                                 mappingExportFields.add(
                                     item.getLinkId().replace(".", "u002E").replace("_", "u005F")
                                         + "/other_freetext");
