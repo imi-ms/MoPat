@@ -50,11 +50,13 @@
 				>
 					<div class="alert alert-danger">
 						<div class="alert alert-danger">
-							<div
-								th:if="${#fields.hasErrors('*')}"
-								th:text="${#fields.errors('*')}"
-								style="color: red"
-							>
+							<div th:if="${#fields.hasErrors('*')}">
+								<ul>
+									<li
+										th:each="error : ${#fields.errors('*')}"
+										th:text="${error}" style="color: red"
+									></li>
+								</ul>
 							</div>
 						</div>
 					</div>
@@ -77,6 +79,40 @@
 						id="url"
 					/>
 				</div>
+                <div class="form-group checkbox">
+                    <label>
+                        <input
+                            type="checkbox"
+                            onchange="toggleFhirVersion(this)"
+                        />
+                        <th:block
+                            th:text="${messages.get(#locale, 'questionnaire.import.fhir.isFhir',
+                            'Is the uploaded file a FHIR-questionnaire resource?')}"
+                        ></th:block>
+                    </label>
+                </div>
+                <div
+                    id="fhirVersionContainer"
+                    class="form-group d-none"
+                >
+                    <label
+                        th:for="fhirVersion"
+                        th:text="${messages.get(#locale, 'questionnaire.import.fhir.validationVersion',
+                        'Specify the FHIR version against which the uploaded questionnaire should be validated.')}"
+                    ></label>
+                    <select
+                        class="form-select"
+                        id="fhirVersion"
+                        name="fhirVersion"
+                        disabled
+                    >
+                        <option
+                            th:each="fv: ${fhirVersions}"
+                            th:value="${fv}"
+                            th:text="${fv}"
+                        ></option>
+                    </select>
+                </div>
 				<div
 					th:if="${failure ne null}"
 					id="notification"
@@ -108,5 +144,23 @@
 				</button>
 			</form>
 		</div>
+        <script
+            th:inline="javascript"
+            type="text/javascript"
+        >
+            function toggleFhirVersion(element) {
+                let container = $("#fhirVersionContainer");
+                let checkbox = $(element);
+
+                if (checkbox.is(":checked")) {
+                    container.removeClass("d-none");
+                    $("#fhirVersion").prop("disabled", false);
+                } else {
+                    container.addClass("d-none");
+                    $("#fhirVersion").prop("disabled", true);
+                }
+            }
+
+        </script>
 	</th:block>
 </th:block>
