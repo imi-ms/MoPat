@@ -95,6 +95,7 @@ public abstract class FhirImporterVersionAdapter {
      * @param messageSource                 Spring messageSource instance containing validation messages.
      * @return True, if the validation was successfull, otherwise there's a {@link DataFormatException} thrown.
      */
+    @Deprecated
     abstract boolean validateFileAgainstSchema(final MultipartFile fileToValidate, final String validationPath,
         final ImportQuestionnaireValidation result, final MessageSource messageSource);
     
@@ -104,10 +105,11 @@ public abstract class FhirImporterVersionAdapter {
      * the HAPI resource instance validators.
      * @param fhirResourceString to validate
      * @param errors validation object to store error messages in
+     * @param frontendLocale locale to use for error messages
      * @return true, if valid; false otherwise
      */
     abstract boolean validateFileWithFhirInstanceValidator(final String fhirResourceString,
-        final ImportQuestionnaireValidation errors);
+        final ImportQuestionnaireValidation errors, String frontendLocale);
     
     
     /**
