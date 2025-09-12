@@ -16,6 +16,7 @@ import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.io.importer.fhir.FhirDstu3Helper;
@@ -45,6 +46,7 @@ import de.imi.mopat.model.dto.ExportRuleDTO;
 import de.imi.mopat.model.dto.ExportRuleFormatDTO;
 import de.imi.mopat.model.dto.ExportRulesDTO;
 import de.imi.mopat.model.enumeration.ExportScoreFieldType;
+import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.validator.ExportRulesDTOValidator;
@@ -116,6 +118,8 @@ public class ExportMappingController {
     private StringUtilities stringUtilityHelper;
     @Autowired
     private FhirImporter fhirImporter;
+    @Autowired
+    private FhirVersionHelper fhirVersionHelper;
 
     /**
      * Sets autogrowth for sent list data to a new limit. This prevents index out of bounds
@@ -220,6 +224,8 @@ public class ExportMappingController {
         @ModelAttribute("export") final ExportTemplate export, final BindingResult result,
         final HttpServletRequest request, final Model model) {
 
+        String locale = LocaleContextHolder.getLocale().toString();
+
         if (name == null || name.isEmpty()) {
             result.reject("name",
                 messageSource.getMessage("mapping.error.uploadtemplateName", new Object[]{},
@@ -241,11 +247,13 @@ public class ExportMappingController {
         if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
             String webappPath = request.getSession().getServletContext().getRealPath("") + "/";
             ImportQuestionnaireValidation validationResult = new ImportQuestionnaireValidation();
-            
-            fhirImporter.validateFhirFileAgainstFhirVersion(
-                file, webappPath, validationResult, exportTemplateType
-            );
-            
+
+            FhirVersion matchingVersion =
+                fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
+
+            fhirImporter.validateFhirFileAgainstFhirVersion(file, validationResult,
+                matchingVersion, locale);
+
             if (validationResult.hasErrors()) {
                 for (ImportQuestionnaireError error: validationResult.getValidationErrors()) {
                     if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
