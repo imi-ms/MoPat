@@ -5,12 +5,14 @@ import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirDstu3;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR4b;
+import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR5;
 import de.imi.mopat.io.impl.EncounterExporterTemplateODM;
 import de.imi.mopat.io.impl.EncounterExporterTemplateOrbis;
 import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
 import de.imi.mopat.io.impl.ExportTemplateImporterFhirDstu3;
 import de.imi.mopat.io.impl.ExportTemplateImporterFhirR4b;
+import de.imi.mopat.io.impl.ExportTemplateImporterFhirR5;
 import de.imi.mopat.io.impl.ExportTemplateImporterODM;
 import de.imi.mopat.io.impl.ExportTemplateImporterOrbis;
 import de.imi.mopat.io.impl.ExportTemplateImporterREDCap;
@@ -49,6 +51,11 @@ public enum ExportTemplateType {
     FHIR_R4B(
         ExportTemplateImporterFhirR4b.class,
         EncounterExporterTemplateFhirR4b.class,
+        "configurationGroup.label.FHIR"
+    ),
+    FHIR_R5(
+        ExportTemplateImporterFhirR5.class,
+        EncounterExporterTemplateFhirR5.class,
         "configurationGroup.label.FHIR"
     ),
     REDCap(
@@ -113,7 +120,7 @@ public enum ExportTemplateType {
     
     public static boolean isExportTemplateTypeAFhirType(ExportTemplateType exportTemplateType) {
         switch (exportTemplateType) {
-            case FHIR_DSTU3, FHIR_R4B -> {
+            case FHIR_DSTU3, FHIR_R4B, FHIR_R5 -> {
                 return true;
             }
             default -> {
