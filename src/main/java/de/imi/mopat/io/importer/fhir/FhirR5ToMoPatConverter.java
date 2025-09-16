@@ -458,6 +458,7 @@ public class FhirR5ToMoPatConverter {
         if (item.getText() != null) {
             localizedQuestionText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                 item.getTextElement());
+            localizedQuestionText.put(locale, item.getText());
 
             // If no text is found but the item has got a coding element,
             // use it as question text
@@ -466,6 +467,7 @@ public class FhirR5ToMoPatConverter {
             if (code.getDisplay() != null && !code.getDisplay().isEmpty()) {
                 localizedQuestionText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                     code.getDisplayElement());
+                localizedQuestionText.put(locale, code.getDisplay());
 
             } else {
                 localizedQuestionText.put(locale,
@@ -1039,6 +1041,7 @@ public class FhirR5ToMoPatConverter {
                         // labels of the mopat answer
                         localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                             item.getValueCoding().getDisplayElement());
+                        localizedAnswerText.put(locale, item.getValueCoding().getDisplay());
 
                     } else {
                         // Otherwise the option's coding element doesn't
@@ -1071,6 +1074,7 @@ public class FhirR5ToMoPatConverter {
                     // Set the translated answer labels
                     localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                         item.getValueStringType());
+                    localizedAnswerText.put(locale, item.getValueStringType().getValue());
 
                     // Set the exportField value
                     value = importQuestionResult.getIdentifier().replace(".", "u002E")
@@ -1132,6 +1136,8 @@ public class FhirR5ToMoPatConverter {
             // Get the translated answer texts
             localizedAnswerText = FhirR5Helper.getLanugageMapFromLanguageExtension(
                 item.getDisplayElement());
+            localizedAnswerText.put(locale, item.getDisplay());
+
             String displayText;
             if (item.getDisplay() != null) {
                 displayText = item.getDisplay();

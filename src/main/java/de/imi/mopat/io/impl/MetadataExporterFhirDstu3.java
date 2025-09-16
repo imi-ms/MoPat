@@ -81,6 +81,7 @@ public class MetadataExporterFhirDstu3 implements MetadataExporter {
         fhirQuestionnaire.setTitleElement(
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
+        fhirQuestionnaire.setLanguage(currentDefaultLanguage);
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
