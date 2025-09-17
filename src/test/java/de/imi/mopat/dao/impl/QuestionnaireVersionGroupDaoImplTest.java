@@ -4,8 +4,10 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
+import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.QuestionnaireTest;
@@ -37,6 +39,9 @@ public class QuestionnaireVersionGroupDaoImplTest {
 
     @Autowired
     QuestionnaireDao questionnaireDao;
+
+    @Autowired
+    BundleQuestionnaireDao bundleQuestionnaireDao;
 
     @Before
     public void setUp() {
@@ -72,6 +77,11 @@ public class QuestionnaireVersionGroupDaoImplTest {
     }
 
     public void clearTable() {
+        List<BundleQuestionnaire> allBundleQuestionnaires = bundleQuestionnaireDao.getAllElements();
+        for (BundleQuestionnaire bundleQuestionnaire : allBundleQuestionnaires) {
+            bundleQuestionnaireDao.remove(bundleQuestionnaire);
+        }
+
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
         for (Questionnaire questionnaire : allQuestionnaires) {
             questionnaireDao.remove(questionnaire);
