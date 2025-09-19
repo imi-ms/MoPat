@@ -146,6 +146,19 @@
 										>
 										</i>
 									</a>
+									<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+										<a
+												class="link"
+												th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
+												th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+										>
+											<i
+													class="bi-play-fill"
+													th:title="${messages.get(#locale, 'bundle.button.test', 'Test Bundle')}"
+											>
+											</i>
+										</a>
+									</th:block>
 									<a
 										th:if="${item.isPublished == true && item.isModifiable() == true}"
 										class="link"
@@ -201,7 +214,14 @@
 												th:href="@{fill?id=__${item.id}__}"
 												th:text="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
 											></a>
-
+											<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+											<a
+													th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+													class="link"
+													th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
+													th:text="${messages.get(#locale, 'bundle.button.test', 'Test Bundle')}"
+											></a>
+											</th:block>
 											<a
 												th:if="${item.isPublished == true && item.isModifiable() == true}"
 												class="link"

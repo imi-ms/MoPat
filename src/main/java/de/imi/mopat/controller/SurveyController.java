@@ -1186,6 +1186,7 @@ public class SurveyController {
     @ResponseBody
     public void finishQuestionnaire(
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         @RequestBody final EncounterDTO encounterDTO) {
         if (!encounterDTO.getIsTest()) {
 

@@ -934,7 +934,7 @@ function getIncompleteQuestionsCountFromQuestionnaire(questionnaire) {
  * to redirect to the start page. If it is <code>false</code>, nothing will happen.
  */
 function postEncounter(encounter, finalSubmit) {
-    if (encounter.isTest === true) {
+    if (encounter.isTest === true && performExportTest === true) {
         if (finalSubmit) {
             var data = ["bundle"];
             $.ajax({
@@ -1059,7 +1059,7 @@ function exportEncounter(encounter, questionnaireId) {
     }
 
     $.ajax({
-        url: "finishQuestionnaire?questionnaireId=" + questionnaireId,
+        url: "finishQuestionnaire?questionnaireId=" + questionnaireId + "&performExportTest="+performExportTest,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         // Exclude the bundle object
