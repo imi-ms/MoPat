@@ -607,6 +607,7 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.GET)
     public String testBundle(@RequestParam(value = "id", required = false) final Long bundleId,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         final Model model, final HttpServletRequest request,
         final RedirectAttributes redirectAttributes) {
 
@@ -628,6 +629,7 @@ public class SurveyController {
             model.addAttribute(
                 "encounterDTO",
                 encounterDTO);
+            model.addAttribute("performExportTest",performExportTest);
 
             // Check all questionnaireDTOs for conditions and set the boolean
             for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
@@ -669,6 +671,7 @@ public class SurveyController {
         @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO,
         @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
         @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         final Model model) {
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
@@ -678,15 +681,17 @@ public class SurveyController {
 
         encounterDTO.setBundleLanguage(bundleLanguage);
         model.addAttribute("encounterDTO", encounterDTO);
+        model.addAttribute("performExportTest",performExportTest);
+
         // If the selected bundle language is available for the gui, then use
         // this language
         if (!guiLanguage.isEmpty()) {
-            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage + "&performExportTest="+performExportTest;
         } else {
             // Otherwise use the selected bundle language for the bundle and
             // the current language for the user interface
             Locale locale = LocaleContextHolder.getLocale();
-            return "redirect:/mobile/survey/questionnairetest?lang=" + locale;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + locale + "&performExportTest="+performExportTest;
         }
     }
 
@@ -698,13 +703,16 @@ public class SurveyController {
      * @return Show the <i>mobile/survey/questionnairetest</i> website
      */
     @RequestMapping(value = "/mobile/survey/questionnairetest", method = RequestMethod.GET)
-    public String showQuestionaireTest(final Model model, final HttpSession session) {
+    public String showQuestionaireTest(final Model model, final HttpSession session,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest
+        ) {
         if (session.getAttribute("encounterDTO") == null) {
             return "redirect:error/accessdenied";
         }
 
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         model.addAttribute("encounterDTO", encounterDTO);
+        model.addAttribute("performExportTest",performExportTest);
         session.invalidate();
         return "mobile/survey/questionnaire";
     }
@@ -1205,12 +1213,12 @@ public class SurveyController {
                 }
             }
         } else {
-            finishQuestionnaireTest(questionnaireId, encounterDTO);
+            finishQuestionnaireTest(questionnaireId, encounterDTO, performExportTest);
         }
     }
 
     private void finishQuestionnaireTest(final Long questionnaireId,
-        final EncounterDTO encounterDTO) {
+        final EncounterDTO encounterDTO, final Boolean performExportTest) {
 
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
@@ -1232,7 +1240,8 @@ public class SurveyController {
 
                 }
                 encounter.setResponses(responses);
-                encounterExporter.export(encounter, questionnaire, true);
+                if(performExportTest)
+                    encounterExporter.export(encounter, questionnaire, true);
             }
         }
     }
