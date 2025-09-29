@@ -1,0 +1,179 @@
+package de.imi.mopat.io.importer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.imi.mopat.controller.ExportMappingController;
+import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.dao.ExportTemplateDao;
+import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.ExportTemplate;
+import de.imi.mopat.model.Question;
+import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.dto.ExportRuleDTO;
+import de.imi.mopat.model.dto.ExportRuleFormatDTO;
+import de.imi.mopat.model.dto.ExportRulesDTO;
+import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
+import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
+import de.imi.mopat.model.score.Score;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+@Component
+public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImporter {
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+        MopatCompleteQuestionnaireImporter.class);
+
+
+    @Autowired
+    private ExportMappingController exportMappingController;
+
+    @Autowired
+    private ConfigurationGroupDao configurationGroupDao;
+
+    @Autowired
+    private ExportTemplateDao exportTemplateDao;
+
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+
+    public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO = mapper.readValue(
+            file.getInputStream(), JsonCompleteQuestionnaireDTO.class);
+        Map<Long, Question> questions = new HashMap<>();
+        Map<Long, Answer> answers = new HashMap<>(); //old id <> new answer object with uuid
+        Map<Long, Score> scores = new HashMap<>();
+
+        Questionnaire questionnaire = createQuestionnaire(jsonCompleteQuestionnaireDTO, questions,
+            answers, scores);
+
+        // Import export_templates and their mappings
+        if (jsonCompleteQuestionnaireDTO.getExportDTOs() != null) {
+            for (JsonExportTemplateDTO exportTemplateDTO : jsonCompleteQuestionnaireDTO.getExportDTOs()
+                .values()) {
+
+                importExportTemplate(exportTemplateDTO, questionnaire,
+                    questions, answers, scores);
+            }
+        }
+
+        return questionnaire;
+    }
+
+    private void importExportTemplate(JsonExportTemplateDTO exportTemplateDTO,
+        Questionnaire questionnaire,
+        Map<Long, Question> questions,
+        Map<Long, Answer> answers, //old id <> new answer object with uuid
+        Map<Long, Score> scores) {
+
+        List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(
+            exportTemplateDTO.getName(),
+            exportTemplateDTO.getExportTemplateType(), null, configurationGroupDao,
+            exportTemplateDao);
+
+        for (ExportTemplate exportTemplate : exportTemplates) {
+            exportTemplate.setOriginalFilename(exportTemplateDTO.getOriginalFilename());
+            exportTemplate.setQuestionnaire(questionnaire);
+
+            questionnaire.addExportTemplate(exportTemplate);
+
+            String newFilename =
+                exportTemplate.getId() + "_" + exportTemplateDTO.getOriginalFilename();
+            exportTemplate.setFilename(newFilename);
+            exportTemplateDao.merge(exportTemplate);
+
+            questionnaireDao.merge(questionnaire);
+        }
+
+        // Now import the export rules using the updateExportMapping function
+        if (exportTemplateDTO.getExportRuleDTOs() != null && !exportTemplateDTO.getExportRuleDTOs()
+            .isEmpty()) {
+
+            for (ExportTemplate exportTemplate : exportTemplates) {
+                ExportRulesDTO exportRulesDTO = convertToExportRulesDTO(
+                    exportTemplateDTO,
+                    exportTemplate.getId(),
+                    questions,
+                    answers,
+                    scores
+                );
+
+                exportMappingController.updateExportMapping(exportRulesDTO);
+            }
+
+        }
+
+    }
+
+    private ExportRulesDTO convertToExportRulesDTO(JsonExportTemplateDTO exportTemplateDTO,
+        Long newExportTemplateId,
+        Map<Long, Question> questions,
+        Map<Long, Answer> answers, //old id <> new answer object with uuid
+        Map<Long, Score> scores) {
+
+        ExportRulesDTO exportRulesDTO = new ExportRulesDTO();
+        exportRulesDTO.setExportTemplateId(newExportTemplateId);
+
+        List<ExportRuleDTO> exportRuleDTOs = new ArrayList<>();
+        Map<Long, ExportRuleFormatDTO> formatDTOs = new HashMap<>();
+        Long tempFormatIdCounter = 0L;
+
+        for (JsonExportRuleAnswerDTO jsonRuleDTO : exportTemplateDTO.getExportRuleDTOs().values()) {
+            // Find the new answer ID using UUID
+
+//            oldid <> new object with uuid
+
+            Long oldAnswerId = jsonRuleDTO.getAnswerId();
+            Long newAnswerId = answers.get(oldAnswerId).getId();
+            if (newAnswerId == null) {
+                continue;
+            }
+
+            ExportRuleDTO ruleDTO = new ExportRuleDTO();
+            ruleDTO.setAnswerId(newAnswerId);
+            ruleDTO.setExportField(Collections.singletonList(jsonRuleDTO.getExportField()));
+            ruleDTO.setUseFreetextValue(jsonRuleDTO.getUseFreetextValue());
+
+            // Handle format if present
+            if (jsonRuleDTO.getExportRuleFormat() != null) {
+                Long tempFormatId = tempFormatIdCounter++;
+                ruleDTO.setTempExportFormatId(tempFormatId);
+
+                ExportRuleFormatDTO formatDTO = new ExportRuleFormatDTO();
+                JsonExportRuleFormatDTO jsonFormatDTO = jsonRuleDTO.getExportRuleFormat();
+
+                formatDTO.setDateFormat(jsonFormatDTO.getDateFormat());
+                formatDTO.setDecimalDelimiter(jsonFormatDTO.getDecimalDelimiter());
+                formatDTO.setDecimalPlaces(
+                    jsonFormatDTO.getDecimalPlaces() != null ?
+                        jsonFormatDTO.getDecimalPlaces().toString() : null
+                );
+                formatDTO.setNumberType(jsonFormatDTO.getNumberType());
+                formatDTO.setRoundingStrategy(jsonFormatDTO.getRoundingStrategy());
+
+                formatDTOs.put(tempFormatId, formatDTO);
+            }
+
+            exportRuleDTOs.add(ruleDTO);
+        }
+
+        exportRulesDTO.setExportRules(exportRuleDTOs);
+        exportRulesDTO.setExportRuleFormats(formatDTOs);
+
+        return exportRulesDTO;
+    }
+
+}

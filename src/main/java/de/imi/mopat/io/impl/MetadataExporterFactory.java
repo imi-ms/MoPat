@@ -30,6 +30,8 @@ public class MetadataExporterFactory {
                 return new MetadataExporterFhirR5();
             case ODMExportTemplate:
                 return new MetadataExporterODMExportTemplate();
+            case MoPatComplete:
+                return new MetadataExporterMoPatComplete();
             default:
                 return null;
         }

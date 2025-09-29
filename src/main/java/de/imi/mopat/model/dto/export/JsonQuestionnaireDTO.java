@@ -2,6 +2,7 @@ package de.imi.mopat.model.dto.export;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -24,6 +25,9 @@ import java.util.TreeMap;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonTypeName("questionnaire")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = JsonCompleteQuestionnaireDTO.class, name = "questionnaireComplete")
+})
 public class JsonQuestionnaireDTO {
 
     private Long id;

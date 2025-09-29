@@ -5,8 +5,10 @@ import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BodyPartAnswer;
-import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.DateAnswer;
+import de.imi.mopat.model.ExportRule;
+import de.imi.mopat.model.ExportRuleAnswer;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
@@ -16,25 +18,27 @@ import de.imi.mopat.model.SliderAnswer;
 import de.imi.mopat.model.SliderFreetextAnswer;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.export.JsonAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonConditionDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
+import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.score.Score;
-import jakarta.servlet.ServletContext;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JSONHelper{
+public class JSONHelper {
 
     @Autowired
     private ConfigurationDao configurationDao;
 
-    public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO, final Questionnaire questionnaire){
+    public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
+        final Questionnaire questionnaire) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -47,11 +51,11 @@ public class JSONHelper{
             try {
                 jsonQuestionnaireDTO.setLogoBase64(StringUtilities.convertImageToBase64String(
                     (configurationDao.getImageUploadPath()
-                                + "/questionnaire/"
-                                + questionnaire.getId()
-                                + "/"
-                                + questionnaire.getLogo()
-                        ),
+                        + "/questionnaire/"
+                        + questionnaire.getId()
+                        + "/"
+                        + questionnaire.getLogo()
+                    ),
                     questionnaire.getLogo()));
             } catch (Exception e) {
             }
@@ -59,7 +63,7 @@ public class JSONHelper{
 
         for (Question question : questionnaire.getQuestions()) {
             JsonQuestionDTO jsonQuestionDTO = new JsonQuestionDTO();
-            this.initializeJsonQuestionDTO(jsonQuestionDTO,question);
+            this.initializeJsonQuestionDTO(jsonQuestionDTO, question);
             jsonQuestionnaireDTO.setQuestionDTO(question.getId(), jsonQuestionDTO);
             jsonQuestionDTO.setJsonQuestionnaireDTO(jsonQuestionnaireDTO);
         }
@@ -72,7 +76,8 @@ public class JSONHelper{
         }
     }
 
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO,final Question question){
+    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO,
+        final Question question) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -91,7 +96,7 @@ public class JSONHelper{
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer){
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
@@ -153,7 +158,8 @@ public class JSONHelper{
         if (answer instanceof SliderFreetextAnswer) {
             SliderFreetextAnswer sliderFreetextAnswer =
                 (SliderFreetextAnswer) answer;
-            jsonAnswerDTO.setLocalizedFreetextLabel(sliderFreetextAnswer.getLocalizedFreetextLabel());
+            jsonAnswerDTO.setLocalizedFreetextLabel(
+                sliderFreetextAnswer.getLocalizedFreetextLabel());
             jsonAnswerDTO.setLocalizedMaximumText(sliderFreetextAnswer.getLocalizedMaximumText());
             jsonAnswerDTO.setLocalizedMinimumText(sliderFreetextAnswer.getLocalizedMinimumText());
             jsonAnswerDTO.setMaxValue(sliderFreetextAnswer.getMaxValue());
@@ -167,7 +173,8 @@ public class JSONHelper{
             // Try to load the image from the disk as a BufferedImage and get
             // the Base64 representation
             try {
-                String imagePath = (configurationDao.getImageUploadPath() + "/question/" +jsonAnswerDTO.getImagePath());
+                String imagePath = (configurationDao.getImageUploadPath() + "/question/"
+                    + jsonAnswerDTO.getImagePath());
                 String fileName = jsonAnswerDTO.getImagePath()
                     .substring(imageAnswer.getImagePath()
                         .lastIndexOf("/"));
@@ -182,6 +189,64 @@ public class JSONHelper{
             jsonAnswerDTO.setBodyPart(bodyPartAnswer.getBodyPart());
         }
         return jsonAnswerDTO;
+    }
+
+    //initialize export template
+    public void initializeJsonExportTemplateDTO(
+        JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO,
+        final Questionnaire questionnaire) {
+
+        for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
+
+            JsonExportTemplateDTO jsonExportTemplateDTO = new JsonExportTemplateDTO();
+            jsonExportTemplateDTO.setId(exportTemplate.getId());
+            jsonExportTemplateDTO.setUuid(exportTemplate.getUuid());
+            jsonExportTemplateDTO.setName(exportTemplate.getName());
+            jsonExportTemplateDTO.setFilename(exportTemplate.getFilename());
+            jsonExportTemplateDTO.setOriginalFilename(exportTemplate.getOriginalFilename());
+            jsonExportTemplateDTO.setExportTemplateType(exportTemplate.getExportTemplateType());
+
+            for (ExportRule exportRule : exportTemplate.getExportRules()) {
+                JsonExportRuleAnswerDTO jsonExportRuleDTO = new JsonExportRuleAnswerDTO();
+
+                jsonExportRuleDTO.setId(exportRule.getId());
+                jsonExportRuleDTO.setUuid(exportRule.getUuid());
+                jsonExportRuleDTO.setExportField(exportRule.getExportField());
+
+                jsonExportRuleDTO.setExportRuleFormat(getJsonExportRuleFormatDTO(exportRule));
+
+                // Check if this is specifically an ExportRuleAnswer
+                if (exportRule instanceof ExportRuleAnswer) {
+                    ExportRuleAnswer exportRuleAnswer = (ExportRuleAnswer) exportRule;
+                    jsonExportRuleDTO.setAnswerId(exportRuleAnswer.getAnswer().getId());
+                    jsonExportRuleDTO.setUseFreetextValue(exportRuleAnswer.getUseFreetextValue());
+                }
+
+                jsonExportTemplateDTO.addExportRuleDTOs(exportRule.getId(), jsonExportRuleDTO);
+            }
+
+            jsonCompleteQuestionnaireDTO.addExportDTOs(exportTemplate.getId(),
+                jsonExportTemplateDTO);
+
+
+        }
+
+
+    }
+
+    private JsonExportRuleFormatDTO getJsonExportRuleFormatDTO(ExportRule exportRule) {
+        JsonExportRuleFormatDTO jsonExportRuleFormatDTO = new JsonExportRuleFormatDTO();
+        jsonExportRuleFormatDTO.setId(exportRule.getExportRuleFormat().getId());
+        jsonExportRuleFormatDTO.setUuid(exportRule.getExportRuleFormat().getUuid());
+        jsonExportRuleFormatDTO.setDateFormat(exportRule.getExportRuleFormat().getDateFormat());
+        jsonExportRuleFormatDTO.setDecimalDelimiter(
+            exportRule.getExportRuleFormat().getDecimalDelimiter());
+        jsonExportRuleFormatDTO.setDecimalPlaces(
+            exportRule.getExportRuleFormat().getDecimalPlaces());
+        jsonExportRuleFormatDTO.setNumberType(exportRule.getExportRuleFormat().getNumberType());
+        jsonExportRuleFormatDTO.setRoundingStrategy(
+            exportRule.getExportRuleFormat().getRoundingStrategy());
+        return jsonExportRuleFormatDTO;
     }
 
 }
