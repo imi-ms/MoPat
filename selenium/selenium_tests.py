@@ -932,6 +932,9 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_MAIL_SUPPORT, "Mail Support input not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_PHONE_SUPPORT, "Phone Support input not found")
 
+        # Purposely set wrong field to check validation
+        self.utils.fill_text_field(ConfigurationSelectors.INPUT_MAIL_SUPPORT, '')
+
         self.configuration_helper.save_configuration()
 
         # Count all divs with class config_error
