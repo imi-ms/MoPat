@@ -228,4 +228,11 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
             Constants.METADATA_EXPORTER_PDF, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
+
+    @Override
+    public String getImprintText() {
+        Configuration configuration = getConfigurationByAttributeAndClass(Constants.IMPRINT_TEXT,
+            Constants.CLASS_GLOBAL);
+        return configuration.getValue();
+    }
 }
