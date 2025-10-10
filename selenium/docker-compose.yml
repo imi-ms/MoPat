@@ -40,7 +40,7 @@ services:
       - /var/lib/mopatExport/ODM
       - /var/lib/mopatExport/FHIR
       - /var/lib/mopatExport/REDCap
-
+      - ${PWD}/../src/main/resources/docker-server.xml:/usr/local/tomcat/conf/server.xml:ro
     environment:
       - MYSQL_USER=mopat
       - MYSQL_PASSWORD=mopat
