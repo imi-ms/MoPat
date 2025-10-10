@@ -5,6 +5,7 @@ import de.imi.mopat.controller.ExportMappingController;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
@@ -17,15 +18,18 @@ import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
 import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
 import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
 import de.imi.mopat.model.score.Score;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -84,19 +88,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
             exportTemplateDTO.getExportTemplateType(), null, configurationGroupDao,
             exportTemplateDao);
 
-        for (ExportTemplate exportTemplate : exportTemplates) {
-            exportTemplate.setOriginalFilename(exportTemplateDTO.getOriginalFilename());
-            exportTemplate.setQuestionnaire(questionnaire);
-
-            questionnaire.addExportTemplate(exportTemplate);
-
-            String newFilename =
-                exportTemplate.getId() + "_" + exportTemplateDTO.getOriginalFilename();
-            exportTemplate.setFilename(newFilename);
-            exportTemplateDao.merge(exportTemplate);
-
-            questionnaireDao.merge(questionnaire);
-        }
+        uploadExportFile(questionnaire, exportTemplates, exportTemplateDTO);
 
         // Now import the export rules using the updateExportMapping function
         if (exportTemplateDTO.getExportRuleDTOs() != null && !exportTemplateDTO.getExportRuleDTOs()
@@ -176,4 +168,56 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         return exportRulesDTO;
     }
 
+
+    private void uploadExportFile(Questionnaire questionnaire, List<ExportTemplate> exportTemplates,
+        JsonExportTemplateDTO exportTemplateDTO) {
+
+        //Create second list to avoid ConcurrentModificationException
+        List<ExportTemplate> templates = new ArrayList<>();
+        templates.addAll(exportTemplates);
+
+        byte[] fileByteArray = Base64.decodeBase64(exportTemplateDTO.getFileByteArrayEncoded());
+
+        for (ExportTemplate template : templates) {
+            template.setOriginalFilename(exportTemplateDTO.getOriginalFilename());
+
+            String newFilename =
+                template.getId() + "_" + exportTemplateDTO.getOriginalFilename();
+            template.setFilename(newFilename);
+
+            try {
+
+                String objectStoragePath = configurationDao.getObjectStoragePath();
+                // Save uploaded file and update xml filename in template
+                String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+                File uploadDir = new File(contextPath);
+                if (!uploadDir.isDirectory()) {
+                    uploadDir.mkdirs();
+                }
+                File uploadFile = new File(contextPath, newFilename);
+                uploadFile.createNewFile();
+
+                FileUtils.writeByteArrayToFile(new File(contextPath, newFilename),
+                    fileByteArray);
+
+                template.setQuestionnaire(questionnaire);
+                questionnaire.addExportTemplate(template);
+                exportTemplateDao.merge(template);
+            } catch (IOException e) {
+                // delete export template on error
+                LOGGER.error("error while uploading a new export template {}", e);
+                for (ExportTemplate exportTemplate : exportTemplates) {
+                    File exportFile = new File(newFilename);
+                    if (exportFile.isFile()) {
+                        exportFile.delete();
+                    }
+                    exportTemplateDao.remove(exportTemplate);
+                }
+            }
+
+            questionnaireDao.merge(questionnaire);
+        }
+
+
+    }
 }

@@ -1,6 +1,5 @@
 package de.imi.mopat.io.impl;
 
-import static de.imi.mopat.model.enumeration.MetadataFormat.MoPat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,12 +15,9 @@ import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.JSONHelper;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.serializer.SliderIconSerializer;
-import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.SliderIcon;
 import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
-import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
-import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import java.nio.charset.Charset;
 import org.springframework.context.MessageSource;
 
@@ -53,15 +49,12 @@ public class MetadataExporterMoPatComplete implements MetadataExporter {
 
             // Generate DTO from model
             JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO = new JsonCompleteQuestionnaireDTO();
-//            JsonQuestionnaireDTO jsonQuestionnaireDTO = new JsonQuestionnaireDTO();
             JSONHelper jsonHelper = new JSONHelper();
-            //todo check inheritance
-            jsonHelper.initializeJsonQuestionnaireDTO(jsonCompleteQuestionnaireDTO, questionnaire);
+            jsonHelper.initializeJsonQuestionnaireDTO(jsonCompleteQuestionnaireDTO, questionnaire, configurationDao);
 
-            jsonHelper.initializeJsonExportTemplateDTO(jsonCompleteQuestionnaireDTO, questionnaire);
+            jsonHelper.initializeJsonExportTemplateDTO(jsonCompleteQuestionnaireDTO, questionnaire, configurationDao);
 
             jsonString = objectMapper.writeValueAsString(jsonCompleteQuestionnaireDTO);
-
 
         } catch (JsonProcessingException e) {
             LOGGER.info(

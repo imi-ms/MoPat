@@ -3,6 +3,7 @@ package de.imi.mopat.helper.model;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BodyPartAnswer;
 import de.imi.mopat.model.DateAnswer;
@@ -27,18 +28,19 @@ import de.imi.mopat.model.dto.export.JsonQuestionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonScoreDTO;
 import de.imi.mopat.model.score.Score;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JSONHelper {
 
-    @Autowired
-    private ConfigurationDao configurationDao;
-
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
-        final Questionnaire questionnaire) {
+        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -63,7 +65,7 @@ public class JSONHelper {
 
         for (Question question : questionnaire.getQuestions()) {
             JsonQuestionDTO jsonQuestionDTO = new JsonQuestionDTO();
-            this.initializeJsonQuestionDTO(jsonQuestionDTO, question);
+            this.initializeJsonQuestionDTO(jsonQuestionDTO, question, configurationDao);
             jsonQuestionnaireDTO.setQuestionDTO(question.getId(), jsonQuestionDTO);
             jsonQuestionDTO.setJsonQuestionnaireDTO(jsonQuestionnaireDTO);
         }
@@ -77,7 +79,7 @@ public class JSONHelper {
     }
 
     public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO,
-        final Question question) {
+        final Question question, ConfigurationDao configurationDao) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -90,13 +92,13 @@ public class JSONHelper {
 
         for (Answer answer : question.getAnswers()) {
             JsonAnswerDTO jsonAnswerDTO = new JsonAnswerDTO();
-            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer);
+            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer, configurationDao);
             jsonQuestionDTO.setAnswers(answer.getId(), jsonAnswerDTO);
             jsonAnswerDTO.setJsonQuestionDTO(jsonQuestionDTO);
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer) {
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer, ConfigurationDao configurationDao) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
@@ -194,7 +196,7 @@ public class JSONHelper {
     //initialize export template
     public void initializeJsonExportTemplateDTO(
         JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO,
-        final Questionnaire questionnaire) {
+        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
 
         for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
 
@@ -205,6 +207,22 @@ public class JSONHelper {
             jsonExportTemplateDTO.setFilename(exportTemplate.getFilename());
             jsonExportTemplateDTO.setOriginalFilename(exportTemplate.getOriginalFilename());
             jsonExportTemplateDTO.setExportTemplateType(exportTemplate.getExportTemplateType());
+            jsonExportTemplateDTO.setConfigurationGroupLabelCode(exportTemplate.getConfigurationGroup().getLabelMessageCode());
+
+            try {
+                // construct the context path based on the object storage path
+                // and export template directory
+                // and read the xml file from this directory
+                String objectStoragePath = configurationDao.getObjectStoragePath();
+                String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+                File file = new File(contextPath, exportTemplate.getFilename());
+                FileInputStream inputStream = new FileInputStream(file);
+
+                jsonExportTemplateDTO.setFileByteArrayEncoded(Base64.encodeBase64(IOUtils.toByteArray(inputStream)));
+
+            } catch ( Exception e) {
+                System.out.println(e.getMessage());
+            }
 
             for (ExportRule exportRule : exportTemplate.getExportRules()) {
                 JsonExportRuleAnswerDTO jsonExportRuleDTO = new JsonExportRuleAnswerDTO();

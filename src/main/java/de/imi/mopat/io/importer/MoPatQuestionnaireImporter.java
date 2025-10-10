@@ -64,8 +64,7 @@ public class MoPatQuestionnaireImporter {
         Map<Long, Answer> answers = new HashMap<>();
         // Collect all scores to easily allocate the upper - valueOfScore unaryExpressions
         Map<Long, Score> scores = new HashMap<>();
-        Questionnaire q = createQuestionnaire(jsonQuestionnaireDTO, questions, answers, scores);
-        return q;
+        return createQuestionnaire(jsonQuestionnaireDTO, questions, answers, scores);
     }
 
     protected Questionnaire createQuestionnaire(JsonQuestionnaireDTO jsonQuestionnaireDTO,

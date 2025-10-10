@@ -28,15 +28,11 @@ public class JsonExportTemplateDTO {
 
     private String filename;
     private String originalFilename;
-//    private ConfigurationGroup configurationGroup;
-//    private Questionnaire questionnaire;
+    private String configurationGroupLabelCode;
 
     private SortedMap<Long, JsonExportRuleAnswerDTO> exportRuleDTOs = new TreeMap<>();
-//    private Set<JsonExportRuleDTO> exportRuleDTOs = new HashSet<>();
-//
-//    private Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
-//
-//    private Set<EncounterExportTemplate> encounterExportTemplates = new HashSet<>();
+
+    private byte[] fileByteArrayEncoded;
 
     public Long getId() {
         return id;
@@ -116,5 +112,19 @@ public class JsonExportTemplateDTO {
     public void setExportRuleDTOs(
         SortedMap<Long, JsonExportRuleAnswerDTO> exportRuleDTOs) {
         this.exportRuleDTOs = exportRuleDTOs;
+    }
+
+    public String getConfigurationGroupLabelCode() {
+        return configurationGroupLabelCode;
+    }
+    public void setConfigurationGroupLabelCode(String configurationGroupLabelCode) {
+        this.configurationGroupLabelCode = configurationGroupLabelCode;
+    }
+
+    public byte[] getFileByteArrayEncoded() {
+        return fileByteArrayEncoded;
+    }
+    public void setFileByteArrayEncoded(byte[] fileByteArrayEncoded) {
+        this.fileByteArrayEncoded = fileByteArrayEncoded;
     }
 }

@@ -480,7 +480,6 @@ public class QuestionnaireController {
                 return "redirect:/questionnaire/import/upload";
             }
         } else if (file.getOriginalFilename().contains(".json")) {
-            //todo get export type
 
             try {
                 model.addAttribute("fileUpload", true);
@@ -493,20 +492,6 @@ public class QuestionnaireController {
                         LocaleContextHolder.getLocale()));
                 return "redirect:/questionnaire/import/upload";
             }
-
-
-
-//            try {
-//                model.addAttribute("fileUpload", true);
-//                questionnaire = moPatQuestionnaireImporter.importQuestionnaire(file);
-//            } catch (IOException e) {
-//                LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
-//                    + "failed. The following error occurred: {}", e.getLocalizedMessage());
-//                redirectAttributes.addFlashAttribute("failure",
-//                    messageSource.getMessage("import.error.fileNotSupported", new Object[]{},
-//                        LocaleContextHolder.getLocale()));
-//                return "redirect:/questionnaire/import/upload";
-//            }
             return "redirect:/questionnaire/fill?id=" + questionnaire.getId();
         }
 
