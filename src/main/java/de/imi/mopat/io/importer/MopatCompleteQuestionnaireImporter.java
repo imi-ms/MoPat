@@ -1,6 +1,7 @@
 package de.imi.mopat.io.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import de.imi.mopat.controller.ExportMappingController;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
@@ -17,6 +18,7 @@ import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
 import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
 import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
+import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
 import de.imi.mopat.model.score.Score;
 import java.io.File;
 import java.io.IOException;
@@ -55,24 +57,28 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
     public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO = mapper.readValue(
-            file.getInputStream(), JsonCompleteQuestionnaireDTO.class);
+
+        JsonQuestionnaireDTO jsonQuestionnaireDTO = mapper.readValue(
+            file.getInputStream(), JsonQuestionnaireDTO.class);
         Map<Long, Question> questions = new HashMap<>();
         Map<Long, Answer> answers = new HashMap<>(); //old id <> new answer object with uuid
         Map<Long, Score> scores = new HashMap<>();
 
-        Questionnaire questionnaire = createQuestionnaire(jsonCompleteQuestionnaireDTO, questions,
+        Questionnaire questionnaire = createQuestionnaire(jsonQuestionnaireDTO, questions,
             answers, scores);
 
-        // Import export_templates and their mappings
-        if (jsonCompleteQuestionnaireDTO.getExportDTOs() != null) {
-            for (JsonExportTemplateDTO exportTemplateDTO : jsonCompleteQuestionnaireDTO.getExportDTOs()
-                .values()) {
+        if(jsonQuestionnaireDTO instanceof JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO){
+            // Import export_templates and their mappings
+            if (jsonCompleteQuestionnaireDTO.getExportDTOs() != null) {
+                for (JsonExportTemplateDTO exportTemplateDTO : jsonCompleteQuestionnaireDTO.getExportDTOs()
+                    .values()) {
 
-                importExportTemplate(exportTemplateDTO, questionnaire,
-                    questions, answers, scores);
+                    importExportTemplate(exportTemplateDTO, questionnaire,
+                        questions, answers, scores);
+                }
             }
         }
+
 
         return questionnaire;
     }
@@ -182,7 +188,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
             template.setOriginalFilename(exportTemplateDTO.getOriginalFilename());
 
             String newFilename =
-                template.getId() + "_" + exportTemplateDTO.getOriginalFilename();
+                template.getId() + "_imported_" + exportTemplateDTO.getOriginalFilename();
             template.setFilename(newFilename);
 
             try {
