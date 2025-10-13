@@ -133,7 +133,7 @@ public class FhirImporterTest {
         ImportQuestionnaireValidation result = new ImportQuestionnaireValidation();
         
         String fhirString = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-        boolean validationResult = true;// FhirDstu3Helper.validateFileWithFhirInstanceValidator(fhirString, result);
+        boolean validationResult = FhirDstu3Helper.validateFileWithFhirInstanceValidator(fhirString, result);
         
         assertTrue("The validation of the resource was not successful. ", validationResult);
         
@@ -150,7 +150,7 @@ public class FhirImporterTest {
         String webappPath = new File("src/main/webapp").getAbsolutePath() + "/";
         String url = "";
         
-        ImportQuestionnaireValidation result =  new ImportQuestionnaireValidation();//fhirImporter.importFhirQuestionnaire(multipartFile, url, webappPath);
+        ImportQuestionnaireValidation result = fhirImporter.importFhirQuestionnaire(multipartFile, url, webappPath);
         
         assertNotNull("The result was null, although it should be created", result);
         assertFalse("The import had errors, although it should not: " + (result.getValidationErrors().stream()
