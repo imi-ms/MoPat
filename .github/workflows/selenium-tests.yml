@@ -67,9 +67,10 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         run: |
           decoded_results=$(echo "${{ env.SELENIUM_TEST_SUMMARY }}" | base64 --decode)
-          echo "### Selenium Test Results" > comment_body.md
-          echo "$decoded_results" >> comment_body.md
+          echo "<details><summary>Selenium Test Results</summary>" > selenium_block.md
+          echo "$decoded_results" >> selenium_block.md
+          echo "</details> >> selenium_block.md
 
-          gh pr comment ${{ github.event.pull_request.number }} --body-file comment_body.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file selenium_block.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
