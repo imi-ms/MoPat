@@ -132,7 +132,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         run: |
           decoded_results=$(echo "${{ env.SELENIUM_TEST_SUMMARY }}" | base64 --decode)
-          echo "<details><summary>:🌐 Selenium Test Results</summary>" > selenium_block.md
+          echo "<details><summary>🌐 Selenium Test Results</summary>" > selenium_block.md
           echo "$decoded_results" >> selenium_block.md
           echo "</details>" >> selenium_block.md
           # Save content as output
