@@ -56,9 +56,9 @@ jobs:
         id: decode-results
         if: always() && github.event_name == 'pull_request'
         run: |
-          echo <details><summary>Unit Test Results</summary> >> unit-results.md
-          echo ${{ steps.testReport.outputs.summary }} >> unit-results.md
-          echo </details> >> unit-results.md
+          echo "<details><summary>Unit Test Results</summary>" >> unit-results.md
+          echo "${{ steps.testReport.outputs.summary }}" >> unit-results.md
+          echo "</details>" >> unit-results.md
           # Save content as output
           echo "content<<EOF" >> $GITHUB_OUTPUT
           cat unit-results.md >> $GITHUB_OUTPUT
@@ -239,7 +239,7 @@ jobs:
           echo "</details>" >> trivy-comment.md
           # Save content as output
           echo "content<<EOF" >> $GITHUB_OUTPUT
-          cat selenium_block.md >> $GITHUB_OUTPUT
+          cat trivy-comment.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
   comment:
     runs-on: ubuntu-latest
