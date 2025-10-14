@@ -4,7 +4,10 @@ import de.imi.mopat.dao.user.PinAuthorizationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.user.PinAuthorization;
 import de.imi.mopat.model.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,9 @@ import java.util.List;
 
 @Service
 public class PinAuthorizationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PinAuthorizationService.class);
+
     @Autowired
     PinAuthorizationDao pinAuthorizationDao;
 
@@ -84,10 +90,15 @@ public class PinAuthorizationService {
      * Removes all pin authorities entries from the database
      */
     public void removeAllPinAuthotizationEntries() {
-        List<PinAuthorization> pinAuthorizationList = pinAuthorizationDao.getAllElements();
-        for (PinAuthorization pinAuthorization : pinAuthorizationList) {
-            pinAuthorizationDao.remove(pinAuthorization);
+        try {
+            List<PinAuthorization> pinAuthorizationList = pinAuthorizationDao.getAllElements();
+            for (PinAuthorization pinAuthorization : pinAuthorizationList) {
+                pinAuthorizationDao.remove(pinAuthorization);
+            }
+        } catch (AuthenticationCredentialsNotFoundException e) {
+            LOGGER.info("No authentication credentials found while clearing sessions.");
         }
+
     }
 
     /**
