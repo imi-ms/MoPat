@@ -1,0 +1,259 @@
+name: test
+
+on: pull_request
+
+jobs:
+  unit-tests:
+    permissions:
+      checks: write
+      pull-requests: write # only required if `comment: true` was enabled
+    runs-on: ubuntu-latest
+    outputs:
+      unittest-results: ${{ steps.decode-results.outputs.content }}
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh 
+          --connect 
+          --innodb_initialized" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install MySQL client and Load Database Schema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+          mysql -h 127.0.0.1 -u root --password=root -e "CREATE USER IF NOT EXISTS 'mopat'@'%' IDENTIFIED BY 'mopat';"
+          mysql -h 127.0.0.1 -u root --password=root -e "GRANT ALL PRIVILEGES ON *.* TO 'mopat'@'%'; FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -u root --password=root < db/installationInitTest.sql
+
+      - name: Test with Maven
+        run: mvn -B test --file pom.xml
+
+      - name: Publish Test Report
+        id: testReport
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/target/surefire-reports/*.xml'
+
+      - name: Decode results
+        id: decode-results
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          echo <details><summary>Unit Test Results</summary> >> unit-results.md
+          echo ${{ steps.testReport.outputs.summary }} >> unit-results.md
+          echo </details> >> unit-results.md
+          # Save content as output
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat unit-results.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+
+  selenium-tests:
+    permissions:
+      checks: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    outputs:
+      selenium-results: ${{ steps.decode-results.outputs.content }}
+
+    steps:
+      # Checkout the repository
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Pull the Chrome image
+      - name: Pull Selenoid Chrome Image
+        run: docker pull selenoid/chrome:latest
+
+      # Setup Docker-Compose
+      - name: Docker Compose Action
+        uses: hoverkraft-tech/compose-action@v2.0.2
+        with:
+          compose-file: "selenium/docker-compose.yml"
+
+      # Wait for the server to be ready before running tests
+      - name: Wait for the application to be ready
+        run: |
+          until curl --output /dev/null --silent --head --fail http://localhost:8080; do
+            echo 'Waiting for the application to be ready...'
+            sleep 5
+          done
+          until curl --output /dev/null --silent --head --fail http://localhost:4444/status; do
+            echo 'Waiting for Selenoid to be ready...'
+            sleep 5
+          done
+
+      # Set up Python and run Selenium tests
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13' # Specify the version of Python you are using
+
+      - name: Install dependencies
+        run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
+
+      - name: Run Selenium tests
+        run: |
+          python3 selenium/selenium_tests.py > test-results.log
+
+      - name: Save results to env
+        if: always() && github.event_name == 'pull_request'
+        id: test_report
+        run: echo "SELENIUM_TEST_SUMMARY=$(base64 -w 0 test-results.log)" >> $GITHUB_ENV
+
+        # Install GitHub CLI
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
+
+      - name: Decode results
+        id: decode-results
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          decoded_results=$(echo "${{ env.SELENIUM_TEST_SUMMARY }}" | base64 --decode)
+          echo "<details><summary>Selenium Test Results</summary>" > selenium_block.md
+          echo "$decoded_results" >> selenium_block.md
+          echo "</details>" >> selenium_block.md
+          # Save content as output
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat selenium_block.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+    outputs:
+      trivy-results: ${{ steps.trivy-table.outputs.content }}
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images with docker compose
+        run: |
+          docker compose build
+
+      - name: Run Trivy vulnerability scanner on image
+        id: trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        env:
+          TRIVY_DISABLE_VEX_NOTICE: "true"
+        with:
+          image-ref: mopat-webapp-container:latest
+          format: json
+          exit-code: 0
+          output: trivy-report.json
+
+      - name: Convert Trivy JSON to Markdown table (split OS vs app)
+        id: trivy-table
+        run: |
+          # Check if any vulnerabilities exist
+          if ! jq -e '.Results[].Vulnerabilities | select(length > 0)' trivy-report.json > /dev/null; then
+            echo "✅ No vulnerabilities found!" >> trivy-comment.md
+            exit 0
+          fi
+
+          #####################################
+          # 🐳 1️⃣ Base Image Vulnerabilities (os-pkgs)
+          #####################################
+
+          os_total=$(jq '[.Results[] | select(.Class=="os-pkgs") | .Vulnerabilities[]?] | length' trivy-report.json)
+          os_with_fixes=$(jq '[.Results[] | select(.Class=="os-pkgs") | .Vulnerabilities[]? | select(.FixedVersion != null and .FixedVersion != "")] | length' trivy-report.json)
+
+          echo "<details><summary>🐳 Base Image Vulnerabilities: $os_total vulnerabilities found, $os_with_fixes with fixes</summary>" >> trivy-comment.md
+          echo "" >> trivy-comment.md
+
+          jq -r '
+            [ .Results[]
+              | select(.Class == "os-pkgs")
+              | .Vulnerabilities[]?
+            ]
+            | select(length > 0)
+            | group_by(.PkgName)
+            | sort_by(.[0].PkgName)
+            | .[]
+            | "#### 📦 Package: \([.[0].PkgName])\n"
+              + "| Severity | Vulnerability ID | Installed Version | Fixed Version |\n"
+              + "|-----------|------------------|------------------|----------------|\n"
+              + (map("| \(.Severity) | \(.VulnerabilityID) | \(.InstalledVersion) | \(.FixedVersion // "-") |") | join("\n"))
+              + "\n"
+          ' trivy-report.json >> trivy-comment.md
+
+          echo "</details>" >> trivy-comment.md
+          echo "" >> trivy-comment.md
+          echo "---" >> trivy-comment.md
+          echo "" >> trivy-comment.md
+
+          #####################################
+          # ☕️ 2️⃣ Tomcat / Java / Library Vulnerabilities
+          #####################################
+
+          app_total=$(jq '[.Results[] | select(.Class!="os-pkgs") | .Vulnerabilities[]?] | length' trivy-report.json)
+          app_with_fixes=$(jq '[.Results[] | select(.Class!="os-pkgs") | .Vulnerabilities[]? | select(.FixedVersion != null and .FixedVersion != "")] | length' trivy-report.json)
+
+          echo "<details><summary>☕️ Application / Library Vulnerabilities: $app_total vulnerabilities found, $app_with_fixes with fixes</summary>" >> trivy-comment.md
+          echo "" >> trivy-comment.md
+
+          jq -r '
+            [ .Results[]
+              | select(.Class != "os-pkgs")
+              | .Vulnerabilities[]?
+            ]
+            | select(length > 0)
+            | group_by(.PkgName)
+            | sort_by(.[0].PkgName)
+            | .[]
+            | "#### 📦 Package: \([.[0].PkgName])\n"
+              + "| Severity | Vulnerability ID | Installed Version | Fixed Version |\n"
+              + "|-----------|------------------|------------------|----------------|\n"
+              + (map("| \(.Severity) | \(.VulnerabilityID) | \(.InstalledVersion) | \(.FixedVersion // "-") |") | join("\n"))
+              + "\n"
+          ' trivy-report.json >> trivy-comment.md
+
+          echo "</details>" >> trivy-comment.md
+          # Save content as output
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat selenium_block.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+  comment:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, selenium-tests, trivy-scan]
+    steps:
+      - name: Post PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Test Results
+            ${{ needs.unit-tests.outputs.unittest-results }}
+            ${{ needs.selenium-tests.outputs.selenium-results }}
+            ### Vulnerability Scan Results
+            ${{ needs.trivy-scan.outputs.trivy-results }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
