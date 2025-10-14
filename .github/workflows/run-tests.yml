@@ -56,7 +56,8 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            ### Test Results:
+            <details><summary>Unit Test Results</summary>
             ${{ steps.testReport.outputs.summary }}
+            </details>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
