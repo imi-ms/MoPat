@@ -6,7 +6,7 @@ jobs:
   unit-tests:
     permissions:
       checks: write
-      pull-requests: write # only required if `comment: true` was enabled
+      pull-requests: write
     runs-on: ubuntu-latest
     outputs:
       unittest-results: ${{ steps.decode-results.outputs.content }}
@@ -244,6 +244,9 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     needs: [unit-tests, selenium-tests, trivy-scan]
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Post PR comment
         uses: peter-evans/create-or-update-comment@v4
