@@ -195,6 +195,12 @@
 														>MoPat</a
 													>
 													<a
+															class="link"
+															th:href="@{download?id=__${item.id}__&type=MoPatComplete}"
+															th:title="${messages.get(#locale, 'questionnaire.button.download.mopatcomplete', 'Download questionnaire in MoPat format with export templates')}"
+													>MoPat with Export Template</a
+													>
+													<a
 														class="link"
 														th:href="@{download?id=__${item.id}__&type=ODM}"
 														th:title="${messages.get(#locale, 'questionnaire.button.download.odm', 'Download questionnaire in ODM format')}"
@@ -297,6 +303,12 @@
 													th:href="@{download?id=__${item.id}__&type=MoPat}"
 													th:title="${messages.get(#locale, 'questionnaire.button.download.mopat', 'Download questionnaire in MoPat format')}"
 													>MoPat</a
+												>
+												<a
+														class="link"
+														th:href="@{download?id=__${item.id}__&type=MoPatComplete}"
+														th:title="${messages.get(#locale, 'questionnaire.button.download.mopatcomplete', 'Download questionnaire in MoPat format with export templates')}"
+												>MoPat with Export Template</a
 												>
 												<a
 													class="link"

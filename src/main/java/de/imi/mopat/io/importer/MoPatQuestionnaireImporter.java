@@ -1,6 +1,7 @@
 package de.imi.mopat.io.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.imi.mopat.controller.ExportMappingController;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionnaireDao;
@@ -15,6 +16,7 @@ import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.dto.export.JsonAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonConditionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
@@ -54,17 +56,25 @@ public class MoPatQuestionnaireImporter {
     ConfigurationDao configurationDao;
 
     public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
-        Questionnaire questionnaire;
 
         ObjectMapper mapper = new ObjectMapper();
         JsonQuestionnaireDTO jsonQuestionnaireDTO = mapper.readValue(file.getInputStream(), JsonQuestionnaireDTO.class);
-        questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
+
+        Map<Long, Question> questions = new HashMap<>();
+        Map<Long, Answer> answers = new HashMap<>();
+        // Collect all scores to easily allocate the upper - valueOfScore unaryExpressions
+        Map<Long, Score> scores = new HashMap<>();
+        return createQuestionnaire(jsonQuestionnaireDTO, questions, answers, scores);
+    }
+
+    protected Questionnaire createQuestionnaire(JsonQuestionnaireDTO jsonQuestionnaireDTO,
+        Map<Long, Question> questions, Map<Long, Answer> answers, Map<Long, Score> scores){
+        Questionnaire questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         questionnaire.setChangedBy(currentUser.getId());
         // Collect all questions and answers in a map to access those
         // ones who are target and trigger of a condition easily
-        Map<Long, Question> questions = new HashMap<>();
-        Map<Long, Answer> answers = new HashMap<>();
+
 
         // Convert all jsonQuestionDTOs and all jsonAnswerDTOs to
         // their database model counterparts and collect them in a
@@ -151,9 +161,7 @@ public class MoPatQuestionnaireImporter {
         // Collect all scoreIds to allocate them to all
         // unaryExpressions, whose operator is valueOfScore
         Map<Long, UnaryExpression> scoreIdExpressions = new HashMap<>();
-        // Collect all scores to easily allocate the upper
-        // valueOfScore unaryExpressions
-        Map<Long, Score> scores = new HashMap<>();
+
         for (JsonScoreDTO jsonScoreDTO : jsonQuestionnaireDTO.getScoreDTOs().values()) {
             // Convert the score and collect it
             Score score = jsonScoreDTO.convertToScore(operators, questions, scoreIdExpressions);

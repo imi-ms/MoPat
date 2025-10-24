@@ -1,5 +1,8 @@
 package de.imi.mopat.controller;
 
+import static de.imi.mopat.model.enumeration.MetadataFormat.MoPat;
+import static de.imi.mopat.model.enumeration.MetadataFormat.MoPatComplete;
+
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
@@ -22,12 +25,14 @@ import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.io.importer.MoPatQuestionnaireImporter;
+import de.imi.mopat.io.importer.MopatCompleteQuestionnaireImporter;
 import de.imi.mopat.io.importer.fhir.FhirImporter;
 import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.io.importer.odm.OdmQuestionnaireImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.conditions.Condition;
@@ -90,6 +95,8 @@ public class QuestionnaireController {
         QuestionnaireController.class);
     @Autowired
     MoPatQuestionnaireImporter moPatQuestionnaireImporter;
+    @Autowired
+    MopatCompleteQuestionnaireImporter mopatCompleteQuestionnaireImporter;
     @Autowired
     private AnswerDao answerDao;
     @Autowired
@@ -473,9 +480,10 @@ public class QuestionnaireController {
                 return "redirect:/questionnaire/import/upload";
             }
         } else if (file.getOriginalFilename().contains(".json")) {
+
             try {
                 model.addAttribute("fileUpload", true);
-                questionnaire = moPatQuestionnaireImporter.importQuestionnaire(file);
+                questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(file);
             } catch (IOException e) {
                 LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
                     + "failed. The following error occurred: {}", e.getLocalizedMessage());
