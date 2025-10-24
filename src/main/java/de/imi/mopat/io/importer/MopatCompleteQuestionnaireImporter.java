@@ -130,18 +130,18 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         Long tempFormatIdCounter = 0L;
 
         for (JsonExportRuleAnswerDTO jsonRuleDTO : exportTemplateDTO.getExportRuleDTOs().values()) {
-            // Find the new answer ID using UUID
-
-//            oldid <> new object with uuid
-
-            Long oldAnswerId = jsonRuleDTO.getAnswerId();
-            Long newAnswerId = answers.get(oldAnswerId).getId();
-            if (newAnswerId == null) {
-                continue;
-            }
 
             ExportRuleDTO ruleDTO = new ExportRuleDTO();
-            ruleDTO.setAnswerId(newAnswerId);
+            Long oldAnswerId = jsonRuleDTO.getAnswerId();
+            if(oldAnswerId != null){
+                // Find the new answer ID using UUID
+                //            oldid <> new object with uuid
+                Long newAnswerId = answers.get(oldAnswerId).getId();
+                if (newAnswerId != null) {
+                    ruleDTO.setAnswerId(newAnswerId);;
+                }
+            }
+
             ruleDTO.setExportField(Collections.singletonList(jsonRuleDTO.getExportField()));
             ruleDTO.setUseFreetextValue(jsonRuleDTO.getUseFreetextValue());
 
