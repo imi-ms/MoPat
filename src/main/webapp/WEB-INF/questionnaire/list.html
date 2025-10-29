@@ -144,7 +144,7 @@
                                                         th:href="@{fill?id=__${item.id}__}"
                                                 >
                                                     <i
-                                                            class="bi-pencil-fill"
+                                                            class="bi-pencil-fill bi-list-icon"
                                                             th:title="${messages.get(#locale, 'questionnaire.button.edit', 'Edit')}"
                                                     ></i>
                                                 </a>
@@ -163,7 +163,7 @@
                                                     th:href="@{/mapping/list?id=__${item.id}__}"
                                                 >
                                                     <i
-                                                        class="bi-share-fill"
+                                                        class="bi-share-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'questionnaire.button.showExportTemplates', 'Show export templates')}"
                                                     ></i>
                                                 </a>
@@ -172,7 +172,7 @@
                                                     th:href="@{/score/list?id=__${item.id}__}"
                                                 >
                                                     <i
-                                                        class="bi-plus-square-fill"
+                                                        class="bi-plus-square-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
                                                     ></i>
                                                 </a>
@@ -221,7 +221,7 @@
                                                     th:href="@{remove?id=__${item.id}__}"
                                                 >
                                                     <i
-                                                        class="bi-trash-fill"
+                                                        class="bi-trash-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Remove')}"
                                                     ></i>
                                                 </a>
