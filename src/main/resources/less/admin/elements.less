@@ -106,6 +106,30 @@
     }
 }
 
+.btn-primary-list {
+    .btn-primary();
+    background-color: @color-btn-primary-list-background;
+    border-color: @color-btn-primary-list-background;
+    color: @color-btn-primary-list;
+
+    &:hover {
+        background-color: @color-btn-primary-list-hover-background;
+        border-color: @color-btn-primary-list-hover-border;
+        color: @color-btn-primary-list-hover;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+        }
+}
+
+.bi-edit-question {
+  display: inline-block;
+  width: 2em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("../../images/edit-question.svg") no-repeat center / contain;
+  -webkit-mask: url("../../images/edit-question.svg") no-repeat center / contain;
+}
+
 input[type=checkbox], input[type=radio] {
     accent-color: @color-blue-light;
 }
