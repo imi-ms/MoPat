@@ -1,7 +1,5 @@
 package de.imi.mopat.io.importer.fhir;
 
-import static org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType.CODING;
-
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
@@ -39,10 +37,12 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.PrePopulatedValidationSupport;
+import org.hl7.fhir.common.hapi.validation.support.RemoteTerminologyServiceValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.hl7.fhir.r5.model.BooleanType;
 import org.hl7.fhir.r5.model.CodeType;
 import org.hl7.fhir.r5.model.Coding;
@@ -52,7 +52,6 @@ import org.hl7.fhir.r5.model.Element;
 import org.hl7.fhir.r5.model.Extension;
 import org.hl7.fhir.r5.model.IntegerType;
 import org.hl7.fhir.r5.model.Questionnaire;
-import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemComponent;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType;
 import org.hl7.fhir.r5.model.QuestionnaireResponse;
@@ -177,6 +176,11 @@ public class FhirR5Helper extends FhirHelper {
             validationSupport.addValidationSupport(prePopulated);
 
             FhirInstanceValidator instanceValidator = new FhirInstanceValidator(validationSupport);
+
+            instanceValidator.setAnyExtensionsAllowed(true);
+            instanceValidator.setErrorForUnknownProfiles(false);
+            instanceValidator.setNoTerminologyChecks(true);
+            instanceValidator.setBestPracticeWarningLevel(BestPracticeWarningLevel.Ignore);
 
             FhirValidator validator = getContext().newValidator();
             validator.registerValidatorModule(instanceValidator);
