@@ -80,7 +80,7 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
         fhirQuestionnaire.setTitleElement(
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
-        fhirQuestionnaire.setLanguage(currentDefaultLanguage);
+        fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
@@ -492,7 +492,7 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
                                             targetQuestions.get(selectAnswerCondition.getTarget())
                                                 .addEnableWhen(enableWhen);
                                         }
-                                    } catch (FHIRException ex) {
+                                    } catch (Exception ex) {
                                         // Log or handle exception if needed
                                     }
                                 }
@@ -576,6 +576,14 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
             return localeList.get(0);
         }
 
+    }
+
+    private String formatLanguageForBcp47(String language) {
+        if (language.contains("_")) {
+            return language.replace("_", "-");
+        } else {
+            return language;
+        }
     }
 
     private List<String> getLocaleListFromQuestionnaire(Questionnaire questionnaire) {
