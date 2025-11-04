@@ -42,6 +42,7 @@ import de.imi.mopat.model.score.Score;
 import de.imi.mopat.validator.QuestionValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,6 +55,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -378,8 +381,8 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public ResponseEntity<ByteArrayResource> downloadQuestionnaire(
         @RequestParam(value = "id", required = true) final Long id,
-        @RequestParam(value = "type", required = true) final String type, final Model model) {
-        // Get the selected questionnaire
+        @RequestParam(value = "type", required = true) final List<String> types,
+        final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
 
         if (questionnaire == null) {
@@ -388,24 +391,66 @@ public class QuestionnaireController {
             return new ResponseEntity<>(null, headers, HttpStatus.FOUND);
         }
 
-        // Get the bytearray of the selected questionnaire in the selected type
-        MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(
-            MetadataFormat.valueOf(type));
+        List<Path> paths = new ArrayList<>();
+        List<byte[]> dataList = new ArrayList<>();
 
-        for (Question question : questionnaire.getQuestions()) {
-            question.setHasConditionsAsTarget(conditionDao.isConditionTarget(question));
+        for (String type : types) {
+            MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(
+                MetadataFormat.valueOf(type));
+
+            for (Question question : questionnaire.getQuestions()) {
+                question.setHasConditionsAsTarget(conditionDao.isConditionTarget(question));
+            }
+
+            byte[] data = exporter.export(questionnaire, messageSource, configurationDao,
+                configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
+
+            // Create a windows-compliant path/filename
+            Path path = Paths.get(
+                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
+                    + "_" + type + MetadataFormat.valueOf(type).getFileExtension());
+
+            paths.add(path);
+            dataList.add(data);
         }
-        byte[] data = exporter.export(questionnaire, messageSource, configurationDao,
-            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
 
-        // Create a windows compliant path/filename and return the download
-        Path path = Paths.get(
-            questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_") + "_"
-                + type + MetadataFormat.valueOf(type).getFileExtension());
-        ByteArrayResource resource = new ByteArrayResource(data);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment;filename=" + path.getFileName().toString()).contentLength(data.length)
-            .body(resource);
+        if (paths.size() == 1) {
+            Path path = paths.get(0);
+            byte[] data = dataList.get(0);
+            ByteArrayResource resource = new ByteArrayResource(data);
+
+            return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment;filename=" + path.getFileName().toString()).contentLength(data.length)
+                .body(resource);
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(
+            baos)) {
+
+            for (int i = 0; i < paths.size(); i++) {
+                Path path = paths.get(i);
+                byte[] data = dataList.get(i);
+
+                ZipEntry entry = new ZipEntry(path.getFileName().toString());
+                zos.putNextEntry(entry);
+                zos.write(data);
+                zos.closeEntry();
+            }
+
+            zos.finish();
+            ByteArrayResource zipResource = new ByteArrayResource(baos.toByteArray());
+
+            String zipName =
+                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
+                    + "_exports.zip";
+
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipName)
+                .contentLength(baos.size()).body(zipResource);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating ZIP file", e);
+        }
     }
 
     /**
