@@ -77,10 +77,11 @@ Before you begin, ensure you have met the following requirements:
 - Create a user named `mopat` in your MySQL database. It is recommended to set a secure password for this user, even if you only test the application locally.
 
 3. Configuration File
-- You can override the standard MoPat configuration by creating a file named `config.properties` under `/etc/mopat/`. This will adjust the application during runtime to use your local settings. To override the database URLs and authentication settings, use the following properties:
+- You can (and should) override the standard MoPat configuration by creating a file named `config.properties` under `/etc/mopat/`. This will adjust the application during runtime to use your local settings without needing to re-build the application. To override the database URLs and authentication settings, use the following properties:
 ```conf
 de.imi.mopat.datasource.user=
 de.imi.mopat.datasource.password=
+de.imi.mopat.passwordPepper=
 de.imi.mopat.datasource.mopatDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
 de.imi.mopat.datasource.mopat_userDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_user?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8
 de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url=jdbc:mysql://localhost:3306/moPat_audit?autoReconnect=true&useUnicode=true&useEncoding=true&characterEncoding=UTF-8

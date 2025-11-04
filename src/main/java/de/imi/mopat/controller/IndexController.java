@@ -18,7 +18,7 @@ public class IndexController {
      */
     @GetMapping
     public String startPage() {
-        return "/mobile/user/login";
+        return "redirect:/mobile/user/login";
     }
 
     /**

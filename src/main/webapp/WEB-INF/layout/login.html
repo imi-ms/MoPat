@@ -29,15 +29,15 @@
 
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.2.0}"
+			th:href="@{/css/bootstrap/bootstrap.min.css?version=3.3.0}"
 		/>
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.2.0}"
+			th:href="@{/css/bootstrap/bootstrap-icons.min.css?version=3.3.0}"
 		/>
 		<link
 			rel="stylesheet"
-			th:href="@{/css/bootstrap/fileinput.min.css?version=3.2.0}"
+			th:href="@{/css/bootstrap/fileinput.min.css?version=3.3.0}"
 		/>
 
 		<th:block
@@ -55,16 +55,16 @@
 		<![endif]-->
 
 		<!--/* JQuery Basics */-->
-		<script th:src="@{/js/jQuery/jquery.min.js?version=3.2.0}"></script>
+		<script th:src="@{/js/jQuery/jquery.min.js?version=3.3.0}"></script>
 
 		<!--/* Modernizr to query specific device types */-->
-		<script th:src="@{/js/modernizr/modernizr-custom.js?version=3.2.0}"></script>
+		<script th:src="@{/js/modernizr/modernizr-custom.js?version=3.3.0}"></script>
 
 		<!--/* Bootstrap */-->
-		<script th:src="@{/js/bootstrap/bootstrap.min.js?version=3.2.0}"></script>
+		<script th:src="@{/js/bootstrap/bootstrap.min.js?version=3.3.0}"></script>
 
 		<!--/* Always import dialog from non mobile helper directory */-->
-		<script th:src="@{/js/helper/dialog.js?version=3.2.0}"></script>
+		<script th:src="@{/js/helper/dialog.js?version=3.3.0}"></script>
 
 		<th:block 
 			layout:replace="~{fragments/resourceFragment :: mobileJS}"
@@ -333,25 +333,7 @@
 							</h1>
 						</div>
 						<div class="modal-body">
-							<div>
-								Universität Münster<br />
-								Schlossplatz 2, 48149 Münster<br />
-								Telephone: +49 (251) 83-0<br />
-								Fax: +49 (251) 83-3 20 90<br />
-								E-mail: verwaltung@uni-muenster.de<br /><br />
-								The University of Münster is a statutory body and an institution
-								of the Land of North Rhine- Westphalia. It is represented by the
-								Rector, Professor Dr. Johannes Wessels.<br /><br />
-								Turnover tax identification number: DE 126118759<br /><br />
-								Edited in accordance with §5 TMG by:<br />
-								Univ.-Prof. Dr. rer. nat. Dominik Heider<br />
-								Institute of Medical Informatics<br />
-								Albert-Schweizer-Campus 1, Building A11<br />
-								48149 Münster, Germany<br />
-								Telephone: +49 (251) 83-55262<br />
-								E-mail:
-								<a href="mailto:imi@uni-muenster.de">imi@uni-muenster.de</a
-								><br />
+							<div th:utext="${configurationDao?.imprintText}">
 							</div>
 						</div>
 						<div class="modal-footer">

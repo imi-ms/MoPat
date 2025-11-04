@@ -43,9 +43,10 @@
 			>
 				<colgroup>
 					<col width="20%" />
-					<col width="20%" />
-					<col width="20%" />
-					<col width="22%" />
+					<col width="15%" />
+					<col width="15%" />
+					<col width="16%" />
+					<col width="16%" />
 					<col width="18%" />
 				</colgroup>
 				<thead>
@@ -64,6 +65,9 @@
 							th:text="${messages.get(#locale, 'questionnaire.label.containedInBundles', 'Contained in bundles:')}"
 						></th>
 						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.createdAt', 'Created At')}"
+						></th>
+						<th
 							data-priority="2"
 							class="actionColumn"
 							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
@@ -73,7 +77,7 @@
 				<tbody>
 					<th:block th:if="not ${#lists.isEmpty(allQuestionnaires)}">
 						<th:block th:each="item: ${allQuestionnaires}">
-							<tr>
+							<tr th:id="${item.id}">
 								<td>
 									<th:block th:if="not ${#strings.isEmpty(item.name)}">
 										<a
@@ -124,6 +128,11 @@
 											</li>
 										</th:block>
 									</ul>
+								</td>
+								<td style="text-align: left">
+									<th:block th:if="not ${#strings.isEmpty(item.createdAt)}">
+											<th:block th:text="${localeHelper.formatDate(item.createdAt)}" />
+									</th:block>
 								</td>
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
@@ -216,6 +225,7 @@
 												</div>
 											</div>
 											<a
+												th:id="'removeQuestionnaire_' + ${item.id}"
 												class="link removeQuestionnaireLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}"
 												th:href="@{remove?id=__${item.id}__}"
@@ -357,13 +367,23 @@
 			$('#questionnaireTable').DataTable({
 				"deferRender": true,
 				"paging": true,
-				"ordering": false,
+				"ordering": true,
+				"columnDefs": [
+					{ 
+						orderable: false, 
+						targets: [1,2,3,5] 
+					},
+					{ 
+						type: 'custom-date',
+						targets: 4
+					}
+				],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")
 					$('#questionnaireTable').fadeIn(); // Show the table
 				}
-			});
+			}).column(4).order('desc').draw();
 		});
 
 		var deleteQuestionnaireWithConditions =

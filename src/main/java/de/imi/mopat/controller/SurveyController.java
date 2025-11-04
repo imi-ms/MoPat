@@ -300,32 +300,37 @@ public class SurveyController {
         if (patientDataService.equalsIgnoreCase("searchHIS")) {
             PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicId);
             if (patientDataRetriever != null) {
-                EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
-                    activeClinic,
-                    caseNumber
-                );
-
-                if (retrievedEncounter != null) {
-                    if (retrievedEncounter.getBirthdate() != null
-                        && retrievedEncounter.getBirthdate().before(new java.util.Date())) {
-                        encounterDTO.setBirthdate(retrievedEncounter.getBirthdate());
+                try{
+                    EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
+                        activeClinic,
+                        caseNumber
+                    );
+                    if (retrievedEncounter != null) {
+                        if (retrievedEncounter.getBirthdate() != null
+                            && retrievedEncounter.getBirthdate().before(new java.util.Date())) {
+                            encounterDTO.setBirthdate(retrievedEncounter.getBirthdate());
+                        }
+                        if (retrievedEncounter.getFirstname() != null
+                            && !retrievedEncounter.getFirstname().trim().isEmpty()) {
+                            encounterDTO.setFirstname(retrievedEncounter.getFirstname());
+                        }
+                        if (retrievedEncounter.getLastname() != null
+                            && !retrievedEncounter.getLastname().trim().isEmpty()) {
+                            encounterDTO.setLastname(retrievedEncounter.getLastname());
+                        }
+                        encounterDTO.setGender(retrievedEncounter.getGender());
+                        if (retrievedEncounter.getPatientID() != null
+                            && retrievedEncounter.getPatientID() > 0) {
+                            encounterDTO.setPatientID(retrievedEncounter.getPatientID());
+                        }
+                    } else {
+                        result.reject("not.found",
+                            messageSource.getMessage("survey.error" + ".noSuchPatient", new Object[]{},
+                                LocaleContextHolder.getLocale()));
                     }
-                    if (retrievedEncounter.getFirstname() != null
-                        && !retrievedEncounter.getFirstname().trim().isEmpty()) {
-                        encounterDTO.setFirstname(retrievedEncounter.getFirstname());
-                    }
-                    if (retrievedEncounter.getLastname() != null
-                        && !retrievedEncounter.getLastname().trim().isEmpty()) {
-                        encounterDTO.setLastname(retrievedEncounter.getLastname());
-                    }
-                    encounterDTO.setGender(retrievedEncounter.getGender());
-                    if (retrievedEncounter.getPatientID() != null
-                        && retrievedEncounter.getPatientID() > 0) {
-                        encounterDTO.setPatientID(retrievedEncounter.getPatientID());
-                    }
-                } else {
-                    result.reject("not.found",
-                        messageSource.getMessage("survey.error" + ".noSuchPatient", new Object[]{},
+                } catch (NullPointerException e){
+                    result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage("encounter.error" + ".caseNumberIsEmpty", new Object[]{},
                             LocaleContextHolder.getLocale()));
                 }
             }

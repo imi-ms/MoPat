@@ -68,4 +68,15 @@ public class ClinicService {
     public void merge(Clinic clinic) {
         clinicDao.merge(clinic);
     }
+
+    /**
+     * Returns the list of clinics sorted by their name property (ascending).
+     *
+     * @param clinics to sort
+     * @return sorted List<Clinic>
+     */
+    public List<Clinic> sortClinicsByNameAsc(List<Clinic> clinics) {
+        clinics.sort(Comparator.comparing(clinic -> clinic.getName().toLowerCase()));
+        return clinics;
+    }
 }

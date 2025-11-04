@@ -10,9 +10,11 @@ import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.SelectAnswer;
+import de.imi.mopat.model.SliderAnswer;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionActionType;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -94,17 +96,15 @@ public class ConditionController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/condition/edit</i> Shows the page containing
-     * the form fields for editing a condition {@link Condition} object.
+     * Controls the HTTP GET requests for the URL <i>/condition/edit</i> Shows the page containing the form fields for
+     * editing a condition {@link Condition} object.
      *
      * @param conditionId             :The id of the {@link Condition}.
-     * @param questionId              :The id of the {@link Question} to which the {@link Condition}
-     *                                belongs.
+     * @param questionId              :The id of the {@link Question} to which the {@link Condition} belongs.
      * @param action                  :The name of the submit button which has been clicked.
-     * @param thresholdValue          :The value for the threshold the {@link Condition} will be
-     *                                triggered.
-     * @param thresholdComparisonType The operator ({@link ThresholdComparisonType}) for the
-     *                                comparison with the thresholdValue.
+     * @param thresholdValue          :The value for the threshold the {@link Condition} will be triggered.
+     * @param thresholdComparisonType The operator ({@link ThresholdComparisonType}) for the comparison with the
+     *                                thresholdValue.
      * @param model                   :The model, which holds the information for the view.
      * @param answerId                :The id of the answer to get
      * @return The <i>condition/edit</i> website.
@@ -173,7 +173,7 @@ public class ConditionController {
          complex.
          */
         for (BundleQuestionnaire currentBundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
-            BundleDTO bundleDTO = bundleDTOMapper.apply(true,currentBundleQuestionnaire.getBundle());
+            BundleDTO bundleDTO = bundleDTOMapper.apply(true, currentBundleQuestionnaire.getBundle());
 
             boolean hasAssignedBundleQuestionnaire = false;
             // If there is one questionnaire in this bundle after the current
@@ -209,13 +209,33 @@ public class ConditionController {
             if (question.getQuestionType() == QuestionType.SLIDER
                 || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX
                 || question.getQuestionType() == QuestionType.NUMBER_INPUT) {
+                Answer answer;
                 if (answerId != null) {
-                    conditionDTO.setThresholdValue(thresholdValue);
+                    answer = answerDao.getElementById(answerId);
                     conditionDTO.setThresholdType(
                         ThresholdComparisonType.valueOf(thresholdComparisonType));
                 } else {
-                    conditionDTO.setThresholdValue(0d);
+                    answer = answerDao.getElementById(question.getAnswers().get(0).getId());
                     conditionDTO.setThresholdType(ThresholdComparisonType.SMALLER_THAN);
+                }
+                Double minValue = 0d;
+                Double maxValue = 0d;
+                if (answer instanceof NumberInputAnswer) {
+                    minValue = ((NumberInputAnswer) answer).getMinValue();
+                    maxValue = ((NumberInputAnswer) answer).getMaxValue();
+                } else if (answer instanceof SliderAnswer) {
+                    minValue = ((SliderAnswer) answer).getMinValue();
+                    maxValue = ((SliderAnswer) answer).getMaxValue();
+                }
+
+                if (thresholdValue != null && thresholdValue >= minValue && thresholdValue <= maxValue) {
+                    conditionDTO.setThresholdValue(thresholdValue);
+                } else if (thresholdValue != null && thresholdValue < minValue) {
+                    conditionDTO.setThresholdValue(minValue);
+                } else if (thresholdValue != null && thresholdValue > maxValue) {
+                    conditionDTO.setThresholdValue(maxValue);
+                } else {
+                    conditionDTO.setThresholdValue(minValue);
                 }
             }
             conditionDTOs.add(conditionDTO);
@@ -234,14 +254,12 @@ public class ConditionController {
     }
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/condition/edit</i>. Takes the form fields for
-     * editing a {@link Condition} object and save it.
+     * Controls the HTTP POST requests for the URL <i>/condition/edit</i>. Takes the form fields for editing a
+     * {@link Condition} object and save it.
      *
      * @param postAction       :Verifies which submit button was used.
-     * @param questionId       :The id of the {@link Question} to which the {@link Condition}
-     *                         belongs.
-     * @param conditionListDTO The {@link ConditionListDTO} object that holds the
-     *                         {@link Condition Conditions} to edit.
+     * @param questionId       :The id of the {@link Question} to which the {@link Condition} belongs.
+     * @param conditionListDTO The {@link ConditionListDTO} object that holds the {@link Condition Conditions} to edit.
      * @param result           :The result for validation of the conditionListDTO object.
      * @param model            :The model, which holds the information for the view.
      * @return The <i>condition/listQuestionConditions</i> website.
@@ -295,8 +313,7 @@ public class ConditionController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/condition/remove</i>. Removes an existing
-     * condition,
+     * Controls the HTTP GET requests for the URL <i>/condition/remove</i>. Removes an existing condition,
      *
      * @param conditionId conditionId The id of the {@link Condition}.
      * @param questionId  The id of the {@link Question} to which the {@link Condition} belongs.

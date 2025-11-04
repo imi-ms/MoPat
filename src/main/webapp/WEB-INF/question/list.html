@@ -51,6 +51,7 @@
 
 		<div class="table-responsive">
 			<table
+				id="questionTable"
 				class="sortable table table-hover responsive"
 				style="width: 100%"
 			>
@@ -101,9 +102,9 @@
 						</td>
 					</tr>
 					<th:block th:each="item, questionCounter: ${questionnaire.questions}">
-						<tr th:id="${item.id}">
+						<tr th:id="${item.id}" th:data-question-type="${item.questionType.name}">
 							<td>
-								<i class="bi bi-large bi-grip-vertical bi-action"></i>
+								<i th:id="|grip-${item.id}|" class="bi bi-large bi-grip-vertical bi-action"></i>
 							</td>
 							<td>
 								<th:block th:text="|${item.position}.|" />
@@ -213,19 +214,18 @@
 											</th:block>
 										</th:block>
 									</th:block>
-									<th:block
-										th:if="${item.position lt questionnaire.questions.size() || #bools.isTrue(vars['questionConditionable'])}"
-									>
 										<th:block
-											th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or 
+											th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or
                                                     item.questionType.name == 'SLIDER' or 
                                                     item.questionType.name  == 'NUMBER_CHECKBOX' or 
                                                     item.questionType.name == 'NUMBER_INPUT' or 
                                                     item.questionType.name == 'DROP_DOWN'}"
 										>
 											<a
-												class="link"
+												class="link condition-button"
+												th:data-question-id="${item.id}"
 												th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
+												th:style="${item.position == questionnaire.questions.size() ? 'display: none;' : ''}"
 											>
 												<i
 													class="bi-signpost-split-fill"
@@ -233,11 +233,10 @@
 												></i>
 											</a>
 										</th:block>
-									</th:block>
 									<a
 										class="link"
 										th:href="@{remove?id=__${item.id}__}"
-										th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+										th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
 									>
 										<i
 											class="bi-trash-fill"
@@ -313,11 +312,8 @@
 												</th:block>
 											</th:block>
 
-											<th:block
-												th:if="${item.position lt questionnaire.questions.size() || #bools.isTrue(vars['questionConditionable'])}"
-											>
 												<a
-													th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or 
+													th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or
                                                     item.questionType.name == 'SLIDER' or 
                                                     item.questionType.name  == 'NUMBER_CHECKBOX' or 
                                                     item.questionType.name == 'NUMBER_INPUT' or 
@@ -325,14 +321,14 @@
 													class="link"
 													th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
 													th:text="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
+													th:style="${item.position == questionnaire.questions.size() ? 'display: none;' : ''}"
 												>
 												</a>
-											</th:block>
 
 											<a
 												class="link"
 												th:href="@{remove?id=__${item.id}__}"
-												th:onclick="return confirm_delete(__${item.isDeletable()}__, __${item.hasExportRule()}__, __${item.hasConditionsAsTrigger()}__, __${item.hasConditionsAsTarget()}__, __${item.hasScores()}__);"
+												th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
 												th:text="${messages.get(#locale, 'question.button.remove', 'Remove')}"
 											>
 											</a>
@@ -374,101 +370,47 @@
 		th:inline="javascript"
 		type="text/javascript"
 	>
-		var textQuestionRepositionSuccess =
-			/*[[#{questionnaire.questions.reposition.success}]]*/ "Questions successfully repositioned.";
-		var textQuestionRepositionError =
-			/*[[#{questionnaire.questions.reposition.error}]]*/ "Error! Questions could not be repositioned.";
-		var labelDeleteQuestionNotPossible =
-			/*[[#{question.label.deleteQuestionNotPossible}]]*/ "Question can not be deleted because the question is already answered in a survey.";
-		var labelDeleteQuestionWarningStart =
-			/*[[#{question.label.deleteQuestionWarningStart}]]*/ "The removal of the question will also delete the following:";
-		var labelDeleteQuestionWarningConditions =
-			/*[[#{question.label.changeQuestionTypeWarningConditions}]]*/ "Conditions";
-		var labelDeleteQuestionWarningExportRules =
-			/*[[#{question.label.changeQuestionTypeWarningExportRules}]]*/ "Export rules";
-		var labelDeleteQuestionWarningScores =
-			/*[[#{question.label.changeQuestionTypeWarningScores}]]*/ "Scores";
-		var labelDeleteQuestionWarningEnd =
-			/*[[#{question.label.changeQuestionTypeWarningEnd}]]*/ "Do you really want to continue?";
+	document.addEventListener("DOMContentLoaded", function () {
+		const notification = document.getElementById("notification");
+		const sortableTable = document.querySelector(".sortable tbody");
+		const emptyRow = document.querySelector("tr#emptyRow");
+		const questionnaireId = /*[[${questionnaire.id}]]*/ "";
+		let originalOrder = [];
 
-		if ($(".sortable tbody").children().length === 1) {
-			$(".sortable tbody")
-				.children("tr#emptyRow")[0]
-				.setAttribute("style", "display: table-row");
-		}
-		if ($(".sortable tbody").children().length > 1) {
-			$(".sortable tbody")
-				.children("tr#emptyRow")[0]
-				.setAttribute("style", "display: none");
-		}
+		// Localised messages for reposition & delete
+		const messages = {
+			repositionSuccess: /*[[#{questionnaire.questions.reposition.success}]]*/ "Questions successfully repositioned.",
+			repositionError: /*[[#{questionnaire.questions.reposition.error}]]*/ "Error! Questions could not be repositioned."
+		};
 
-		$("#notification").hide();
+		const labels = {
+			deleteNotPossible: /*[[#{question.label.deleteQuestionNotPossible}]]*/ "Question cannot be deleted because it is already answered in a survey.",
+			deleteWarningStart: /*[[#{question.label.deleteQuestionWarningStart}]]*/ "The removal of the question will also delete the following:",
+			deleteWarningConditions: /*[[#{question.label.changeQuestionTypeWarningConditions}]]*/ "Conditions",
+			deleteWarningExportRules: /*[[#{question.label.changeQuestionTypeWarningExportRules}]]*/ "Export rules",
+			deleteWarningScores: /*[[#{question.label.changeQuestionTypeWarningScores}]]*/ "Scores",
+			deleteWarningEnd: /*[[#{question.label.changeQuestionTypeWarningEnd}]]*/ "Do you really want to continue?"
+		};
 
-		var questionnaireId = /*[[${questionnaire.id}]]*/ "";
-		/*[- making every element with class 'sortable' moveable, with certain reaction after dropping it -]*/
-		$(".sortable tbody")
-			.sortable({
-				items: "tr:not(:first)",
-				animation:150,
-				easing: "cubic-bezier(1, 0, 0, 1)",
-				handle: ".bi-grip-vertical",
-				filter: ".notDraggable",
-				onUpdate: function (e) {
-					/*[- receive all question ids in their latest order after element is dropped -]*/
-					var orderedQuestionIds = new Array();
-					$.each(
-						$(e.item).parent().children("tr:not(:first)"),
-						function (index, value) {
-							orderedQuestionIds[index] = $(value).attr("id");
-						}
-					);
+		new Sortable(sortableTable, {
+			items: "tr:not(:first)",
+			animation:150,
+			easing: "cubic-bezier(1, 0, 0, 1)",
+			handle: ".bi-grip-vertical",
+			filter: ".notDraggable",
+			onStart: saveOriginalOrder,
+			onEnd: updateQuestionOrder
+		});
 
-					/*[- since there is no 'save' button or anything similar, we tell the server to update the order of questions with ajax directly after each drop -]*/
-					$.ajax({
-						url: "reposition",
-						data:
-							"questionnaireId=" +
-							questionnaireId +
-							"&questionIds=" +
-							orderedQuestionIds,
-						dataType: "text",
-						error: function (jqXHR, textStatus, errorThrown) {
-							showMessage(textQuestionRepositionError, true);
-
-							/*[- Revert to original order -]*/
-							return false; 
-						},
-						success: function (data, textStatus, jqXHR) {
-							/*[- moving a question worked, thus the numbers in the list can be updated -]*/
-							if (data === "") {
-								$.each(
-									$(e.item).parent().children("tr:not(:first)"),
-									function (index, value) {
-										this.children[1].innerHTML = index + 1 + ".";
-									}
-								);
-								showMessage(textQuestionRepositionSuccess, false);
-								/*[- If a condition target was before its trigger cancel repositioning and show error message -]*/
-							} else {
-								showMessage(data, true);
-								/*[- Revert to original order -]*/
-								return false;
-							}
-						},
-					});
-				},
-			});
+		if (notification) notification.style.display = "none";
+		toggleEmptyRow();
 
 		function showMessage(message, isError) {
-			$("#notification").text(message);
-
-			$("#notification").removeClass("alert-success alert-danger");
-			if (isError) {
-				$("#notification").addClass("alert-danger");
-			} else {
-				$("#notification").addClass("alert-success");
-			}
-			/*[- If the animation is already running, stop it, and restart the fadeOut timer -]*/
+			if (!notification) return;
+			notification.textContent = message;
+			notification.classList.remove("alert-success", "alert-danger");
+			notification.classList.add(isError ? "alert-danger" : "alert-success");
+			notification.style.display = "block";
 			$("#notification").stop().fadeOut(0).fadeIn(0).fadeOut(5000);
 		}
 		/*[- 
@@ -476,15 +418,9 @@
         --- warns about appended conditions and export rules      
         --- with a custom made message
         -]*/
-		function confirm_delete(
-			isDeletable,
-			hasExportRule,
-			hasConditionsAsTrigger,
-			hasConditionsAsTarget,
-			hasScores
-		) {
+		window.confirm_delete = function (isDeletable, hasExportRule, hasConditionsAsTrigger, hasConditionsAsTarget, hasScores) {
 			if (!isDeletable) {
-				alert(labelDeleteQuestionNotPossible);
+				alert(labels.deleteNotPossible);
 				return false;
 			}
 			if (
@@ -493,20 +429,90 @@
 				hasConditionsAsTarget ||
 				hasScores
 			) {
-				var message = labelDeleteQuestionWarningStart + "\n\n";
+				var message = labels.deleteWarningStart + "\n\n";
 				if (hasConditionsAsTrigger || hasConditionsAsTarget) {
-					message += "\u2022 " + labelDeleteQuestionWarningConditions + "\n";
+					message += "\u2022 " + labels.deleteWarningConditions + "\n";
 				}
 				if (hasExportRule) {
-					message += "\u2022 " + labelDeleteQuestionWarningExportRules + "\n";
+					message += "\u2022 " + labels.deleteWarningExportRules + "\n";
 				}
 				if (hasScores) {
-					message += "\u2022 " + labelDeleteQuestionWarningScores + "\n";
+					message += "\u2022 " + labels.deleteWarningScores + "\n";
 				}
-				message += "\n" + labelDeleteQuestionWarningEnd;
+				message += "\n" + labels.deleteWarningEnd;
 				return confirm(message);
 			}
 			return true;
 		}
+
+		function toggleEmptyRow() {
+			if (!emptyRow) return;
+			emptyRow.style.display = sortableTable.children.length > 1 ? "none" : "table-row";
+		}
+
+		function saveOriginalOrder() {
+			originalOrder = Array.from(sortableTable.querySelectorAll("tr:not(:first-child)"))
+				.map(row => row.id);
+		}
+
+		function restoreOriginalOrder() {
+			const rows = Array.from(sortableTable.children);
+			originalOrder.forEach((id) => {
+				const row = rows.find(r => r.id === id);
+				if (row) sortableTable.appendChild(row);
+			});
+		}
+
+		function updateQuestionOrder() {
+			const orderedQuestionIds = Array.from(sortableTable.querySelectorAll("tr:not(:first-child)"))
+				.map(row => row.id);
+
+			fetch("reposition", {
+				method: "POST",
+				headers: { "Content-Type": "application/x-www-form-urlencoded" },
+				body: `questionnaireId=${questionnaireId}&questionIds=${orderedQuestionIds.join(",")}`
+			})
+			.then(response => response.text())
+			.then(data => {
+				if (!data) {
+					orderedQuestionIds.forEach((id, index) => {
+						document.getElementById(id).children[1].textContent = `${index + 1}.`;
+					});
+					showMessage(messages.repositionSuccess, false);
+					updateConditionButtons();
+				} else {
+					showMessage(data, true);
+					restoreOriginalOrder();
+				}
+			})
+			.catch(() => {
+				showMessage(messages.repositionError, true);
+				restoreOriginalOrder();
+			});
+		}
+
+		function updateConditionButtons() {
+			const rows = document.querySelectorAll(".sortable tbody tr:not(#emptyRow)");
+			if (rows.length === 0) return;
+
+			const lastQuestionRow = rows[rows.length - 1];
+
+			document.querySelectorAll(".condition-button").forEach(button => {
+				let questionId = button.getAttribute("data-question-id");
+				let questionRow = document.getElementById(questionId);
+
+				if (questionRow === lastQuestionRow && isConditionable(questionRow)) {
+					button.style.display = "none";
+				} else {
+					button.style.display = "inline";
+				}
+			});
+		}
+
+		function isConditionable(questionRow) {
+			const questionType = questionRow.getAttribute("data-question-type");
+			return ["MULTIPLE_CHOICE", "SLIDER", "NUMBER_CHECKBOX", "NUMBER_INPUT", "DROP_DOWN"].includes(questionType);
+		}
+	});
 	</script>
 </th:block>

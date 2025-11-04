@@ -89,4 +89,7 @@ public abstract class Constants {
     public static final String WEBBAPP_ROOT_PATH = "webappRootPath";
 
     public static final String ENABLE_GLOBAL_PIN_AUTH = "enableGlobalPinAuth";
+
+    // Configuration: The name of the attribute for the Imprint text message
+    public static final String IMPRINT_TEXT = "imprintText";
 }

@@ -20,6 +20,7 @@
 		>
 			<div class="select-wrapper w-100">
 				<select
+					id="clinic-selection"
 					th:field="*{id}"
 					class="btn select-mobile w-100"
 					onchange="this.form.submit()"
@@ -197,6 +198,7 @@
 								value=""
 								th:type="${not #strings.isEmpty(caseNumberType)} ? ${caseNumberType} : 'text'"
 								autocomplete="off"
+								id="caseNumber"
 								autocorrect="off"
 								autocapitalize="off"
 								spellcheck="false"
@@ -650,8 +652,9 @@
 					.decodeFromInputVideoDevice(videoDeviceId, "video")
 					.then(function (result) {
 						document.getElementById("caseNumber").value = result.text;
-						$("#videoModal").hide();
+						$("#videoModal").modal('hide');
 						codeReader.reset();
+						checkCaseNumber($("#caseNumber"))
 						$("#checkButton").click();
 					})
 					.catch(function (err) {});
