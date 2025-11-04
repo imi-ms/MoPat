@@ -22,6 +22,15 @@ public class MetadataExporterFactory {
 
     @Autowired
     private MetadataExporterODMExportTemplate metadataExporterODMExportTemplate;
+
+    @Autowired
+    private MetadataExporterFhirDstu3 metadataExporterFhirDstu3;
+
+    @Autowired
+    private MetadataExporterFhirR4b metadataExporterFhirR4b;
+
+    @Autowired
+    private MetadataExporterFhirR5 metadataExporterFhirR5;
     /**
      * Returns a {@link MetadataExporter} for the given {@link MetadataFormat}.
      *
@@ -37,11 +46,11 @@ public class MetadataExporterFactory {
             case PDF:
                 return metadataExporterPDF;
             case FHIRDSTU3:
-                return new MetadataExporterFhirDstu3();
+                return metadataExporterFhirDstu3;
             case FHIRR4B:
-                return new MetadataExporterFhirR4b();
+                return metadataExporterFhirR4b;
             case FHIRR5:
-                return new MetadataExporterFhirR5();
+                return metadataExporterFhirR5;
             case ODMExportTemplate:
                 return metadataExporterODMExportTemplate;
             default:

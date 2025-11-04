@@ -11,7 +11,6 @@ import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.FreetextAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -31,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r5.model.CodeType;
 import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.DateType;
@@ -47,10 +45,12 @@ import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemOperator;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemType;
 import org.hl7.fhir.r5.model.StringType;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for FHIR metadata reprasentation of a {@link Questionnaire}.
  */
+@Service
 public class MetadataExporterFhirR5 implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(

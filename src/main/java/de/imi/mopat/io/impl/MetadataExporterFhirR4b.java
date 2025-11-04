@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4b.model.CodeType;
 import org.hl7.fhir.r4b.model.Coding;
 import org.hl7.fhir.r4b.model.DateType;
@@ -45,10 +44,12 @@ import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemOperator;
 import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType;
 import org.hl7.fhir.r4b.model.StringType;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for FHIR metadata reprasentation of a {@link Questionnaire}.
  */
+@Service
 public class MetadataExporterFhirR4b implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
