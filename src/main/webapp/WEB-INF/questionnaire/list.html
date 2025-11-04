@@ -173,57 +173,15 @@
 													th:title="${messages.get(#locale, 'questionnaire.button.editScores', 'Edit scores')}"
 												></i>
 											</a>
+											<a
+												class="link"
+												data-bs-toggle="modal"
+												th:attr="data-bs-target=|#downloadPopup__${item.id}__|"
+												role="button"
+											>
+												<i class="bi-download"></i>
+											</a>
 
-											<div class="dropdown">
-												<a class="dropdown-icon link"
-													><i class="bi-download"></i
-												></a>
-												<div class="dropdown-content">
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=FHIRDSTU3}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-														>FHIR STU3</a
-													>
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=FHIRR4B}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-														>FHIR R4B</a
-													>
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=FHIRR5}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-														>FHIR R5</a
-													>
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=MoPat}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.mopat', 'Download questionnaire in MoPat format')}"
-														>MoPat</a
-													>
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=ODM}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.odm', 'Download questionnaire in ODM format')}"
-														>ODM</a
-													>
-													<a
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=ODMExportTemplate}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.odmExportTemplate', 'Download questionnaire as ODM export template')}"
-														>ODM Export Template</a
-													>
-													<a
-														disabled="disabled"
-														class="link"
-														th:href="@{download?id=__${item.id}__&type=PDF}"
-														th:title="${messages.get(#locale, 'questionnaire.button.download.pdf', 'Download questionnaire in PDF format')}"
-														>PDF</a
-													>
-												</div>
-											</div>
 											<a
 												th:id="'removeQuestionnaire_' + ${item.id}"
 												class="link removeQuestionnaireLink"
@@ -237,6 +195,9 @@
 											</a>
 										</th:block>
 									</div>
+
+									<th:block layout:replace="~{fragments/downloadQuestionnaireModal :: downloadQuestionnaireModal(item=${item})}"/>
+
 									<!--/*Action dropdown for smaller resolutions*/-->
 									<div class="d-block d-xl-none">
 										<a
@@ -274,59 +235,16 @@
 												></a>
 												<a
 													class="link"
+													data-bs-toggle="modal"
+													th:attr="data-bs-target=|#downloadPopup__${item.id}__|"
+													th:text="${messages.get(#locale, 'questionnaire.button.download', 'Download')}"
+												></a>
+												<a
+													class="link"
 													th:attr="data-hasConditions=${item.isHasConditions()}"
 													th:href="@{remove?id=__${item.id}__}"
 													th:text="${messages.get(#locale, 'questionnaire.button.remove', 'Remove')}"
 												></a>
-
-												<span
-													class="optionsTitle"
-													th:text="${messages.get(#locale, 'questionnaire.button.download', 'Download')}"
-												></span>
-
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=FHIRDSTU3}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-													>FHIR STU3</a
-												>
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=FHIRR4B}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-													>FHIR R4B</a
-												>
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=FHIRR5}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.fhir', 'Download questionnaire in FHIR format')}"
-													>FHIR R5</a
-												>
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=MoPat}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.mopat', 'Download questionnaire in MoPat format')}"
-													>MoPat</a
-												>
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=ODM}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.odm', 'Download questionnaire in ODM format')}"
-													>ODM</a
-												>
-												<a
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=ODMExportTemplate}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.odmExportTemplate', 'Download questionnaire as ODM export template')}"
-													>ODM Export Template</a
-												>
-												<a
-													disabled="disabled"
-													class="link"
-													th:href="@{download?id=__${item.id}__&type=PDF}"
-													th:title="${messages.get(#locale, 'questionnaire.button.download.pdf', 'Download questionnaire in PDF format')}"
-													>PDF</a
-												>
 											</th:block>
 										</th:block>
 									</div>
@@ -407,5 +325,35 @@
 				e.preventDefault();
 			}
 		});
+
+		/*<![CDATA[*/
+		function toggleDownloadButton(element) {
+			let isAnyButtonSelected = $('input[data-name="downloadType"]:checked').length > 0;
+			$(`#confirmDownload${$(element).data('value')}`).prop('disabled', !isAnyButtonSelected);
+		}
+
+		function downloadQuestionnaire(element) {
+			const selected = $('input[data-name="downloadType"]:checked');
+			if (!selected.length) return;
+
+			const itemId = $(selected).data('value');
+
+			let typeString = "";
+			selected.each(function(index) {
+				const type = $(this).val();
+				typeString += `,${type}`;
+			});
+			typeString = typeString.substring(1, typeString.length);
+
+			window.location.href = `download?id=${itemId}&type=${typeString}`;
+		}
+
+
+		$('div[data-name="downloadPopup"]').on("hidden.bs.modal", function () {
+			$('input[data-name="downloadType"]').prop('checked', false);
+			$('button[data-name="confirmDownload"]').attr('disabled', 'disabled');
+		});
+		/*]]>*/
+
 	</script>
 </th:block>
