@@ -134,9 +134,9 @@
 								</th:block>
 							</td>
 							<td class="actionColumn">
-								<div class="d-none d-xl-block">
+								<div class="d-none d-xl-block button-group" role="group">
 									<a
-										class="link"
+										class="btn btn-sm btn-primary-list link"
 										th:href="@{fill?id=__${item.id}__}"
 									>
 										<i
@@ -147,7 +147,7 @@
 									</a>
 									<a
 										th:if="${item.isPublished == true && item.isModifiable() == true}"
-										class="link"
+										class="btn btn-sm btn-primary-list link"
 										th:href="@{togglepublish?id=__${item.id}__}"
 									>
 										<i
@@ -158,7 +158,7 @@
 									</a>
 									<a
 										th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
-										class="link"
+										class="btn btn-sm btn-primary-list link"
 										th:href="@{togglepublish?id=__${item.id}__}"
 									>
 										<i
@@ -168,7 +168,7 @@
 										</i>
 									</a>
 									<a
-										class="link removeBundleLink"
+										class="btn btn-sm btn-primary-list link removeBundleLink"
 										th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
 										th:href="@{remove?id=__${item.id}__}"
 									>

@@ -75,10 +75,10 @@
                                 </th:block>
                             </td>
                             <td class="actionColumn">
-                                <div class="d-none d-xl-block">
+                                <div class="d-none d-xl-block button-group" role="group">
                                     <th:block th:fragment="actionFragment">
                                         <a
-                                            class="link"
+                                            class="btn btn-sm btn-primary-list link"
                                             th:href="@{edit?id=__${item.id}__}"
                                         >
                                             <i
@@ -88,7 +88,7 @@
                                             </i>
                                         </a>
                                         <a
-                                            class="link"
+                                            class="btn btn-sm btn-primary-list link"
                                             th:href="@{refresh?id=__${item.id}__}"
                                         >
                                             <i
@@ -98,7 +98,7 @@
                                             </i>
                                         </a>
                                         <a
-                                            class="link"
+                                            class="btn btn-sm btn-primary-list link"
                                             th:href="@{remove?id=__${item.id}__}"
                                         >
                                             <i

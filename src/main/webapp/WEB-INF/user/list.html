@@ -127,10 +127,10 @@
 									/>
 								</td>
 								<td class="actionColumn">
-									<div class="d-none d-xl-block">
+									<div class="d-none d-xl-block button-group" role="group">
 										<th:block th:if="${#bools.isTrue(item.isEnabled)}">
 											<a
-												class="link"
+												class="btn btn-sm btn-primary-list link"
 												th:href="|toggleenabled?id=${item.id}|"
 											>
 												<i
@@ -142,7 +142,7 @@
 										</th:block>
 										<th:block th:unless="${#bools.isTrue(item.isEnabled)}">
 											<a
-												class="link"
+												class="btn btn-sm btn-primary-list link"
 												th:href="|toggleenabled?id=${item.id}|"
 											>
 												<i
@@ -153,7 +153,7 @@
 											</a>
 										</th:block>
 										<a
-											class="link"
+											class="btn btn-sm btn-primary-list link"
 											th:href="|rights?id=${item.id}|"
 										>
 											<i
