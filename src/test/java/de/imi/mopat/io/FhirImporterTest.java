@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -175,6 +176,11 @@ public class FhirImporterTest {
                     any(ConfigurationGroupDao.class), any(ExportTemplateDao.class)))
                 .thenAnswer(invocation -> null);
         }
+    }
+
+    @After
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @BeforeClass
