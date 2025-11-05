@@ -179,7 +179,7 @@ public class FhirImporterTest {
     }
 
     @After
-    void tearDown() {
+    public void tearDown() {
         SecurityContextHolder.clearContext();
     }
 
