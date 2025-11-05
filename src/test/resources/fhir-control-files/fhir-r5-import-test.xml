@@ -1,5 +1,5 @@
 <Questionnaire xmlns="http://hl7.org/fhir">
-   <language value="en"></language>
+   <language value="en-GB"></language>
    <name value="Demo Questionnaire"></name>
    <title value="Demo Questionnaire">
       <extension url="http://hl7.org/fhir/StructureDefinition/translation">
