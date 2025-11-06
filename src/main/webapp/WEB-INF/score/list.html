@@ -31,25 +31,27 @@
 							<tr th:id="${item.id}">
 								<td th:text="${item.name}"></td>
 								<td class="actionColumn">
-									<a
-										class="link"
-										th:href="@{fill?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
-									>
-										<i
-											class="bi-pencil-fill"
-											th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
-										></i>
-									</a>
-									<a
-										class="link"
-										th:href="@{remove?id=__${item.id}__}"
-										th:onclick="|return confirm_delete(__${item.hasExportRules()}__, '__${item.getDependingScoreNames()}__');|"
-									>
-										<i
-											class="bi-trash-fill"
-											th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
-										></i>
-									</a>
+                                    <div class="btn-group" role="group">
+                                        <a
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{fill?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
+                                        >
+                                            <i
+                                                class="bi-pencil-fill"
+                                                th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
+                                            ></i>
+                                        </a>
+                                        <a
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{remove?id=__${item.id}__}"
+                                            th:onclick="|return confirm_delete(__${item.hasExportRules()}__, '__${item.getDependingScoreNames()}__');|"
+                                        >
+                                            <i
+                                                class="bi-trash-fill"
+                                                th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
+                                            ></i>
+                                        </a>
+                                    </div>
 								</td>
 							</tr>
 						</th:block>
