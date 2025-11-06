@@ -1,0 +1,50 @@
+services:
+  db-container:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: initDb
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ${DB_DATA_PATH}:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+
+  webapp-container:
+    build: .
+    depends_on:
+      - db-container
+    expose:
+      - "8080"
+    volumes:
+      - ${HL7_VOLUME}:/var/lib/tomcat10/export/HL7
+      - ${FHIR_VOLUME}:/var/lib/tomcat10/export/FHIR
+      - ${ODM_VOLUME}:/var/lib/tomcat10/export/ODM
+      - ${UPLOAD_VOLUME}:/var/lib/tomcat10/upload
+      - ${IMAGES_VOLUME}:/var/lib/tomcat10/images
+      - ${CONFIG_DIR}:/etc/mopat
+      - ./src/main/resources/docker-server.xml:/usr/local/tomcat/conf/server.xml:ro
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_MOPAT_URL=${MYSQL_MOPAT_URL}
+      - MYSQL_MOPAT_USER_URL=${MYSQL_MOPAT_USER_URL}
+      - MYSQL_MOPAT_AUDIT_URL=${MYSQL_MOPAT_AUDIT_URL}
+      - PEPPER=${PEPPER}
+  nginx-proxy:
+    image: nginx:alpine
+    restart: always
+    depends_on:
+      - webapp-container
+    ports:
+      - "${NGINX_HTTP_PORT}:80"
+      - "${NGINX_HTTPS_PORT}:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    environment:
+      - SERVER_NAME=${SERVER_NAME}
+      - WEBAPP_PORT=${WEBAPP_PORT}
