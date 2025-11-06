@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -178,14 +178,14 @@ public class FhirImporterTest {
         }
     }
 
-    @After
-    public void tearDown() {
-        SecurityContextHolder.clearContext();
-    }
-
     @BeforeClass
     public static void init() throws IOException {
         mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class);
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        mockedSecurityContextHolder.close();  // Important!
     }
 
     @Test
