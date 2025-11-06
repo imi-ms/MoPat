@@ -45,7 +45,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -199,7 +202,12 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-        Timestamp timestamp = Timestamp.valueOf(dateTime);
+
+        ZoneId zone = ZoneId.of("Europe/Berlin");
+        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
+
+        Instant instant = zdt.toInstant();
+        Timestamp timestamp = Timestamp.from(instant);
 
         questionnaire.setUpdatedAt(timestamp);
 
@@ -227,7 +235,12 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-        Timestamp timestamp = Timestamp.valueOf(dateTime);
+
+        ZoneId zone = ZoneId.of("Europe/Berlin");
+        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
+
+        Instant instant = zdt.toInstant();
+        Timestamp timestamp = Timestamp.from(instant);
 
         questionnaire.setUpdatedAt(timestamp);
 
@@ -255,7 +268,12 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-        Timestamp timestamp = Timestamp.valueOf(dateTime);
+
+        ZoneId zone = ZoneId.of("Europe/Berlin");
+        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
+
+        Instant instant = zdt.toInstant();
+        Timestamp timestamp = Timestamp.from(instant);
 
         questionnaire.setUpdatedAt(timestamp);
 
