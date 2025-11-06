@@ -51,6 +51,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
@@ -179,6 +180,8 @@ public class FhirImporterTest {
                     any(ConfigurationGroupDao.class), any(ExportTemplateDao.class)))
                 .thenAnswer(invocation -> null);
         }
+
+        TimeZone.setDefault(TimeZone.getTimeZone("CET"));
     }
 
     @BeforeClass
@@ -202,12 +205,7 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-
-        ZoneId zone = ZoneId.of("Europe/Berlin");
-        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
-
-        Instant instant = zdt.toInstant();
-        Timestamp timestamp = Timestamp.from(instant);
+        Timestamp timestamp = Timestamp.valueOf(dateTime);
 
         questionnaire.setUpdatedAt(timestamp);
 
@@ -235,12 +233,7 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-
-        ZoneId zone = ZoneId.of("Europe/Berlin");
-        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
-
-        Instant instant = zdt.toInstant();
-        Timestamp timestamp = Timestamp.from(instant);
+        Timestamp timestamp = Timestamp.valueOf(dateTime);
 
         questionnaire.setUpdatedAt(timestamp);
 
@@ -268,12 +261,7 @@ public class FhirImporterTest {
         Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
-
-        ZoneId zone = ZoneId.of("Europe/Berlin");
-        ZonedDateTime zdt = ZonedDateTime.of(dateTime, zone);
-
-        Instant instant = zdt.toInstant();
-        Timestamp timestamp = Timestamp.from(instant);
+        Timestamp timestamp = Timestamp.valueOf(dateTime);
 
         questionnaire.setUpdatedAt(timestamp);
 
