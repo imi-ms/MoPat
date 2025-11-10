@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.imi</groupId>
     <artifactId>MoPat</artifactId>
-    <version>3.2.4</version>
+    <version>3.2.5</version>
     <packaging>war</packaging>
     <name>MoPat</name>
     <!--/*
@@ -734,9 +734,8 @@
             <layout>default</layout>
         </repository>
         <repository>
-            <id>imi-public</id>
-            <name>IMI Public Repository</name>
-            <url>https://mvn.uni-muenster.de/artifactory/imi-public</url>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/lib</url>
         </repository>
     </repositories>
     <build>
