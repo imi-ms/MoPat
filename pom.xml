@@ -838,7 +838,7 @@
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <outputDirectory>${build.directory}/MoPat</outputDirectory>
+                            <outputDirectory>${project.build.directory}/MoPat</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/webapp</directory>
