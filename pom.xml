@@ -770,10 +770,9 @@
                 <version>3.11.0</version>
                 <configuration>
                     <release>17</release>
-                    <compilerArguments>
-                        <endorseddirs>${endorsed.dir}</endorseddirs>
-                        <Xlint></Xlint>
-                    </compilerArguments>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                     <compilerArgument>-parameters</compilerArgument>
                 </configuration>
             </plugin>
