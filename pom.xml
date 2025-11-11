@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.imi</groupId>
     <artifactId>MoPat</artifactId>
-    <version>3.2.4</version>
+    <version>3.2.5</version>
     <packaging>war</packaging>
     <name>MoPat</name>
     <!--/*
@@ -734,9 +734,8 @@
             <layout>default</layout>
         </repository>
         <repository>
-            <id>imi-public</id>
-            <name>IMI Public Repository</name>
-            <url>https://mvn.uni-muenster.de/artifactory/imi-public</url>
+            <id>imigitlab</id>
+            <url>https://imigitlab.uni-muenster.de/api/v4/projects/766/packages/maven</url>
         </repository>
     </repositories>
     <build>
@@ -775,10 +774,9 @@
                 <version>3.11.0</version>
                 <configuration>
                     <release>17</release>
-                    <compilerArguments>
-                        <endorseddirs>${endorsed.dir}</endorseddirs>
-                        <Xlint></Xlint>
-                    </compilerArguments>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                     <compilerArgument>-parameters</compilerArgument>
                 </configuration>
             </plugin>
@@ -843,7 +841,7 @@
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <outputDirectory>${build.directory}/MoPat</outputDirectory>
+                            <outputDirectory>${project.build.directory}/MoPat</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/webapp</directory>
