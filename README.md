@@ -26,11 +26,6 @@ git clone https://github.com/imi-ms/MoPat.git
 # Go into the project directory
 cd mopat
 
-```bash 
-# Install the ODM Library to the local maven repository:
-RUN mvn install:install-file -Dfile=./lib/de/unimuenster/imi/org.cdisc.odm.v132/2.0.2/org.cdisc.odm.v132-2.0.2.jar -DgroupId=de.unimuenster.imi -DartifactId=org.cdisc.odm.v132 -Dversion=2.0.2 -Dpackaging=jar
-```
-
 # Fetch dependencies and build the application
 mvn clean install
 ```
