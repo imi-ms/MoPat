@@ -6,9 +6,7 @@ COPY pom.xml .
 
 COPY src ./src
 COPY .git ./.git
-COPY lib ./lib
 
-RUN mvn install:install-file -Dfile=lib/de/unimuenster/imi/org.cdisc.odm.v132/2.0.2/org.cdisc.odm.v132-2.0.2.jar -DgroupId=de.unimuenster.imi -DartifactId=org.cdisc.odm.v132 -Dversion=2.0.2 -Dpackaging=jar
 RUN mvn -B -f pom.xml dependency:go-offline
 
 # Build the project while skipping tests
