@@ -40,9 +40,6 @@ jobs:
           mysql -h 127.0.0.1 -u root --password=root -e "GRANT ALL PRIVILEGES ON *.* TO 'mopat'@'%'; FLUSH PRIVILEGES;"
           mysql -h 127.0.0.1 -u root --password=root < db/installationInitTest.sql
 
-      - name: Install local libraries
-        run: mvn install:install-file -Dfile=./lib/de/unimuenster/imi/org.cdisc.odm.v132/2.0.2/org.cdisc.odm.v132-2.0.2.jar -DgroupId=de.unimuenster.imi -DartifactId=org.cdisc.odm.v132 -Dversion=2.0.2 -Dpackaging=jar
-
       - name: Test with Maven
         run: mvn -B test --file pom.xml
 
