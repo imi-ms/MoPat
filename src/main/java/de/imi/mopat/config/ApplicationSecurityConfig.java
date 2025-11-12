@@ -19,6 +19,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.acls.AclPermissionEvaluator;
@@ -40,8 +42,6 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Configuration for the Spring security settings of the Servlet application
@@ -57,6 +57,13 @@ public class ApplicationSecurityConfig {
 
     @Autowired
     CacheManager cacheManager;
+
+    private final Environment environment;
+
+
+    public ApplicationSecurityConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * Register authProviders for the authManagerBuilder
@@ -99,7 +106,7 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public PepperedBCryptPasswordEncoder passwordEncoderBCrypt() {
-        return new PepperedBCryptPasswordEncoder(10);
+        return new PepperedBCryptPasswordEncoder(10, environment.getProperty("de.imi.mopat.passwordPepper"));
     }
 
     /**
@@ -316,44 +323,68 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(
-                authz -> authz.requestMatchers(
-                    new AntPathRequestMatcher("/js/**"),
-                    new AntPathRequestMatcher("/css/**"),
-                    new AntPathRequestMatcher("/images/**"),
-                    new AntPathRequestMatcher("/conf/**")
-                ).permitAll().requestMatchers(
-                    new AntPathRequestMatcher("/favicon.ico")
-                ).permitAll()
+        http
+            // Authorize requests
+            .authorizeHttpRequests(authz -> authz
+                // Static resources
+                .requestMatchers("/js/**", "/css/**", "/images/**", "/conf/**", "/favicon.ico").permitAll()
+                // Public endpoints (registration, password reset, surveys, login page)
                 .requestMatchers(
-                    new AntPathRequestMatcher("/mobile/user/password"),
-                    new AntPathRequestMatcher("/mobile/user/passwordreset"),
-                    new AntPathRequestMatcher("/mobile/user/register"),
-                    new AntPathRequestMatcher("/mobile/survey/test"),
-                    new AntPathRequestMatcher("/mobile/survey/questionnairetest/**"),
-                    new AntPathRequestMatcher("/mobile/survey/encounter"),
-                    new AntPathRequestMatcher("/mobile/survey/schedule"),
-                    new AntPathRequestMatcher("/mobile/survey/questionnaireScheduled"),
-                    new AntPathRequestMatcher("/mobile/survey/scores"),
-                    new AntPathRequestMatcher("/mobile/survey/finishQuestionnaire"),
-                    new AntPathRequestMatcher("/mobile/survey/pseudonym"),
-                    new AntPathRequestMatcher("/error/maintenance"),
-                    new AntPathRequestMatcher("/mobile/user/login"),
-                    new AntPathRequestMatcher("/login")
-                ).permitAll().anyRequest().authenticated())
-            .formLogin(
-                form -> form.loginPage("/mobile/user/login")
-                    .loginProcessingUrl("/mobile/user/login")
-                    .failureHandler(customAuthenticationFailureHandler())
-                    .successHandler(redirectRoleStrategy())
-            ).logout(
-                logout -> logout.logoutUrl("/j_spring_security_logout")
-                    .logoutSuccessUrl("/mobile/user/login")).exceptionHandling(
-                exceptionHandler -> exceptionHandler.accessDeniedPage("/error/accessdenied"))
-            .authenticationManager(authenticationManager(http)).csrf(authz -> authz.disable())
-            .addFilterAfter(pinAuthenticationFilter(), BasicAuthenticationFilter.class)
-            .sessionManagement(
-                session -> session.maximumSessions(1).sessionRegistry(sessionRegistry()));
+                    "/mobile/user/password",
+                    "/mobile/user/passwordreset",
+                    "/mobile/user/register",
+                    "/mobile/survey/test",
+                    "/mobile/survey/questionnairetest/**",
+                    "/mobile/survey/encounter",
+                    "/mobile/survey/schedule",
+                    "/mobile/survey/questionnaireScheduled",
+                    "/mobile/survey/scores",
+                    "/mobile/survey/finishQuestionnaire",
+                    "/mobile/survey/pseudonym",
+                    "/error/maintenance",
+                    "/error/internalservererror"
+                ).permitAll()
+                // Login page GET
+                .requestMatchers(HttpMethod.GET, "/mobile/user/login").permitAll()
+                // Login processing POST
+                .requestMatchers(HttpMethod.POST, "/mobile/user/login").permitAll()
+                // All other requests require authentication
+                .anyRequest().authenticated()
+            )
+
+            // Form login configuration
+            .formLogin(form -> form
+                .loginPage("/mobile/user/login")            // login page GET
+                .loginProcessingUrl("/mobile/user/login")     // login POST
+                .successHandler(redirectRoleStrategy())       // custom success handler
+                .failureHandler(customAuthenticationFailureHandler()) // custom failure handler
+                .permitAll()
+            )
+
+            // Logout configuration
+            .logout(logout -> logout
+                .logoutUrl("/j_spring_security_logout")
+                .logoutSuccessUrl("/mobile/user/login")
+                .permitAll()
+            )
+
+            // Exception handling
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/error/accessdenied")
+            )
+
+            // Session management
+            .sessionManagement(session -> session
+                .maximumSessions(1)
+                .sessionRegistry(sessionRegistry())
+            )
+
+            // CSRF
+            .csrf(csrf -> csrf.disable());
+
+        // Add custom filter after authentication
+        http.addFilterAfter(pinAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
