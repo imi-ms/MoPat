@@ -44,7 +44,7 @@
 							<th:block
 								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.Question'}"
 							>
-								<tr>
+								<tr th:id="${answerCondition.id}">
 									<td>
 										<a
 											class="link"
@@ -188,7 +188,7 @@
 							<th:block
 								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.SelectAnswer'}"
 							>
-								<tr>
+								<tr th:id="${answerCondition.id}">
 									<td>
 										<a
 											class="link"
@@ -343,7 +343,7 @@
 							<th:block
 								th:if="${answerCondition.targetClass eq 'de.imi.mopat.model.Questionnaire'}"
 							>
-								<tr>
+								<tr th:id="${answerCondition.id}">
 									<td>
 										<a
 											class="link"

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `configuration` (
   `test_method` varchar(255) DEFAULT NULL,
   `update_method` varchar(255) DEFAULT NULL,
   `uuid` varchar(255) DEFAULT NULL,
-  `value` varchar(255) DEFAULT NULL,
+  `value` text DEFAULT NULL,
   `pattern` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_configuration_group_id` (`configuration_group_id`)
@@ -115,7 +115,8 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (82, 'GENERAL', 13, NULL, 4, 'HL7v22PatientInformationRetrieverHostname', 'STRING', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverHostname', NULL, '', '82957ee9-2409-4978-84af-c3cf0edb9293', '', ''),
 (83, 'GENERAL', 13, NULL, 5, 'HL7v22PatientInformationRetrieverPort', 'INTEGER', NULL, 'de.imi.mopat.helper.controller.HL7v22PatientInformationRetriever', 'configuration.label.HL7v22PatientInformationRetrieverPort', NULL, '', 'b6410c08-fc15-4f67-9601-9ccee136898d', '', ''),
 (84, 'GENERAL', 14, NULL, 7, 'pseudonymizationServiceUrl', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationService.path', NULL, '', '59ef4f9c-b298-44e0-b9b4-d372e9f8a066', '', ''),
-(85, 'GENERAL', 14, NULL, 8, 'pseudonymizationServiceApiKey', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationServiceApiKey', NULL, '', '75694313-f767-4107-b26f-6f5406484bb8', '', '');
+(85, 'GENERAL', 14, NULL, 8, 'pseudonymizationServiceApiKey', 'STRING', NULL, 'de.imi.mopat.controller.PseudonymizationController', 'configuration.label.pseudonymizationServiceApiKey', NULL, '', '75694313-f767-4107-b26f-6f5406484bb8', '', ''),
+(86, 'GENERAL', 1, NULL, 16, 'imprintText', 'RICH_TEXT', 'configuration.description.imprint', 'GLOBAL', 'configuration.label.imprint', NULL, NULL, 'ff890137-bfb5-4e3a-a2a0-b51b7ff6b088', 'Universität Münster<br>Schlossplatz 2, 48149 Münster<br>Telephone: +49 (251) 83-0<br>Fax: +49 (251) 83-3 20 90<br>E-mail: verwaltung@uni-muenster.de<br><br>The University of Münster is a statutory body and an institution of the Land of North Rhine- Westphalia. It is represented by the Rector, Professor Dr. Johannes Wessels.<br><br>Turnover tax identification number: DE 126118759<br><br>Edited in accordance with §5 TMG by:<br>Univ.-Prof. Dr. rer. nat. Dominik Heider<br>Institute of Medical Informatics<br>Albert-Schweizer-Campus 1, Building A11<br>48149 Münster, Germany<br>Telephone: +49 (251) 83-55262<br>E-Mail:&nbsp;<a href="mailto:imi@uni-muenster.de" style="color: rgb(13, 110, 253);">imi@uni-muenster.de</a>', NULL);
 
 
 CREATE TABLE IF NOT EXISTS `clinic_configuration` (
