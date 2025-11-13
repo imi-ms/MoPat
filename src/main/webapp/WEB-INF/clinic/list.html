@@ -79,6 +79,7 @@
                                             </a>
                                             <a
                                                 class="btn btn-sm btn-primary-list link btn-red"
+                                                th:id="'removeClinic_' + ${clinic.id}"
                                                 th:href="@{remove?id=__${clinic.id}__}"
                                             >
                                                 <i

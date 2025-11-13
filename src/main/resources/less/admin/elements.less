@@ -100,7 +100,22 @@
 
     &:hover {
         background-color: @color-blue-light;
-        border-color: @color-blue-light; 
+        border-color: @color-blue-light;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+.btn-secondary{
+    background-color: @color-gray-dark;
+    border-color: @color-gray-dark;
+    color: @color-white;
+    border-radius: @border-radius-sm;
+    transition: @transition-value;
+
+    &:hover {
+        background-color: @color-gray-light;
+        border-color: @color-gray-light;
         transition: @transition-value;
         box-shadow: @box-shadow-material-md;
     }

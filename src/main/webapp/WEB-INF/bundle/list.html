@@ -137,6 +137,7 @@
 								<div class="d-none d-xl-block">
                                     <div class="btn-group" role="group">
                                         <a
+                                            id="bundleLink__${item.id}__"
                                             class="btn btn-sm btn-primary-list link"
                                             th:href="@{fill?id=__${item.id}__}"
                                         >
@@ -180,6 +181,7 @@
                                             </i>
                                         </a>
                                         <a
+                                            th:id="'removeBundle_' + ${item.id}"
                                             class="btn btn-sm btn-primary-list link removeBundleLink btn-red"
                                             th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
                                             th:href="@{remove?id=__${item.id}__}"

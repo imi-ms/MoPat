@@ -3,6 +3,7 @@
 >
     <th:block th:each="configurationDTO, configurationIndex: ${configurationList}">
         <li
+            th:id="${configurationDTO.attribute}"
             class="list-group-item"
             th:classappend="${parent != null} ? |children| : ''"
             th:attr="configurationId=${configurationDTO.id},parentId=${parent != null} ? ${parent.clinicConfigurationId} : ''"
@@ -70,6 +71,7 @@
                     th:errors="*{__${selectionPath}__[__${configurationIndex.index}__].value}"
                     th:text="${#fields.errors('__${selectionPath}__[__${configurationIndex.index}__].value')}"
                     style="color: red"
+                    class="configurationError"
                 >
                 </div>
             </div>
