@@ -108,7 +108,7 @@ public class SliderAnswerValidatorTest {
         questionText.put(Helper.getRandomLocale(), Helper.getRandomAlphabeticString(50) + 1);
         SliderAnswer sliderAnswer = new SliderAnswer(
             new Question(questionText, random.nextBoolean(), random.nextBoolean(),
-                QuestionType.SLIDER, random.nextInt(50) + 1, new Questionnaire()),
+                QuestionType.SLIDER, random.nextInt(50) + 1, new Questionnaire(), false),
             random.nextBoolean(), minValue, maxValue, stepSize, random.nextBoolean());
         sliderAnswerValidator.validate(sliderAnswer, result);
         assertFalse(

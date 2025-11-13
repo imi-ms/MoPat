@@ -1,36 +1,21 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.ServletContextInfo;
-import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.conditions.ConditionTrigger;
-import de.imi.mopat.model.dto.AnswerDTO;
-import de.imi.mopat.model.dto.ConditionDTO;
-import de.imi.mopat.model.dto.QuestionDTO;
-import de.imi.mopat.model.enumeration.BodyPart;
 import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.score.Score;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -87,6 +72,8 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     @NotNull(message = "{question.isEnabled.notNull}")
     @Column(name = "is_enabled", nullable = false)
     private Boolean isEnabled;
+    @Column(name = "is_just_info", nullable = false)
+    private Boolean isJustInfo;
     @NotNull(message = "{question.questionType.notNull}")
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type")
@@ -155,13 +142,15 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      * @param questiontype          The {@link QuestionType} of this question
      * @param position              The position of this question within the {@link Questionnaire}
      * @param questionnaire         The {@link Questionnaire} the question belongs to
+     * @param isJustInfo
      */
     public Question(final Map<String, String> localizedQuestionText, final Boolean isRequired,
-        final Boolean isEnabled, final QuestionType questiontype, final Integer position,
-        final Questionnaire questionnaire) {
+                    final Boolean isEnabled, final QuestionType questiontype, final Integer position,
+                    final Questionnaire questionnaire, final Boolean isJustInfo) {
         setLocalizedQuestionText(localizedQuestionText);
         setIsRequired(isRequired);
         setIsEnabled(isEnabled);
+        setIsJustInfo(isJustInfo);
         setQuestionType(questiontype);
         setPosition(position);
         setQuestionnaire(questionnaire);
@@ -238,6 +227,14 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public void setIsEnabled(final Boolean isEnabled) {
         assert isEnabled != null : "The given isEnabled value was null";
         this.isEnabled = isEnabled;
+    }
+
+    public Boolean getIsJustInfo() {
+        return isJustInfo;
+    }
+
+    public void setIsJustInfo(Boolean justInfo) {
+        isJustInfo = justInfo;
     }
 
     /**
@@ -922,7 +919,7 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public Question cloneWithAnswersAndReferenceToQuestionnaire() {
         Question newQuestion = new Question(new HashMap<>(getLocalizedQuestionText()),
             getIsRequired(), getIsEnabled(), getQuestionType(),
-            (getQuestionnaire().getQuestions().size() + 1), getQuestionnaire());
+            (getQuestionnaire().getQuestions().size() + 1), getQuestionnaire(), getIsJustInfo());
         newQuestion.setMinMaxNumberAnswers(getMinNumberAnswers(), getMaxNumberAnswers());
         for (Answer answer : getAnswers()) {
             Answer newAnswer = answer.cloneWithoutReferences();
