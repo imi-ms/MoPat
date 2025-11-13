@@ -129,40 +129,40 @@
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
                                         <div class="btn-group" role="group">
-                                            <th:block th:if="${#bools.isTrue(item.isEnabled)}">
-                                                <a
-                                                    class="btn btn-sm btn-primary-list link"
-                                                    th:href="|toggleenabled?id=${item.id}|"
-                                                >
-                                                    <i
-                                                        class="bi-x-circle-fill"
-                                                        th:title="${messages.get(#locale, 'user.button.disable', 'Disable')}"
-                                                    >
-                                                    </i>
-                                                </a>
-                                            </th:block>
-                                            <th:block th:unless="${#bools.isTrue(item.isEnabled)}">
-                                                <a
-                                                    class="btn btn-sm btn-primary-list link"
-                                                    th:href="|toggleenabled?id=${item.id}|"
-                                                >
-                                                    <i
-                                                        class="bi-check-circle-fill"
-                                                        th:title="${messages.get(#locale, 'user.button.enable', 'Enable')}"
-                                                    >
-                                                    </i>
-                                                </a>
-                                            </th:block>
                                             <a
                                                 class="btn btn-sm btn-primary-list link"
                                                 th:href="|rights?id=${item.id}|"
                                             >
                                                 <i
-                                                    class="bi-list-task"
+                                                    class="bi-list-task bi-list-icon"
                                                     th:title="${messages.get(#locale, 'user.button.rights', 'Edit user rights')}"
                                                 >
                                                 </i>
                                             </a>
+											<th:block th:if="${#bools.isTrue(item.isEnabled)}">
+												<a
+													class="btn btn-sm btn-primary-list link btn-red"
+													th:href="|toggleenabled?id=${item.id}|"
+												>
+													<i
+														class="bi-x-circle-fill bi-list-icon"
+														th:title="${messages.get(#locale, 'user.button.disable', 'Disable')}"
+													>
+													</i>
+												</a>
+											</th:block>
+											<th:block th:unless="${#bools.isTrue(item.isEnabled)}">
+												<a
+													class="btn btn-sm btn-primary-list link btn-green"
+													th:href="|toggleenabled?id=${item.id}|"
+												>
+													<i
+														class="bi-check-circle-fill bi-list-icon"
+														th:title="${messages.get(#locale, 'user.button.enable', 'Enable')}"
+													>
+													</i>
+												</a>
+											</th:block>
                                         </div>
 									</div>
 									<!--/*Action dropdown for smaller resolutions*/-->

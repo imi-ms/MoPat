@@ -72,20 +72,20 @@
                                         class="btn btn-sm btn-primary-list link"
                                         th:href="@{/mapping/map?id=__${item.id}__}"
                                     >
-                                        <span
-                                            class="bi bi-arrows-angle-contract"
+                                        <i
+                                            class="bi bi-arrows-angle-contract bi-list-icon"
                                             th:title="${messages.get(#locale, 'mapping.button.map', 'Edit mapping')}"
                                         >
-                                        </span>
+                                        </i>
                                     </a>
                                     <a
-                                        class="btn btn-sm btn-primary-list link"
+                                        class="btn btn-sm btn-primary-list link btn-red"
                                         th:href="@{remove?id=__${item.id}__}"
                                     >
-                                        <span
-                                            class="bi-trash-fill"
+                                        <i
+                                            class="bi-trash-fill bi-list-icon"
                                             th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
-                                        ></span>
+                                        ></i>
                                     </a>
                                 </div>
 							</td>

@@ -168,7 +168,7 @@
                                                     th:href="|show?id=${item.id}|"
                                                 >
                                                     <i
-                                                        class="bi-eye-fill"
+                                                        class="bi-eye-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'encounter.export.show', 'Show exports')}"
                                                     >
                                                     </i>
@@ -273,7 +273,7 @@
 												th:id="${item.id}"
 											>
 												<i
-													class="bi bi-plus-lg"
+													class="bi bi-plus-lg bi-list-icon"
 													style="cursor: pointer"
 												></i>
 											</td>
@@ -472,7 +472,7 @@
                                                                 th:href="|toggleMailStatus?id=${item.id}|"
                                                             >
                                                                 <i
-                                                                    class="bi-stop-fill"
+                                                                    class="bi-envelope-slash-fill bi-list-icon"
                                                                     th:title="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
                                                                 >
                                                                 </i>
@@ -481,7 +481,7 @@
                                                         <th:block th:case="'ADDRESS_REJECTED'">
                                                             <i
                                                                 onclick="editEmail($(this).parents('tr').find('.data-email'))"
-                                                                class="bi-exclamation-triangle-fill"
+                                                                class="bi-exclamation-triangle-fill bi-list-icon"
                                                                 style="cursor: pointer"
                                                                 th:title="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
                                                             >
@@ -489,7 +489,7 @@
                                                         </th:block>
                                                         <th:block th:case="'CONSENT_PENDING'">
                                                             <i
-                                                                class="bi-clock-fill"
+                                                                class="bi-clock-fill bi-list-icon"
                                                                 th:title="${messages.get(#locale, 'encounterScheduled.button.consentPending', 'Waiting for the patient's agreement')}"
                                                             >
                                                             </i>
@@ -500,7 +500,7 @@
                                                                 th:href="|toggleMailStatus?id=${item.id}|"
                                                             >
                                                                 <i
-                                                                    class="bi-play-circle-fill"
+                                                                    class="bi-envelope-check-fill bi-list-icon"
                                                                     th:title="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
                                                                 >
                                                                 </i>
@@ -512,30 +512,35 @@
                                                                 th:href="|toggleMailStatus?id=${item.id}|"
                                                             >
                                                                 <i
-                                                                    class="bi-send-fill"
+                                                                    class="bi-send-fill bi-list-icon"
                                                                     th:title="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
                                                                 >
                                                                 </i>
                                                             </a>
                                                         </th:block>
                                                         <th:block th:case="'INTERRUPTED'">
-                                                            <i
-                                                                class="bi-exclamation-circle-fill"
-                                                                th:title="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
-                                                            >
-                                                            </i>
+															<a
+																class="btn btn-sm btn-primary-list reactivationLink link btn-crossed btn-yellow"
+																aria-disabled="true"
+															>
+																<i
+																	class="bi-exclamation-circle-fill bi-list-icon"
+																	th:title="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
+																>
+																</i>
+															</a>
                                                         </th:block>
                                                     </th:block>
-                                                    <th:block th:if="${item.mailStatus != 'INTERRUPTED'}">
+                                                    <th:block th:if="${item.mailStatus.name != 'INTERRUPTED'}">
                                                         <th:block
                                                             th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
                                                         >
                                                             <a
-                                                                class="btn btn-sm btn-primary-list interruptLink link"
+                                                                class="btn btn-sm btn-primary-list interruptLink link btn-red"
                                                                 th:href="|interrupt?encounterScheduledId=${item.id}|"
                                                             >
                                                                 <i
-                                                                    class="bi-x-circle-fill"
+                                                                    class="bi-x-circle-fill bi-list-icon"
                                                                     th:title="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
                                                                 >
                                                                 </i>
@@ -545,11 +550,11 @@
                                                             th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
                                                         >
                                                             <a
-                                                                class="btn btn-sm btn-primary-list link"
+                                                                class="btn btn-sm btn-primary-list link btn-red"
                                                                 th:href="|remove?encounterScheduledId=${item.id}|"
                                                             >
                                                                 <i
-                                                                    class="bi-trash-fill"
+                                                                    class="bi-trash-fill bi-list-icon"
                                                                     th:title="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
                                                                 >
                                                                 </i>
@@ -866,9 +871,9 @@
 								mailButton =
 									"<a class='btn btn-sm btn-primary-list reminderLink link' href='sendEmail?id=" +
 									encounter.id +
-									"'><span class='bi bi-envelope' title='" +
+									"'><i class='bi bi-envelope bi-list-icon' title='" +
 									/*[[${messages.get(#locale, 'encounterScheduled.button.resend', 'Resend email')}]]*/ ""
-									+"'></span>";
+									+"'></i>";
 								copyButton =
 									"<a class='btn btn-sm btn-primary-list copyLink link' href='' onclick='copyLinkToClipboard(this, " +
 									'"' +
@@ -878,9 +883,9 @@
 									'"' +
 									encounterScheduled.locale.toString() +
 									'"' +
-									"); return false;'><span class='bi bi-clipboard-fill' title='" +
+									"); return false;'><i class='bi bi-clipboard-fill bi-list-icon' title='" +
 									/*[[${messages.get(#locale, 'encounterScheduled.button.copyLink', 'Copy link to clipboard')}]]*/ ""
-									+"'></span>";
+									+"'></i>";
 							}
 
 							var startTime = "";
@@ -940,9 +945,9 @@
 										copyButton +
 										"<a class='btn btn-sm btn-primary-list link' href='show?id=" +
 										encounter.id +
-										"'><span class='bi bi-eye' title='" +
+										"'><i class='bi bi-eye-fill bi-list-icon' title='" +
 										/*[[${messages.get(#locale, 'encounter.export.show', 'Show exports')}]]*/ ""
-										+"'></span></div></div>"
+										+"'></i></div></div>"
 								);
 						}
 					}

@@ -141,40 +141,51 @@
                                             th:href="@{fill?id=__${item.id}__}"
                                         >
                                             <i
-                                                class="bi-pencil-fill"
+                                                class="bi-pencil-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
                                             >
                                             </i>
                                         </a>
                                         <a
                                             th:if="${item.isPublished == true && item.isModifiable() == true}"
-                                            class="btn btn-sm btn-primary-list link"
+                                            class="btn btn-sm btn-primary-list link btn-red"
                                             th:href="@{togglepublish?id=__${item.id}__}"
                                         >
                                             <i
-                                                class="bi-x-circle-fill"
+                                                class="bi-x-circle-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
                                             >
                                             </i>
                                         </a>
+										<a
+											th:if="${item.isPublished == true && item.isModifiable() == false}"
+											class="btn btn-sm btn-primary-list btn-crossed link"
+											aria-disabled="true"
+										>
+											<i
+												class="bi-x-circle-fill bi-list-icon"
+												th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
+											>
+											</i>
+										</a>
                                         <a
                                             th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
-                                            class="btn btn-sm btn-primary-list link"
+                                            class="btn btn-sm btn-primary-list link btn-green"
                                             th:href="@{togglepublish?id=__${item.id}__}"
                                         >
                                             <i
-                                                class="bi-check-circle-fill"
+                                                class="bi-check-circle-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'bundle.button.publish', 'Enable')}"
                                             >
                                             </i>
                                         </a>
                                         <a
-                                            class="btn btn-sm btn-primary-list link removeBundleLink"
+                                            class="btn btn-sm btn-primary-list link removeBundleLink btn-red"
                                             th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
                                             th:href="@{remove?id=__${item.id}__}"
                                         >
                                             <i
-                                                class="bi-trash-fill"
+                                                class="bi-trash-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
                                             >
                                             </i>

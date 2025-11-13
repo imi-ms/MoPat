@@ -172,7 +172,7 @@
                                             th:href="@{fill?id=__${item.id}__}"
                                         >
                                             <i
-                                                class="bi-pencil-fill"
+                                                class="bi-pencil-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
                                             ></i>
                                         </a>
@@ -181,7 +181,7 @@
                                             th:href="@{duplicate?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
                                         >
                                             <i
-                                                class="bi-clipboard-plus-fill"
+                                                class="bi-clipboard-plus-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'question.button.dublicateAppend', 'Duplicate and Append')}"
                                             ></i>
                                         </a>
@@ -214,32 +214,36 @@
                                                 </th:block>
                                             </th:block>
                                         </th:block>
-                                            <th:block
-                                                th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or
-                                                        item.questionType.name == 'SLIDER' or
-                                                        item.questionType.name  == 'NUMBER_CHECKBOX' or
-                                                        item.questionType.name == 'NUMBER_INPUT' or
-                                                        item.questionType.name == 'DROP_DOWN'}"
-                                            >
-                                                <a
-                                                    class="btn btn-sm btn-primary-list link condition-button"
-                                                    th:data-question-id="${item.id}"
-                                                    th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
-                                                    th:style="${item.position == questionnaire.questions.size() ? 'display: none;' : ''}"
-                                                >
-                                                    <i
-                                                        class="bi-signpost-split-fill"
-                                                        th:title="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
-                                                    ></i>
-                                                </a>
-                                            </th:block>
+										<th:block>
+											<a
+												class="btn btn-sm btn-primary-list link condition-button"
+												th:attr="aria-disabled=${!(item.questionType.name == 'MULTIPLE_CHOICE' or
+														item.questionType.name == 'SLIDER' or
+														item.questionType.name == 'NUMBER_CHECKBOX' or
+														item.questionType.name == 'NUMBER_INPUT' or
+														item.questionType.name == 'DROP_DOWN')}"
+												th:classappend="${!(item.questionType.name == 'MULTIPLE_CHOICE' or
+														item.questionType.name == 'SLIDER' or
+														item.questionType.name == 'NUMBER_CHECKBOX' or
+														item.questionType.name == 'NUMBER_INPUT' or
+														item.questionType.name == 'DROP_DOWN') or
+														item.position == questionnaire.questions.size()} ? ' btn-crossed' : ''"
+												th:data-question-id="${item.id}"
+												th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
+											>
+												<i
+													class="bi-signpost-split-fill bi-list-icon"
+													th:title="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
+												></i>
+											</a>
+										</th:block>
                                         <a
-                                            class="btn btn-sm btn-primary-list link"
+                                            class="btn btn-sm btn-primary-list link btn-red"
                                             th:href="@{remove?id=__${item.id}__}"
                                             th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
                                         >
                                             <i
-                                                class="bi-trash-fill"
+                                                class="bi-trash-fill bi-list-icon"
                                                 th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
                                             ></i>
                                         </a>

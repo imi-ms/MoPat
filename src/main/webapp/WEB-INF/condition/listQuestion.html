@@ -108,16 +108,16 @@
                                                     th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
                                                 >
                                                     <i
-                                                        class="bi bi-pen-fill"
+                                                        class="bi bi-pencil-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
                                                     ></i>
                                                 </a>
                                                 <a
-                                                    class="btn btn-sm btn-primary-list link"
+                                                    class="btn btn-sm btn-primary-list link btn-red"
                                                     th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
                                                 >
                                                     <i
-                                                        class="bi bi-trash-fill"
+                                                        class="bi bi-trash-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
                                                     >
                                                     </i>
@@ -265,19 +265,19 @@
                                                     class="btn btn-sm btn-primary-list link"
                                                     th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
                                                 >
-                                                    <span
-                                                        class="bi bi-pen-fill"
+                                                    <i
+                                                        class="bi bi-pencil-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
-                                                    ></span>
+                                                    ></i>
                                                 </a>
                                                 <a
-                                                    class="btn btn-sm btn-primary-list link"
+                                                    class="btn btn-sm btn-primary-list link btn-red"
                                                     th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
                                                 >
-                                                    <span
-                                                        class="bi bi-trash-fill"
+                                                    <i
+                                                        class="bi bi-trash-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
-                                                    ></span>
+                                                    ></i>
                                                 </a>
                                             </div>
 										</div>
@@ -413,19 +413,19 @@
                                                     class="btn btn-sm btn-primary-list link"
                                                     th:href="@{edit?conditionId=__${answerCondition.id}__&AMP;questionId=__${question.id}__}"
                                                 >
-                                                    <span
-                                                        class="bi bi-pen-fill"
+                                                    <i
+                                                        class="bi bi-pencil-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.editAll', 'Edit all condition with the same trigger')}"
-                                                    ></span>
+                                                    ></i>
                                                 </a>
                                                 <a
-                                                    class="btn btn-sm btn-primary-list link"
+                                                    class="btn btn-sm btn-primary-list link btn-red"
                                                     th:href="@{remove?id=__${answerCondition.id}__&questionId=__${question.id}__}"
                                                 >
-                                                    <span
-                                                        class="bi bi-trash-fill"
+                                                    <i
+                                                        class="bi bi-trash-fill bi-list-icon"
                                                         th:title="${messages.get(#locale, 'condition.button.remove', 'Remove')}"
-                                                    ></span>
+                                                    ></i>
                                                 </a>
                                             </div>
 										</div>
