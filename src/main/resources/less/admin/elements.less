@@ -109,8 +109,8 @@
 .btn-primary-list {
     .btn-primary();
     background-color: @color-btn-primary-list-background;
-    border-color: @color-btn-primary-list-background;
-    color: @color-btn-primary-list;
+    border-color: @color-btn-primary-list-border;
+    color: @color-blue-links;
 
     &:hover {
         background-color: @color-btn-primary-list-hover-background;
@@ -119,6 +119,9 @@
         transition: @transition-value;
         box-shadow: @box-shadow-material-md;
         }
+    i {
+        font-size: 1.2rem;
+    }
 }
 
 .bi-edit-question {
@@ -135,6 +138,41 @@
     width:2em;
     height:1em;
 }
+
+.btn-red {
+    background-color: @color-failure-background !important;
+    border-color: @color-failure-border !important;
+
+    i {
+        color: @color-failure-text
+    }
+}
+
+.btn-green {
+    background-color: @color-success-background !important;
+    border-color: @color-success-border !important;
+
+    i {
+        color: @color-success-text
+    }
+}
+
+.btn-yellow {
+    background-color: @color-conflict-background !important;
+    border-color: @color-conflict-border !important;
+
+    i {
+        color: @color-conflict-text
+    }
+}
+
+.btn-crossed {
+    pointer-events: none;
+    i {
+        opacity: 0.3;
+    }
+}
+
 
 input[type=checkbox], input[type=radio] {
     accent-color: @color-blue-light;
