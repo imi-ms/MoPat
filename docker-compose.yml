@@ -26,7 +26,7 @@ services:
       - ${UPLOAD_VOLUME}:/var/lib/tomcat10/upload
       - ${IMAGES_VOLUME}:/var/lib/tomcat10/images
       - ${CONFIG_DIR}:/etc/mopat
-      - src/main/resources/docker-server.xml:/usr/local/tomcat/conf/server.xml:ro
+      - ./src/main/resources/docker-server.xml:/usr/local/tomcat/conf/server.xml:ro
     environment:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
