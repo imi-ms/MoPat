@@ -40,7 +40,7 @@ class QuestionnaireSelectors:
     FLAG_ICONS = (By.CSS_SELECTOR, "table#questionnaireTable img[title]")
     PAGINATION = (By.ID, "questionnaireTable_paginate")
     SEARCH_BOX = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
-    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > a.link")
+    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > div.btn-group > a.link")
     LANGUAGE_FLAG_ICONS = (By.CSS_SELECTOR, ".languageLabel img")
 
 class QuestionnaireHelper:

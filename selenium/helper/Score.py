@@ -21,7 +21,7 @@ class ScoreSelectors:
 
     TABLE_ROWS = (By.CSS_SELECTOR, "tbody > tr:not(#emptyRow)")
     SCORE_TABLE = (By.ID, "scoreTable")
-    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > a.link")
+    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.btn-group > a.link")
 
     DROPDOWN_EXPRESSION_TYPE = (By.ID, "expression")
     EXPRESSION_OPERATOR_SELECTED = lambda path: (By.NAME, f"{path}.operatorId")
