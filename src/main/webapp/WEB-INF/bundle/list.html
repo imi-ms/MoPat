@@ -149,13 +149,13 @@
                                         </a>
                                         <th:block sec:authorize="hasRole('ROLE_ADMIN')">
                                             <a
-                                                class="link"
+                                                class="btn btn-sm btn-primary-list link"
                                                 th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
-                                                th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+                                                th:classappend="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false} ? '' : 'btn-crossed'"
                                             >
                                                 <i
-                                                    class="bi-play-fill"
-                                                    th:title="${messages.get(#locale, 'bundle.button.test', 'Test Bundle')}"
+                                                    class="bi-lab-icon bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
                                                 >
                                                 </i>
                                             </a>
@@ -228,12 +228,12 @@
 												th:text="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
 											></a>
 											<th:block sec:authorize="hasRole('ROLE_ADMIN')">
-											<a
-													th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+												<a
+													th:if="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false}"
 													class="link"
 													th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
-													th:text="${messages.get(#locale, 'bundle.button.test', 'Test Bundle')}"
-											></a>
+													th:text="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
+												></a>
 											</th:block>
 											<a
 												th:if="${item.isPublished == true && item.isModifiable() == true}"
