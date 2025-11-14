@@ -550,6 +550,7 @@
                                                             th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
                                                         >
                                                             <a
+																th:id="'removeScheduleEncounter_' + ${item.id}"
                                                                 class="btn btn-sm btn-primary-list link btn-red"
                                                                 th:href="|remove?encounterScheduledId=${item.id}|"
                                                             >
