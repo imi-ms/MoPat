@@ -67,24 +67,27 @@
 								</td>
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
-										<a
-											class="link"
-											th:href="@{edit?id=__${clinic.id}__}"
-										>
-											<i
-												class="bi-pencil-fill"
-												th:title="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
-											></i>
-										</a>
-										<a
-											class="link"
-											th:href="@{remove?id=__${clinic.id}__}"
-										>
-											<i
-												class="bi-trash-fill"
-												th:title="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
-											></i>
-										</a>
+                                        <div class="btn-group" role="group">
+                                            <a
+                                                class="btn btn-sm btn-primary-list link"
+                                                th:href="@{edit?id=__${clinic.id}__}"
+                                            >
+                                                <i
+                                                    class="bi-pencil-fill bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
+                                                ></i>
+                                            </a>
+                                            <a
+                                                class="btn btn-sm btn-primary-list link btn-red"
+                                                th:id="'removeClinic_' + ${clinic.id}"
+                                                th:href="@{remove?id=__${clinic.id}__}"
+                                            >
+                                                <i
+                                                    class="bi-trash-fill bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
+                                                ></i>
+                                            </a>
+                                        </div>
 									</div>
 									<!--/*Action dropdown for smaller resolutions*/-->
 									<div class="d-block d-xl-none">

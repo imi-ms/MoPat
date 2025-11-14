@@ -36,15 +36,18 @@ public class PersistenceConfig implements EnvironmentAware {
         ComboPooledDataSource dataSource = new ComboPooledDataSource();
 
         dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+        dataSource.setConnectionTesterClassName("com.mchange.v2.c3p0.impl.DefaultConnectionTester");
         dataSource.setUser(environment.getProperty("de.imi.mopat.datasource.user"));
         dataSource.setPassword(environment.getProperty("de.imi.mopat.datasource.password"));
-        dataSource.setInitialPoolSize(50);
-        dataSource.setMinPoolSize(50);
-        dataSource.setMaxPoolSize(150);
-        dataSource.setAcquireIncrement(1);
-        dataSource.setIdleConnectionTestPeriod(1800);
-        dataSource.setMaxIdleTimeExcessConnections(1800);
+        dataSource.setInitialPoolSize(5);
+        dataSource.setMinPoolSize(5);
+        dataSource.setMaxPoolSize(30);
+        dataSource.setAcquireIncrement(2);
+        dataSource.setMaxIdleTime(300);
+        dataSource.setIdleConnectionTestPeriod(50);
+        dataSource.setMaxIdleTimeExcessConnections(120);
         dataSource.setTestConnectionOnCheckin(true);
+        dataSource.setPreferredTestQuery("SELECT 1");
 
         return dataSource;
     }

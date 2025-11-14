@@ -213,3 +213,23 @@
 		</div>
 	</div>
 </th:block>
+<th:block layout:fragment="RICH_TEXT (configuration, selectionPath, idPath)">
+	<div class="form-group text" th:id="${configuration.attribute}">
+		<label
+				th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+					class="bi bi-info-circle-fill"
+					th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+
+		<textarea
+				class="form-control wysiwyg"
+				th:name="|${selectionPath}.value|"
+				th:id="|${idPath}.value|"
+				th:text="${configuration.value}"
+		></textarea>
+	</div>
+</th:block>
