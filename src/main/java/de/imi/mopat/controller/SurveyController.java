@@ -607,6 +607,7 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.GET)
     public String testBundle(@RequestParam(value = "id", required = false) final Long bundleId,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         final Model model, final HttpServletRequest request,
         final RedirectAttributes redirectAttributes) {
 
@@ -628,6 +629,7 @@ public class SurveyController {
             model.addAttribute(
                 "encounterDTO",
                 encounterDTO);
+            model.addAttribute("performExportTest",performExportTest);
 
             // Check all questionnaireDTOs for conditions and set the boolean
             for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
@@ -669,6 +671,7 @@ public class SurveyController {
         @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO,
         @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
         @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         final Model model) {
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
@@ -678,15 +681,17 @@ public class SurveyController {
 
         encounterDTO.setBundleLanguage(bundleLanguage);
         model.addAttribute("encounterDTO", encounterDTO);
+        model.addAttribute("performExportTest",performExportTest);
+
         // If the selected bundle language is available for the gui, then use
         // this language
         if (!guiLanguage.isEmpty()) {
-            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage + "&performExportTest="+performExportTest;
         } else {
             // Otherwise use the selected bundle language for the bundle and
             // the current language for the user interface
             Locale locale = LocaleContextHolder.getLocale();
-            return "redirect:/mobile/survey/questionnairetest?lang=" + locale;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + locale + "&performExportTest="+performExportTest;
         }
     }
 
@@ -698,13 +703,16 @@ public class SurveyController {
      * @return Show the <i>mobile/survey/questionnairetest</i> website
      */
     @RequestMapping(value = "/mobile/survey/questionnairetest", method = RequestMethod.GET)
-    public String showQuestionaireTest(final Model model, final HttpSession session) {
+    public String showQuestionaireTest(final Model model, final HttpSession session,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest
+        ) {
         if (session.getAttribute("encounterDTO") == null) {
             return "redirect:error/accessdenied";
         }
 
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         model.addAttribute("encounterDTO", encounterDTO);
+        model.addAttribute("performExportTest",performExportTest);
         session.invalidate();
         return "mobile/survey/questionnaire";
     }
@@ -1017,30 +1025,7 @@ public class SurveyController {
                             }
                         } else {
                             // If the response does not exist create a new one
-                            Response response = new Response(currentAnswer, encounter);
-
-                            if (responseDTO.getCustomtext() != null) {
-                                response.setCustomtext(responseDTO.getCustomtext());
-                            }
-
-                            if (responseDTO.getValue() != null) {
-                                response.setValue(responseDTO.getValue());
-                            }
-
-                            if (responseDTO.getDate() != null) {
-                                response.setDate(responseDTO.getDate());
-                            }
-
-                            if (responseDTO.getPointsOnImage() != null) {
-
-                                List<PointOnImage> pointsOnImage = new ArrayList<>();
-                                for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
-                                    PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
-                                    pointOnImage.setResponse(response);
-                                    pointsOnImage.add(pointOnImage);
-                                }
-                                response.setPointsOnImage(pointsOnImage);
-                            }
+                            Response response = createResponseObject(responseDTO, encounter, currentAnswer);
                             existingResponses.add(response);
                         }
                         questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
@@ -1209,19 +1194,54 @@ public class SurveyController {
     @ResponseBody
     public void finishQuestionnaire(
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         @RequestBody final EncounterDTO encounterDTO) {
-        if (!encounterDTO.getIsTest() && encounterDTO.getId() != null) {
-            Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-            // If the attached bundle is not in test mode write the changes
-            if (encounter != null && encounter.getBundle().getIsPublished()) {
-                // Store the responses to the database
-                updateEncounter(encounterDTO);
-                // Refresh encounter from database after storing of responses
-                encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-                Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-                if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
-                    encounterExporter.export(encounter, questionnaire);
+        if (!encounterDTO.getIsTest()) {
+
+            if (encounterDTO.getId() != null) {
+                Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
+                // If the attached bundle is not in test mode write the changes
+                if (encounter != null && encounter.getBundle().getIsPublished()) {
+                    // Store the responses to the database
+                    updateEncounter(encounterDTO);
+                    // Refresh encounter from database after storing of responses
+                    encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
+                    Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+                    if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
+                        encounterExporter.export(encounter, questionnaire, false);
+                    }
                 }
+            }
+        } else {
+            finishQuestionnaireTest(questionnaireId, encounterDTO, performExportTest);
+        }
+    }
+
+    private void finishQuestionnaireTest(final Long questionnaireId,
+        final EncounterDTO encounterDTO, final Boolean performExportTest) {
+
+        Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
+
+        if (bundle != null && !bundle.getIsPublished()) {
+
+            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+            if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
+                Encounter encounter = new Encounter();
+                encounter.setCaseNumber("test");
+                encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
+                encounter.setBundle(bundle);
+                Set<Response> responses = new HashSet<>();
+                for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
+
+                    Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
+
+                    Response response = createResponseObject(responseDTO, encounter, currentAnswer);
+                    responses.add(response);
+
+                }
+                encounter.setResponses(responses);
+                if(performExportTest)
+                    encounterExporter.export(encounter, questionnaire, true);
             }
         }
     }
@@ -1315,4 +1335,60 @@ public class SurveyController {
         );
         return patientDataRetriever;
     }
+
+    /**
+     * Controls the HTTP POST requests for the URL
+     * <i>/mobile/survey/encountertest</i>. Provides the ability to check export status
+     *
+     * @param encounterDTO The data transfer object containing the responses of the encounter.
+     * @return Returns an empty String.
+     */
+    @RequestMapping(value = "/mobile/survey/encountertest", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
+
+        if (!encounterDTO.getBundleDTO().getIsPublished()) {
+            // If the encounter is finished
+            if (encounterDTO.getIsCompleted()) {
+                // Wait 5 seconds for a possibly running export
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException ex) {
+                    LOGGER.debug("The waiting of the test exporting thread " + "was" + " interrupted");
+                }
+            }
+        }
+        return "";
+
+    }
+
+    private Response createResponseObject(ResponseDTO responseDTO, Encounter encounter, Answer currentAnswer) {
+
+        Response response = new Response(currentAnswer, encounter);
+
+        if (responseDTO.getCustomtext() != null) {
+            response.setCustomtext(responseDTO.getCustomtext());
+        }
+
+        if (responseDTO.getValue() != null) {
+            response.setValue(responseDTO.getValue());
+        }
+
+        if (responseDTO.getDate() != null) {
+            response.setDate(responseDTO.getDate());
+        }
+
+        if (responseDTO.getPointsOnImage() != null) {
+
+            List<PointOnImage> pointsOnImage = new ArrayList<>();
+            for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
+                PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
+                pointOnImage.setResponse(response);
+                pointsOnImage.add(pointOnImage);
+            }
+            response.setPointsOnImage(pointsOnImage);
+        }
+        return response;
+    }
+
 }

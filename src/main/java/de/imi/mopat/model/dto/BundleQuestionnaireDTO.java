@@ -1,6 +1,7 @@
 package de.imi.mopat.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 
 import java.util.HashSet;
@@ -17,6 +18,8 @@ public class BundleQuestionnaireDTO {
     private Set<ExportTemplateType> exportTemplateTypes = new HashSet<>();
     @JsonIgnore
     private Set<Long> exportTemplates = new HashSet<>();
+    @JsonIgnore
+    private Set<ExportTemplate> exportTemplateObjects = new HashSet<>();
     private Boolean isEnabled;
     private Boolean showScores;
     private Long bundleId;
@@ -64,6 +67,21 @@ public class BundleQuestionnaireDTO {
     public void setExportTemplates(final Set<Long> exportTemplates) {
         this.exportTemplates = exportTemplates;
     }
+
+    /**
+     * @return the exportTemplateObjects
+     */
+    public Set<ExportTemplate> getExportTemplateObjects() {
+        return exportTemplateObjects;
+    }
+
+    /**
+     * @param exportTemplateObjects the exportTemplates to set
+     */
+    public void setExportTemplateObjects(final Set<ExportTemplate> exportTemplateObjects) {
+        this.exportTemplateObjects = exportTemplateObjects;
+    }
+
 
     /**
      * @return the position

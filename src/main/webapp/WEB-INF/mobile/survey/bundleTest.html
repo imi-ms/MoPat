@@ -19,6 +19,11 @@
 					name="bundleId"
 					th:value="${encounter?.getBundle()?.getId()}"
 				/>
+				<input
+						type="hidden"
+						name="performExportTest"
+						th:value="${performExportTest}"
+				/>
 				<addVar
 					layout:replace="~{helper/var :: add(
                         key='hasActiveQuestionnaire', 
