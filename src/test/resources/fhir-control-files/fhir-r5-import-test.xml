@@ -1,0 +1,1207 @@
+<Questionnaire xmlns="http://hl7.org/fhir">
+   <language value="en-GB"></language>
+   <name value="Demo Questionnaire"></name>
+   <title value="Demo Questionnaire">
+      <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+         <extension url="lang">
+            <valueCode value="de-DE"></valueCode>
+         </extension>
+         <extension url="content">
+            <valueString value="Demo Fragebogen"></valueString>
+         </extension>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+         <extension url="lang">
+            <valueCode value="es-ES"></valueCode>
+         </extension>
+         <extension url="content">
+            <valueString value="Cuestionario de demostración"></valueString>
+         </extension>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+         <extension url="lang">
+            <valueCode value="en-GB"></valueCode>
+         </extension>
+         <extension url="content">
+            <valueString value="Demo Questionnaire"></valueString>
+         </extension>
+      </extension>
+   </title>
+   <status value="draft"></status>
+   <date value="2025-06-30T13:59:33+02:00"></date>
+   <description value="Dieser Fragebogen enthält alle bisher implementierten Fragetypen"></description>
+   <item>
+      <linkId value="Question/18"></linkId>
+      <text value="This is an info-text question">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Ésta es una pregunta de tipo informativa"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine InfoText-Frage"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is an info-text question"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="display"></type>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
+         <valueInteger value="1"></valueInteger>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+         <valueInteger value="2"></valueInteger>
+      </extension>
+      <linkId value="Question/19"></linkId>
+      <text value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p&gt;&lt;p&gt;In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p&gt;&lt;p&gt;Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p&gt;&lt;p&gt;El número de respuestas posible es configurable. &lt;/p&gt;&lt;p&gt;Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br&gt;&lt;/p&gt;&lt;p&gt;La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="true"></required>
+      <repeats value="true"></repeats>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/20"></code>
+            <display value="Monday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Lunes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Montag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Monday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/21"></code>
+            <display value="Tuesday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Martes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Dienstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Tuesday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/22"></code>
+            <display value="Wednesday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Miércoles"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Mittwoch"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Wednesday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/23"></code>
+            <display value="Thursday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Jueves"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Donnerstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Thursday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/24"></code>
+            <display value="Friday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Viernes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Freitag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Friday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/25"></code>
+            <display value="Saturday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sábado"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Samstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Saturday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/26"></code>
+            <display value="Sunday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Domingo"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sonntag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sunday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
+         <valueInteger value="1"></valueInteger>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+         <valueInteger value="2"></valueInteger>
+      </extension>
+      <linkId value="Question/28"></linkId>
+      <text value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br&gt;&lt;/p&gt;&lt;p&gt;This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br&gt;&lt;/p&gt;&lt;p&gt;Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p&gt;&lt;p&gt;El número de respuestas posible es configurable. &lt;/p&gt;&lt;p&gt;La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p&gt;&lt;p&gt;In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p&gt;&lt;p&gt;Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br&gt;&lt;/p&gt;&lt;p&gt;This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <enableWhen>
+         <question value="Question/19"></question>
+         <operator value="="></operator>
+         <answerCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/26"></code>
+            <display value="Sunday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Domingo"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sonntag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sunday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </answerCoding>
+      </enableWhen>
+      <required value="true"></required>
+      <repeats value="true"></repeats>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/29"></code>
+            <display value="Monday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Lunes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Montag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Monday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/30"></code>
+            <display value="Tuesday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Martes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Dienstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Tuesday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/31"></code>
+            <display value="Wednesday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Miércoles"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Mittwoch"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Wednesday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/32"></code>
+            <display value="Thursday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Jueves"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Donnerstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Thursday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/33"></code>
+            <display value="Friday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Viernes"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Freitag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Friday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/34"></code>
+            <display value="Saturday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sábado"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Samstag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Saturday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/35"></code>
+            <display value="Sunday">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Domingo"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sonntag"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Sunday"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
+         <valueDecimal value="0.0"></valueDecimal>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
+         <valueDecimal value="1.0"></valueDecimal>
+      </extension>
+      <linkId value="Question/114"></linkId>
+      <text value="This is a horizontal slider.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.&lt;/p&gt;&lt;p&gt;Die Frage lautet hier: Wie gut geht es Ihnen gerade?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Ésta es una barra deslizante horizontal. &lt;br&gt; La pregunta dice así: qué tal se encuentra? "></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a horizontal slider.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="decimal"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
+         <valueDecimal value="0.0"></valueDecimal>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
+         <valueDecimal value="1.0"></valueDecimal>
+      </extension>
+      <linkId value="Question/107"></linkId>
+      <text value="This is a horizontal slider. It also displays symbols above the scale.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist ein horizontaler Schieberegler. Er zeigt zusätzlich Symbole über der Skala an.&lt;br&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Die Frage lautet hier: Wie gut geht es Ihnen gerade?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Se trata de un deslizador horizontal. También muestra símbolos encima de la escala.&lt;br&gt; La pregunta dice así: qué tal se encuentra? "></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a horizontal slider. It also displays symbols above the scale.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="decimal"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
+         <valueDecimal value="1.0"></valueDecimal>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
+         <valueDecimal value="6.0"></valueDecimal>
+      </extension>
+      <linkId value="Question/61"></linkId>
+      <text value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br&gt;&lt;/p&gt;&lt;p&gt;The question here is: If you had to give a grade to MoPat, what would it be? ">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen/Klicken einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.&lt;/p&gt;&lt;p&gt;Wir möchten gerne wissen: Wenn Sie Ihrer bisherigen MoPat-Erfahrung eine Schulnote geben müssten, welche wäre das?&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Aquí puede elegir uno entre una gama de diferentes valores numéricos.Al seleccionar una respuesta previamente seleccionada, la respuesta será des-seleccionada.&lt;br&gt;&lt;/p&gt;&lt;p&gt;La pregunta dicta: Si tuviera que dar una nota a MoPat, qué nota le pondría?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br&gt;&lt;/p&gt;&lt;p&gt;The question here is: If you had to give a grade to MoPat, what would it be? "></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="integer"></type>
+      <required value="true"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
+         <valueDecimal value="0.0"></valueDecimal>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
+         <valueDecimal value="10.0"></valueDecimal>
+      </extension>
+      <linkId value="Question/129"></linkId>
+      <text value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p&gt;&lt;p&gt;The question would be: How many restaurants have you visited in the last week? Which ones? ">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.&lt;/p&gt;&lt;p&gt;Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? &lt;br&gt;&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. &lt;/p&gt;&lt;p&gt;La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p&gt;&lt;p&gt;The question would be: How many restaurants have you visited in the last week? Which ones? "></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="integer"></type>
+      <required value="true"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <linkId value="Question/129-ft"></linkId>
+      <text value="Restaurants:">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Restaurantes:"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Süßigkeiten:"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Restaurants:"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="text"></type>
+   </item>
+   <item>
+      <linkId value="Question/112"></linkId>
+      <text value="This is a date question. &lt;/p&gt;&lt;p&gt;Tap/click on the empty field to introduce your answer.&lt;br&gt;&lt;/p&gt;&lt;p&gt;What is your date of birth?&lt;br&gt;">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine Datumsfrage. &lt;br&gt;&lt;/p&gt;&lt;p&gt;Bitte tippen/klicken Sie in das Eingabefeld, um die Datumsauswahl zu starten.&lt;/p&gt;&lt;p&gt; Die Frage hier lautet: Wann sind Sie geboren?&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Esta pregunta es de tipo temporal. &lt;/p&gt;&lt;p&gt;Haga click en el campo en blanco para introducir su respuesta.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Cuál es su fecha de nacimiento? &lt;br&gt;&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a date question. &lt;/p&gt;&lt;p&gt;Tap/click on the empty field to introduce your answer.&lt;br&gt;&lt;/p&gt;&lt;p&gt;What is your date of birth?&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="date"></type>
+      <required value="true"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
+         <valueInteger value="1"></valueInteger>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+         <valueInteger value="3"></valueInteger>
+      </extension>
+      <linkId value="Question/125"></linkId>
+      <text value="This is a drop down list question. You may select a value from the drop down list. ">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="&lt;p&gt;Dies ist eine Auswahllistenfrage.&lt;br&gt;&lt;/p&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista. "></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a drop down list question. You may select a value from the drop down list. "></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="true"></required>
+      <repeats value="true"></repeats>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/126"></code>
+            <display value="Answer one">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Respuesta uno"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Antwort 1"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Answer one"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/127"></code>
+            <display value="Answer two">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Respuesta dos"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Antwort 2"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Answer two"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+      <answerOption>
+         <valueCoding>
+            <system value="https://mopat.uni-muenster.de/FHIR/"></system>
+            <code value="MoPat/Answer/128"></code>
+            <display value="Answer three">
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="es-ES"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Respuesta tres"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="de-DE"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Antwort 3"></valueString>
+                  </extension>
+               </extension>
+               <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+                  <extension url="lang">
+                     <valueCode value="en-GB"></valueCode>
+                  </extension>
+                  <extension url="content">
+                     <valueString value="Answer three"></valueString>
+                  </extension>
+               </extension>
+            </display>
+         </valueCoding>
+      </answerOption>
+   </item>
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
+         <valueDecimal value="1.0"></valueDecimal>
+      </extension>
+      <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
+         <valueDecimal value="111.0"></valueDecimal>
+      </extension>
+      <linkId value="Question/59"></linkId>
+      <text value="This is a numeric question. Introduce a number between 1 and 111.">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine numerische Frage. Bitte geben Sie ein Zahl zwischen 1 und 111 ein.&lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Esta pregunta es de tipo numérica. Introduzca un valor entre 1 y 111. "></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a numeric question. Introduce a number between 1 and 111."></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="decimal"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <linkId value="Question/131"></linkId>
+      <text value="&lt;p&gt;Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.  
+&lt;/p&gt;&lt;p&gt;We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p&gt;">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="&lt;p&gt;Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.
+&lt;/p&gt;&lt;p&gt;Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!&lt;/p&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="&lt;p&gt;Para terminar, les mostramos una pregunta de tipo texto libre. Aquí pueden introducir un comentario. 
+&lt;/p&gt;&lt;p&gt;Nos gustaría que nos comentara qué le parece el sistema, si ha detectado algún error y/o si tiene alguna sugerencia.&lt;/p&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="&lt;p&gt;Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.  
+&lt;/p&gt;&lt;p&gt;We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p&gt;"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="text"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <linkId value="Question/133"></linkId>
+      <text value="This is a barcode question. Codes can be scanned with this question type. &lt;br&gt;">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Se trata de una pregunta con código de barras. Los códigos se pueden escanear con este tipo de pregunta. &lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Dies ist eine Barcode Frage. Mit diesem Fragetypen können Codes gescannt werden. &lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="This is a barcode question. Codes can be scanned with this question type. &lt;br&gt;"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="text"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+   </item>
+   <item>
+      <linkId value="Question/36"></linkId>
+      <text value="Where do you have pain on the front of your body?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="¿Dónde le duele la parte delantera del cuerpo?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Where do you have pain on the front of your body?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+      <answerConstraint value="optionsOrString"></answerConstraint>
+   </item>
+   <item>
+      <linkId value="Question/116"></linkId>
+      <text value="Where do you have pain on the back of your body?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="¿Dónde le duele la parte posterior del cuerpo?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Where do you have pain on the back of your body?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+      <answerConstraint value="optionsOrString"></answerConstraint>
+   </item>
+   <item>
+      <linkId value="Question/2"></linkId>
+      <text value="Where do you still have pain?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="¿Dónde le duele todavía?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Wo haben Sie noch Schmerzen?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Where do you still have pain?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+      <answerConstraint value="optionsOrString"></answerConstraint>
+   </item>
+   <item>
+      <linkId value="Question/63"></linkId>
+      <text value="Where else do you have pain?">
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="es-ES"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="¿Dónde más te duele?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="de-DE"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Wo haben Sie außerdem noch Schmerzen?"></valueString>
+            </extension>
+         </extension>
+         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+            <extension url="lang">
+               <valueCode value="en-GB"></valueCode>
+            </extension>
+            <extension url="content">
+               <valueString value="Where else do you have pain?"></valueString>
+            </extension>
+         </extension>
+      </text>
+      <type value="coding"></type>
+      <required value="false"></required>
+      <repeats value="false"></repeats>
+      <answerConstraint value="optionsOrString"></answerConstraint>
+   </item>
+</Questionnaire>

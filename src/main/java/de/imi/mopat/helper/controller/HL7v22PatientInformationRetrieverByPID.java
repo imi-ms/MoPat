@@ -318,8 +318,12 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
             } finally {
                 if (connection != null) {
                     LOGGER.debug("Closing the connection...");
-                    connection.close();
-                    LOGGER.debug("Closing the connection...[DONE]");
+                    try {
+                        connection.close();
+                        LOGGER.debug("Closing the connection...[DONE]");
+                    } catch (Exception e) {
+                        LOGGER.error("Could not close connection. This could cause followup errors.", e);
+                    }
                 }
             }
         } else {

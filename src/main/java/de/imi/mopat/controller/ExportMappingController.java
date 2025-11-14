@@ -16,9 +16,13 @@ import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.FHIRHelper;
+import de.imi.mopat.helper.controller.FhirVersionHelper;
+import de.imi.mopat.io.importer.ImportQuestionnaireError;
+import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
+import de.imi.mopat.io.importer.fhir.FhirDstu3Helper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.ExportTemplateImporter;
+import de.imi.mopat.io.importer.fhir.FhirImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterExportTemplate;
@@ -42,6 +46,7 @@ import de.imi.mopat.model.dto.ExportRuleDTO;
 import de.imi.mopat.model.dto.ExportRuleFormatDTO;
 import de.imi.mopat.model.dto.ExportRulesDTO;
 import de.imi.mopat.model.enumeration.ExportScoreFieldType;
+import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.validator.ExportRulesDTOValidator;
@@ -111,6 +116,10 @@ public class ExportMappingController {
     private MessageSource messageSource;
     @Autowired
     private StringUtilities stringUtilityHelper;
+    @Autowired
+    private FhirImporter fhirImporter;
+    @Autowired
+    private FhirVersionHelper fhirVersionHelper;
 
     /**
      * Sets autogrowth for sent list data to a new limit. This prevents index out of bounds
@@ -215,6 +224,8 @@ public class ExportMappingController {
         @ModelAttribute("export") final ExportTemplate export, final BindingResult result,
         final HttpServletRequest request, final Model model) {
 
+        String locale = LocaleContextHolder.getLocale().toString();
+
         if (name == null || name.isEmpty()) {
             result.reject("name",
                 messageSource.getMessage("mapping.error.uploadtemplateName", new Object[]{},
@@ -233,12 +244,25 @@ public class ExportMappingController {
         // Get the appropriate configuration groups for this export type
         ExportTemplateType exportTemplateType = ExportTemplateType.valueOf(type);
 
-        if (exportTemplateType == ExportTemplateType.FHIR) {
-            String validationSchemaFilePath =
-                request.getSession().getServletContext().getRealPath("") + "/"
-                    + Constants.FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY;
-            FHIRHelper.validateFileAgainstSchema(file, validationSchemaFilePath,
-                Constants.SCHEMA_QUESTIONNAIRE_FILE, result, messageSource);
+        if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
+            String webappPath = request.getSession().getServletContext().getRealPath("") + "/";
+            ImportQuestionnaireValidation validationResult = new ImportQuestionnaireValidation();
+
+            FhirVersion matchingVersion =
+                fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
+
+            fhirImporter.validateFhirFileAgainstFhirVersion(file, validationResult,
+                matchingVersion, locale);
+
+            if (validationResult.hasErrors()) {
+                for (ImportQuestionnaireError error: validationResult.getValidationErrors()) {
+                    if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
+                        result.reject(error.getErrorCode(), error.getErrorArguments(), error.getDefaultErrorMessage());
+                    } else {
+                        result.reject(error.getErrorCode());
+                    }
+                }
+            }
         } else if (exportTemplateType == ExportTemplateType.REDCap) {
             // Validate the imported file
             ObjectMapper mapper = new ObjectMapper();
@@ -286,15 +310,12 @@ public class ExportMappingController {
                 }
                 File uploadFile = new File(contextPath, uploadFilename);
                 uploadFile.createNewFile();
-
+                
                 //Do the upload for FHIR resource.
-                if (exportTemplateType == ExportTemplateType.FHIR) {
-                    //Parse the upload file to get the fhir resource type
+                if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
                     try {
-                        org.hl7.fhir.dstu3.model.Questionnaire fhirQuestionnaire = (org.hl7.fhir.dstu3.model.Questionnaire) FHIRHelper.parseResourceFromFile(
-                            file.getInputStream());
-                        FHIRHelper.writeResourceToFile(fhirQuestionnaire, uploadFile);
-                    } catch (ConfigurationException | DataFormatException e) {
+                        fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType);
+                    } catch (Exception e) {
                         LOGGER.error("error while uploading a new export template {}", e);
                         for (ExportTemplate exportTemplate : exportTemplates) {
                             File exportFile = new File(export.getFilename());

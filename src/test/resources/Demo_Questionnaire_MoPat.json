@@ -1,0 +1,1920 @@
+{
+  "type" : "questionnaire",
+  "id" : 1,
+  "name" : "Demo Questionnaire",
+  "description" : "Dieser Fragebogen enthält alle bisher implementierten Fragetypen",
+  "localizedWelcomeText" : { },
+  "localizedFinalText" : { },
+  "localizedDisplayName" : {
+    "de_DE" : "Demo Fragebogen",
+    "es_ES" : "Cuestionario de demostración",
+    "en_GB" : "Demo Questionnaire"
+  },
+  "questionDTOs" : {
+    "2" : {
+      "type" : "question",
+      "id" : 2,
+      "localizedQuestionText" : {
+        "es_ES" : "¿Dónde le duele todavía?",
+        "de_DE" : "Wo haben Sie noch Schmerzen?",
+        "en_GB" : "Where do you still have pain?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "BODY_PART",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 5,
+      "answers" : {
+        "3" : {
+          "type" : "answer",
+          "id" : 3,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "4" : {
+          "type" : "answer",
+          "id" : 4,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "5" : {
+          "type" : "answer",
+          "id" : 5,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "6" : {
+          "type" : "answer",
+          "id" : 6,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_STOMACH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "7" : {
+          "type" : "answer",
+          "id" : 7,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_LEGG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "8" : {
+          "type" : "answer",
+          "id" : 8,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "9" : {
+          "type" : "answer",
+          "id" : 9,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "10" : {
+          "type" : "answer",
+          "id" : 10,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "11" : {
+          "type" : "answer",
+          "id" : 11,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_UPPER_BACK",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "12" : {
+          "type" : "answer",
+          "id" : 12,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "13" : {
+          "type" : "answer",
+          "id" : 13,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HIPS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "14" : {
+          "type" : "answer",
+          "id" : 14,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "15" : {
+          "type" : "answer",
+          "id" : 15,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "16" : {
+          "type" : "answer",
+          "id" : 16,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "17" : {
+          "type" : "answer",
+          "id" : 17,
+          "jsonQuestionDTO" : 2,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 16
+    },
+    "18" : {
+      "type" : "question",
+      "id" : 18,
+      "localizedQuestionText" : {
+        "es_ES" : "Ésta es una pregunta de tipo informativa",
+        "de_DE" : "Dies ist eine InfoText-Frage",
+        "en_GB" : "This is an info-text question"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "INFO_TEXT",
+      "answers" : { },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 1
+    },
+    "19" : {
+      "type" : "question",
+      "id" : 19,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.</p><p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.</p><p>Wenn Sie \"Sonntag\" auswählen, wir die nächste Frage bedingt angezeigt.<br></p><p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?",
+        "es_ES" : "Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. </p><p>El número de respuestas posible es configurable. </p><p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.<br></p><p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más?",
+        "en_GB" : "This is a multiple choice question. There are multiple answers posible to this question. </p><p>In this kind of questions, the number of posible answers can be configured. </p><p>If you select ‘Sunday’, the next question will be displayed conditionally.<br></p><p>The question reads: What day(s) of the week do you like best?"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "MULTIPLE_CHOICE",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 2,
+      "codedValueType" : "INTEGER",
+      "answers" : {
+        "20" : {
+          "type" : "answer",
+          "id" : 20,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "1",
+          "localizedLabel" : {
+            "es_ES" : "Lunes",
+            "de_DE" : "Montag",
+            "en_GB" : "Monday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "21" : {
+          "type" : "answer",
+          "id" : 21,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "2",
+          "localizedLabel" : {
+            "es_ES" : "Martes",
+            "de_DE" : "Dienstag",
+            "en_GB" : "Tuesday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "22" : {
+          "type" : "answer",
+          "id" : 22,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "3",
+          "localizedLabel" : {
+            "es_ES" : "Miércoles",
+            "de_DE" : "Mittwoch",
+            "en_GB" : "Wednesday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "23" : {
+          "type" : "answer",
+          "id" : 23,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "4",
+          "localizedLabel" : {
+            "es_ES" : "Jueves",
+            "de_DE" : "Donnerstag",
+            "en_GB" : "Thursday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "24" : {
+          "type" : "answer",
+          "id" : 24,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "5",
+          "localizedLabel" : {
+            "es_ES" : "Viernes",
+            "de_DE" : "Freitag",
+            "en_GB" : "Friday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "25" : {
+          "type" : "answer",
+          "id" : 25,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "6",
+          "localizedLabel" : {
+            "es_ES" : "Sábado",
+            "de_DE" : "Samstag",
+            "en_GB" : "Saturday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "26" : {
+          "type" : "answer",
+          "id" : 26,
+          "jsonQuestionDTO" : 19,
+          "codedValue" : "7",
+          "localizedLabel" : {
+            "es_ES" : "Domingo",
+            "de_DE" : "Sonntag",
+            "en_GB" : "Sunday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ {
+            "type" : "condition",
+            "id" : 27,
+            "action" : "ENABLE",
+            "targetClass" : "de.imi.mopat.model.Question",
+            "targetId" : 28,
+            "triggerId" : 26
+          } ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 2
+    },
+    "28" : {
+      "type" : "question",
+      "id" : 28,
+      "localizedQuestionText" : {
+        "es_ES" : "Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».<br></p><p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. </p><p>El número de respuestas posible es configurable. </p><p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más?",
+        "de_DE" : "Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor \"Sonntag\" ausgewählt haben.<br></p><p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.</p><p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.</p><p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?",
+        "en_GB" : "This is a conditional question. It is displayed because you have previously selected ‘Sunday’.<br></p><p>This is a multiple choice question. There are multiple answers posible to this question. </p><p>In this kind of questions, the number of posible answers can be configured. </p><p>The question reads: What day(s) of the week do you like best?"
+      },
+      "isRequired" : false,
+      "isEnabled" : false,
+      "questionType" : "MULTIPLE_CHOICE",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 2,
+      "codedValueType" : "STRING",
+      "answers" : {
+        "29" : {
+          "type" : "answer",
+          "id" : 29,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "1",
+          "localizedLabel" : {
+            "es_ES" : "Lunes",
+            "de_DE" : "Montag",
+            "en_GB" : "Monday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "30" : {
+          "type" : "answer",
+          "id" : 30,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "2",
+          "localizedLabel" : {
+            "es_ES" : "Martes",
+            "de_DE" : "Dienstag",
+            "en_GB" : "Tuesday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "31" : {
+          "type" : "answer",
+          "id" : 31,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "3",
+          "localizedLabel" : {
+            "es_ES" : "Miércoles",
+            "de_DE" : "Mittwoch",
+            "en_GB" : "Wednesday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "32" : {
+          "type" : "answer",
+          "id" : 32,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "4",
+          "localizedLabel" : {
+            "es_ES" : "Jueves",
+            "de_DE" : "Donnerstag",
+            "en_GB" : "Thursday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "33" : {
+          "type" : "answer",
+          "id" : 33,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "5",
+          "localizedLabel" : {
+            "es_ES" : "Viernes",
+            "de_DE" : "Freitag",
+            "en_GB" : "Friday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "34" : {
+          "type" : "answer",
+          "id" : 34,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "6",
+          "localizedLabel" : {
+            "es_ES" : "Sábado",
+            "de_DE" : "Samstag",
+            "en_GB" : "Saturday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "35" : {
+          "type" : "answer",
+          "id" : 35,
+          "jsonQuestionDTO" : 28,
+          "codedValue" : "7",
+          "localizedLabel" : {
+            "es_ES" : "Domingo",
+            "de_DE" : "Sonntag",
+            "en_GB" : "Sunday"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 3
+    },
+    "36" : {
+      "type" : "question",
+      "id" : 36,
+      "localizedQuestionText" : {
+        "es_ES" : "¿Dónde le duele la parte delantera del cuerpo?",
+        "de_DE" : "Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers?",
+        "en_GB" : "Where do you have pain on the front of your body?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "BODY_PART",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 10,
+      "answers" : {
+        "37" : {
+          "type" : "answer",
+          "id" : 37,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "38" : {
+          "type" : "answer",
+          "id" : 38,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_THROAT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "39" : {
+          "type" : "answer",
+          "id" : 39,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "40" : {
+          "type" : "answer",
+          "id" : 40,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "41" : {
+          "type" : "answer",
+          "id" : 41,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "42" : {
+          "type" : "answer",
+          "id" : 42,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "43" : {
+          "type" : "answer",
+          "id" : 43,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "44" : {
+          "type" : "answer",
+          "id" : 44,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "45" : {
+          "type" : "answer",
+          "id" : 45,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_CHEST",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "46" : {
+          "type" : "answer",
+          "id" : 46,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_STOMACH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "47" : {
+          "type" : "answer",
+          "id" : 47,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_HIPS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "48" : {
+          "type" : "answer",
+          "id" : 48,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "49" : {
+          "type" : "answer",
+          "id" : 49,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "50" : {
+          "type" : "answer",
+          "id" : 50,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_LEGG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "51" : {
+          "type" : "answer",
+          "id" : 51,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "52" : {
+          "type" : "answer",
+          "id" : 52,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "53" : {
+          "type" : "answer",
+          "id" : 53,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "54" : {
+          "type" : "answer",
+          "id" : 54,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "55" : {
+          "type" : "answer",
+          "id" : 55,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "56" : {
+          "type" : "answer",
+          "id" : 56,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "57" : {
+          "type" : "answer",
+          "id" : 57,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "58" : {
+          "type" : "answer",
+          "id" : 58,
+          "jsonQuestionDTO" : 36,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_GENITALS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 14
+    },
+    "59" : {
+      "type" : "question",
+      "id" : 59,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist eine numerische Frage. Bitte geben Sie ein Zahl zwischen 1 und 111 ein.<br>",
+        "es_ES" : "Esta pregunta es de tipo numérica. Introduzca un valor entre 1 y 111. ",
+        "en_GB" : "This is a numeric question. Introduce a number between 1 and 111."
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "NUMBER_INPUT",
+      "answers" : {
+        "60" : {
+          "type" : "answer",
+          "id" : 60,
+          "jsonQuestionDTO" : 59,
+          "minValue" : 1.0,
+          "maxValue" : 111.0,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 10
+    },
+    "61" : {
+      "type" : "question",
+      "id" : 61,
+      "localizedQuestionText" : {
+        "de_DE" : "Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen/Klicken einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.</p><p>Wir möchten gerne wissen: Wenn Sie Ihrer bisherigen MoPat-Erfahrung eine Schulnote geben müssten, welche wäre das?<br>",
+        "es_ES" : "Aquí puede elegir uno entre una gama de diferentes valores numéricos.Al seleccionar una respuesta previamente seleccionada, la respuesta será des-seleccionada.<br></p><p>La pregunta dicta: Si tuviera que dar una nota a MoPat, qué nota le pondría?",
+        "en_GB" : "Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&nbsp; <br></p><p>The question here is: If you had to give a grade to MoPat, what would it be? "
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "NUMBER_CHECKBOX",
+      "answers" : {
+        "62" : {
+          "type" : "answer",
+          "id" : 62,
+          "jsonQuestionDTO" : 61,
+          "minValue" : 1.0,
+          "maxValue" : 6.0,
+          "stepsize" : "1.0",
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "vertical" : false,
+          "showValueOnButton" : false,
+          "isEnabled" : true,
+          "showIcons" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 6
+    },
+    "63" : {
+      "type" : "question",
+      "id" : 63,
+      "localizedQuestionText" : {
+        "es_ES" : "¿Dónde más te duele?",
+        "de_DE" : "Wo haben Sie außerdem noch Schmerzen?",
+        "en_GB" : "Where else do you have pain?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "BODY_PART",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 1,
+      "answers" : {
+        "64" : {
+          "type" : "answer",
+          "id" : 64,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "65" : {
+          "type" : "answer",
+          "id" : 65,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_THROAT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "66" : {
+          "type" : "answer",
+          "id" : 66,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "67" : {
+          "type" : "answer",
+          "id" : 67,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "68" : {
+          "type" : "answer",
+          "id" : 68,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "69" : {
+          "type" : "answer",
+          "id" : 69,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "70" : {
+          "type" : "answer",
+          "id" : 70,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "71" : {
+          "type" : "answer",
+          "id" : 71,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "72" : {
+          "type" : "answer",
+          "id" : 72,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_CHEST",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "73" : {
+          "type" : "answer",
+          "id" : 73,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_STOMACH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "74" : {
+          "type" : "answer",
+          "id" : 74,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_HIPS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "75" : {
+          "type" : "answer",
+          "id" : 75,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "76" : {
+          "type" : "answer",
+          "id" : 76,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "77" : {
+          "type" : "answer",
+          "id" : 77,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_LOWER_LEGG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "78" : {
+          "type" : "answer",
+          "id" : 78,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "79" : {
+          "type" : "answer",
+          "id" : 79,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "80" : {
+          "type" : "answer",
+          "id" : 80,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "81" : {
+          "type" : "answer",
+          "id" : 81,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "82" : {
+          "type" : "answer",
+          "id" : 82,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "83" : {
+          "type" : "answer",
+          "id" : 83,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_RIGHT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "84" : {
+          "type" : "answer",
+          "id" : 84,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_LEFT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "85" : {
+          "type" : "answer",
+          "id" : 85,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "FRONT_GENITALS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "86" : {
+          "type" : "answer",
+          "id" : 86,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LOWER_BACK",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "87" : {
+          "type" : "answer",
+          "id" : 87,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_UPPER_BACK",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "88" : {
+          "type" : "answer",
+          "id" : 88,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "89" : {
+          "type" : "answer",
+          "id" : 89,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HIPS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "90" : {
+          "type" : "answer",
+          "id" : 90,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "91" : {
+          "type" : "answer",
+          "id" : 91,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "92" : {
+          "type" : "answer",
+          "id" : 92,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "93" : {
+          "type" : "answer",
+          "id" : 93,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "94" : {
+          "type" : "answer",
+          "id" : 94,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "95" : {
+          "type" : "answer",
+          "id" : 95,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "96" : {
+          "type" : "answer",
+          "id" : 96,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "97" : {
+          "type" : "answer",
+          "id" : 97,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "98" : {
+          "type" : "answer",
+          "id" : 98,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_NECK",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "99" : {
+          "type" : "answer",
+          "id" : 99,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "100" : {
+          "type" : "answer",
+          "id" : 100,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "101" : {
+          "type" : "answer",
+          "id" : 101,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "102" : {
+          "type" : "answer",
+          "id" : 102,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_KNEE",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "103" : {
+          "type" : "answer",
+          "id" : 103,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_LOWER_ARM",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "104" : {
+          "type" : "answer",
+          "id" : 104,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "105" : {
+          "type" : "answer",
+          "id" : 105,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "106" : {
+          "type" : "answer",
+          "id" : 106,
+          "jsonQuestionDTO" : 63,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 17
+    },
+    "107" : {
+      "type" : "question",
+      "id" : 107,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist ein horizontaler Schieberegler. Er zeigt zusätzlich Symbole über der Skala an.<br><p></p><p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?",
+        "es_ES" : "Se trata de un deslizador horizontal. También muestra símbolos encima de la escala.<br> La pregunta dice así: qué tal se encuentra? ",
+        "en_GB" : "This is a horizontal slider. It also displays symbols above the scale.<br></p><p>The question reads: How do you feel?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "SLIDER",
+      "answers" : {
+        "108" : {
+          "type" : "answer",
+          "id" : 108,
+          "jsonQuestionDTO" : 107,
+          "minValue" : 0.0,
+          "maxValue" : 1.0,
+          "stepsize" : "0.01",
+          "localizedLabel" : { },
+          "localizedMaximumText" : {
+            "es_ES" : "<p><span class=\"st\">¡</span>Genial!<br></p>",
+            "de_DE" : "<p>Super!<br></p>",
+            "en_GB" : "<p>Great!<br></p>"
+          },
+          "localizedMinimumText" : {
+            "es_ES" : "<p>No muy bien<br></p>",
+            "de_DE" : "<p>Nicht so gut<br></p>",
+            "en_GB" : "<p>Not so good<br></p>"
+          },
+          "localizedFreetextLabel" : { },
+          "vertical" : false,
+          "showValueOnButton" : true,
+          "isEnabled" : true,
+          "showIcons" : true,
+          "icons" : [ {
+            "id" : "111",
+            "position" : "0",
+            "icon" : "bi-emoji-angry"
+          }, {
+            "id" : "109",
+            "position" : "50",
+            "icon" : "bi-emoji-expressionless"
+          }, {
+            "id" : "110",
+            "position" : "100",
+            "icon" : "bi-emoji-smile"
+          } ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 5
+    },
+    "112" : {
+      "type" : "question",
+      "id" : 112,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist eine Datumsfrage. <br></p><p>Bitte tippen/klicken Sie in das Eingabefeld, um die Datumsauswahl zu starten.</p><p> Die Frage hier lautet: Wann sind Sie geboren?<br>",
+        "es_ES" : "Esta pregunta es de tipo temporal. </p><p>Haga click en el campo en blanco para introducir su respuesta.<br></p><p>Cuál es su fecha de nacimiento? <br><br>",
+        "en_GB" : "This is a date question. </p><p>Tap/click on the empty field to introduce your answer.<br></p><p>What is your date of birth?<br>"
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "DATE",
+      "answers" : {
+        "113" : {
+          "type" : "answer",
+          "id" : 113,
+          "jsonQuestionDTO" : 112,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 8
+    },
+    "114" : {
+      "type" : "question",
+      "id" : 114,
+      "localizedQuestionText" : {
+        "de_DE" : "Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.</p><p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?",
+        "es_ES" : "Ésta es una barra deslizante horizontal. <br> La pregunta dice así: qué tal se encuentra? ",
+        "en_GB" : "This is a horizontal slider.<br></p><p>The question reads: How do you feel?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "SLIDER",
+      "answers" : {
+        "115" : {
+          "type" : "answer",
+          "id" : 115,
+          "jsonQuestionDTO" : 114,
+          "minValue" : 0.0,
+          "maxValue" : 1.0,
+          "stepsize" : "0.01",
+          "localizedLabel" : { },
+          "localizedMaximumText" : {
+            "de_DE" : "<p>Super!<br></p>",
+            "es_ES" : "<p><span class=\"st\">¡</span>Genial!<br></p>",
+            "en_GB" : "<p>Great!<br></p>"
+          },
+          "localizedMinimumText" : {
+            "de_DE" : "<p>Nicht so gut<br></p>",
+            "es_ES" : "<p>No muy bien<br></p>",
+            "en_GB" : "<p>Not so good<br></p>"
+          },
+          "localizedFreetextLabel" : { },
+          "vertical" : false,
+          "showValueOnButton" : true,
+          "isEnabled" : true,
+          "showIcons" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 4
+    },
+    "116" : {
+      "type" : "question",
+      "id" : 116,
+      "localizedQuestionText" : {
+        "es_ES" : "¿Dónde le duele la parte posterior del cuerpo?",
+        "de_DE" : "Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers?",
+        "en_GB" : "Where do you have pain on the back of your body?"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "BODY_PART",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 5,
+      "answers" : {
+        "117" : {
+          "type" : "answer",
+          "id" : 117,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HEAD",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "118" : {
+          "type" : "answer",
+          "id" : 118,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_HIPS",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "119" : {
+          "type" : "answer",
+          "id" : 119,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_SHOULDER",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "120" : {
+          "type" : "answer",
+          "id" : 120,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_LEFT_THIGH",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "121" : {
+          "type" : "answer",
+          "id" : 121,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_ELBOW_JOINT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "122" : {
+          "type" : "answer",
+          "id" : 122,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_FOOT",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "123" : {
+          "type" : "answer",
+          "id" : 123,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_HAND",
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "124" : {
+          "type" : "answer",
+          "id" : 124,
+          "jsonQuestionDTO" : 116,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "bodyPart" : "BACK_RIGHT_LOWER_LEG",
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 15
+    },
+    "125" : {
+      "type" : "question",
+      "id" : 125,
+      "localizedQuestionText" : {
+        "de_DE" : "<p>Dies ist eine Auswahllistenfrage.<br></p>",
+        "es_ES" : "Esta pregunta es de tipo \"lista\". Seleccione un valor de entre los posibles mostrados en la lista. ",
+        "en_GB" : "This is a drop down list question. You may select a value from the drop down list. "
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "DROP_DOWN",
+      "minNumberAnswers" : 1,
+      "maxNumberAnswers" : 3,
+      "answers" : {
+        "126" : {
+          "type" : "answer",
+          "id" : 126,
+          "jsonQuestionDTO" : 125,
+          "codedValue" : "1",
+          "localizedLabel" : {
+            "es_ES" : "Respuesta uno",
+            "de_DE" : "Antwort 1",
+            "en_GB" : "Answer one"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "127" : {
+          "type" : "answer",
+          "id" : 127,
+          "jsonQuestionDTO" : 125,
+          "codedValue" : "2",
+          "localizedLabel" : {
+            "es_ES" : "Respuesta dos",
+            "de_DE" : "Antwort 2",
+            "en_GB" : "Answer two"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        },
+        "128" : {
+          "type" : "answer",
+          "id" : 128,
+          "jsonQuestionDTO" : 125,
+          "codedValue" : "3",
+          "localizedLabel" : {
+            "es_ES" : "Respuesta tres",
+            "de_DE" : "Antwort 3",
+            "en_GB" : "Answer three"
+          },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "isOther" : false,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 9
+    },
+    "129" : {
+      "type" : "question",
+      "id" : 129,
+      "localizedQuestionText" : {
+        "de_DE" : "Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.</p><p>Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? <br><br>",
+        "es_ES" : "Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. </p><p>La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?",
+        "en_GB" : "As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. </p><p>The question would be: How many restaurants have you visited in the last week? Which ones? "
+      },
+      "isRequired" : true,
+      "isEnabled" : true,
+      "questionType" : "NUMBER_CHECKBOX_TEXT",
+      "answers" : {
+        "130" : {
+          "type" : "answer",
+          "id" : 130,
+          "jsonQuestionDTO" : 129,
+          "minValue" : 0.0,
+          "maxValue" : 10.0,
+          "stepsize" : "1.0",
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : {
+            "es_ES" : "Restaurantes:",
+            "de_DE" : "Süßigkeiten:",
+            "en_GB" : "Restaurants:"
+          },
+          "vertical" : false,
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 7
+    },
+    "131" : {
+      "type" : "question",
+      "id" : 131,
+      "localizedQuestionText" : {
+        "de_DE" : "<p>Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.\r\n</p><p>Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!</p>",
+        "es_ES" : "<p>Para terminar, les mostramos una pregunta de tipo texto libre. Aquí pueden introducir un comentario. \r\n</p><p>Nos gustaría que nos comentara qué le parece el sistema, si ha detectado algún error y/o si tiene alguna sugerencia.</p>",
+        "en_GB" : "<p>Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.  \r\n</p><p>We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.</p>"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "FREE_TEXT",
+      "answers" : {
+        "132" : {
+          "type" : "answer",
+          "id" : 132,
+          "jsonQuestionDTO" : 131,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 11
+    },
+    "133" : {
+      "type" : "question",
+      "id" : 133,
+      "localizedQuestionText" : {
+        "es_ES" : "Se trata de una pregunta con código de barras. Los códigos se pueden escanear con este tipo de pregunta. <br>",
+        "de_DE" : "Dies ist eine Barcode Frage. Mit diesem Fragetypen können Codes gescannt werden. <br>",
+        "en_GB" : "This is a barcode question. Codes can be scanned with this question type. <br>"
+      },
+      "isRequired" : false,
+      "isEnabled" : true,
+      "questionType" : "BARCODE",
+      "maxNumberAnswers" : 1,
+      "answers" : {
+        "134" : {
+          "type" : "answer",
+          "id" : 134,
+          "jsonQuestionDTO" : 133,
+          "localizedLabel" : { },
+          "localizedMaximumText" : { },
+          "localizedMinimumText" : { },
+          "localizedFreetextLabel" : { },
+          "isEnabled" : true,
+          "icons" : [ ],
+          "conditions" : [ ]
+        }
+      },
+      "jsonQuestionnaireDTO" : 1,
+      "position" : 12
+    }
+  },
+  "scoreDTOs" : {
+    "9168" : {
+      "type" : "score",
+      "id" : 9168,
+      "name" : "Score Test",
+      "questionnaireId" : 1,
+      "expression" : {
+        "expressions" : [ {
+          "expressions" : [ {
+            "expressions" : [ {
+              "operatorId" : 5,
+              "questionId" : 114
+            } ],
+            "operatorId" : 7
+          }, {
+            "operatorId" : 5,
+            "questionId" : 129
+          } ],
+          "operatorId" : 1
+        } ],
+        "operatorId" : 7
+      }
+    }
+  }
+}
