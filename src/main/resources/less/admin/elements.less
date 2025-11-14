@@ -106,6 +106,27 @@
     }
 }
 
+.btn-outline-primary {
+    border-color: @color-blue-dark;
+    color: @color-blue-dark;
+    border-radius: @border-radius-sm;
+    transition: @transition-value;
+
+    &:hover {
+        border-color: @color-blue-light;
+        color: @color-blue-light;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+.btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+    background-color: @color-blue-dark;
+    border-color: @color-blue-dark;
+    color: @color-white;
+    transition: @transition-value;
+}
+
 .btn-secondary{
     background-color: @color-gray-dark;
     border-color: @color-gray-dark;
