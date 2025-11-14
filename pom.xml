@@ -74,8 +74,8 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.73</version>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.82</version>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi</groupId>
@@ -937,7 +937,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.18</version>
+            <version>1.5.19</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
