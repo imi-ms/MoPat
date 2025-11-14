@@ -117,7 +117,7 @@ class QuestionSelectors:
     TABLE_LAST_ROW = (By.XPATH, "//tbody/tr[last()]")
     TABLE_ROWS = (By.CSS_SELECTOR, "tbody > tr:not(#emptyRow)")
     TABLE_QUESTIONS = (By.ID, "questionTable")
-    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > a.link")
+    ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > div.btn-group > a.link")
     GRIP_SELECTOR = lambda item_id: (By.ID, f"grip-{item_id}")
 
 class QuestionHelper:
