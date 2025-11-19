@@ -162,16 +162,18 @@
 										</td>
 										<td th:text="${item.successfullExports}"></td>
 										<td class="actionColumn">
-											<a
-												class="link"
-												th:href="|show?id=${item.id}|"
-											>
-												<i
-													class="bi-eye-fill"
-													th:title="${messages.get(#locale, 'encounter.export.show', 'Show exports')}"
-												>
-												</i>
-											</a>
+                                            <div class="btn-group" role="group">
+                                                <a
+                                                    class="btn btn-sm btn-primary-list link"
+                                                    th:href="|show?id=${item.id}|"
+                                                >
+                                                    <i
+                                                        class="bi-eye-fill bi-list-icon"
+                                                        th:title="${messages.get(#locale, 'encounter.export.show', 'Show exports')}"
+                                                    >
+                                                    </i>
+                                                </a>
+                                            </div>
 										</td>
 									</tr>
 								</th:block>
@@ -271,7 +273,7 @@
 												th:id="${item.id}"
 											>
 												<i
-													class="bi bi-plus-lg"
+													class="bi bi-plus-lg bi-list-icon"
 													style="cursor: pointer"
 												></i>
 											</td>
@@ -462,98 +464,105 @@
 										</td>
 										<td class="actionColumn">
 											<div class="d-none d-xl-block">
-												<th:block th:switch="${item.mailStatus.name()}">
-													<th:block th:case="'ACTIVE'">
-														<a
-															class="link"
-															th:href="|toggleMailStatus?id=${item.id}|"
-														>
-															<i
-																class="bi-stop-fill"
-																th:title="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
+                                                <div class="btn-group" role="group">
+                                                    <th:block th:switch="${item.mailStatus.name()}">
+                                                        <th:block th:case="'ACTIVE'">
+                                                            <a
+                                                                class="btn btn-sm btn-primary-list link"
+                                                                th:href="|toggleMailStatus?id=${item.id}|"
+                                                            >
+                                                                <i
+                                                                    class="bi-envelope-slash-fill bi-list-icon"
+                                                                    th:title="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
+                                                                >
+                                                                </i>
+                                                            </a>
+                                                        </th:block>
+                                                        <th:block th:case="'ADDRESS_REJECTED'">
+                                                            <i
+                                                                onclick="editEmail($(this).parents('tr').find('.data-email'))"
+                                                                class="bi-exclamation-triangle-fill bi-list-icon"
+                                                                style="cursor: pointer"
+                                                                th:title="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
+                                                            >
+                                                            </i>
+                                                        </th:block>
+                                                        <th:block th:case="'CONSENT_PENDING'">
+                                                            <i
+                                                                class="bi-clock-fill bi-list-icon"
+                                                                th:title="${messages.get(#locale, 'encounterScheduled.button.consentPending', 'Waiting for the patient's agreement')}"
+                                                            >
+                                                            </i>
+                                                        </th:block>
+                                                        <th:block th:case="'DEACTIVATED_ENCOUNTER_MANAGER'">
+                                                            <a
+                                                                class="btn btn-sm btn-primary-list link"
+                                                                th:href="|toggleMailStatus?id=${item.id}|"
+                                                            >
+                                                                <i
+                                                                    class="bi-envelope-check-fill bi-list-icon"
+                                                                    th:title="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
+                                                                >
+                                                                </i>
+                                                            </a>
+                                                        </th:block>
+                                                        <th:block th:case="'DEACTIVATED_PATIENT'">
+                                                            <a
+                                                                class="btn btn-sm btn-primary-list reactivationLink link"
+                                                                th:href="|toggleMailStatus?id=${item.id}|"
+                                                            >
+                                                                <i
+                                                                    class="bi-send-fill bi-list-icon"
+                                                                    th:title="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
+                                                                >
+                                                                </i>
+                                                            </a>
+                                                        </th:block>
+                                                        <th:block th:case="'INTERRUPTED'">
+															<a
+																class="btn btn-sm btn-primary-list reactivationLink link btn-crossed btn-yellow"
+																aria-disabled="true"
 															>
-															</i>
-														</a>
-													</th:block>
-													<th:block th:case="'ADDRESS_REJECTED'">
-														<i
-															onclick="editEmail($(this).parents('tr').find('.data-email'))"
-															class="bi-exclamation-triangle-fill"
-															style="cursor: pointer"
-															th:title="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
-														>
-														</i>
-													</th:block>
-													<th:block th:case="'CONSENT_PENDING'">
-														<i
-															class="bi-clock-fill"
-															th:title="${messages.get(#locale, 'encounterScheduled.button.consentPending', 'Waiting for the patient's agreement')}"
-														>
-														</i>
-													</th:block>
-													<th:block th:case="'DEACTIVATED_ENCOUNTER_MANAGER'">
-														<a
-															class="link"
-															th:href="|toggleMailStatus?id=${item.id}|"
-														>
-															<i
-																class="bi-play-circle-fill"
-																th:title="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
-															>
-															</i>
-														</a>
-													</th:block>
-													<th:block th:case="'DEACTIVATED_PATIENT'">
-														<a
-															class="reactivationLink link"
-															th:href="|toggleMailStatus?id=${item.id}|"
-														>
-															<i
-																class="bi-send-fill"
-																th:title="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
-															>
-															</i>
-														</a>
-													</th:block>
-													<th:block th:case="'INTERRUPTED'">
-														<i
-															class="bi-exclamation-circle-fill"
-															th:title="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
-														>
-														</i>
-													</th:block>
-												</th:block>
-												<th:block th:if="${item.mailStatus != 'INTERRUPTED'}">
-													<th:block
-														th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
-													>
-														<a
-															class="interruptLink link"
-															th:href="|interrupt?encounterScheduledId=${item.id}|"
-														>
-															<i
-																class="bi-x-circle-fill"
-																th:title="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
-															>
-															</i>
-														</a>
-													</th:block>
-													<th:block
-														th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
-													>
-														<a
-															th:id="'removeScheduleEncounter_' + ${item.id}"
-															class="link"
-															th:href="|remove?encounterScheduledId=${item.id}|"
-														>
-															<i
-																class="bi-trash-fill"
-																th:title="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
-															>
-															</i>
-														</a>
-													</th:block>
-												</th:block>
+																<i
+																	class="bi-exclamation-circle-fill bi-list-icon"
+																	th:title="${messages.get(#locale, 'encounterScheduled.button.interrupted', 'This scheduled encounter has been interrupted')}"
+																>
+																</i>
+															</a>
+                                                        </th:block>
+                                                    </th:block>
+                                                    <th:block th:if="${item.mailStatus.name != 'INTERRUPTED'}">
+                                                        <th:block
+                                                            th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+                                                        >
+                                                            <a
+                                                                class="btn btn-sm btn-primary-list interruptLink link btn-red"
+                                                                th:href="|interrupt?encounterScheduledId=${item.id}|"
+                                                            >
+                                                                <i
+                                                                    class="bi-x-circle-fill bi-list-icon"
+                                                                    th:title="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
+                                                                >
+                                                                </i>
+                                                            </a>
+                                                        </th:block>
+                                                        <th:block
+                                                            th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
+                                                        >
+                                                            <a
+																th:id="'removeScheduleEncounter_' + ${item.id}"
+                                                                class="btn btn-sm btn-primary-list link btn-red"
+                                                                th:href="|remove?encounterScheduledId=${item.id}|"
+                                                            >
+                                                                <i
+                                                                    class="bi-trash-fill bi-list-icon"
+                                                                    th:title="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
+                                                                >
+                                                                </i>
+                                                            </a>
+                                                        </th:block>
+                                                    </th:block>
+                                                </div>
 											</div>
 											<!--/*Action dropdown for smaller resolutions*/-->
 											<div class="d-block d-xl-none">
@@ -861,13 +870,13 @@
 								encounter.endTime === null
 							) {
 								mailButton =
-									"<a class='reminderLink link' href='sendEmail?id=" +
+									"<a class='btn btn-sm btn-primary-list reminderLink link' href='sendEmail?id=" +
 									encounter.id +
-									"'><span class='bi bi-envelope' title='" +
+									"'><i class='bi bi-envelope bi-list-icon' title='" +
 									/*[[${messages.get(#locale, 'encounterScheduled.button.resend', 'Resend email')}]]*/ ""
-									+"'></span>";
+									+"'></i>";
 								copyButton =
-									"<a class='copyLink link' href='' onclick='copyLinkToClipboard(this, " +
+									"<a class='btn btn-sm btn-primary-list copyLink link' href='' onclick='copyLinkToClipboard(this, " +
 									'"' +
 									encounter.uuid +
 									'"' +
@@ -875,9 +884,9 @@
 									'"' +
 									encounterScheduled.locale.toString() +
 									'"' +
-									"); return false;'><span class='bi bi-clipboard-fill' title='" +
+									"); return false;'><i class='bi bi-clipboard-fill bi-list-icon' title='" +
 									/*[[${messages.get(#locale, 'encounterScheduled.button.copyLink', 'Copy link to clipboard')}]]*/ ""
-									+"'></span>";
+									+"'></i>";
 							}
 
 							var startTime = "";
@@ -932,13 +941,14 @@
 								.html(
 									tableRow.find(".action").html() +
 										"<div class='actionColumn' style='width: 100%; text-align: center;'>" +
+										"<div class='btn-group' role='group'>" +
 										mailButton +
 										copyButton +
-										"<a class='link' href='show?id=" +
+										"<a class='btn btn-sm btn-primary-list link' href='show?id=" +
 										encounter.id +
-										"'><span class='bi bi-eye' title='" +
+										"'><i class='bi bi-eye-fill bi-list-icon' title='" +
 										/*[[${messages.get(#locale, 'encounter.export.show', 'Show exports')}]]*/ ""
-										+"'></span></div>"
+										+"'></i></div></div>"
 								);
 						}
 					}

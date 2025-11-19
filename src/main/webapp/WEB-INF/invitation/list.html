@@ -76,38 +76,40 @@
                             </td>
                             <td class="actionColumn">
                                 <div class="d-none d-xl-block">
-                                    <th:block th:fragment="actionFragment">
-                                        <a
-                                            class="link"
-                                            th:href="@{edit?id=__${item.id}__}"
-                                        >
-                                            <i
-                                                class="bi-pencil-fill"
-                                                th:title="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
+                                    <div class="btn-group" role="group">
+                                        <th:block th:fragment="actionFragment">
+                                            <a
+                                                class="btn btn-sm btn-primary-list link"
+                                                th:href="@{edit?id=__${item.id}__}"
                                             >
-                                            </i>
-                                        </a>
-                                        <a
-                                            class="link"
-                                            th:href="@{refresh?id=__${item.id}__}"
-                                        >
-                                            <i
-                                                class="bi-alarm-fill"
-                                                th:title="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
+                                                <i
+                                                    class="bi-pencil-fill bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'button.edit', 'Edit invitation')}"
+                                                >
+                                                </i>
+                                            </a>
+                                            <a
+                                                class="btn btn-sm btn-primary-list link"
+                                                th:href="@{refresh?id=__${item.id}__}"
                                             >
-                                            </i>
-                                        </a>
-                                        <a
-                                            class="link"
-                                            th:href="@{remove?id=__${item.id}__}"
-                                        >
-                                            <i
-                                                class="bi-x-circle-fill"
-                                                th:title="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
+                                                <i
+                                                    class="bi-alarm-fill bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'invitation.button.refreshExpirationDate', 'Refresh expiration date')}"
+                                                >
+                                                </i>
+                                            </a>
+                                            <a
+                                                class="btn btn-sm btn-primary-list link btn-red"
+                                                th:href="@{remove?id=__${item.id}__}"
                                             >
-                                            </i>
-                                        </a>
-                                    </th:block>
+                                                <i
+                                                    class="bi-x-circle-fill bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'button.remove', 'Remove invitation')}"
+                                                >
+                                                </i>
+                                            </a>
+                                        </th:block>
+                                    </div>
                                 </div>
 
                                 <div class="d-block d-xl-none">

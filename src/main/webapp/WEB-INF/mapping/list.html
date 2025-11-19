@@ -67,25 +67,27 @@
 							<td th:text="${item.filename}"></td>
 							<td th:text="${item.originalFilename}"></td>
 							<td class="actionColumn">
-								<a
-									class="link"
-									th:href="@{/mapping/map?id=__${item.id}__}"
-								>
-									<span
-										class="bi bi-arrows-angle-contract"
-										th:title="${messages.get(#locale, 'mapping.button.map', 'Edit mapping')}"
-									>
-									</span>
-								</a>
-								<a
-									class="link"
-									th:href="@{remove?id=__${item.id}__}"
-								>
-									<span
-										class="bi-trash-fill"
-										th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
-									></span>
-								</a>
+                                <div class="btn-group" role="group">
+                                    <a
+                                        class="btn btn-sm btn-primary-list link"
+                                        th:href="@{/mapping/map?id=__${item.id}__}"
+                                    >
+                                        <i
+                                            class="bi bi-arrows-angle-contract bi-list-icon"
+                                            th:title="${messages.get(#locale, 'mapping.button.map', 'Edit mapping')}"
+                                        >
+                                        </i>
+                                    </a>
+                                    <a
+                                        class="btn btn-sm btn-primary-list link btn-red"
+                                        th:href="@{remove?id=__${item.id}__}"
+                                    >
+                                        <i
+                                            class="bi-trash-fill bi-list-icon"
+                                            th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
+                                        ></i>
+                                    </a>
+                                </div>
 							</td>
 						</tr>
 					</th:block>
