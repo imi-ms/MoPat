@@ -6,7 +6,6 @@ import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
-import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -17,22 +16,15 @@ import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.score.Score;
-import de.imi.mopat.validator.MoPatValidator;
 import de.imi.mopat.validator.QuestionDTOValidator;
 import de.imi.mopat.validator.QuestionValidator;
 import de.imi.mopat.validator.SliderAnswerValidator;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import javax.imageio.ImageIO;
-import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -518,6 +510,7 @@ public class QuestionController {
         question.setIsEnabled(questionDTO.getIsEnabled());
         question.setQuestionType(questionDTO.getQuestionType());
         question.setLocalizedQuestionText(localizedQuestionText);
+        question.setIsJustInfo(questionDTO.getIsJustInfo());
 
         // If multiple choice or dropdown question set min/max number of
         // answers
@@ -530,7 +523,7 @@ public class QuestionController {
         // Question is new
         question = new Question(localizedQuestionText, questionDTO.getIsRequired(),
                 questionDTO.getIsEnabled(), questionDTO.getQuestionType(),
-                (questionnaire.getQuestions().size() + 1), questionnaire);
+                (questionnaire.getQuestions().size() + 1), questionnaire, questionDTO.getIsJustInfo());
         // If dropdown question set min/max number of answers to 1
         if (question.getQuestionType() == QuestionType.DROP_DOWN) {
             minNumberAnswers = 1;

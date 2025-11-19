@@ -119,6 +119,14 @@
 						>
 						</checkbox>
 
+                        <checkbox
+                                layout:replace="~{fragments/forms :: checkbox(
+                                path='isJustInfo',
+                                text=${messages.get(#locale, 'question.label.isJustInfo', 'Question is just information without interaction')},
+                                showErrors=true)}"
+                        >
+                        </checkbox>
+
 						<!--/* handling answers */-->
 						<addVar
 							layout:replace="~{helper/var :: add(key='answerExist',
@@ -1762,6 +1770,12 @@
             the checkbox tag. -]*/
 			$("#isRequired1").removeAttr("disabled");
 
+			if($("#questionTypeDropDown").val() != "IMAGE") {
+			    $("#isJustInfo1").prop("checked", false);
+			    $("#isJustInfo1").attr("disabled", true);
+			    $("#isJustInfo1").parent().parent().attr("style", "display:none;");
+			}
+
 			/*[- Switch over chosen QuestionType and enable associated elements -]*/
 			switch ($("#questionTypeDropDown").val()) {
 				case "MULTIPLE_CHOICE":
@@ -1861,6 +1875,8 @@
 				case "IMAGE":
 					$("#image").children().removeAttr("disabled");
 					$("#imageField").children("legend").siblings().show();
+					$("#isJustInfo1").removeAttr("disabled");
+					$("#isJustInfo1").parent().parent().removeAttr("style");
 					break;
 				case "BODY_PART":
 					$("#bodyPart").children().removeAttr("disabled");
