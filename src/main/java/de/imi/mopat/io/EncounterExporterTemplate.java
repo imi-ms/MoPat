@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
  * This interface defines how an exporter should be implemented to be called by the
  * {@link EncounterExporter}.
  * <p>
- * Implement this interface if you want to implement an exporter to a new KIS. See
- * {@link de.imi.mopat.io.impl.EncounterExporterTemplateOrbis} for reference. Every exporter belongs
+ * Implement this interface if you want to implement an exporter to a new KIS. Every exporter belongs
  * to a single {@link de.imi.mopat.model.enumeration.ExportTemplateType}.
  */
 @Component

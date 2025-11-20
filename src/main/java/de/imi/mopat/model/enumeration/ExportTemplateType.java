@@ -5,7 +5,6 @@ import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFHIR;
 import de.imi.mopat.io.impl.EncounterExporterTemplateODM;
-import de.imi.mopat.io.impl.EncounterExporterTemplateOrbis;
 import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
 import de.imi.mopat.io.impl.ExportTemplateImporterFHIR;
@@ -19,8 +18,7 @@ import org.slf4j.MarkerFactory;
  */
 public enum ExportTemplateType {
 
-    ORBIS(ExportTemplateImporterOrbis.class, EncounterExporterTemplateOrbis.class,
-        "configurationGroup.label.ORBIS"), ODM(ExportTemplateImporterODM.class,
+    ODM(ExportTemplateImporterODM.class,
         EncounterExporterTemplateODM.class, "configurationGroup.label.ODM"), HL7v2(
         ExportTemplateImporterOrbis.class, EncounterExporterTemplateHL7v2.class,
         "configurationGroup.label.HLSeven"), FHIR(ExportTemplateImporterFHIR.class,
