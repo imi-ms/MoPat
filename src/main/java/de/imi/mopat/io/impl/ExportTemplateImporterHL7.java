@@ -21,14 +21,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * This is an instance of {@link ExportTemplateImporterOrbis} and represents the implementation for
+ * This is an instance of {@link ExportTemplateImporterHL7} and represents the implementation for
  * the KIS "ORBIS". It is designed to load an XML file according to the structure provided by ORBIS.
  * See {@link ExportTemplateImporter#importFile(InputStream)} for further explanation.
  */
 @Service
-public class ExportTemplateImporterOrbis implements ExportTemplateImporter {
+public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExportTemplateImporterOrbis.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExportTemplateImporterHL7.class);
 
     private final String[] ignoreTagsArray = {"Document", "Instance", "Formname"};
     private final List<String> ignoreTags;
@@ -36,7 +36,7 @@ public class ExportTemplateImporterOrbis implements ExportTemplateImporter {
     /**
      * Constructor only initializes the ignore list for tags.
      */
-    public ExportTemplateImporterOrbis() {
+    public ExportTemplateImporterHL7() {
         // create a list of all tags which should be ignored for the import of
         // the export template file.
         this.ignoreTags = Arrays.asList(ignoreTagsArray);
