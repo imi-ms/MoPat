@@ -42,6 +42,7 @@ public class QuestionDTO {
 
     public QuestionDTO() {
         this.isEnabled = true;
+        this.isJustInfo = false;
     }
 
     public Long getId() {
