@@ -91,7 +91,7 @@ public class QuestionTest {
         Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
         Question question = new Question(localizedQuestionText, isRequired, isEnabled, questiontype,
-            position, questionnaire);
+            position, questionnaire, false);
 
         return question;
     }
@@ -115,7 +115,7 @@ public class QuestionTest {
         }
 
         Question question = new Question(localizedQuestionText, isRequired, isEnabled, questiontype,
-            position, questionnaire);
+            position, questionnaire, false);
 
         return question;
     }
@@ -133,7 +133,7 @@ public class QuestionTest {
         }
         
         Question question = new Question(localizedQuestionText, isRequired, isEnabled, questiontype,
-            position, questionnaire);
+            position, questionnaire, false);
         
         return question;
     }
@@ -153,7 +153,7 @@ public class QuestionTest {
         Integer position = Math.abs(random.nextInt());
 
         Question question = new Question(localizedQuestionText, isRequired, isEnabled, questiontype,
-            position, questionnaire);
+            position, questionnaire, false);
 
         return question;
     }

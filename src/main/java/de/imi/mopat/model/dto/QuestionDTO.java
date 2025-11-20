@@ -20,6 +20,8 @@ public class QuestionDTO {
     private Boolean isRequired = null;
     @NotNull(message = "{question.enabled.notNull}")
     private Boolean isEnabled = null;
+    @NotNull(message = "{question.isJustInfo.notNull}")
+    private Boolean isJustInfo = null;
     @NotNull(message = "{question.questionType.notNull}")
     private QuestionType questionType = null;
     //@Pattern(regexp="\\d+", message = "{question.minNumberAnswers
@@ -40,6 +42,7 @@ public class QuestionDTO {
 
     public QuestionDTO() {
         this.isEnabled = true;
+        this.isJustInfo = false;
     }
 
     public Long getId() {
@@ -80,6 +83,14 @@ public class QuestionDTO {
 
     public void setIsEnabled(final Boolean isEnabled) {
         this.isEnabled = isEnabled;
+    }
+
+    public Boolean getIsJustInfo() {
+        return isJustInfo;
+    }
+
+    public void setIsJustInfo(Boolean justInfo) {
+        isJustInfo = justInfo;
     }
 
     public QuestionType getQuestionType() {

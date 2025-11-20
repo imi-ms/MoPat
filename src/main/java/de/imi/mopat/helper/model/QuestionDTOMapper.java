@@ -53,6 +53,7 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
         questionDTO.setLocalizedQuestionText(new TreeMap<>(question.getLocalizedQuestionText()));
         questionDTO.setIsRequired(question.getIsRequired());
         questionDTO.setIsEnabled(question.getIsEnabled());
+        questionDTO.setIsJustInfo(question.getIsJustInfo());
         questionDTO.setMinNumberAnswers(question.getMinNumberAnswers());
         questionDTO.setMaxNumberAnswers(question.getMaxNumberAnswers());
         questionDTO.setCodedValueType(question.getCodedValueType());
