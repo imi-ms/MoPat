@@ -1,5 +1,7 @@
 package de.imi.mopat.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
@@ -525,7 +527,29 @@ public class SurveyController {
 
                 encounter.setStartTime(encounterDTO.getStartTime());
                 encounter.setPatientID(encounterDTO.getPatientID());
-                encounter.setCaseNumber(encounterDTO.getCaseNumber());
+
+                try {
+                    encounter.setCaseNumber(encounterDTO.getCaseNumber());
+                } catch (Exception e) {
+
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        LOGGER.error("Exception setting case number : {},"
+                                + " activeClinicId {}, bundleId {}, action {}, session {}, encounterDTO {}",
+                            encounterDTO.getCaseNumber(), activeClinicId, bundleId, action,
+                            mapper.writeValueAsString(session),
+                            mapper.writeValueAsString(encounterDTO)
+                        );
+                    } catch (JsonProcessingException ignored) {
+                        LOGGER.error("Exception setting case number : {},"
+                                + " activeClinicId {}, bundleId {}, action {}",
+                            encounterDTO.getCaseNumber(), activeClinicId, bundleId, action
+                        );
+                    }
+
+                    throw e;
+                }
+
                 encounter.setBundleLanguage(bundleLanguage);
                 encounter.setClinic(clinicDao.getElementById(activeClinicId));
                 encounterDao.merge(encounter);
