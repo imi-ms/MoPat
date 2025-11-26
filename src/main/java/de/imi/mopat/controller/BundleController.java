@@ -1,5 +1,6 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.controller.util.SaveAndEditNextInOrderUtil;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
@@ -157,7 +158,8 @@ public class BundleController {
 
         bundleService.saveOrUpdateBundle(bundleDTO);
 
-        return "redirect:/bundle/list";
+        String defaultSaveRoute= "redirect:/bundle/list";
+        return SaveAndEditNextInOrderUtil.determineNextRoute("bundle", action, defaultSaveRoute);
     }
 
     /**
