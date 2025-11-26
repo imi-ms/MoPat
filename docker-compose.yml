@@ -14,7 +14,7 @@ services:
       - ./db:/docker-entrypoint-initdb.d
 
   webapp-container:
-    build: .
+    image: wwuimi/mopat
     depends_on:
       - db-container
     ports:
@@ -32,4 +32,7 @@ services:
       - MYSQL_MOPAT_URL=${MYSQL_MOPAT_URL}
       - MYSQL_MOPAT_USER_URL=${MYSQL_MOPAT_USER_URL}
       - MYSQL_MOPAT_AUDIT_URL=${MYSQL_MOPAT_AUDIT_URL}
+      - MOPAT_SMTP_HOST=smtp.host.com
+      - MOPAT_SMTP_FROM=replaceme@domain.com
+      - MOPAT_SMTP_TO=replaceme@domain.com
       - PEPPER=${PEPPER}
