@@ -118,12 +118,13 @@ On Linux, you can use system management tools like systemd or init to configure 
 Alternatively, if you are not running Tomcat as a service, you can start it manually using the startup.sh script (on Linux/Unix) or startup.bat script (on Windows) located in the bin directory of your Tomcat installation folder.
 
 Build the WAR (Web Application Archive) file from the MoPat source code or obtain a [pre-built WAR](https://github.com/imi-ms/MoPat/releases) file from the repository.
-MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please adjust `src/main/resources/mopat.properties`:
-```conf
-de.imi.mopat.logback.email.host=
-de.imi.mopat.logback.email.from=
-de.imi.mopat.logback.email.to=
+MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please set the correct system variables:
+```bash
+export MOPAT_SMTP_HOST=
+export MOPAT_SMTP_FROM=
+export MOPAT_SMTP_TO=
 ```
+For Tomcat to read the system variables, set them in a file under `$CATALINE_BASE/bin/setenv.sh` which will be automatically processed when starting Tomcat. 
 Then, copy the MoPat WAR file into the webapps directory of your Tomcat installation. Tomcat will automatically deploy the web application during its startup or on-the-fly if it is already running.
 
 The application needs read- and write privileges to store application data. If you deploy MoPat on a server with Tomcat, you may have to explicitly allow tomcat to write to these locations. You can do so by creating a file `read-write-path.conf` under `/etc/systemd/system/tomcat10.service.d`.

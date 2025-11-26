@@ -1,0 +1,46 @@
+stages:
+  - build
+  - docker
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+
+cache:
+  paths:
+    - .m2/repository
+
+build-war:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - mvn -B clean package -DskipTests
+    - export VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+    - echo "Version found: $VERSION"
+    - echo $VERSION > version.txt
+  artifacts:
+    paths:
+      - target/*.war
+      - version.txt
+
+docker-build-push:
+  stage: docker
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - export VERSION=$(cat version.txt)
+    - echo "Version loaded: $VERSION"
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker build \
+      -t wwuimi/mopat:$VERSION \
+      -t wwuimi/mopat:latest \
+      .
+    - docker push wwuimi/mopat:$VERSION
+    - docker push wwuimi/mopat:latest
+  needs:
+    - build-war
