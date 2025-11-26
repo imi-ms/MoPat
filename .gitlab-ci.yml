@@ -34,10 +34,11 @@ docker-build-push:
     - export VERSION=$(cat version.txt)
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   script:
-    - docker build \
-      -t wwuimi/mopat:$VERSION \
-      -t wwuimi/mopat:latest \
-      .
+    - |
+      docker build \
+        -t wwuimi/mopat:$VERSION \
+        -t wwuimi/mopat:latest \
+        .
     - docker push wwuimi/mopat:$VERSION
     - docker push wwuimi/mopat:latest
   needs:
