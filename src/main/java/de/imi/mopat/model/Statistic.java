@@ -58,9 +58,6 @@ public class Statistic implements Serializable, Comparable<Statistic> {
     @Column(name = "ODMExportCount")
     private Long ODMExportCount;
 
-    @Column(name = "ORBISExportCount")
-    private Long ORBISExportCount;
-
     @Column(name = "HL7ExportCount")
     private Long HL7ExportCount;
 
@@ -301,28 +298,6 @@ public class Statistic implements Serializable, Comparable<Statistic> {
     public void setODMExportCount(final Long ODMExportCount) {
         assert ODMExportCount != null : "The given ODM export count was null";
         this.ODMExportCount = ODMExportCount;
-    }
-
-    /**
-     * Returns the ORBIS export count of the current statistic object.
-     *
-     * @return The ORBIS export count of the current statistic object. Is never
-     * <code>null</code>.
-     */
-    public Long getORBISExportCount() {
-        return ORBISExportCount;
-    }
-
-    /**
-     * See {@link Statistic#getORBISExportCount()} for a description.Sets a new ORBIS export count
-     * for this statistic object.
-     *
-     * @param ORBISExportCount The new ORBIS export count for this statistic object. Must not be
-     *                         <code>null</code>.
-     */
-    public void setORBISExportCount(final Long ORBISExportCount) {
-        assert ORBISExportCount != null : "The given ORBIS export count was null";
-        this.ORBISExportCount = ORBISExportCount;
     }
 
     /**
