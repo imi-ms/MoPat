@@ -11,13 +11,12 @@ cache:
 
 build-war:
   stage: build
+  image: maven:3.9.6-eclipse-temurin-17
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-  image: maven:3.9.6-eclipse-temurin-17
   script:
     - mvn -B clean package -DskipTests
     - export VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-    - echo "Version found: $VERSION"
     - echo $VERSION > version.txt
   artifacts:
     paths:
@@ -33,7 +32,6 @@ docker-build-push:
     - docker:dind
   before_script:
     - export VERSION=$(cat version.txt)
-    - echo "Version loaded: $VERSION"
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   script:
     - docker build \
