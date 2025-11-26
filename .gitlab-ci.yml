@@ -30,6 +30,9 @@ docker-build-push:
   image: docker:latest
   services:
     - docker:dind
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     - export VERSION=$(cat version.txt)
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
