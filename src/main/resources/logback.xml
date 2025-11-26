@@ -20,7 +20,9 @@
     <import class="ch.qos.logback.core.rolling.RollingFileAppender" />
     <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy" />
 
-    <property resource="mopat.properties" />
+    <property name="smtpHost" value="${MOPAT_SMTP_HOST}"/>
+    <property name="emailTo"   value="${MOPAT_SMTP_TO}"/>
+    <property name="emailFrom" value="${MOPAT_SMTP_FROM}"/>
 
     <appender name="Console" class="ConsoleAppender">
         <encoder>
@@ -118,9 +120,9 @@
         <evaluator class="OnMarkerEvaluator">
             <marker>WEEKLY_EMAIL</marker>
         </evaluator>
-        <smtpHost>${de.imi.mopat.logback.email.host}</smtpHost>
-        <to>${de.imi.mopat.logback.email.to}</to>
-        <from>${de.imi.mopat.logback.email.from}</from>
+        <smtpHost>${smtpHost}</smtpHost>
+        <to>${emailTo}</to>
+        <from>${emailFrom}</from>
         <subject>[MoPat] Weekly Error Report for server ${HOSTNAME}</subject>
         <layout class="HTMLLayout">
             <!-- see http://logback.qos.ch/manual/layouts.html#ClassicPatternLayout for pattern documentation -->
@@ -137,9 +139,9 @@
         </evaluator>
         <!--See http://logback.qos.ch/manual/appenders.html#SMTPAppender-->
         <!--for documentation-->
-        <smtpHost>${de.imi.mopat.logback.email.host}</smtpHost>
-        <to>${de.imi.mopat.logback.email.to}</to>
-        <from>${de.imi.mopat.logback.email.from}</from>
+        <smtpHost>${smtpHost}</smtpHost>
+        <to>${emailTo}</to>
+        <from>${emailFrom}</from>
         <subject>[MoPat] FATAL error on Server ${HOSTNAME}</subject>
         <layout class="PatternLayout">
             <pattern>There has been an error marked 'FATAL', that's why you receive an email.
