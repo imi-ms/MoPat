@@ -28,26 +28,29 @@
                     <input
                         layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required='true', clazz='form-control', path='name', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.name', 'Name:')})}"
+                        text=${messages.get(#locale, 'clinic.label.name', 'Name:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div class="form-group">
                     <input
                         layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required='true', path='description', clazz='wysiwyg', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.description', 'Description:')})}"
+                        text=${messages.get(#locale, 'clinic.label.description', 'Description:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div class="form-group">
                     <input
                         layout:replace="~{fragments/forms :: inputWithLabel(
                         for='email', required=false, path='email', clazz='form-control', showErrors=true,
-                        text=${messages.get(#locale, 'clinic.label.email', 'Email:')})}"
+                        text=${messages.get(#locale, 'clinic.label.email', 'Email:')},
+                        errorId='validationError')}"
                     />
                 </div>
                 <div
                     class="accordion"
-                    id="accordionExample"
+                    id="clinicConfigurations"
                 >
                     <div class="accordion-item">
                         <h2
@@ -220,6 +223,7 @@
                                                     th:classappend="${#strings.replace(bundleClinicDTO.bundleDTO.name, ' ', '')}"
                                                 >
                                                     <input
+                                                        th:id="|bundle_${bundleClinicDTO.bundleDTO.id}|"
                                                         type="hidden"
                                                         th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.id|"
                                                         th:value="${bundleClinicDTO.bundleDTO.id}"
@@ -256,6 +260,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <a
+                                                            th:id="|move_${bundleClinicDTO.bundleDTO.id}|"
                                                             data-bs-toggle="collapse"
                                                             onClick="move($(this), $('#assignedBundlesTable'), $('#availableBundlesTable'))"
                                                         >
@@ -424,6 +429,7 @@
                                                     th:classappend="${#strings.replace(bundleDTO.name, ' ', '')}"
                                                 >
                                                     <input
+                                                        th:id="|bundle_${bundleDTO.id}|"
                                                         disabled="true"
                                                         type="hidden"
                                                         th:name="|bundleClinicDTOs[${counter.get()}].bundleDTO.id|"
@@ -431,6 +437,7 @@
                                                     />
                                                     <div class="col-1">
                                                         <a
+                                                            th:id="|move_${bundleDTO.id}|"
                                                             data-bs-toggle="collapse"
                                                             onClick="move($(this), $('#availableBundlesTable'), $('#assignedBundlesTable'))"
                                                         >
@@ -604,6 +611,7 @@
                                                     </div>
                                                     <div class="col-1">
                                                         <a
+                                                            th:id="|move_${user.username}|"
                                                             data-bs-toggle="collapse"
                                                             onClick="move($(this), $('#assignedUsersTable'), $('#availableUsersTable'))"
                                                         >
@@ -613,6 +621,7 @@
                                                         </a>
                                                     </div>
                                                     <input
+                                                        th:id="|user_${user.username}|"
                                                         type="hidden"
                                                         th:name="|assignedUserDTOs[${counter.get()}].id|"
                                                         th:value="${user.id}"
@@ -753,6 +762,7 @@
                                                 >
                                                     <div class="col-1">
                                                         <a
+                                                            th:id="|move_${item.username}|"
                                                             data-bs-toggle="collapse"
                                                             onClick="move($(this), $('#availableUsersTable'), $('#assignedUsersTable'))"
                                                             ><span class="bi bi-chevron-left"
@@ -764,6 +774,7 @@
                                                         </span>
                                                     </div>
                                                     <input
+                                                        th:id="|user_${item.username}|"
                                                         disabled="true"
                                                         type="hidden"
                                                         th:name="|assignedUserDTOs[${counter.get()}].id|"

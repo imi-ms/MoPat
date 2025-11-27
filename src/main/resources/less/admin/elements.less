@@ -100,11 +100,95 @@
 
     &:hover {
         background-color: @color-blue-light;
-        border-color: @color-blue-light; 
+        border-color: @color-blue-light;
         transition: @transition-value;
         box-shadow: @box-shadow-material-md;
     }
 }
+
+.btn-secondary{
+    background-color: @color-gray-dark;
+    border-color: @color-gray-dark;
+    color: @color-white;
+    border-radius: @border-radius-sm;
+    transition: @transition-value;
+
+    &:hover {
+        background-color: @color-gray-light;
+        border-color: @color-gray-light;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+.btn-primary-list {
+    .btn-primary();
+    background-color: @color-btn-primary-list-background;
+    border-color: @color-btn-primary-list-border;
+    color: @color-blue-links;
+
+    &:hover {
+        background-color: @color-btn-primary-list-hover-background;
+        border-color: @color-btn-primary-list-hover-border;
+        color: @color-btn-primary-list-hover;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+        }
+    i {
+        font-size: 1.2rem;
+    }
+}
+
+.bi-edit-question {
+  display: inline-block;
+  width: 2em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("../../images/edit-question.svg") no-repeat center / contain;
+  -webkit-mask: url("../../images/edit-question.svg") no-repeat center / contain;
+}
+
+.bi-list-icon {
+    display: inline-block;
+    width:2em;
+    height:1em;
+}
+
+.btn-red {
+    background-color: @color-failure-background !important;
+    border-color: @color-failure-border !important;
+
+    i {
+        color: @color-failure-text
+    }
+}
+
+.btn-green {
+    background-color: @color-success-background !important;
+    border-color: @color-success-border !important;
+
+    i {
+        color: @color-success-text
+    }
+}
+
+.btn-yellow {
+    background-color: @color-conflict-background !important;
+    border-color: @color-conflict-border !important;
+
+    i {
+        color: @color-conflict-text
+    }
+}
+
+.btn-crossed {
+    pointer-events: none;
+    background-color: @color-btn-primary-list-disabled-background;
+    i {
+        opacity: 0.3;
+    }
+}
+
 
 input[type=checkbox], input[type=radio] {
     accent-color: @color-blue-light;

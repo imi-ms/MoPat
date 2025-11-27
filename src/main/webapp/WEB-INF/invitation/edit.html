@@ -40,7 +40,8 @@
 										layout:replace="~{fragments/forms :: inputWithLabel(
 											for='firstName', required=true, path='invitationUsers[__${loop.index}__].firstName',
 											clazz='form-control personalDataInput firstname', showErrors=true,
-											text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+											text=${messages.get(#locale, 'user.label.firstname', 'Firstname')},
+											errorId='validationError')}"
 
 									/>
 								</div>
@@ -49,7 +50,8 @@
 										layout:replace="~{fragments/forms :: inputWithLabel(
 											for='lastName', required=true, path='invitationUsers[__${loop.index}__].lastName',
 											clazz='form-control personalDataInput lastname', showErrors=true,
-											text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+											text=${messages.get(#locale, 'user.label.lastname', 'Lastname')},
+											errorId='validationError')}"
 
 									/>
 								</div>
@@ -79,7 +81,7 @@
 										/>
 									</th:block>
 									<error
-										layout:replace="~{fragments/forms :: errorField(path='invitationUsers[__${loop.index}__].email')}"
+										layout:replace="~{fragments/forms :: errorField(path='invitationUsers[__${loop.index}__].email', id='validationError')}"
 									/>
 								</div>
 
@@ -120,7 +122,8 @@
 									layout:replace="~{fragments/forms :: inputWithLabel(
 									for='firstName', required=true, path='invitationUsers[0].firstName',
 									clazz='form-control personalDataInput firstname', showErrors=true,
-									text=${messages.get(#locale, 'user.label.firstname', 'Firstname')})}"
+									text=${messages.get(#locale, 'user.label.firstname', 'Firstname')},
+									errorId='validationError')}"
 
 								/>
 							</div>
@@ -129,7 +132,8 @@
 									layout:replace="~{fragments/forms :: inputWithLabel(
 									for='lastName', required=true, path='invitationUsers[0].lastName',
 									clazz='form-control personalDataInput lastname', showErrors=true,
-									text=${messages.get(#locale, 'user.label.lastname', 'Lastname')})}"
+									text=${messages.get(#locale, 'user.label.lastname', 'Lastname')},
+									errorId='validationError')}"
 
 								/>
 							</div>
@@ -159,7 +163,7 @@
 									/>
 								</th:block>
 								<error
-									layout:replace="~{fragments/forms :: errorField(path='invitationUsers[0].email')}"
+									layout:replace="~{fragments/forms :: errorField(path='invitationUsers[0].email', id='validationError')}"
 								/>
 							</div>
 							<div class="col-lg-2">
@@ -227,6 +231,7 @@
 					<select
 						name="role"
 						class="form-control"
+						id="userRoleSelect"
 					>
 						<th:block th:each="item: ${roleList}">
 							<!--/* Every user has one authority. Get the first one with help of the iterator */-->
@@ -256,6 +261,7 @@
 						th:value="${invitationDTO.locale}"
 						th:field="*{locale}"
 						class="form-control"
+						id="userLanguageSelect"
 					>
 						<option value="de_DE">
 							<label
@@ -476,6 +482,7 @@
 												<div class="col-1">
 													<a
 														data-bs-toggle="collapse"
+														th:id="${item.id}"
 														onClick="move($(this), $('#availableClinicsTable'), $('#assignedClinicsTable'))"
 													>
 														<span class="bi bi-chevron-left"></span>
@@ -504,6 +511,7 @@
 				<div
 					th:if="${not #strings.isEmpty(preview)}"
 					class="form-group"
+					id="previewDiv"
 				>
 					<div
 						th:text="${messages.get(#locale, 'user.label.preview', 'Preview')}"
@@ -536,7 +544,7 @@
 					type="submit"
 					class="btn btn-primary"
 					value="preview"
-					id="inviteButton"
+					id="previewButton"
 					name="action"
 					th:text="${messages.get(#locale, 'user.button.preview', 'Preview')}"
 				>

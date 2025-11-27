@@ -150,3 +150,59 @@ a {
 .boxShadowMaterialXxl {
     box-shadow: @box-shadow-material-xxl !important;
 }
+
+// Password visibility toggle styles
+.password-toggle-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.password-input-with-toggle {
+    padding-right: 40px !important;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    transform: none;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media only screen and (max-width: @element-breakpoint) {
+        width: 32px;
+        font-size: 100%;
+    }
+
+    @media only screen and (min-width: @element-breakpoint) {
+        width: 36px;
+        font-size: 120%;
+    }
+
+    color: @color-black;
+    background-color: @color-gray-background;
+    border-color: @color-gray-border;
+    border-width: @border-width;
+    border-style: solid;
+    border-radius: 0 @border-radius-sm @border-radius-sm 0;
+    transition: @transition-value;
+    border-left: none;
+
+    &:hover {
+        color: @color-blue-light !important;
+        background-color: @color-blue-tinted !important;
+        border-color: @color-blue-light;
+    }
+
+    .bi {
+        line-height: 1;
+        margin: 0;
+        display: block;
+    }
+}
