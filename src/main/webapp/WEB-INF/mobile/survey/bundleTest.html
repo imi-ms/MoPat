@@ -168,6 +168,49 @@
 							</div>
 						</div>
 					</div>
+
+					<!-- Case Number Input Section -->
+					<div class="mb-3" th:if="${performExportTest}">
+						<div class="row align-items-center">
+							<label
+									for="caseNumber"
+									class="col-lg-2 col-md-12 col-form-label"
+							>
+								<b>
+									<th:block
+											th:text="|${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}:|"
+									/>
+								</b>
+							</label>
+							<div class="col-lg-6 col-md-12">
+								<input
+										th:placeholder="${messages.get(#locale, 'survey.label.caseNumber', 'Case number')}"
+										value=""
+										type="text"
+										autocomplete="off"
+										id="caseNumber"
+										name="caseNumber"
+										autocorrect="off"
+										autocapitalize="off"
+										spellcheck="false"
+										class="form-control"
+										oninput="checkTestCaseNumber($(this));"
+								/>
+							</div>
+						</div>
+						<div class="row mt-2">
+							<div class="col-lg-8 offset-lg-2">
+						<span
+								id="caseNumberEmptyError"
+								class="errorSuccess"
+								style="color: red; display: none"
+								th:text="${messages.get(#locale, 'encounter.error.caseNumberIsEmpty', 'The case number shouldn''t only consist of space characters.')}"
+						>
+						</span>
+							</div>
+						</div>
+					</div>
+
 					<div class="row mt-4">
 						<div class="col">
 							<button
@@ -199,11 +242,34 @@
 		);
 		var bundleId = /*[[${bundle.id}]]*/ "";
 
+		var performExportTest = /*[[${performExportTest}]]*/ false;
+
 		/*[- Remove the help button on the bundle selection page -]*/
 		$("#helpButton").remove();
 
 		$(function () {
 			document.getElementById(bundleId).click();
+
+			if(performExportTest !== true)
+				$("#startSurveyButton").prop("disabled", false);
+			else
+				checkTestCaseNumber($("#caseNumber"));
 		});
+
+		function checkTestCaseNumber(element) {
+			if (element.val().length === 0) {
+				$("#startSurveyButton").prop("disabled", true);
+				$("#caseNumberEmptyError").hide();
+			} else {
+				if (element.val().match(/(\s|&nbsp;|<br>)+/) && !element.val().match(/[\w]+/)) {
+					$("#caseNumberEmptyError").show();
+					$("#startSurveyButton").prop("disabled", true);
+				} else {
+					$("#caseNumberEmptyError").hide();
+					$("#startSurveyButton").prop("disabled", false);
+				}
+			}
+		}
+
 	</script>
 </th:block>

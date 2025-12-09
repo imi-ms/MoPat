@@ -232,6 +232,8 @@
 		/*[- Mark the encounter as incomplete -]*/
 		encounter.isCompleted = false;
 
+		encounter.caseNumber = /*[[${encounterDTO.caseNumber}]]*/ "test";
+
 		$(function () {
 			/*[- Wait for the page to be loaded to that the jQuery selector has something to select -]*/
 			/*[- Unfortunately, the deep copy does not work as of now, hence the manual initialization -]*/

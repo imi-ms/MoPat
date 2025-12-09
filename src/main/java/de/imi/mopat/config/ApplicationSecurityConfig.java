@@ -340,6 +340,7 @@ public class ApplicationSecurityConfig {
                     "/mobile/survey/questionnaireScheduled",
                     "/mobile/survey/scores",
                     "/mobile/survey/finishQuestionnaire",
+                    "/mobile/survey/finishQuestionnaireExportTest",
                     "/mobile/survey/pseudonym",
                     "/error/maintenance",
                     "/error/internalservererror"

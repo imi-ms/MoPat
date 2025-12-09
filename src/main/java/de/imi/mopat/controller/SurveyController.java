@@ -608,6 +608,7 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.GET)
     public String testBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
+        @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
         final Model model, final HttpServletRequest request,
         final RedirectAttributes redirectAttributes) {
 
@@ -616,9 +617,12 @@ public class SurveyController {
             return "redirect:error/accessdenied";
 
         } else {
+            if(caseNumber == null || caseNumber.isBlank()) {
+                caseNumber = "test";
+            }
             EncounterDTO encounterDTO = new EncounterDTO(
-                true,
-                "test");
+                true, caseNumber
+                );
             encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
             model.addAttribute(
                 "hideProfile",
@@ -713,7 +717,9 @@ public class SurveyController {
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         model.addAttribute("encounterDTO", encounterDTO);
         model.addAttribute("performExportTest",performExportTest);
-        session.invalidate();
+        if(!performExportTest)
+            session.invalidate();
+
         return "mobile/survey/questionnaire";
     }
 
@@ -1194,7 +1200,6 @@ public class SurveyController {
     @ResponseBody
     public void finishQuestionnaire(
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         @RequestBody final EncounterDTO encounterDTO) {
         if (!encounterDTO.getIsTest()) {
 
@@ -1213,7 +1218,29 @@ public class SurveyController {
                 }
             }
         } else {
-            finishQuestionnaireTest(questionnaireId, encounterDTO, performExportTest);
+            finishQuestionnaireTest(questionnaireId, encounterDTO, false);
+        }
+    }
+
+
+    /**
+     * Controls the HTTP POST requests for the URL
+     * <i>/mobile/survey/finishQuestionnaireExportTest</i>. Stores/Updates the given
+     * {@link Encounter} and exports the {@link Questionnaire} identified by the given questionnaireId
+     *
+     * @param encounterDTO    The data transfer object containing the responses of the encounter.
+     * @param questionnaireId the id of the questionnaire that has been finished and can be exported.
+     */
+    @RequestMapping(value = "/mobile/survey/finishQuestionnaireExportTest", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ResponseBody
+    public void finishQuestionnaireWithExportTest(
+        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+        @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
+        @RequestBody final EncounterDTO encounterDTO) {
+        if (encounterDTO.getIsTest()) {
+            encounterDTO.setCaseNumber(caseNumber);
+            finishQuestionnaireTest(questionnaireId, encounterDTO, true);
         }
     }
 
@@ -1227,7 +1254,7 @@ public class SurveyController {
             Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
             if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
                 Encounter encounter = new Encounter();
-                encounter.setCaseNumber("test");
+                encounter.setCaseNumber(encounterDTO.getCaseNumber());
                 encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
                 encounter.setBundle(bundle);
                 Set<Response> responses = new HashSet<>();
@@ -1347,7 +1374,7 @@ public class SurveyController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
 
-        if (!encounterDTO.getBundleDTO().getIsPublished()) {
+        if (encounterDTO.getBundleDTO().getIsPublished() == null || !encounterDTO.getBundleDTO().getIsPublished()) {
             // If the encounter is finished
             if (encounterDTO.getIsCompleted()) {
                 // Wait 5 seconds for a possibly running export
