@@ -61,47 +61,51 @@
                                 layout:replace="fragments/forms :: languageDropdown"
                         />
 
-                        <div class="form-group">
-                            <label
-                                    for="questionType"
-                                    th:text="${messages.get(#locale, 'question.label.questiontype', 'Question type')}"
-                            >
-                            </label>
-                            <selectOptions
-                                    layout:replace="~{fragments/selectOptions :: selectOptions(
-                                clazz='form-control',
-                                path='questionType',
-                                items=${questionTypeList},
-                                itemLabel='textValue',
-                                itemValue='textValue',
-                                localize=${#bools.isTrue(true)},
-                                onChangeFunction='handleQuestionTypes(false)',
-                                id='questionTypeDropDown')}"
-                            >
-                            </selectOptions>
-                            <th:block
-                                    layout:insert="~{fragments/forms :: errorField(path='questionType')}"
-                            />
-                        </div>
-
-                        <localableTextarea
-                                layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                            collection=${questionDTO.localizedQuestionText},
-                            collapsableId='localizedQuestionTextCollapsableText',
-                            inputType='textarea',
-                            inputClazz='form-control wysiwyg localablePostElement',
-                            path='localizedQuestionText[#INDEXFIELD]',
-                            firstRequiredLocalableElement=true)}"
-                        >
-                            <th:block layout:fragment="collapseLabel">
+                        <div class="card glassy">
+                            <div class="form-group">
                                 <label
-                                        for="questionText"
-                                        class="required labelQuestionText"
-                                        th:text="${messages.get(#locale, 'question.label.questiontext', 'Question')}"
+                                        for="questionType"
+                                        th:text="${messages.get(#locale, 'question.label.questiontype', 'Question type')}"
                                 >
                                 </label>
-                            </th:block>
-                        </localableTextarea>
+                                <selectOptions
+                                        layout:replace="~{fragments/selectOptions :: selectOptions(
+                                    clazz='form-control',
+                                    path='questionType',
+                                    items=${questionTypeList},
+                                    itemLabel='textValue',
+                                    itemValue='textValue',
+                                    localize=${#bools.isTrue(true)},
+                                    onChangeFunction='handleQuestionTypes(false)',
+                                    id='questionTypeDropDown')}"
+                                >
+                                </selectOptions>
+                                <th:block
+                                        layout:insert="~{fragments/forms :: errorField(path='questionType')}"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="card glassy">
+                            <localableTextarea
+                                    layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                collection=${questionDTO.localizedQuestionText},
+                                collapsableId='localizedQuestionTextCollapsableText',
+                                inputType='textarea',
+                                inputClazz='form-control wysiwyg localablePostElement',
+                                path='localizedQuestionText[#INDEXFIELD]',
+                                firstRequiredLocalableElement=true)}"
+                            >
+                                <th:block layout:fragment="collapseLabel">
+                                    <label
+                                            for="questionText"
+                                            class="required labelQuestionText"
+                                            th:text="${messages.get(#locale, 'question.label.questiontext', 'Question')}"
+                                    >
+                                    </label>
+                                </th:block>
+                            </localableTextarea>
+                        </div>
 
                         <checkbox
                                 layout:replace="~{fragments/forms :: checkbox(
@@ -136,6 +140,8 @@
                                 questionDTO.answers != null && !questionDTO.answers.isEmpty()})}"
                         >
                         </addVar>
+
+                        <div class="card glassy">
                         <!--/* MULTIPLE CHOICE */-->
                         <div
                                 class="my-2"
@@ -1215,6 +1221,7 @@
                                 </div>
                             </fieldset>
                         </div>
+                        </div>
                     </div>
                 </div>
                 <input
@@ -1742,35 +1749,32 @@
             }
         });
 
+        const questionFormTypes = {
+            multipleChoice: {id: "#multipleChoice", fieldId: "#answerField"},
+            slider: {id: "#slider", fieldId: "#sliderField"},
+            sliderFreeText: {id: "#sliderFreeText", fieldId: "#sliderFreeTextField"},
+            date: {id: "#date", fieldId: "#dateField"},
+            numberInput: {id: "#numberInput", fieldId: "#numberInputField"},
+            image: {id: "#image", fieldId: "#imageField"},
+            bodyPart: {id: "#bodyPart", fieldId: "#bodyPartField"},
+        };
+
         function handleQuestionTypes(onload) {
             /*[- Disable all elements -]*/
-            $("#multipleChoice").children().attr("disabled", "disabled");
-            $("#answerField").children("legend").siblings().hide();
 
             // $('#showIcons').prop('checked',false);
             // $("#numberOfIconsWrapper").addClass("d-none");
             // $("#iconSelectionWrapper").addClass("d-none");
             // $("#iconField").hide();
             // $("#showIconsContainer").hide();
-            $("#slider").children().attr("disabled", "disabled");
-            $("#sliderField").children("legend").siblings().hide();
-
-            $("#sliderFreeText").children().attr("disabled", "disabled");
-            $("#sliderFreeTextField").children("legend").siblings().hide();
 
             $("#showValueOnButtonContainer").hide();
 
-            $("#date").children().attr("disabled", "disabled");
-            $("#dateField").children("legend").siblings().hide();
-
-            $("#numberInput").children().attr("disabled", "disabled");
-            $("#numberInputField").children("legend").siblings().hide();
-
-            $("#image").children().attr("disabled", "disabled");
-            $("#imageField").children("legend").siblings().hide();
-
-            $("#bodyPart").children().attr("disabled", "disabled");
-            $("#bodyPartField").children("legend").siblings().hide();
+            Object.keys(questionFormTypes).forEach(function(type, index) {
+                $(questionFormTypes[type].id).children().attr("disabled", "disabled");
+                $(questionFormTypes[type].fieldId).children("legend").siblings().hide();
+                $(questionFormTypes[type].id).attr("style", "display:none;");
+            });
 
             $(".labelQuestionText").html(labelQuestionText);
 
@@ -1788,6 +1792,7 @@
             /*[- Switch over chosen QuestionType and enable associated elements -]*/
             switch ($("#questionTypeDropDown").val()) {
                 case "MULTIPLE_CHOICE":
+                    $("#multipleChoice").removeAttr("style");
                     $("#multipleChoice").children().removeAttr("disabled");
                     $("#minNumberAnswers").removeAttr("readonly");
                     $("#maxNumberAnswers").removeAttr("readonly");
@@ -1802,6 +1807,7 @@
                     }
                     break;
                 case "DROP_DOWN":
+                    $("#multipleChoice").removeAttr("style");
                     $("#multipleChoice").children().removeAttr("disabled");
                     $("#minNumberAnswers").val(1);
                     $("#maxNumberAnswers").val(1);
@@ -1818,6 +1824,7 @@
                     }
                     break;
                 case "SLIDER":
+                    $("#slider").removeAttr("style");
                     /*[- Enable the wysiwyg editor -]*/
                     $("#slider")
                         .find("div .note-editable")
@@ -1838,6 +1845,7 @@
                     $("#sliderField").children("legend").siblings().show();
                     break;
                 case "NUMBER_CHECKBOX":
+                    $("#slider").removeAttr("style");
                     /*[- Enable the wysiwyg editor -]*/
                     $("#slider")
                         .find("div .note-editable")
@@ -1858,6 +1866,7 @@
                     $("#showIconsContainer").hide();
                     break;
                 case "NUMBER_CHECKBOX_TEXT":
+                    $("#slider").removeAttr("style");
                     /*[- Enable the wysiwyg editor -]*/
                     $("#sliderFreeText")
                         .find("div .note-editable")
@@ -1874,20 +1883,24 @@
                     $("#isRequired1").removeAttr("checked");
                     break;
                 case "DATE":
+                    $("#date").removeAttr("style");
                     $("#date").children().removeAttr("disabled");
                     $("#dateField").children("legend").siblings().show();
                     break;
                 case "NUMBER_INPUT":
+                    $("#numberInput").removeAttr("style");
                     $("#numberInput").children().removeAttr("disabled");
                     $("#numberInputField").children("legend").siblings().show();
                     break;
                 case "IMAGE":
+                    $("#image").removeAttr("style");
                     $("#image").children().removeAttr("disabled");
                     $("#imageField").children("legend").siblings().show();
                     $("#isJustInfo1").removeAttr("disabled");
                     $("#isJustInfo1").parent().parent().removeAttr("style");
                     break;
                 case "BODY_PART":
+                    $("#bodyPart").removeAttr("style");
                     $("#bodyPart").children().removeAttr("disabled");
                     $("#bodyPartField").children("legend").siblings().show();
                     if (onload) {
