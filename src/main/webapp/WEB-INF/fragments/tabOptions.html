@@ -1,0 +1,45 @@
+<!--/*
+    * Thymeleaf fragment that shows all values of a map with
+    * optional support for localization     
+*/-->
+<th:block
+	layout:fragment="tabOptions(path, items, itemValue, itemLabel, localize, onChangeFunction, id, clazz)"
+>
+    <!-- Hidden input replaces the <select> binding -->
+    <input
+        type="hidden"
+        th:field="*{__${path}__}"
+        th:onchange="[(${onChangeFunction})]"
+        th:id="${id}"
+    />
+
+    <ul th:class="${clazz}" >
+        <th:block th:each="i: ${items}">
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="#"
+                   th:data-value="${i[itemValue]}"
+                   th:data-target-id="${id}"
+                   onclick="var input = document.getElementById(this.getAttribute('data-target-id'));
+                   input.value = this.getAttribute('data-value');
+                   input.onchange();
+                   this.parentElement.parentElement.querySelectorAll('.nav-link').forEach((link) => {link.classList.remove('active')});
+                   this.classList.add('active');
+                   return false;">
+
+                    <!-- localized or normal label -->
+                    <th:block th:if="${localize}">
+                        <th:block
+                                th:text="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"
+                        />
+                    </th:block>
+                    <th:block th:unless="${localize}">
+                        <th:block th:text="${i[itemLabel]}" />
+                    </th:block>
+                </a>
+            </li>
+        </th:block>
+    </ul>
+</th:block>
+
+

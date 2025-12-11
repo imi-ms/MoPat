@@ -69,8 +69,8 @@
                                 >
                                 </label>
                                 <selectOptions
-                                        layout:replace="~{fragments/selectOptions :: selectOptions(
-                                    clazz='form-control',
+                                        layout:replace="~{fragments/tabOptions :: tabOptions(
+                                    clazz='nav nav-pills nav-justified',
                                     path='questionType',
                                     items=${questionTypeList},
                                     itemLabel='textValue',
@@ -142,1085 +142,1085 @@
                         </addVar>
 
                         <div class="card glassy">
-                        <!--/* MULTIPLE CHOICE */-->
-                        <div
-                                class="my-2"
-                                id="multipleChoice"
-                        >
-                            <fieldset id="answerField">
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'question.label.multipleChoiceDropDown', 'Multiple choice/drop down:')}"
-                                >
-                                </legend>
-                                <div class="row my-1">
-                                    <div class="col-sm-6 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='minNumberAnswers', required=true, path='minNumberAnswers',
-                                            clazz='form-control', min='0', step='1', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
-                                        >
-                                        </number>
+                            <!--/* MULTIPLE CHOICE */-->
+                            <div
+                                    class="my-2"
+                                    id="multipleChoice"
+                            >
+                                <fieldset id="answerField">
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'question.label.multipleChoiceDropDown', 'Multiple choice/drop down:')}"
+                                    >
+                                    </legend>
+                                    <div class="row my-1">
+                                        <div class="col-sm-6 col-12 form-group">
+                                            <number
+                                                    layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='minNumberAnswers', required=true, path='minNumberAnswers',
+                                                clazz='form-control', min='0', step='1', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
+                                            >
+                                            </number>
+                                        </div>
+                                        <div class="col-sm-6 col-12 form-group">
+                                            <number
+                                                    layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='maxNumberAnswers', required=true, path='maxNumberAnswers',
+                                                clazz='form-control', min='1', step='1', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
+                                            >
+                                            </number>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-6 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='maxNumberAnswers', required=true, path='maxNumberAnswers',
-                                            clazz='form-control', min='1', step='1', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
-                                        >
-                                        </number>
+                                    <div class="row my-1">
+                                        <div class="col-12 form-group">
+                                            <label
+                                                    class="required"
+                                                    for="codedValueType"
+                                                    th:text="${messages.get(#locale, 'question.label.codedValueType', 'Type of Indentificationcodes')}"
+                                            >
+                                            </label>
+                                            <selectOptions
+                                                    layout:replace="~{fragments/selectOptions :: selectOptions(
+                                                id='codedValueType',
+                                                clazz='form-control',
+                                                path='codedValueType',
+                                                items=${codedValueTypes},
+                                                itemLabel='textValue',
+                                                itemValue='textValue',
+                                                localize=${#bools.isTrue(true)},
+                                                onChangeFunction='switchCodedValue()')}"
+                                            >
+                                            </selectOptions>
+                                            <error
+                                                    layout:replace="~{fragments/forms :: errorField(path='codedValueType')}"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row my-1">
-                                    <div class="col-12 form-group">
-                                        <label
-                                                class="required"
-                                                for="codedValueType"
-                                                th:text="${messages.get(#locale, 'question.label.codedValueType', 'Type of Indentificationcodes')}"
-                                        >
-                                        </label>
-                                        <selectOptions
-                                                layout:replace="~{fragments/selectOptions :: selectOptions(
-                                            id='codedValueType',
-                                            clazz='form-control',
-                                            path='codedValueType',
-                                            items=${codedValueTypes},
-                                            itemLabel='textValue',
-                                            itemValue='textValue',
-                                            localize=${#bools.isTrue(true)},
-                                            onChangeFunction='switchCodedValue()')}"
-                                        >
-                                        </selectOptions>
-                                        <error
-                                                layout:replace="~{fragments/forms :: errorField(path='codedValueType')}"
-                                        />
-                                    </div>
-                                </div>
-                                <th:block th:if="${#bools.isTrue(vars['answerExist'])}">
-                                    <!--/* [bt] I assume there is at least one answer for the given question, since multiple choice-questions should at least contain one answer to choose from */-->
-                                    <th:block th:each="answer: ${questionDTO.answers}">
-                                        <th:block th:if="${answer.value.localizedLabel ne null}">
-                                            <th:block th:if="${answer.value.id ne -1}">
-                                                <!--/* show warning if this answer has any associated conditions */-->
-                                                <addVar
-                                                        layout:replace="~{helper/var :: add(
-                                                    key='hasConditions',
-                                                    value=${answer.value.getHasConditionsAsTarget() || answer.value.getHasConditionsAsTrigger()})}"
-                                                >
-                                                </addVar>
-                                                <addVar
-                                                        layout:replace="~{helper/var :: add(
-                                                    key='hasExportRules',
-                                                    value=${answer.value.getHasExportRule()})}"
-                                                >
-                                                </addVar>
+                                    <th:block th:if="${#bools.isTrue(vars['answerExist'])}">
+                                        <!--/* [bt] I assume there is at least one answer for the given question, since multiple choice-questions should at least contain one answer to choose from */-->
+                                        <th:block th:each="answer: ${questionDTO.answers}">
+                                            <th:block th:if="${answer.value.localizedLabel ne null}">
+                                                <th:block th:if="${answer.value.id ne -1}">
+                                                    <!--/* show warning if this answer has any associated conditions */-->
+                                                    <addVar
+                                                            layout:replace="~{helper/var :: add(
+                                                        key='hasConditions',
+                                                        value=${answer.value.getHasConditionsAsTarget() || answer.value.getHasConditionsAsTrigger()})}"
+                                                    >
+                                                    </addVar>
+                                                    <addVar
+                                                            layout:replace="~{helper/var :: add(
+                                                        key='hasExportRules',
+                                                        value=${answer.value.getHasExportRule()})}"
+                                                    >
+                                                    </addVar>
 
-                                                <div
-                                                        class="panel panel-default multipleChoiceAnswerPanel mt-2"
-                                                        th:value="${answer.key}"
-                                                        id="backgroundWarning"
-                                                        th:classappend="${#bools.isTrue(vars['hasConditions']) || #bools.isTrue(vars['hasExportRules'])} ? 'alert-warning' : ''"
-                                                >
-                                                    <input
-                                                            type="hidden"
-                                                            th:field="*{answers[__${answer.key}__].id}"
-                                                    />
-                                                    <input
-                                                            type="hidden"
-                                                            th:field="*{answers[__${answer.key}__].hasConditionsAsTrigger}"
-                                                    />
-                                                    <input
-                                                            type="hidden"
-                                                            th:field="*{answers[__${answer.key}__].hasExportRule}"
-                                                    />
                                                     <div
-                                                            class="panel-heading"
-                                                            th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+                                                            class="panel panel-default multipleChoiceAnswerPanel mt-2"
+                                                            th:value="${answer.key}"
+                                                            id="backgroundWarning"
+                                                            th:classappend="${#bools.isTrue(vars['hasConditions']) || #bools.isTrue(vars['hasExportRules'])} ? 'alert-warning' : ''"
                                                     >
-                                                    </div>
-                                                    <div
-                                                            class="panel-body"
-                                                            th:style="${#bools.isTrue(vars['hasConditions'])} ? 'padding-bottom: 0px' : ''"
-                                                            id="panelBody"
-                                                    >
-                                                        <div class="form-group">
-                                                            <localableTextarea
-                                                                    layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                                                collection=${questionDTO.localizedQuestionText},
-                                                                collapsableId='localizedLabelCollapsableText',
-                                                                inputType='textarea',
-                                                                inputClazz='form-control localablePostElement',
-                                                                path='answers[__${answer.key}__].localizedLabel[#INDEXFIELD]')}"
-                                                            >
-                                                                <th:block layout:fragment="collapseLabel">
-                                                                    <label
-                                                                            for="answertext"
-                                                                            class="required"
-                                                                            th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+                                                        <input
+                                                                type="hidden"
+                                                                th:field="*{answers[__${answer.key}__].id}"
+                                                        />
+                                                        <input
+                                                                type="hidden"
+                                                                th:field="*{answers[__${answer.key}__].hasConditionsAsTrigger}"
+                                                        />
+                                                        <input
+                                                                type="hidden"
+                                                                th:field="*{answers[__${answer.key}__].hasExportRule}"
+                                                        />
+                                                        <div
+                                                                class="panel-heading"
+                                                                th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                                class="panel-body"
+                                                                th:style="${#bools.isTrue(vars['hasConditions'])} ? 'padding-bottom: 0px' : ''"
+                                                                id="panelBody"
+                                                        >
+                                                            <div class="form-group">
+                                                                <localableTextarea
+                                                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                                                    collection=${questionDTO.localizedQuestionText},
+                                                                    collapsableId='localizedLabelCollapsableText',
+                                                                    inputType='textarea',
+                                                                    inputClazz='form-control localablePostElement',
+                                                                    path='answers[__${answer.key}__].localizedLabel[#INDEXFIELD]')}"
+                                                                >
+                                                                    <th:block layout:fragment="collapseLabel">
+                                                                        <label
+                                                                                for="answertext"
+                                                                                class="required"
+                                                                                th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+                                                                        >
+                                                                        </label>
+                                                                    </th:block>
+                                                                </localableTextarea>
+
+                                                                <checkbox
+                                                                        layout:replace="~{fragments/forms :: checkbox(
+                                                                    path='answers[__${answer.key}__].isEnabled',
+                                                                    text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
+                                                                    showErrors=false)}"
+                                                                >
+                                                                </checkbox>
+
+                                                                <checkbox
+                                                                        layout:replace="~{fragments/forms :: checkbox(
+                                                                    path='answers[__${answer.key}__].isOther',
+                                                                    text=${messages.get(#locale, 'question.label.answerOther', 'Append freetext if this answer is selected')},
+                                                                    showErrors=false,
+                                                                    clazz='isOtherCheckbox',
+                                                                    onclick='clickIsOtherBoxes(this);')}"
+                                                                >
+                                                                </checkbox>
+
+                                                                <div class="row my-1">
+                                                                    <div class="col-sm-4 col-12">
+                                                                        <input
+                                                                                layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                            for='codedValue',
+                                                                            required=true,
+                                                                            path='answers[__${answer.key}__].codedValue',
+                                                                            clazz='form-control codedValueInput',
+                                                                            showErrors=true,
+                                                                            text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
+                                                                        />
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-12">
+                                                                        <input
+                                                                                layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                            for='score',
+                                                                            required=false,
+                                                                            path='answers[__${answer.key}__].value',
+                                                                            clazz='form-control',
+                                                                            showErrors=true,
+                                                                            text=${messages.get(#locale, 'question.label.score', 'Score')})}"
+                                                                        />
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-12">
+                                                                        <label for="button">&nbsp;</label>
+                                                                        <button
+                                                                                id="deleteAnswerButton"
+                                                                                class="form-control btn btn-primary mt-0"
+                                                                                type="button"
+                                                                                onclick="deleteAnswerDiv(this);"
+                                                                                th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
+                                                                        >
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <th:block
+                                                                        th:if="${#bools.isTrue(vars['hasConditions']) && #bools.isTrue(vars['hasExportRules'])}"
+                                                                >
+                                                                    <div
+                                                                            style="padding-top: 10px"
+                                                                            id="warningMessage"
+                                                                            th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditionsAndExportRules',
+                                                                            'This answer has conditions and export rules. When you delete this answer the conditions and export rules will also be deleted.'
+                                                                        )}"
                                                                     >
-                                                                    </label>
+                                                                    </div>
                                                                 </th:block>
-                                                            </localableTextarea>
-
-                                                            <checkbox
-                                                                    layout:replace="~{fragments/forms :: checkbox(
-                                                                path='answers[__${answer.key}__].isEnabled',
-                                                                text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
-                                                                showErrors=false)}"
-                                                            >
-                                                            </checkbox>
-
-                                                            <checkbox
-                                                                    layout:replace="~{fragments/forms :: checkbox(
-                                                                path='answers[__${answer.key}__].isOther',
-                                                                text=${messages.get(#locale, 'question.label.answerOther', 'Append freetext if this answer is selected')},
-                                                                showErrors=false,
-                                                                clazz='isOtherCheckbox',
-                                                                onclick='clickIsOtherBoxes(this);')}"
-                                                            >
-                                                            </checkbox>
-
-                                                            <div class="row my-1">
-                                                                <div class="col-sm-4 col-12">
-                                                                    <input
-                                                                            layout:replace="~{fragments/forms :: inputWithLabel(
-                                                                        for='codedValue',
-                                                                        required=true,
-                                                                        path='answers[__${answer.key}__].codedValue',
-                                                                        clazz='form-control codedValueInput',
-                                                                        showErrors=true,
-                                                                        text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
-                                                                    />
-                                                                </div>
-                                                                <div class="col-sm-4 col-12">
-                                                                    <input
-                                                                            layout:replace="~{fragments/forms :: inputWithLabel(
-                                                                        for='score',
-                                                                        required=false,
-                                                                        path='answers[__${answer.key}__].value',
-                                                                        clazz='form-control',
-                                                                        showErrors=true,
-                                                                        text=${messages.get(#locale, 'question.label.score', 'Score')})}"
-                                                                    />
-                                                                </div>
-                                                                <div class="col-sm-4 col-12">
-                                                                    <label for="button">&nbsp;</label>
-                                                                    <button
-                                                                            id="deleteAnswerButton"
-                                                                            class="form-control btn btn-primary mt-0"
-                                                                            type="button"
-                                                                            onclick="deleteAnswerDiv(this);"
-                                                                            th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
+                                                                <th:block
+                                                                        th:if="${#bools.isTrue(vars['hasConditions'])}"
+                                                                >
+                                                                    <div
+                                                                            style="padding-top: 10px"
+                                                                            id="warningMessage"
+                                                                            th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditions',
+                                                                            'This answer has conditions. When you delete this answer the conditions will also be deleted.'
+                                                                        )}"
                                                                     >
-                                                                    </button>
-                                                                </div>
+                                                                    </div>
+                                                                </th:block>
+                                                                <th:block
+                                                                        th:if="${#bools.isTrue(vars['hasExportRules'])}"
+                                                                >
+                                                                    <div
+                                                                            style="padding-top: 10px"
+                                                                            id="warningMessage"
+                                                                            th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithExportRules',
+                                                                            'This answer has export rules. When you delete this answer the export rules will also be deleted.'
+                                                                        )}"
+                                                                    >
+                                                                    </div>
+                                                                </th:block>
                                                             </div>
-                                                            <th:block
-                                                                    th:if="${#bools.isTrue(vars['hasConditions']) && #bools.isTrue(vars['hasExportRules'])}"
+                                                        </div>
+                                                    </div>
+                                                </th:block>
+                                                <th:block th:if="${answer.value.id eq -1}">
+                                                    <div
+                                                            class="multipleChoiceAnswerPanel"
+                                                            th:value="${answer.key}"
+                                                    >
+                                                        <input
+                                                                type="hidden"
+                                                                th:field="*{answers[__${answer.key}__].id}"
+                                                        />
+                                                    </div>
+                                                </th:block>
+                                            </th:block>
+                                        </th:block>
+                                    </th:block>
+                                    <th:block th:unless="${#bools.isTrue(vars['answerExist'])}">
+                                        <div
+                                                class="panel panel-default multipleChoiceAnswerPanel mt-2"
+                                                value="0"
+                                        >
+                                            <input
+                                                    id="answers0.id"
+                                                    type="hidden"
+                                                    value=""
+                                                    name="answers[0].id"
+                                            />
+                                            <input
+                                                    type="hidden"
+                                                    th:field="*{answers[0].hasConditionsAsTrigger}"
+                                            />
+                                            <input
+                                                    type="hidden"
+                                                    th:field="*{answers[0].hasExportRule}"
+                                            />
+                                            <div
+                                                    class="panel-heading"
+                                                    th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
+                                            ></div>
+                                            <div
+                                                    class="panel-body"
+                                                    id="panelBody"
+                                            >
+                                                <div class="form-group">
+                                                    <localableTextarea
+                                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                                        collection=${questionDTO.localizedQuestionText},
+                                                        collapsableId='localizedLabelCollapsableText',
+                                                        inputType='textarea',
+                                                        inputClazz='form-control localablePostElement',
+                                                        path='answers[0].localizedLabel[#INDEXFIELD]')}"
+                                                    >
+                                                        <th:block layout:fragment="collapseLabel">
+                                                            <label
+                                                                    for="answertext"
+                                                                    class="required"
+                                                                    th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
                                                             >
-                                                                <div
-                                                                        style="padding-top: 10px"
-                                                                        id="warningMessage"
-                                                                        th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditionsAndExportRules',
-                                                                        'This answer has conditions and export rules. When you delete this answer the conditions and export rules will also be deleted.'
-                                                                    )}"
-                                                                >
-                                                                </div>
-                                                            </th:block>
-                                                            <th:block
-                                                                    th:if="${#bools.isTrue(vars['hasConditions'])}"
+                                                            </label>
+                                                        </th:block>
+                                                    </localableTextarea>
+
+                                                    <checkbox
+                                                            layout:replace="~{fragments/forms :: checkbox(
+                                                        path='answers[0].isEnabled',
+                                                        text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
+                                                        showErrors=false)}"
+                                                    >
+                                                    </checkbox>
+
+                                                    <checkbox
+                                                            layout:replace="~{fragments/forms :: checkbox(
+                                                        path='answers[0].isOther',
+                                                        text=${messages.get(#locale, 'question.label.answerOther', '
+                                                        Append freetext if this question is selected')},
+                                                        showErrors=false,
+                                                        clazz='isOtherCheckbox',
+                                                        onclick='clickIsOtherBoxes(this);')}"
+                                                    >
+                                                    </checkbox>
+
+                                                    <div class="row my-1">
+                                                        <div class="col-sm-4 col-12">
+                                                            <input
+                                                                    layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                for='codedValue',
+                                                                required=true,
+                                                                path='answers[0].codedValue',
+                                                                clazz='form-control codedValueInput',
+                                                                showErrors=true,
+                                                                text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
+
+                                                            />
+                                                        </div>
+                                                        <div class="col-sm-4 col-12">
+                                                            <input
+                                                                    layout:replace="~{fragments/forms :: inputWithLabel(
+                                                                for='score',
+                                                                required=false,
+                                                                path='answers[0].value',
+                                                                clazz='form-control',
+                                                                showErrors=true,
+                                                                text=${messages.get(#locale, 'question.label.score', 'Score')})}"
+
+                                                            />
+                                                        </div>
+                                                        <div class="col-sm-4 col-12">
+                                                            <label for="button">&nbsp;</label>
+                                                            <button
+                                                                    id="deleteAnswerButton"
+                                                                    class="form-control btn btn-primary mt-0"
+                                                                    type="button"
+                                                                    onclick="deleteAnswerDiv(this);"
+                                                                    th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
                                                             >
-                                                                <div
-                                                                        style="padding-top: 10px"
-                                                                        id="warningMessage"
-                                                                        th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithConditions',
-                                                                        'This answer has conditions. When you delete this answer the conditions will also be deleted.'
-                                                                    )}"
-                                                                >
-                                                                </div>
-                                                            </th:block>
-                                                            <th:block
-                                                                    th:if="${#bools.isTrue(vars['hasExportRules'])}"
-                                                            >
-                                                                <div
-                                                                        style="padding-top: 10px"
-                                                                        id="warningMessage"
-                                                                        th:text="${messages.get(#locale, 'answer.warning.deleteAnswerWithExportRules',
-                                                                        'This answer has export rules. When you delete this answer the export rules will also be deleted.'
-                                                                    )}"
-                                                                >
-                                                                </div>
-                                                            </th:block>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </th:block>
-                                            <th:block th:if="${answer.value.id eq -1}">
-                                                <div
-                                                        class="multipleChoiceAnswerPanel"
-                                                        th:value="${answer.key}"
-                                                >
-                                                    <input
-                                                            type="hidden"
-                                                            th:field="*{answers[__${answer.key}__].id}"
-                                                    />
-                                                </div>
-                                            </th:block>
-                                        </th:block>
-                                    </th:block>
-                                </th:block>
-                                <th:block th:unless="${#bools.isTrue(vars['answerExist'])}">
-                                    <div
-                                            class="panel panel-default multipleChoiceAnswerPanel mt-2"
-                                            value="0"
-                                    >
-                                        <input
-                                                id="answers0.id"
-                                                type="hidden"
-                                                value=""
-                                                name="answers[0].id"
-                                        />
-                                        <input
-                                                type="hidden"
-                                                th:field="*{answers[0].hasConditionsAsTrigger}"
-                                        />
-                                        <input
-                                                type="hidden"
-                                                th:field="*{answers[0].hasExportRule}"
-                                        />
-                                        <div
-                                                class="panel-heading"
-                                                th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
-                                        ></div>
-                                        <div
-                                                class="panel-body"
-                                                id="panelBody"
-                                        >
-                                            <div class="form-group">
-                                                <localableTextarea
-                                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                                    collection=${questionDTO.localizedQuestionText},
-                                                    collapsableId='localizedLabelCollapsableText',
-                                                    inputType='textarea',
-                                                    inputClazz='form-control localablePostElement',
-                                                    path='answers[0].localizedLabel[#INDEXFIELD]')}"
-                                                >
-                                                    <th:block layout:fragment="collapseLabel">
-                                                        <label
-                                                                for="answertext"
-                                                                class="required"
-                                                                th:text="${messages.get(#locale, 'question.label.answertext', 'Answer')}"
-                                                        >
-                                                        </label>
-                                                    </th:block>
-                                                </localableTextarea>
-
-                                                <checkbox
-                                                        layout:replace="~{fragments/forms :: checkbox(
-                                                    path='answers[0].isEnabled',
-                                                    text=${messages.get(#locale, 'question.label.answerActivated', 'Answer is activated at initialization')},
-                                                    showErrors=false)}"
-                                                >
-                                                </checkbox>
-
-                                                <checkbox
-                                                        layout:replace="~{fragments/forms :: checkbox(
-                                                    path='answers[0].isOther',
-                                                    text=${messages.get(#locale, 'question.label.answerOther', '
-                                                    Append freetext if this question is selected')},
-                                                    showErrors=false,
-                                                    clazz='isOtherCheckbox',
-                                                    onclick='clickIsOtherBoxes(this);')}"
-                                                >
-                                                </checkbox>
-
-                                                <div class="row my-1">
-                                                    <div class="col-sm-4 col-12">
-                                                        <input
-                                                                layout:replace="~{fragments/forms :: inputWithLabel(
-                                                            for='codedValue',
-                                                            required=true,
-                                                            path='answers[0].codedValue',
-                                                            clazz='form-control codedValueInput',
-                                                            showErrors=true,
-                                                            text=${messages.get(#locale, 'question.label.codedValue', 'Identificationcode')})}"
-
-                                                        />
-                                                    </div>
-                                                    <div class="col-sm-4 col-12">
-                                                        <input
-                                                                layout:replace="~{fragments/forms :: inputWithLabel(
-                                                            for='score',
-                                                            required=false,
-                                                            path='answers[0].value',
-                                                            clazz='form-control',
-                                                            showErrors=true,
-                                                            text=${messages.get(#locale, 'question.label.score', 'Score')})}"
-
-                                                        />
-                                                    </div>
-                                                    <div class="col-sm-4 col-12">
-                                                        <label for="button">&nbsp;</label>
-                                                        <button
-                                                                id="deleteAnswerButton"
-                                                                class="form-control btn btn-primary mt-0"
-                                                                type="button"
-                                                                onclick="deleteAnswerDiv(this);"
-                                                                th:text="${messages.get(#locale, 'question.button.deleteAnswer', 'Delete answer')}"
-                                                        >
-                                                        </button>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </th:block>
-                                <button
-                                        id="addAnswerButton"
-                                        class="btn btn-primary"
-                                        type="button"
-                                        onclick="addAnswerDiv();"
-                                        th:text="${messages.get(#locale, 'question.button.addAnswer', 'Add answer')}"
-                                >
-                                </button>
-                            </fieldset>
-                        </div>
+                                    </th:block>
+                                    <button
+                                            id="addAnswerButton"
+                                            class="btn btn-primary"
+                                            type="button"
+                                            onclick="addAnswerDiv();"
+                                            th:text="${messages.get(#locale, 'question.button.addAnswer', 'Add answer')}"
+                                    >
+                                    </button>
+                                </fieldset>
+                            </div>
 
-                        <!--/* SLIDER */-->
-                        <div
-                                class="my-2"
-                                id="slider"
-                        >
-                            <fieldset
-                                    id="sliderField"
-                                    disabled="true"
+                            <!--/* SLIDER */-->
+                            <div
+                                    class="my-2"
+                                    id="slider"
                             >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'question.label.sliderCheckbox', 'Slider/checkboxes')}"
+                                <fieldset
+                                        id="sliderField"
+                                        disabled="true"
                                 >
-                                </legend>
-
-                                <checkbox
-                                        layout:replace="~{fragments/forms :: checkbox(
-                                    path='answers[0].vertical',
-                                    showErrors=true,
-                                    text=${messages.get(#locale, 'question.label.vertical', 'Vertical')})}"
-                                >
-                                </checkbox>
-
-                                <div
-                                        class="row my-1"
-                                        id="slider1"
-                                >
-                                    <!--/* Cannot be created by fragment because of "onblur" attribute */-->
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <label
-                                                class="required"
-                                                for="minValue"
-                                                th:text="${messages.get(#locale, 'question.label.minValue', 'Minimum')}"
-                                        >
-                                        </label>
-                                        <input
-                                                type="number"
-                                                step="0.01"
-                                                class="form-control"
-                                                th:field="*{answers[0].minValue}"
-                                                id="min"
-                                        />
-                                    </div>
-
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <label
-                                                class="required"
-                                                for="maxValue"
-                                                th:text="${messages.get(#locale, 'question.label.maxValue', 'Maximum')}"
-                                        >
-                                        </label>
-                                        <input
-                                                type="number"
-                                                step="0.01"
-                                                class="form-control"
-                                                th:field="*{answers[0].maxValue}"
-                                                id="max"
-                                        />
-                                    </div>
-
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <label
-                                                class="required"
-                                                for="stepsize"
-                                                th:text="${messages.get(#locale, 'question.label.stepsize', 'Step size')}"
-                                        >
-                                        </label>
-                                        <input
-                                                type="number"
-                                                min="0.01"
-                                                step="0.01"
-                                                class="form-control"
-                                                id="stepsize"
-                                                th:field="*{answers[0].stepsize}"
-                                        />
-                                    </div>
-
-                                    <!--/* Add error messages to var scope to get them later in JS */-->
-
-                                    <addVar
-                                            layout:replace="~{helper/var :: add(
-                                        key='errorMinValue',
-                                        value=${#fields.hasErrors('answers[0].minValue') ? #fields.errors('answers[0].minValue')?.get(0) : ''})}"
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'question.label.sliderCheckbox', 'Slider/checkboxes')}"
                                     >
-                                    </addVar>
+                                    </legend>
 
-                                    <addVar
-                                            layout:replace="~{helper/var :: add(
-                                        key='errorMaxValue',
-                                        value=${#fields.hasErrors('answers[0].maxValue') ? #fields.errors('answers[0].maxValue')?.get(0) : ''})}"
+                                    <checkbox
+                                            layout:replace="~{fragments/forms :: checkbox(
+                                        path='answers[0].vertical',
+                                        showErrors=true,
+                                        text=${messages.get(#locale, 'question.label.vertical', 'Vertical')})}"
                                     >
-                                    </addVar>
-
-                                    <addVar
-                                            layout:replace="~{helper/var :: add(
-                                        key='errorStepsize',
-                                        value=${#fields.hasErrors('answers[0].stepsize') ? #fields.errors('answers[0].stepsize')?.get(0) : ''})}"
-                                    >
-                                    </addVar>
-
-                                    <error
-                                            layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue', id='errorSlider')}"
-                                    />
-
-                                    <error
-                                            layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue', id='errorSlider')}"
-                                    />
-
-                                    <error
-                                            layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize', id='errorSlider')}"
-                                    />
-
-                                </div>
-
-                                <div class="row my-1" id="iconField">
-                                    <div
-                                            id="showIconsContainer"
-                                            class="col-12"
-                                    >
-                                        <label for="showIcons">
-                                            <input
-                                                    type="checkbox"
-                                                    id="showIcons"
-                                                    onchange="toggleIconPicker(this)"
-                                                    th:field="*{answers[0].showIcons}"
-                                            />
-                                            <th:block
-                                                    th:text="${messages.get(#locale, 'question.label.sliderIcon.activateSliderIcons',
-                                                        'Show icons above the Slider')}"
-                                            >
-                                            </th:block>
-                                        </label>
-                                    </div>
+                                    </checkbox>
 
                                     <div
-                                            id="numberOfIconsWrapper"
-                                            class="col-12 d-none"
+                                            class="row my-1"
+                                            id="slider1"
                                     >
-                                        <!-- <div class="col-12">
-                                            <label for="iconTemplateSelector">
-                                                Vorlagen für Symbolkonfigurationen
-                                            </label>
-                                            <select
-                                                id="iconTemplateSelector"
-                                                onchange="setIconTemplates(this);"
-                                                class="form-control form-select"
-                                            >
-                                                <option
-                                                    value=""
-                                                    disabled
-                                                    selected
-                                                    >Wählen Sie eine Vorlage für die Symbolanzeige
-                                                    aus...</option
-                                                >
-                                                <option value="EMOJI_ICONS"
-                                                    >Gefühlsskala visualisiert durch Emojis</option
-                                                >
-                                                <option value="THUMBS"
-                                                    >Positiv / Negativ visualisiert durch Emojis</option
-                                                >
-                                            </select>
-                                        </div> -->
-                                        <div class="col-12">
+                                        <!--/* Cannot be created by fragment because of "onblur" attribute */-->
+                                        <div class="col-sm-4 col-12 form-group">
                                             <label
-                                                    for="numberOfIcons"
-                                                    th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
-                                                    'Number of icons')}"
+                                                    class="required"
+                                                    for="minValue"
+                                                    th:text="${messages.get(#locale, 'question.label.minValue', 'Minimum')}"
                                             >
                                             </label>
-
-                                            <select
-                                                    id="numberOfIcons"
-                                                    onchange="showIconElements(this);"
-                                                    class="form-control form-select"
-                                            >
-                                                <option
-                                                        value="2"
-                                                        selected="selected"
-                                                >2
-                                                </option
-                                                >
-                                                <option value="3">3</option>
-                                                <option value="5">5</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-12 py-4">
-                                            <div
-                                                    class="col-12 d-none d-flex flex-row justify-content-between"
-                                                    id="icon-select"
-                                            ></div>
                                             <input
-                                                    type="range"
-                                                    class="form-range px-3"
-                                                    id="rangeSlider"
-                                                    disabled
+                                                    type="number"
+                                                    step="0.01"
+                                                    class="form-control"
+                                                    th:field="*{answers[0].minValue}"
+                                                    id="min"
                                             />
                                         </div>
+
+                                        <div class="col-sm-4 col-12 form-group">
+                                            <label
+                                                    class="required"
+                                                    for="maxValue"
+                                                    th:text="${messages.get(#locale, 'question.label.maxValue', 'Maximum')}"
+                                            >
+                                            </label>
+                                            <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    class="form-control"
+                                                    th:field="*{answers[0].maxValue}"
+                                                    id="max"
+                                            />
+                                        </div>
+
+                                        <div class="col-sm-4 col-12 form-group">
+                                            <label
+                                                    class="required"
+                                                    for="stepsize"
+                                                    th:text="${messages.get(#locale, 'question.label.stepsize', 'Step size')}"
+                                            >
+                                            </label>
+                                            <input
+                                                    type="number"
+                                                    min="0.01"
+                                                    step="0.01"
+                                                    class="form-control"
+                                                    id="stepsize"
+                                                    th:field="*{answers[0].stepsize}"
+                                            />
+                                        </div>
+
+                                        <!--/* Add error messages to var scope to get them later in JS */-->
+
+                                        <addVar
+                                                layout:replace="~{helper/var :: add(
+                                            key='errorMinValue',
+                                            value=${#fields.hasErrors('answers[0].minValue') ? #fields.errors('answers[0].minValue')?.get(0) : ''})}"
+                                        >
+                                        </addVar>
+
+                                        <addVar
+                                                layout:replace="~{helper/var :: add(
+                                            key='errorMaxValue',
+                                            value=${#fields.hasErrors('answers[0].maxValue') ? #fields.errors('answers[0].maxValue')?.get(0) : ''})}"
+                                        >
+                                        </addVar>
+
+                                        <addVar
+                                                layout:replace="~{helper/var :: add(
+                                            key='errorStepsize',
+                                            value=${#fields.hasErrors('answers[0].stepsize') ? #fields.errors('answers[0].stepsize')?.get(0) : ''})}"
+                                        >
+                                        </addVar>
+
+                                        <error
+                                                layout:replace="~{fragments/forms :: errorField(path='answers[0].minValue', id='errorSlider')}"
+                                        />
+
+                                        <error
+                                                layout:replace="~{fragments/forms :: errorField(path='answers[0].maxValue', id='errorSlider')}"
+                                        />
+
+                                        <error
+                                                layout:replace="~{fragments/forms :: errorField(path='answers[0].stepsize', id='errorSlider')}"
+                                        />
+
                                     </div>
 
-                                    <!--/* This will never be shown. Instead it is cloned by Javascript and inserted into "iconSelectionWrapper" */-->
-                                    <div class="d-none">
+                                    <div class="row my-1" id="iconField">
                                         <div
-                                                class="row"
-                                                id="iconSelectionCloningWrapper"
+                                                id="showIconsContainer"
+                                                class="col-12"
                                         >
-                                            <div class="col-lg-10 col-md-7 col-12">
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-														<span
-                                                                class="input-group-text h-100 selected-icon boxShadowMaterialSm iconpicker"
-                                                        ></span>
-                                                    </div>
-                                                    <input
-                                                            disabled="disabled"
-                                                            id="icon"
-                                                            type="text"
-                                                            class="form-control"
-                                                            hidden="true"
-                                                    />
-                                                    <select
-                                                            disabled="disabled"
-                                                            onchange=""
-                                                            class="form-control form-select"
-                                                            id="iconPosition"
-                                                            hidden="true"
+                                            <label for="showIcons">
+                                                <input
+                                                        type="checkbox"
+                                                        id="showIcons"
+                                                        onchange="toggleIconPicker(this)"
+                                                        th:field="*{answers[0].showIcons}"
+                                                />
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'question.label.sliderIcon.activateSliderIcons',
+                                                            'Show icons above the Slider')}"
+                                                >
+                                                </th:block>
+                                            </label>
+                                        </div>
+
+                                        <div
+                                                id="numberOfIconsWrapper"
+                                                class="col-12 d-none"
+                                        >
+                                            <!-- <div class="col-12">
+                                                <label for="iconTemplateSelector">
+                                                    Vorlagen für Symbolkonfigurationen
+                                                </label>
+                                                <select
+                                                    id="iconTemplateSelector"
+                                                    onchange="setIconTemplates(this);"
+                                                    class="form-control form-select"
+                                                >
+                                                    <option
+                                                        value=""
+                                                        disabled
+                                                        selected
+                                                        >Wählen Sie eine Vorlage für die Symbolanzeige
+                                                        aus...</option
                                                     >
-                                                    </select>
-                                                </div>
+                                                    <option value="EMOJI_ICONS"
+                                                        >Gefühlsskala visualisiert durch Emojis</option
+                                                    >
+                                                    <option value="THUMBS"
+                                                        >Positiv / Negativ visualisiert durch Emojis</option
+                                                    >
+                                                </select>
+                                            </div> -->
+                                            <div class="col-12">
+                                                <label
+                                                        for="numberOfIcons"
+                                                        th:text="${messages.get(#locale, 'question.label.sliderIcon.numberOfIcons',
+                                                        'Number of icons')}"
+                                                >
+                                                </label>
+
+                                                <select
+                                                        id="numberOfIcons"
+                                                        onchange="showIconElements(this);"
+                                                        class="form-control form-select"
+                                                >
+                                                    <option
+                                                            value="2"
+                                                            selected="selected"
+                                                    >2
+                                                    </option
+                                                    >
+                                                    <option value="3">3</option>
+                                                    <option value="5">5</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-12 py-4">
+                                                <div
+                                                        class="col-12 d-none d-flex flex-row justify-content-between"
+                                                        id="icon-select"
+                                                ></div>
+                                                <input
+                                                        type="range"
+                                                        class="form-range px-3"
+                                                        id="rangeSlider"
+                                                        disabled
+                                                />
                                             </div>
                                         </div>
+
+                                        <!--/* This will never be shown. Instead it is cloned by Javascript and inserted into "iconSelectionWrapper" */-->
+                                        <div class="d-none">
+                                            <div
+                                                    class="row"
+                                                    id="iconSelectionCloningWrapper"
+                                            >
+                                                <div class="col-lg-10 col-md-7 col-12">
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span
+                                                                    class="input-group-text h-100 selected-icon boxShadowMaterialSm iconpicker"
+                                                            ></span>
+                                                        </div>
+                                                        <input
+                                                                disabled="disabled"
+                                                                id="icon"
+                                                                type="text"
+                                                                class="form-control"
+                                                                hidden="true"
+                                                        />
+                                                        <select
+                                                                disabled="disabled"
+                                                                onchange=""
+                                                                class="form-control form-select"
+                                                                id="iconPosition"
+                                                                hidden="true"
+                                                        >
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                    id="sliderIconError"
+                                                    class="alert alert-danger"
+                                            ></div>
+                                            <!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
+                                            <th:block
+                                                    th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].icons}"
+                                            >
+                                                <!--/* Add position errors for SliderIconDTO with index */-->
+                                                <addVar
+                                                        layout:replace="~{helper/var :: add(
+                                                    key='errorSliderIconPosition__${iconDTOIndex.index}__',
+                                                    value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                            ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].position')
+                                                            : ''})}"
+                                                >
+                                                </addVar>
+                                                <!--/* Add value errors for SliderIconDTO with index */-->
+
+                                                <addVar
+                                                        layout:replace="~{helper/var :: add(
+                                                    key='errorSliderIconIcon__${iconDTOIndex.index}__',
+                                                    value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                            ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].icon')
+                                                            : ''})}"
+                                                >
+                                                </addVar>
+                                            </th:block>
+                                        </div>
+
+                                        <!--/* Filled by JS depending on the value of the "numberOfIcons" select */-->
                                         <div
-                                                id="sliderIconError"
-                                                class="alert alert-danger"
+                                                id="iconSelectionWrapper"
+                                                class="d-none"
                                         ></div>
-                                        <!--/* Add error fields for icons if they exist that can be used by JavaScript later on  */-->
-                                        <th:block
-                                                th:each="iconDTO, iconDTOIndex: ${questionDTO.answers[0].icons}"
-                                        >
-                                            <!--/* Add position errors for SliderIconDTO with index */-->
-                                            <addVar
-                                                    layout:replace="~{helper/var :: add(
-                                                key='errorSliderIconPosition__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].position')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].position')
-                                                        : ''})}"
-                                            >
-                                            </addVar>
-                                            <!--/* Add value errors for SliderIconDTO with index */-->
-
-                                            <addVar
-                                                    layout:replace="~{helper/var :: add(
-                                                key='errorSliderIconIcon__${iconDTOIndex.index}__',
-                                                value=${#fields.hasErrors('answers[0].icons[__${iconDTOIndex.index}__].icon')
-                                                        ? #fields.errors('answers[0].icons[__${iconDTOIndex.index}__].icon')
-                                                        : ''})}"
-                                            >
-                                            </addVar>
-                                        </th:block>
                                     </div>
 
-                                    <!--/* Filled by JS depending on the value of the "numberOfIcons" select */-->
-                                    <div
-                                            id="iconSelectionWrapper"
-                                            class="d-none"
-                                    ></div>
-                                </div>
-
-                                <error
-                                        layout:replace="~{fragments/forms :: errorField(path='answers[0].icons')}"
-                                />
-
-                                <div class="row my-1">
-                                    <div class="col-sm-4 col-12">
-                                        <!--/* Checkbox for showValueOnButton */-->
-                                        <span
-                                                id="showValueOnButtonContainer"
-                                                class="checkbox"
-                                        >
-											<label for="showValueOnButton">
-												<input
-                                                        id="showValueOnButton"
-                                                        type="checkbox"
-                                                        th:field="*{answers[0].showValueOnButton}"
-                                                        value="false"
-                                                />
-												<th:block
-                                                        th:text="${messages.get(#locale, 'question.label.showValueOnButton',
-                                                    'Show current value on button'
-                                                )}"
-                                                />
-											</label>
-										</span>
-                                    </div>
-                                </div>
-                                <!--/* END OF DISABLED BLOCK */-->
-
-                                <localableTextarea
-                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                    collection=${questionDTO.localizedQuestionText},
-                                    collapsableId='localizedMinimumTextSliderCollapsableText',
-                                    inputType='textarea',
-                                    inputClazz='form-control localablePostElement wysiwyg',
-                                    path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
-                                >
-                                    <th:block layout:fragment="collapseLabel">
-                                        <label
-                                                for="minimumText"
-                                                th:text="${messages.get(#locale, 'question.label.minimumText', 'Text at minimum position')}"
-                                        >
-                                        </label>
-                                    </th:block>
-                                </localableTextarea>
-
-                                <localableTextarea
-                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                    collection=${questionDTO.localizedQuestionText},
-                                    collapsableId='localizedMaximumTextSliderCollapsableText',
-                                    inputType='textarea',
-                                    inputClazz='form-control localablePostElement wysiwyg',
-                                    path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
-                                >
-                                    <th:block layout:fragment="collapseLabel">
-                                        <label
-                                                for="maximumText"
-                                                th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
-                                        >
-                                        </label>
-                                    </th:block>
-                                </localableTextarea>
-                            </fieldset>
-                        </div>
-
-                        <!--/* SLIDER FREETEXT */-->
-                        <div
-                                class="my-2"
-                                id="sliderFreeText"
-                        >
-                            <fieldset
-                                    id="sliderFreeTextField"
-                                    disabled="true"
-                            >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'NUMBER_CHECKBOX_TEXT', 'Numbered checkboxes + free text')}"
-                                >
-                                </legend>
-                                <div class="row my-1">
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='minValue', required=true, path='answers[0].minValue',
-                                            clazz='form-control', step='0.01', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.minValue', 'Minimum')})}"
-                                        >
-                                        </number>
-                                    </div>
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='maxValue', required=true, path='answers[0].maxValue',
-                                            clazz='form-control', step='0.01', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.maxValue', 'Maximum')})}"
-                                        >
-                                        </number>
-                                    </div>
-                                    <div class="col-sm-4 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='stepsize', required=true, path='answers[0].stepsize',
-                                            clazz='form-control', step='0.01', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.stepsize', 'Step size')})}"
-                                        >
-                                        </number>
-                                    </div>
-                                </div>
-
-                                <localableInput
-                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                    collection=${questionDTO.localizedQuestionText},
-                                    collapsableId='localizedFreetextCollapsableText',
-                                    inputType='input',
-                                    inputClazz='form-control localablePostElement',
-                                    path='answers[0].localizedFreetextLabel[#INDEXFIELD]')}"
-                                >
-                                    <th:block layout:fragment="collapseLabel">
-                                        <label
-                                                for="freetextLabel"
-                                                th:text="${messages.get(#locale, 'question.label.freetextLabel', 'Freetext label')}"
-                                        >
-                                        </label>
-                                    </th:block>
-                                </localableInput>
-
-                                <localableTextarea
-                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                    collection=${questionDTO.localizedQuestionText},
-                                    collapsableId='localizedMinimumTextNumberCheckboxCollapsableText',
-                                    inputType='textarea',
-                                    inputClazz='form-control localablePostElement wysiwyg',
-                                    path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
-                                >
-                                    <th:block layout:fragment="collapseLabel">
-                                        <label
-                                                for="minimumText"
-                                                th:text="${messages.get(#locale, 'question.label.minimumText', 'text at minimum position')}"
-                                        >
-                                        </label>
-                                    </th:block>
-                                </localableTextarea>
-
-                                <localableTextarea
-                                        layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
-                                    collection=${questionDTO.localizedQuestionText},
-                                    collapsableId='localizedMaximumTextNumberCheckboxCollapsableText',
-                                    inputType='textarea',
-                                    inputClazz='form-control localablePostElement wysiwyg',
-                                    path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
-                                >
-                                    <th:block layout:fragment="collapseLabel">
-                                        <label
-                                                for="maximumText"
-                                                th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
-                                        >
-                                        </label>
-                                    </th:block>
-                                </localableTextarea>
-                            </fieldset>
-                        </div>
-
-                        <!--/* DATE */-->
-                        <div
-                                class="my-2"
-                                id="date"
-                        >
-                            <fieldset
-                                    id="dateField"
-                                    disabled="true"
-                            >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'DATE', 'Date')}"
-                                >
-                                </legend>
-                                <div class="form-group">
-                                    <input
-                                            type="hidden"
-                                            th:field="*{answers[0].id}"
+                                    <error
+                                            layout:replace="~{fragments/forms :: errorField(path='answers[0].icons')}"
                                     />
-                                    <date
-                                            layout:replace="~{fragments/forms :: dateWithLabel(
-                                        for='startDate', required=false,
-                                        path='answers[0].startDate',
-                                        clazz='form-control', showErrors=true,
-                                        text=${messages.get(#locale, 'question.label.startDate', 'At least')})}"
-                                    >
-                                    </date>
-                                </div>
-                                <div class="form-group">
-                                    <date
-                                            layout:replace="~{fragments/forms :: dateWithLabel(
-                                        for='endDate', required=false,
-                                        path='answers[0].endDate',
-                                        clazz='form-control', showErrors=true,
-                                        text=${messages.get(#locale, 'question.label.endDate', 'Latest')})}"
-                                    >
-                                    </date>
-                                </div>
-                            </fieldset>
-                        </div>
 
-                        <!--/* NUMBER INPUT */-->
-                        <div
-                                class="my-2"
-                                id="numberInput"
-                        >
-                            <fieldset
-                                    id="numberInputField"
-                                    disabled="true"
-                            >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'NUMBER_INPUT', 'Number input')}"
-                                >
-                                </legend>
-                                <div class="form-group">
                                     <div class="row my-1">
                                         <div class="col-sm-4 col-12">
+                                            <!--/* Checkbox for showValueOnButton */-->
+                                            <span
+                                                    id="showValueOnButtonContainer"
+                                                    class="checkbox"
+                                            >
+                                                <label for="showValueOnButton">
+                                                    <input
+                                                            id="showValueOnButton"
+                                                            type="checkbox"
+                                                            th:field="*{answers[0].showValueOnButton}"
+                                                            value="false"
+                                                    />
+                                                    <th:block
+                                                            th:text="${messages.get(#locale, 'question.label.showValueOnButton',
+                                                        'Show current value on button'
+                                                    )}"
+                                                    />
+                                                </label>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <!--/* END OF DISABLED BLOCK */-->
+
+                                    <localableTextarea
+                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                        collection=${questionDTO.localizedQuestionText},
+                                        collapsableId='localizedMinimumTextSliderCollapsableText',
+                                        inputType='textarea',
+                                        inputClazz='form-control localablePostElement wysiwyg',
+                                        path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
+                                    >
+                                        <th:block layout:fragment="collapseLabel">
+                                            <label
+                                                    for="minimumText"
+                                                    th:text="${messages.get(#locale, 'question.label.minimumText', 'Text at minimum position')}"
+                                            >
+                                            </label>
+                                        </th:block>
+                                    </localableTextarea>
+
+                                    <localableTextarea
+                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                        collection=${questionDTO.localizedQuestionText},
+                                        collapsableId='localizedMaximumTextSliderCollapsableText',
+                                        inputType='textarea',
+                                        inputClazz='form-control localablePostElement wysiwyg',
+                                        path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
+                                    >
+                                        <th:block layout:fragment="collapseLabel">
+                                            <label
+                                                    for="maximumText"
+                                                    th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
+                                            >
+                                            </label>
+                                        </th:block>
+                                    </localableTextarea>
+                                </fieldset>
+                            </div>
+
+                            <!--/* SLIDER FREETEXT */-->
+                            <div
+                                    class="my-2"
+                                    id="sliderFreeText"
+                            >
+                                <fieldset
+                                        id="sliderFreeTextField"
+                                        disabled="true"
+                                >
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'NUMBER_CHECKBOX_TEXT', 'Numbered checkboxes + free text')}"
+                                    >
+                                    </legend>
+                                    <div class="row my-1">
+                                        <div class="col-sm-4 col-12 form-group">
                                             <number
                                                     layout:replace="~{fragments/forms :: numberWithLabel(
-                                                for='minValue', required=false, path='answers[0].minValue',
+                                                for='minValue', required=true, path='answers[0].minValue',
                                                 clazz='form-control', step='0.01', showErrors=true,
                                                 text=${messages.get(#locale, 'question.label.minValue', 'Minimum')})}"
                                             >
                                             </number>
                                         </div>
-                                        <div class="col-sm-4 col-12">
+                                        <div class="col-sm-4 col-12 form-group">
                                             <number
                                                     layout:replace="~{fragments/forms :: numberWithLabel(
-                                                for='maxValue', required=false, path='answers[0].maxValue',
+                                                for='maxValue', required=true, path='answers[0].maxValue',
                                                 clazz='form-control', step='0.01', showErrors=true,
                                                 text=${messages.get(#locale, 'question.label.maxValue', 'Maximum')})}"
                                             >
                                             </number>
                                         </div>
-                                        <div class="col-sm-4 col-12">
+                                        <div class="col-sm-4 col-12 form-group">
                                             <number
                                                     layout:replace="~{fragments/forms :: numberWithLabel(
-                                                for='stepsize', required=false, path='answers[0].stepsize',
+                                                for='stepsize', required=true, path='answers[0].stepsize',
                                                 clazz='form-control', step='0.01', showErrors=true,
                                                 text=${messages.get(#locale, 'question.label.stepsize', 'Step size')})}"
                                             >
                                             </number>
                                         </div>
                                     </div>
-                                    <input
-                                            type="hidden"
-                                            th:field="*{answers[0].id}"
-                                    />
-                                </div>
-                            </fieldset>
-                        </div>
 
-                        <!--/* IMAGE */-->
-                        <div
-                                class="my-2"
-                                id="image"
-                        >
-                            <fieldset
-                                    id="imageField"
-                                    disabled="true"
-                            >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'IMAGE', 'Image')}"
-                                >
-                                </legend>
-                                <div class="form-group imageFile">
-                                    <input
-                                            type="hidden"
-                                            th:field="*{answers[0].id}"
-                                    />
-                                    <file
-                                            layout:replace="~{fragments/forms :: fileWithLabel(
-                                        for='imageFile', required=true, showErrors=true, accept='.png,.jpeg,.jpg',
-                                        path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile', clazz='form-control',
-                                        text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
+                                    <localableInput
+                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                        collection=${questionDTO.localizedQuestionText},
+                                        collapsableId='localizedFreetextCollapsableText',
+                                        inputType='input',
+                                        inputClazz='form-control localablePostElement',
+                                        path='answers[0].localizedFreetextLabel[#INDEXFIELD]')}"
                                     >
-                                    </file>
-                                    <div
-                                            id="imageWarning"
-                                            class="alert alert-warning"
-                                    >
-                                        <th:block
-                                                th:text="${warning}"
-                                                escapeXml="false"
-                                        />
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </div>
-
-                        <!--/* BODY_PART */-->
-                        <addVar
-                                layout:replace="~{helper/var :: add(
-                            key='bodyPartAnswerExists',
-                            value=${questionDTO.questionType != null &&
-                                    questionDTO.questionType.name() eq 'BODY_PART' &&
-                                    questionDTO.answers != null  &&
-                                    !questionDTO.answers.isEmpty()})}"
-                        >
-                        </addVar>
-                        <div
-                                class="my-2"
-                                id="bodyPart"
-                        >
-                            <fieldset
-                                    id="bodyPartField"
-                                    disabled="true"
-                            >
-                                <legend
-                                        onclick="toggleFieldsets(this);"
-                                        th:text="${messages.get(#locale, 'BODY_PART', 'Body part selection')}"
-                                >
-                                </legend>
-                                <div class="row my-1">
-                                    <div class="form-group">
-                                        <div class="col-12">
+                                        <th:block layout:fragment="collapseLabel">
                                             <label
-                                                    for="imageType"
-                                                    th:text="${messages.get(#locale, 'question.label.imageType', 'Image type')}"
+                                                    for="freetextLabel"
+                                                    th:text="${messages.get(#locale, 'question.label.freetextLabel', 'Freetext label')}"
                                             >
                                             </label>
-                                            <!--/* id="imageType" */-->
-                                            <select
-                                                    id="imageTypeDropDown"
-                                                    name="imageType"
-                                                    class="form-control"
-                                                    onchange="handleImageTypes()"
+                                        </th:block>
+                                    </localableInput>
+
+                                    <localableTextarea
+                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                        collection=${questionDTO.localizedQuestionText},
+                                        collapsableId='localizedMinimumTextNumberCheckboxCollapsableText',
+                                        inputType='textarea',
+                                        inputClazz='form-control localablePostElement wysiwyg',
+                                        path='answers[0].localizedMinimumText[#INDEXFIELD]')}"
+                                    >
+                                        <th:block layout:fragment="collapseLabel">
+                                            <label
+                                                    for="minimumText"
+                                                    th:text="${messages.get(#locale, 'question.label.minimumText', 'text at minimum position')}"
                                             >
-                                                <th:block th:each="currentImageType: ${imageTypes}">
-                                                    <option
-                                                            th:id="${currentImageType}"
-                                                            th:value="${currentImageType}"
-                                                            th:attr="selected=${questionDTO.imageType ne null && questionDTO.imageType eq currentImageType} ? 'selected' : ''"
-                                                            th:text="${messages.get(#locale, '__${currentImageType}__', '__${currentImageType}__')}"
-                                                    >
-                                                    </option>
-                                                </th:block>
-                                            </select>
+                                            </label>
+                                        </th:block>
+                                    </localableTextarea>
+
+                                    <localableTextarea
+                                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                                        collection=${questionDTO.localizedQuestionText},
+                                        collapsableId='localizedMaximumTextNumberCheckboxCollapsableText',
+                                        inputType='textarea',
+                                        inputClazz='form-control localablePostElement wysiwyg',
+                                        path='answers[0].localizedMaximumText[#INDEXFIELD]')}"
+                                    >
+                                        <th:block layout:fragment="collapseLabel">
+                                            <label
+                                                    for="maximumText"
+                                                    th:text="${messages.get(#locale, 'question.label.maximumText', 'text at maximum position')}"
+                                            >
+                                            </label>
+                                        </th:block>
+                                    </localableTextarea>
+                                </fieldset>
+                            </div>
+
+                            <!--/* DATE */-->
+                            <div
+                                    class="my-2"
+                                    id="date"
+                            >
+                                <fieldset
+                                        id="dateField"
+                                        disabled="true"
+                                >
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'DATE', 'Date')}"
+                                    >
+                                    </legend>
+                                    <div class="form-group">
+                                        <input
+                                                type="hidden"
+                                                th:field="*{answers[0].id}"
+                                        />
+                                        <date
+                                                layout:replace="~{fragments/forms :: dateWithLabel(
+                                            for='startDate', required=false,
+                                            path='answers[0].startDate',
+                                            clazz='form-control', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.startDate', 'At least')})}"
+                                        >
+                                        </date>
+                                    </div>
+                                    <div class="form-group">
+                                        <date
+                                                layout:replace="~{fragments/forms :: dateWithLabel(
+                                            for='endDate', required=false,
+                                            path='answers[0].endDate',
+                                            clazz='form-control', showErrors=true,
+                                            text=${messages.get(#locale, 'question.label.endDate', 'Latest')})}"
+                                        >
+                                        </date>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <!--/* NUMBER INPUT */-->
+                            <div
+                                    class="my-2"
+                                    id="numberInput"
+                            >
+                                <fieldset
+                                        id="numberInputField"
+                                        disabled="true"
+                                >
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'NUMBER_INPUT', 'Number input')}"
+                                    >
+                                    </legend>
+                                    <div class="form-group">
+                                        <div class="row my-1">
+                                            <div class="col-sm-4 col-12">
+                                                <number
+                                                        layout:replace="~{fragments/forms :: numberWithLabel(
+                                                    for='minValue', required=false, path='answers[0].minValue',
+                                                    clazz='form-control', step='0.01', showErrors=true,
+                                                    text=${messages.get(#locale, 'question.label.minValue', 'Minimum')})}"
+                                                >
+                                                </number>
+                                            </div>
+                                            <div class="col-sm-4 col-12">
+                                                <number
+                                                        layout:replace="~{fragments/forms :: numberWithLabel(
+                                                    for='maxValue', required=false, path='answers[0].maxValue',
+                                                    clazz='form-control', step='0.01', showErrors=true,
+                                                    text=${messages.get(#locale, 'question.label.maxValue', 'Maximum')})}"
+                                                >
+                                                </number>
+                                            </div>
+                                            <div class="col-sm-4 col-12">
+                                                <number
+                                                        layout:replace="~{fragments/forms :: numberWithLabel(
+                                                    for='stepsize', required=false, path='answers[0].stepsize',
+                                                    clazz='form-control', step='0.01', showErrors=true,
+                                                    text=${messages.get(#locale, 'question.label.stepsize', 'Step size')})}"
+                                                >
+                                                </number>
+                                            </div>
+                                        </div>
+                                        <input
+                                                type="hidden"
+                                                th:field="*{answers[0].id}"
+                                        />
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <!--/* IMAGE */-->
+                            <div
+                                    class="my-2"
+                                    id="image"
+                            >
+                                <fieldset
+                                        id="imageField"
+                                        disabled="true"
+                                >
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'IMAGE', 'Image')}"
+                                    >
+                                    </legend>
+                                    <div class="form-group imageFile">
+                                        <input
+                                                type="hidden"
+                                                th:field="*{answers[0].id}"
+                                        />
+                                        <file
+                                                layout:replace="~{fragments/forms :: fileWithLabel(
+                                            for='imageFile', required=true, showErrors=true, accept='.png,.jpeg,.jpg',
+                                            path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile', clazz='form-control',
+                                            text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
+                                        >
+                                        </file>
+                                        <div
+                                                id="imageWarning"
+                                                class="alert alert-warning"
+                                        >
+                                            <th:block
+                                                    th:text="${warning}"
+                                                    escapeXml="false"
+                                            />
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row my-1">
-                                    <div class="col-sm-6 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='minNumberAnswers', required=true, path='minNumberAnswers',
-                                            clazz='form-control', min='0', step='1', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
-                                        >
-                                        </number>
+                                </fieldset>
+                            </div>
+
+                            <!--/* BODY_PART */-->
+                            <addVar
+                                    layout:replace="~{helper/var :: add(
+                                key='bodyPartAnswerExists',
+                                value=${questionDTO.questionType != null &&
+                                        questionDTO.questionType.name() eq 'BODY_PART' &&
+                                        questionDTO.answers != null  &&
+                                        !questionDTO.answers.isEmpty()})}"
+                            >
+                            </addVar>
+                            <div
+                                    class="my-2"
+                                    id="bodyPart"
+                            >
+                                <fieldset
+                                        id="bodyPartField"
+                                        disabled="true"
+                                >
+                                    <legend
+                                            onclick="toggleFieldsets(this);"
+                                            th:text="${messages.get(#locale, 'BODY_PART', 'Body part selection')}"
+                                    >
+                                    </legend>
+                                    <div class="row my-1">
+                                        <div class="form-group">
+                                            <div class="col-12">
+                                                <label
+                                                        for="imageType"
+                                                        th:text="${messages.get(#locale, 'question.label.imageType', 'Image type')}"
+                                                >
+                                                </label>
+                                                <!--/* id="imageType" */-->
+                                                <select
+                                                        id="imageTypeDropDown"
+                                                        name="imageType"
+                                                        class="form-control"
+                                                        onchange="handleImageTypes()"
+                                                >
+                                                    <th:block th:each="currentImageType: ${imageTypes}">
+                                                        <option
+                                                                th:id="${currentImageType}"
+                                                                th:value="${currentImageType}"
+                                                                th:attr="selected=${questionDTO.imageType ne null && questionDTO.imageType eq currentImageType} ? 'selected' : ''"
+                                                                th:text="${messages.get(#locale, '__${currentImageType}__', '__${currentImageType}__')}"
+                                                        >
+                                                        </option>
+                                                    </th:block>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-6 col-12 form-group">
-                                        <number
-                                                layout:replace="~{fragments/forms :: numberWithLabel(
-                                            for='maxNumberAnswers', required=true, path='maxNumberAnswers',
-                                            clazz='form-control', min='1', step='1', showErrors=true,
-                                            text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
-                                        >
-                                        </number>
+                                    <div class="row my-1">
+                                        <div class="col-sm-6 col-12 form-group">
+                                            <number
+                                                    layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='minNumberAnswers', required=true, path='minNumberAnswers',
+                                                clazz='form-control', min='0', step='1', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.minNumberAnswers', 'Minimum number of Answers:')})}"
+                                            >
+                                            </number>
+                                        </div>
+                                        <div class="col-sm-6 col-12 form-group">
+                                            <number
+                                                    layout:replace="~{fragments/forms :: numberWithLabel(
+                                                for='maxNumberAnswers', required=true, path='maxNumberAnswers',
+                                                clazz='form-control', min='1', step='1', showErrors=true,
+                                                text=${messages.get(#locale, 'question.label.maxNumberAnswers', 'Maximum number of Answers:')})}"
+                                            >
+                                            </number>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row my-1">
-                                    <div
-                                            id="bodyPartPlaceholder"
-                                            class="col-md-2"
-                                    ></div>
-                                    <th:block th:text="${counter.clear()}"/>
-                                    <th:block th:each="image: ${imagePathBodyPartMap.keySet()}">
-                                        <addVar
-                                                layout:replace="~{helper/var :: add(
-                                            key='imageType', value='FRONT')}"
-                                        >
-                                        </addVar>
-                                        <th:block th:if="${#strings.contains(image, 'body_front')}">
+                                    <div class="row my-1">
+                                        <div
+                                                id="bodyPartPlaceholder"
+                                                class="col-md-2"
+                                        ></div>
+                                        <th:block th:text="${counter.clear()}"/>
+                                        <th:block th:each="image: ${imagePathBodyPartMap.keySet()}">
                                             <addVar
                                                     layout:replace="~{helper/var :: add(
                                                 key='imageType', value='FRONT')}"
                                             >
                                             </addVar>
-                                        </th:block>
-                                        <th:block th:if="${#strings.contains(image, 'body_back')}">
-                                            <addVar
-                                                    layout:replace="~{helper/var :: add(
-                                                key='imageType', value='BACK')}"
-                                            >
-                                            </addVar>
-                                        </th:block>
-                                        <!--/* create a new column for each image that corresponds to the image type */-->
-                                        <div
-                                                class="col-md-6 col-12"
-                                                th:id="|svg-${vars['imageType']}|"
-                                        >
-                                            <div class="panel panel-default">
-                                                <div
-                                                        class="svgDiv panel-body bodyPart-image-panel"
-                                                        style="max-width: 50%; max-height: 600px"
+                                            <th:block th:if="${#strings.contains(image, 'body_front')}">
+                                                <addVar
+                                                        layout:replace="~{helper/var :: add(
+                                                    key='imageType', value='FRONT')}"
                                                 >
-                                                    <svg
-                                                            width="100%"
-                                                            height="100%"
-                                                            viewBox="0 0 165 423"
-                                                            style="
-															display: block;
-															margin-left: 50%;
-															max-height: 550px;
-														"
+                                                </addVar>
+                                            </th:block>
+                                            <th:block th:if="${#strings.contains(image, 'body_back')}">
+                                                <addVar
+                                                        layout:replace="~{helper/var :: add(
+                                                    key='imageType', value='BACK')}"
+                                                >
+                                                </addVar>
+                                            </th:block>
+                                            <!--/* create a new column for each image that corresponds to the image type */-->
+                                            <div
+                                                    class="col-md-6 col-12"
+                                                    th:id="|svg-${vars['imageType']}|"
+                                            >
+                                                <div class="panel panel-default">
+                                                    <div
+                                                            class="svgDiv panel-body bodyPart-image-panel"
+                                                            style="max-width: 50%; max-height: 600px"
                                                     >
-                                                        <image th:xlink:href="@{/__${image}__}"></image>
-                                                        <g>
-                                                            <th:block
-                                                                    th:each="bodyPart: ${imagePathBodyPartMap.get(image)}"
-                                                            >
-                                                                <th:block th:utext="${bodyPart.path}"/>
-                                                            </th:block>
-                                                        </g>
-                                                    </svg>
-                                                    <!--/* Create an input field for all bodyParts to send the information about the selections to the server, if an answer already exists create an input field containing its id */-->
-                                                    <th:block
-                                                            th:each="bodyPart, bodyPartIndex: ${imagePathBodyPartMap.get(image)}"
-                                                    >
-                                                        <input
-                                                                th:id="|text-${bodyPart.messageCode.replace('.', '-')}"
-                                                                th:value="${bodyPart.messageCode}"
-                                                                th:attr="data-param-index=${counter.get()}"
-                                                                th:name="|answers[${counter.get()}].bodyPartMessageCode|"
-                                                                disabled="disabled"
-                                                                style="display: none"
-                                                        />
-                                                        <th:block th:text="${counter.increment()}"/>
-                                                    </th:block>
-                                                    <!--/* if the question existed before check all answers, that has been chosen to be selectable during survey and add an input field to send these informations to the server */-->
-                                                    <th:block th:each="answer: ${questionDTO.answers}">
-                                                        <input
-                                                                th:id="|id-${answer?.value?.bodyPartMessageCode?.replace('.', '-')}|"
-                                                                th:value="${answer.value.id}"
-                                                                style="display: none"
-                                                        />
-                                                    </th:block>
+                                                        <svg
+                                                                width="100%"
+                                                                height="100%"
+                                                                viewBox="0 0 165 423"
+                                                                style="
+                                                                display: block;
+                                                                margin-left: 50%;
+                                                                max-height: 550px;
+                                                            "
+                                                        >
+                                                            <image th:xlink:href="@{/__${image}__}"></image>
+                                                            <g>
+                                                                <th:block
+                                                                        th:each="bodyPart: ${imagePathBodyPartMap.get(image)}"
+                                                                >
+                                                                    <th:block th:utext="${bodyPart.path}"/>
+                                                                </th:block>
+                                                            </g>
+                                                        </svg>
+                                                        <!--/* Create an input field for all bodyParts to send the information about the selections to the server, if an answer already exists create an input field containing its id */-->
+                                                        <th:block
+                                                                th:each="bodyPart, bodyPartIndex: ${imagePathBodyPartMap.get(image)}"
+                                                        >
+                                                            <input
+                                                                    th:id="|text-${bodyPart.messageCode.replace('.', '-')}"
+                                                                    th:value="${bodyPart.messageCode}"
+                                                                    th:attr="data-param-index=${counter.get()}"
+                                                                    th:name="|answers[${counter.get()}].bodyPartMessageCode|"
+                                                                    disabled="disabled"
+                                                                    style="display: none"
+                                                            />
+                                                            <th:block th:text="${counter.increment()}"/>
+                                                        </th:block>
+                                                        <!--/* if the question existed before check all answers, that has been chosen to be selectable during survey and add an input field to send these informations to the server */-->
+                                                        <th:block th:each="answer: ${questionDTO.answers}">
+                                                            <input
+                                                                    th:id="|id-${answer?.value?.bodyPartMessageCode?.replace('.', '-')}|"
+                                                                    th:value="${answer.value.id}"
+                                                                    style="display: none"
+                                                            />
+                                                        </th:block>
+                                                    </div>
                                                 </div>
+                                                <button
+                                                        th:id="|selectAllBodyPartsButton-${vars['imageType']}|"
+                                                        type="button"
+                                                        class="btn btn-primary"
+                                                        onclick="selectAllBodyPartAnswers($(this));"
+                                                        th:text="${messages.get(#locale, 'button.selectAll', 'Select all')}"
+                                                >
+                                                </button>
+                                                <button
+                                                        th:id="|deleteAllBodyPartsButton-${vars['imageType']}|"
+                                                        type="button"
+                                                        class="btn btn-primary"
+                                                        onclick="deleteAllBodyPartAnswers($(this));"
+                                                        th:text="${messages.get(#locale, 'button.deleteAll', 'Delete all')}"
+                                                >
+                                                </button>
                                             </div>
-                                            <button
-                                                    th:id="|selectAllBodyPartsButton-${vars['imageType']}|"
-                                                    type="button"
-                                                    class="btn btn-primary"
-                                                    onclick="selectAllBodyPartAnswers($(this));"
-                                                    th:text="${messages.get(#locale, 'button.selectAll', 'Select all')}"
-                                            >
-                                            </button>
-                                            <button
-                                                    th:id="|deleteAllBodyPartsButton-${vars['imageType']}|"
-                                                    type="button"
-                                                    class="btn btn-primary"
-                                                    onclick="deleteAllBodyPartAnswers($(this));"
-                                                    th:text="${messages.get(#locale, 'button.deleteAll', 'Delete all')}"
-                                            >
-                                            </button>
-                                        </div>
-                                    </th:block>
-                                </div>
-                            </fieldset>
-                        </div>
+                                        </th:block>
+                                    </div>
+                                </fieldset>
+                            </div>
                         </div>
                     </div>
                 </div>
