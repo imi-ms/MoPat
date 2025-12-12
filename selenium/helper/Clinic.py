@@ -16,7 +16,14 @@ class URLPathsClinic:
 class ClinicSelectors:
     BUTTON_ADD_CLINIC = (By.ID, "addClinic")
     BUTTON_SAVE = (By.ID, "saveButton")
-    BUTTON_DELETE_CLINIC = lambda clinic_id: (By.ID, f"removeClinic_{clinic_id}")
+
+    BUTTON_DELETE_CLINIC = lambda clinic_id: (By.CSS_SELECTOR, f"button.delete-clinic-btn[data-clinic-id='{clinic_id}']")
+    BUTTON_DELETE_CLINIC_MOBILE = lambda clinic_id: (By.CSS_SELECTOR, f"button.delete-clinic-btn-mobile[data-clinic-id='{clinic_id}']")
+
+    # Modal selectors
+    MODAL_DELETE_CONFIRMATION = (By.ID, "deleteClinicModal")
+    MODAL_CONFIRM_DELETE_BUTTON = (By.ID, "confirmDeleteBtn")
+
     BUTTON_MOVE_ITEM = lambda bundle_id: (By.ID, f"move_{bundle_id}")
 
     DROPDOWN_CONFIG = lambda parent_id: (By.CSS_SELECTOR, f"li[parentid='{parent_id}'] select")
@@ -141,6 +148,22 @@ class ClinicHelper:
             delete_button = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
                 ClinicSelectors.BUTTON_DELETE_CLINIC(clinic_id)))
             delete_button.click()
+
+            # Wait for the modal to appear
+            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
+                ClinicSelectors.MODAL_DELETE_CONFIRMATION))
+
+            # Wait for the confirm button to be visible and clickable
+            confirm_button = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+                ClinicSelectors.MODAL_CONFIRM_DELETE_BUTTON))
+
+            # Click the confirm delete button
+            confirm_button.click()
+
+            # Wait for the modal to disappear (deletion completed)
+            WebDriverWait(self.driver, 10).until(EC.invisibility_of_element_located(
+                ClinicSelectors.MODAL_DELETE_CONFIRMATION))
+
             return True
         except TimeoutException:
             # Clinic not found
