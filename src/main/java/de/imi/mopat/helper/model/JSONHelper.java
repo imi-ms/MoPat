@@ -231,7 +231,8 @@ public class JSONHelper {
                 jsonExportRuleDTO.setUuid(exportRule.getUuid());
                 jsonExportRuleDTO.setExportField(exportRule.getExportField());
 
-                jsonExportRuleDTO.setExportRuleFormat(getJsonExportRuleFormatDTO(exportRule));
+                if (exportRule.getExportRuleFormat() != null)
+                    jsonExportRuleDTO.setExportRuleFormat(getJsonExportRuleFormatDTO(exportRule));
 
                 // Check if this is specifically an ExportRuleAnswer
                 if (exportRule instanceof ExportRuleAnswer) {
