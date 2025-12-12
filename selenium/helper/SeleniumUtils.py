@@ -301,22 +301,22 @@ class SeleniumUtils:
             # click the remove button
             self.click_element(button_selector)
 
-             if needs_modal_confirmation:
-                 # Wait for modal to appear
-                 modal_selector = (By.ID, "deleteClinicModal")
-                 WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(modal_selector))
+            if needs_modal_confirmation:
+                # Wait for modal to appear
+                modal_selector = (By.ID, "deleteClinicModal")
+                WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(modal_selector))
 
-                 # Wait and click the confirm button
-                 confirm_button_selector = (By.ID, "confirmDeleteBtn")
-                 confirm_button = WebDriverWait(self.driver, 10).until(
-                     EC.element_to_be_clickable(confirm_button_selector)
-                 )
-                 confirm_button.click()
+                # Wait and click the confirm button
+                confirm_button_selector = (By.ID, "confirmDeleteBtn")
+                confirm_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable(confirm_button_selector)
+                )
+                confirm_button.click()
 
-                 # Wait for modal to disappear
-                 WebDriverWait(self.driver, 10).until(
-                     EC.invisibility_of_element_located(modal_selector)
-                 )
+                # Wait for modal to disappear
+                WebDriverWait(self.driver, 10).until(
+                    EC.invisibility_of_element_located(modal_selector)
+                )
         except TimeoutException:
             raise Exception(f"Failed to delete {item_type} '{item_name}' with ID {item_id}'.")
         except Exception as e:
