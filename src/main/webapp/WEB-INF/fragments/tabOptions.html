@@ -20,6 +20,7 @@
                    href="#"
                    th:data-value="${i[itemValue]}"
                    th:data-target-id="${id}"
+                   th:classappend="${i[itemValue] == 'SLIDER' ? 'active' : ''}"
                    onclick="var input = document.getElementById(this.getAttribute('data-target-id'));
                    input.value = this.getAttribute('data-value');
                    input.onchange();
