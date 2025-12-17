@@ -62,31 +62,6 @@
                         />
 
                         <div class="card glassy">
-                            <div class="form-group">
-                                <label
-                                        for="questionType"
-                                        th:text="${messages.get(#locale, 'question.label.questiontype', 'Question type')}"
-                                >
-                                </label>
-                                <selectOptions
-                                        layout:replace="~{fragments/tabOptions :: tabOptions(
-                                    clazz='nav nav-pills nav-justified',
-                                    path='questionType',
-                                    items=${questionTypeList},
-                                    itemLabel='textValue',
-                                    itemValue='textValue',
-                                    localize=${#bools.isTrue(true)},
-                                    onChangeFunction='handleQuestionTypes(false)',
-                                    id='questionTypeDropDown')}"
-                                >
-                                </selectOptions>
-                                <th:block
-                                        layout:insert="~{fragments/forms :: errorField(path='questionType')}"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="card glassy">
                             <localableTextarea
                                     layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
                                 collection=${questionDTO.localizedQuestionText},
@@ -142,6 +117,30 @@
                         </addVar>
 
                         <div class="card glassy">
+                            <div class="form-group">
+                                <label
+                                        for="questionType"
+                                        th:text="${messages.get(#locale, 'question.label.questiontype', 'Question type')}"
+                                >
+                                </label>
+                                <selectOptions
+                                        layout:replace="~{fragments/tabOptions :: tabOptions(
+                                    clazz='nav nav-tabs nav-justified',
+                                    path='questionType',
+                                    items=${questionTypeList},
+                                    itemLabel='textValue',
+                                    itemValue='textValue',
+                                    itemIcon='iconPath',
+                                    localize=${#bools.isTrue(true)},
+                                    onChangeFunction='handleQuestionTypes(false)',
+                                    id='questionTypeDropDown')}"
+                                >
+                                </selectOptions>
+                                <th:block
+                                        layout:insert="~{fragments/forms :: errorField(path='questionType')}"
+                                />
+                            </div>
+
                             <!--/* MULTIPLE CHOICE */-->
                             <div
                                     class="my-2"
