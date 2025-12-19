@@ -37,6 +37,7 @@ import org.hl7.fhir.r4b.model.DecimalType;
 import org.hl7.fhir.r4b.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r4b.model.Extension;
 import org.hl7.fhir.r4b.model.IntegerType;
+import org.hl7.fhir.r4b.model.Questionnaire.EnableWhenBehavior;
 import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
 import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemComponent;
 import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemEnableWhenComponent;
@@ -82,6 +83,13 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
         fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
+
+        String fhirUrl = configurationDao.getFHIRsystemURI();
+        String questionnaireUrl = String.format("%s/%s",
+            fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
+            questionnaire.getId());
+
+        fhirQuestionnaire.setUrl(questionnaireUrl);
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
@@ -490,8 +498,11 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
                                             enableWhen.setAnswer(option.getValueCoding());
                                             enableWhen.setOperator(QuestionnaireItemOperator.EQUAL);
                                             enableWhen.setQuestion(item.getLinkId());
+
                                             targetQuestions.get(selectAnswerCondition.getTarget())
                                                 .addEnableWhen(enableWhen);
+                                            targetQuestions.get(selectAnswerCondition.getTarget())
+                                                .setEnableBehavior(EnableWhenBehavior.ALL);
                                         }
                                     } catch (Exception ex) {
                                         // Log or handle exception if needed
