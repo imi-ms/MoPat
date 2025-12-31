@@ -1503,6 +1503,73 @@
 				sortNodeList();
 			});
 
+			// Auto-save configuration - every 2 minutes
+			const AUTOSAVE_INTERVAL = 2 * 60 * 1000;
+			let autoSaveTimer;
+			let isAutoSaving = false;
+
+			function performAutoSave() {
+				if (isAutoSaving) {
+					console.log('Autosave already in progress');
+					return;
+				}
+
+				isAutoSaving = true;
+				const formData = $('form[name="exportRules"]').serialize();
+
+				$.ajax({
+					url: '/mapping/map?autoSave=true',
+					type: 'POST',
+					data: formData,
+					success: function(response) {
+						console.log('Autosave successful', response);
+						isAutoSaving = false;
+					},
+					error: function(xhr, textStatus, errorThrown) {
+						console.error('Autosave failed:', errorThrown);
+						isAutoSaving = false;
+					},
+					complete: function() {
+						isAutoSaving = false;
+					}
+				});
+			}
+
+			// Start autosave timer
+			function startAutoSave() {
+				// Clear any existing timer
+				if (autoSaveTimer) {
+					clearInterval(autoSaveTimer);
+				}
+				autoSaveTimer = setInterval(function() {
+					performAutoSave();
+				}, AUTOSAVE_INTERVAL);
+
+				console.log('Autosave started (every 2 minutes)');
+			}
+
+			// Stop autosave timer
+			function stopAutoSave() {
+				if (autoSaveTimer) {
+					clearInterval(autoSaveTimer);
+					autoSaveTimer = null;
+					console.log('Autosave stopped');
+				}
+			}
+
+			// Stop auto-save when manually saving
+			$('#saveButton').on('click', function(e) {
+				stopAutoSave();
+			});
+
+			// Initialize auto-save
+			startAutoSave();
+
+			// Clean up on page unload
+			$(window).on('unload', function() {
+				stopAutoSave();
+			});
+
 		});
 	</script>
 </th:block>
