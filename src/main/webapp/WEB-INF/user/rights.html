@@ -80,7 +80,7 @@
 							class="form-control"
 							id="expirationDate"
 							name="expirationDate"
-							th:value="${user.expirationDate}"
+							th:value="${user.expirationDate != null ? #dates.format(user.expirationDate, 'yyyy-MM-dd') : ''}"
 							th:title="${messages.get(#locale, 'user.label.expirationDate.tooltip', 'Leave empty for no expiration')}"
 					/>
 					<small class="form-text text-muted"
