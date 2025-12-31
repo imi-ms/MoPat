@@ -10,6 +10,7 @@ import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -122,6 +124,11 @@ public class UserService {
         userDao.merge(user);
     }
 
+    public void updateExpirationDate(User user, Date expirationDate) {
+        user.setExpirationDate(expirationDate);
+        userDao.merge(user);
+    }
+
     /**
      * Updates the clinic rights for a user. Assigns or revokes permissions based on the provided clinic IDs.
      *
@@ -194,5 +201,32 @@ public class UserService {
         return users.stream()
             .sorted(Comparator.comparing(User::getUsername))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Disables all users whose expiration date has passed.
+     *
+     * @return the number of users that were disabled
+     */
+    @Transactional("MoPat_User")
+    public int disableExpiredUsers() {
+        List<User> expiredUsers = userDao.findExpiredUsers();
+
+        if (expiredUsers.isEmpty()) {
+            return 0;
+        }
+
+        int disabledCount = 0;
+        for (User user : expiredUsers) {
+            try {
+                user.setIsEnabled(false);
+                userDao.merge(user);
+                disabledCount++;
+            } catch (Exception e) {
+                LOGGER.error("Failed to disable expired user: {}", user.getUsername(), e);
+            }
+        }
+
+        return disabledCount;
     }
 }

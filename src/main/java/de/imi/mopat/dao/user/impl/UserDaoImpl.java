@@ -2,9 +2,10 @@ package de.imi.mopat.dao.user.impl;
 
 import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.user.User;
 import jakarta.persistence.NoResultException;
@@ -74,5 +75,19 @@ public class UserDaoImpl extends UserManagementDaoImpl<User> implements UserDao 
         TypedQuery<String> query = moPatUserEntityManager.createQuery(
             "SELECT DISTINCT u.email FROM User u WHERE u.isEnabled = true", String.class);
         return new HashSet<>(query.getResultList());
+    }
+
+    @Override
+    @Transactional("MoPat_User")
+    public List<User> findExpiredUsers() {
+        Date today = new Date();
+
+        TypedQuery<User> query = moPatUserEntityManager.createQuery(
+            "SELECT u FROM User u WHERE u.expirationDate IS NOT NULL " +
+                "AND u.expirationDate < :today AND u.isEnabled = true",
+            User.class);
+        query.setParameter("today", today);
+
+        return query.getResultList();
     }
 }

@@ -1,5 +1,6 @@
 package de.imi.mopat.dao.user;
 
+import java.util.List;
 import java.util.Set;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,4 +61,7 @@ public interface UserDao extends UserManagementDao<User> {
      * @return A distinct set containing email addresses of all users.
      */
     Set<String> getAllEnabledEMailAddressesDistinct();
+
+    List<User> findExpiredUsers();
+
 }

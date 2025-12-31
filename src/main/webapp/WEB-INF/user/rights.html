@@ -70,6 +70,24 @@
 						</option>
 					</select>
 				</div>
+
+				<div class="form-group">
+					<label for="expirationDate"
+								 th:text="${messages.get(#locale, 'user.label.expirationDate', 'Expiration Date')}">
+					</label>
+					<input
+							type="date"
+							class="form-control"
+							id="expirationDate"
+							name="expirationDate"
+							th:value="${user.expirationDate}"
+							th:title="${messages.get(#locale, 'user.label.expirationDate.tooltip', 'Leave empty for no expiration')}"
+					/>
+					<small class="form-text text-muted"
+								 th:text="${messages.get(#locale, 'user.label.expirationDate.help', 'User account will be automatically disabled after this date. Leave empty for no expiration.')}">
+					</small>
+				</div>
+
 				<div class="container-fluid doubleList">
 					<div class="row removableFlex toggleCollapseTable">
 						<div class="col-5">

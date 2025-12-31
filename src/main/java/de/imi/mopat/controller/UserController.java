@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -715,10 +717,15 @@ public class UserController {
             @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
             @RequestParam(value = "action", required = true) final String action,
             @RequestParam(value = "role") final UserRole role,
+            @RequestParam(value = "expirationDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") final Date expirationDate,
             @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
         if (action.equalsIgnoreCase("save")) {
             userService.updateUserClinicRights(user, clinicIDs);
             userService.replaceUserRoles(user, role);
+            if (expirationDate != null) {
+                userService.updateExpirationDate(user, expirationDate);
+            }
         }
         return "redirect:/user/list";
     }

@@ -75,6 +75,9 @@ public class User implements Serializable, UserDetails {
     private String pin;
     @Column(name = "last_selected_clinic_id")
     private Long lastSelectedClinicId;
+    @Column(name = "expiration_date")
+    @Temporal(TemporalType.DATE)
+    private Date expirationDate;
 
     public User() {
         //default constructor (in protected state), should not be accessible
@@ -389,8 +392,10 @@ public class User implements Serializable, UserDetails {
      */
     @Override
     public boolean isAccountNonExpired() {
-        // TODO implement me
-        return true;
+        if (expirationDate == null) {
+            return true;
+        }
+        return new Date().before(expirationDate);
     }
 
     /**
@@ -528,5 +533,14 @@ public class User implements Serializable, UserDetails {
     public void setLastSelectedClinicId(Long lastSelectedClinicId) {
         this.lastSelectedClinicId = lastSelectedClinicId;
     }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
 
 }
