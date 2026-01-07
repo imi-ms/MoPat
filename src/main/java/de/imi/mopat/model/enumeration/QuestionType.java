@@ -13,7 +13,7 @@ public enum QuestionType {
     MULTIPLE_CHOICE("MULTIPLE_CHOICE", new MultipleChoiceOrDropdownStrategy(), "/images/form-svgs/multipleChoice.svg"),
     SLIDER("SLIDER", new SliderOrNumCheckBoxStrategy(), "/images/form-svgs/slider.svg"),
     NUMBER_CHECKBOX("NUMBER_CHECKBOX", new SliderOrNumCheckBoxStrategy(), "/images/form-svgs/numbered.svg"),
-    NUMBER_CHECKBOX_TEXT("NUMBER_CHECKBOX_TEXT", new NumberCheckBoxTextStrategy(), "/images/form-svgs/numbered.svg"),
+    NUMBER_CHECKBOX_TEXT("NUMBER_CHECKBOX_TEXT", new NumberCheckBoxTextStrategy(), "/images/form-svgs/checkboxFreetext.svg"),
     DROP_DOWN("DROP_DOWN", new MultipleChoiceOrDropdownStrategy(), "/images/form-svgs/dropdown.svg"),
     FREE_TEXT("FREE_TEXT", new FreeTextOrBarcodeStrat(), "/images/form-svgs/text.svg"),
     INFO_TEXT("INFO_TEXT", new DoNothing(), "/images/form-svgs/info.svg"),
