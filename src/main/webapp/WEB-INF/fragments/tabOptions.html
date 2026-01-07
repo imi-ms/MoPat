@@ -16,11 +16,10 @@
     <ul th:class="${clazz}" role="tablist">
         <th:block th:each="i: ${items}">
             <li class="nav-item">
-                <a class="nav-link"
+                <a class="nav-link questionTypeLink"
                    href="#"
                    th:data-value="${i[itemValue]}"
                    th:data-target-id="${id}"
-                   th:classappend="${i[itemValue] == 'SLIDER' ? 'active' : ''}"
                    th:title="${localize ? messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__') : i[itemLabel]}"
                    th:attr="data-bs-target=|#${i[itemValue]}_TAB|"
                    onclick="var input = document.getElementById(this.getAttribute('data-target-id'));
@@ -43,8 +42,7 @@
 
     <div class="tab-content">
         <th:block th:each="i: ${items}">
-            <div class="tab-pane fade" role="tabpanel" th:attr="id=|${i[itemValue]}_TAB|"
-                 th:classappend="${i[itemValue] == 'SLIDER' ? 'active show' : ''}">
+            <div class="tab-pane fade" role="tabpanel" th:attr="id=|${i[itemValue]}_TAB|">
                 <legend>
                     <th:block th:if="${localize}">
                         <th:block

@@ -1788,6 +1788,16 @@
                 $("#isJustInfo1").parent().parent().attr("style", "display:none;");
             }
 
+            if(onload) {
+                var selectedValue = $("#questionTypeDropDown").val();
+                document.querySelectorAll(".questionTypeLink").forEach(function(element, index) {
+                    if(element.dataset.value == selectedValue) {
+                        element.click();
+                        return;
+                    }
+                });
+            }
+
             /*[- Switch over chosen QuestionType and enable associated elements -]*/
             switch ($("#questionTypeDropDown").val()) {
                 case "MULTIPLE_CHOICE":
