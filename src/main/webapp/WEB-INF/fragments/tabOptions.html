@@ -42,7 +42,7 @@
 
     <div class="tab-content">
         <th:block th:each="i: ${items}">
-            <div class="tab-pane fade" role="tabpanel" th:attr="id=|${i[itemValue]}_TAB|">
+            <div class="tab-pane fade tabLegend" role="tabpanel" th:attr="id=|${i[itemValue]}_TAB|">
                 <legend>
                     <th:block th:if="${localize}">
                         <th:block

@@ -147,11 +147,6 @@
                                     id="multipleChoice"
                             >
                                 <fieldset id="answerField">
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'question.label.multipleChoiceDropDown', 'Multiple choice/drop down:')}"
-                                    >
-                                    </legend>
                                     <div class="row my-1">
                                         <div class="col-sm-6 col-12 form-group">
                                             <number
@@ -496,11 +491,6 @@
                                         id="sliderField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'question.label.sliderCheckbox', 'Slider/checkboxes')}"
-                                    >
-                                    </legend>
 
                                     <checkbox
                                             layout:replace="~{fragments/forms :: checkbox(
@@ -829,11 +819,6 @@
                                         id="sliderFreeTextField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'NUMBER_CHECKBOX_TEXT', 'Numbered checkboxes + free text')}"
-                                    >
-                                    </legend>
                                     <div class="row my-1">
                                         <div class="col-sm-4 col-12 form-group">
                                             <number
@@ -926,11 +911,6 @@
                                         id="dateField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'DATE', 'Date')}"
-                                    >
-                                    </legend>
                                     <div class="form-group">
                                         <input
                                                 type="hidden"
@@ -967,10 +947,6 @@
                                         id="numberInputField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'NUMBER_INPUT', 'Number input')}"
-                                    >
                                     </legend>
                                     <div class="form-group">
                                         <div class="row my-1">
@@ -1019,10 +995,6 @@
                                         id="imageField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'IMAGE', 'Image')}"
-                                    >
                                     </legend>
                                     <div class="form-group imageFile">
                                         <input
@@ -1067,10 +1039,6 @@
                                         id="bodyPartField"
                                         disabled="true"
                                 >
-                                    <legend
-                                            onclick="toggleFieldsets(this);"
-                                            th:text="${messages.get(#locale, 'BODY_PART', 'Body part selection')}"
-                                    >
                                     </legend>
                                     <div class="row my-1">
                                         <div class="form-group">
