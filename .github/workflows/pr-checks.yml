@@ -156,6 +156,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker images with docker compose
+        working-directory: ./.github/docker_testenv
         run: |
           docker compose build
 
@@ -165,7 +166,7 @@ jobs:
         env:
           TRIVY_DISABLE_VEX_NOTICE: "true"
         with:
-          image-ref: mopat-webapp-container:latest
+          image-ref: docker_testenv-webapp-container:latest
           format: json
           exit-code: 0
           output: trivy-report.json
