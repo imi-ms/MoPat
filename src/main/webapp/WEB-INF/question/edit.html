@@ -1216,8 +1216,18 @@
                         th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
                 >
                 </button>
+                <a
+                        class="btn btn-primary"
+                        value="preview"
+                        id="previewButton"
+                        th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
+                        th:attr="onclick=|showModal();|"
+                ></a>
                 <th:block
                         layout:insert="~{helper/localeHelper/deleteLanguageModal}"
+                ></th:block>
+                <th:block
+                        layout:insert="~{question/previewModal}"
                 ></th:block>
             </form>
         </div>
@@ -1715,6 +1725,10 @@
                 img.src = _URL.createObjectURL(file);
             }
         });
+
+        function showModal() {
+            $('#previewModal').modal('show');
+        }
 
         const questionFormTypes = {
             multipleChoice: {id: "#multipleChoice", fieldId: "#answerField"},
