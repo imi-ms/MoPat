@@ -27,7 +27,9 @@ services:
       - selenoid-network
 
   webapp-container:
-    build: ..
+    build:
+      context: ..
+      dockerfile: .github/docker_testenv/Dockerfile
     depends_on:
       - db-container
     ports:
