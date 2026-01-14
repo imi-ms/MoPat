@@ -1040,51 +1040,6 @@ function notifyBack() {
     };
 }
 
-/**
- * DEPRECATED: Was used by old font size buttons
- * Reduce the font size of the question and answer text
- */
-function reduceFontSize() {
-    if (fontSizeClass > fontSizeMinClass) {
-        fontSizeClass -= 1; 
-    }
-    setFontSize(fontSizeClass);
-
-    $("#increaseFontSizeButton").attr('disabled', false);
-    if (fontSizeClass === fontSizeMinClass) {
-        $("#reduceFontSizeButton").attr('disabled', true);
-    } else {
-        $("#reduceFontSizeButton").attr('disabled', false);
-    }
-
-    if (encounter.getCurrentQuestionnaire() !== null) {
-        encounter.getCurrentQuestionnaire().getCurrentQuestion().rearrange();
-    }
-}
-
-/**
- * DEPRECATED: Was used by old font size buttons
- * Increase the font size of the question and answer text
- */
-function increaseFontSize() {
-    if (fontSizeClass < fontSizeMaxClass) {
-        fontSizeClass += 1;
-    }
-    setFontSize(fontSizeClass);
-
-    $("#reduceFontSizeButton").attr('disabled', false);
-    if (fontSizeClass === fontSizeMaxClass) {
-        // Enable the button
-        $("#increaseFontSizeButton").attr('disabled', true);
-    } else {
-        $("#increaseFontSizeButton").attr('disabled', false);
-    }
-
-    if (encounter.getCurrentQuestionnaire() !== null) {
-        encounter.getCurrentQuestionnaire().getCurrentQuestion().rearrange();
-    }
-}
-
 /*  * Set the font size for every resizable dom element in the body
  */
 function setFontSize(size) {
