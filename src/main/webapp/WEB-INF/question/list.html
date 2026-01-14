@@ -508,9 +508,11 @@
 				let questionRow = document.getElementById(questionId);
 
 				if (questionRow === lastQuestionRow && isConditionable(questionRow)) {
-					button.style.display = "none";
+                    button.classList.add("btn-crossed");
 				} else {
-					button.style.display = "inline";
+                    if (isConditionable(questionRow)) {
+                        button.classList.remove("btn-crossed");
+                    }
 				}
 			});
 		}
