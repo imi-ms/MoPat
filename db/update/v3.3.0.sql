@@ -11,3 +11,5 @@ DELETE FROM moPat.configuration WHERE label_message_code = 'configuration.label.
 DELETE FROM moPat.configuration_group WHERE label_message_code = 'configurationGroup.label.ORBIS'
 
 UPDATE moPat.export_template SET export_type = 'HL7v2' WHERE export_type = 'ORBIS';
+
+ALTER TABLE question ADD COLUMN is_just_info TINYINT(1) NOT NULL DEFAULT 0;

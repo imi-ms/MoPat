@@ -29,6 +29,7 @@ function Question() {
     this.id;
     this.isRequired;
     this.isEnabled;
+    this.isJustInfo;
     this.isIncomplete;
     this.isFirstIncomplete;
     this.maxNumberAnswers;
@@ -1048,8 +1049,11 @@ function Question() {
                 }
                 // Append the divs to the question content
                 canvasDiv.append(canvas);
-                questioncontent.append(toolbarDiv);
                 questioncontent.append(canvasDiv);
+                if (this.isJustInfo) {
+                    break;
+                }
+                questioncontent.append(toolbarDiv);
 
                 // Bind mouse actions on canvas and buttons
                 canvas.addEventListener('click', function (e) {
