@@ -9,3 +9,5 @@ VALUES(1, NULL, 16, 'GENERAL', 'imprintText', 'RICH_TEXT', 'configuration.descri
 
 DELETE FROM moPat.configuration WHERE label_message_code = 'configuration.label.exportOrbisPath'
 DELETE FROM moPat.configuration_group WHERE label_message_code = 'configurationGroup.label.ORBIS'
+
+UPDATE moPat.export_template SET export_type = 'HL7v2' WHERE export_type = 'ORBIS';
