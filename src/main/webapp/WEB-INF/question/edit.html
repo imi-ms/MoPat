@@ -119,14 +119,6 @@
 						>
 						</checkbox>
 
-                        <checkbox
-                                layout:replace="~{fragments/forms :: checkbox(
-                                path='isJustInfo',
-                                text=${messages.get(#locale, 'question.label.isJustInfo', 'Question is just information without interaction')},
-                                showErrors=true)}"
-                        >
-                        </checkbox>
-
 						<!--/* handling answers */-->
 						<addVar
 							layout:replace="~{helper/var :: add(key='answerExist',
@@ -1040,6 +1032,15 @@
 										/>
 									</div>
 								</div>
+                                <div class="form-group">
+                                    <checkbox
+                                        layout:replace="~{fragments/forms :: checkbox(
+                                        path='isJustInfo',
+                                        text=${messages.get(#locale, 'question.label.isJustInfo', 'Question is just information without interaction')},
+                                        showErrors=true)}"
+                                    >
+                                    </checkbox>
+                                </div>
 							</fieldset>
 						</div>
 
