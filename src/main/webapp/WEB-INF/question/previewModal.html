@@ -34,9 +34,14 @@
         var localeString = [[${#locale.toString}]];
 
         $('#previewModal').on('show.bs.modal', function (event) {
-            content = $('#questionContent');
+            var content = $('#questionContent');
             updateQuestionTitles(dto);
             getHTML(content);
+        });
+
+        $('#previewModal').on('hide.bs.modal', function (event) {
+            $('#questionContent').empty();
+            $('#questionTitle').empty();
         });
 
         function updateQuestionTitles(question) {
