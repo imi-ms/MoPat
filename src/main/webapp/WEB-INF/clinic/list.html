@@ -2,262 +2,186 @@
     * View to list all available clinic entries    
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=#{clinic.heading.title}"
+    layout:decorate="~{layout/main}"
+    th:with="title=#{clinic.heading.title}"
 >
-	<th:block layout:fragment="content">
-		<th:block th:if="${messageSuccess ne null}">
-			<div
-					id="notification"
-					class="alert alert-success alert-dismissible fade show"
-					role="alert"
-			>
-				<i class="bi bi-check-circle-fill me-2"></i>
-				<th:block th:text="${messageSuccess}"></th:block>
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-		</th:block>
-		<th:block th:if="${messageFail != null}">
-			<div
-					id="notification"
-					class="alert alert-danger alert-dismissible fade show"
-					role="alert"
-			>
-				<i class="bi bi-exclamation-triangle-fill me-2"></i>
-				<th:block th:text="${messageFail}" />
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-		</th:block>
-		<div 
-			id="loadingContainer" 
-			class="d-flex flex-column align-items-center justify-content-center vh-50"
-		>
-			<div 
-				class="spinner-border" 
-				id="loadingSpinner" 
-				role="status" 
-			>
-				<span class="visually-hidden">Loading...</span>
-			</div>
-		</div>
-		<div class="table-responsive">
-			<table
-				class="table table-hover responsive"
-				id="clinicTable"
-				style="width: 100%; display:none"
-			>
-				<thead>
-					<tr>
-						<th>
-							<th:block th:text="#{clinic.label.name}">Name:</th:block>
-						</th>
-						<th class="actionColumn">
-							<th:block th:text="#{admin.table.actions}">Actions</th:block>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<th:block th:if="not ${#lists.isEmpty(allClinics)}">
-						<!--/* iterating over all clinics to show their basic attributes and links */-->
-						<th:block th:each="clinic: ${allClinics}">
-							<tr>
-								<td>
-									<th:block th:if="not ${#strings.isEmpty(clinic.name)}">
-										<a
-											class="link"
-											th:href="@{edit?id=__${clinic.id}__}"
-										>
-											<th:block th:text="${clinic.name}" />
-										</a>
-									</th:block>
-								</td>
-								<td class="actionColumn">
-									<div class="d-none d-xl-block">
-                                        <div class="btn-group" role="group">
+    <th:block layout:fragment="content">
+        <th:block th:if="${messageSuccess ne null}">
+            <div
+                class="alert alert-success alert-dismissible fade show"
+                id="notification"
+                role="alert"
+            >
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <th:block th:text="${messageSuccess}"></th:block>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert"
+                        type="button"></button>
+            </div>
+        </th:block>
+        <th:block th:if="${messageFail != null}">
+            <div
+                class="alert alert-danger alert-dismissible fade show"
+                id="notification"
+                role="alert"
+            >
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <th:block th:text="${messageFail}" />
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert"
+                        type="button"></button>
+            </div>
+        </th:block>
+        <div
+            class="d-flex flex-column align-items-center justify-content-center vh-50"
+            id="loadingContainer"
+        >
+            <div
+                class="spinner-border"
+                id="loadingSpinner"
+                role="status"
+            >
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table
+                class="table table-hover responsive"
+                id="clinicTable"
+                style="width: 100%; display:none"
+            >
+                <thead>
+                <tr>
+                    <th>
+                        <th:block th:text="#{clinic.label.name}">Name:</th:block>
+                    </th>
+                    <th class="actionColumn">
+                        <th:block th:text="#{admin.table.actions}">Actions</th:block>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:if="not ${#lists.isEmpty(allClinics)}">
+                    <!--/* iterating over all clinics to show their basic attributes and links */-->
+                    <th:block th:each="clinic: ${allClinics}">
+                        <tr>
+                            <td>
+                                <th:block th:if="not ${#strings.isEmpty(clinic.name)}">
+                                    <a
+                                        class="link"
+                                        th:href="@{edit?id=__${clinic.id}__}"
+                                    >
+                                        <th:block th:text="${clinic.name}" />
+                                    </a>
+                                </th:block>
+                            </td>
+                            <td class="actionColumn">
+                                <div class="d-none d-xl-block">
+                                    <div class="btn-group" role="group">
+                                        <a
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{edit?id=__${clinic.id}__}"
+                                        >
+                                            <i
+                                                class="bi-pencil-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
+                                            ></i>
+                                        </a>
+                                        <button
+                                            class="btn btn-sm btn-primary-list btn-red delete-clinic-btn"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="|#deleteModal_${clinic.id}|"
+                                            type="button"
+                                        >
+                                            <i
+                                                class="bi-trash-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
+                                            ></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!--/*Action dropdown for smaller resolutions*/-->
+                                <div class="d-block d-xl-none">
+                                    <a
+                                        class="link"
+                                        data-bs-toggle="offcanvas"
+                                        th:href="|#${clinic.id}_offcanvas|"
+                                    ><i
+                                        class="bi bi-three-dots"
+                                        style="font-size: 1.5rem"
+                                    ></i
+                                    ></a>
+                                    <th:block
+                                        layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${clinic.name}, id=|${clinic.id}_offcanvas|)}"
+                                    >
+                                        <th:block layout:fragment="optionsContent">
                                             <a
-                                                class="btn btn-sm btn-primary-list link"
+                                                class="link"
                                                 th:href="@{edit?id=__${clinic.id}__}"
-                                            >
-                                                <i
-                                                    class="bi-pencil-fill bi-list-icon"
-                                                    th:title="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
-                                                ></i>
-                                            </a>
+                                                th:text="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
+                                            ></a>
                                             <button
-												class="btn btn-sm btn-primary-list btn-red delete-clinic-btn"
-												th:data-clinic-id="${clinic.id}"
-												th:data-clinic-name="${clinic.name}"
-												type="button"
-                                            >
-                                                <i
-                                                    class="bi-trash-fill bi-list-icon"
-                                                    th:title="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
-                                                ></i>
-                                            </button>
-                                        </div>
-									</div>
-									<!--/*Action dropdown for smaller resolutions*/-->
-									<div class="d-block d-xl-none">
-										<a
-											class="link"
-											data-bs-toggle="offcanvas"
-											th:href="|#${clinic.id}_offcanvas|"
-											><i
-												class="bi bi-three-dots"
-												style="font-size: 1.5rem"
-											></i
-										></a>
-										<th:block
-											layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${clinic.name}, id=|${clinic.id}_offcanvas|)}"
-										>
-											<th:block layout:fragment="optionsContent">
-												<a
-													class="link"
-													th:href="@{edit?id=__${clinic.id}__}"
-													th:text="${messages.get(#locale, 'clinic.button.edit', 'Edit')}"
-											></a>
-											<button
-													class="link btn btn-link text-start p-0 delete-clinic-btn-mobile"
-													th:data-clinic-id="${clinic.id}"
-													th:data-clinic-name="${clinic.name}"
-													type="button"
-													th:text="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
-												></button>
-											</th:block>
-										</th:block>
-									</div>
-								</td>
-							</tr>
-						</th:block>
-					</th:block>
-				</tbody>
-			</table>
-			<div class="panel-body">
-				<form
-					method="GET"
-					th:action="@{edit}"
-					th:object="${clinic}"
-				>
-					<button
-						type="submit"
-						class="btn btn-primary"
-						id="addClinic"
-						th:text="#{clinic.button.add}"
-						>Add clinic</button
-					>
-				</form>
-			</div>
-		</div>
-
-		<!-- Delete Confirmation Modal -->
-		<div class="modal fade" id="deleteClinicModal" tabindex="-1" aria-labelledby="deleteClinicModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="deleteClinicModalLabel">
-							<th:block th:text="#{clinic.modal.delete.title}">Confirm Deletion</th:block>
-						</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body" id="deleteClinicModalBody">
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-							<th:block th:text="#{clinic.modal.delete.cancel}">Cancel</th:block>
-						</button>
-						<button type="button" class="btn btn-danger" id="confirmDeleteBtn" style="display:none;">
-							<th:block th:text="#{clinic.modal.delete.confirm}">Delete</th:block>
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</th:block>
+                                                class="link btn btn-link text-start p-0 delete-clinic-btn-mobile"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="|#deleteModal_${clinic.id}|"
+                                                th:text="${messages.get(#locale, 'clinic.button.remove', 'Remove')}"
+                                                type="button"
+                                            ></button>
+                                        </th:block>
+                                    </th:block>
+                                </div>
+                            </td>
+                        </tr>
+                        <deleteModal layout:replace="~{fragments/deleteModal :: deleteModal(
+                                type='clinic',
+                                id=${clinic.id},
+                                name=${clinic.name},
+                                deleteUrl='remove?id=__${clinic.id}__')}"
+                        >
+                        </deleteModal>
+                    </th:block>
+                </th:block>
+                </tbody>
+            </table>
+            <div class="panel-body">
+                <form
+                    method="GET"
+                    th:action="@{edit}"
+                    th:object="${clinic}"
+                >
+                    <button
+                        class="btn btn-primary"
+                        id="addClinic"
+                        th:text="#{clinic.button.add}"
+                        type="submit"
+                    >Add clinic
+                    </button
+                    >
+                </form>
+            </div>
+        </div>
+    </th:block>
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-	<script
-		th:inline="javascript"
-		type="text/javascript"
-	>
+    <script
+        th:inline="javascript"
+        type="text/javascript"
+    >
 
-		var contextPath = /*[[@{/}]]*/ '';
+        var contextPath = /*[[@{/}]]*/ "";
 
-		var messages = {
-			deleteQuestion: /*[[#{clinic.modal.delete.question}]]*/ 'Are you sure you want to delete clinic "{0}"?',
-			deleteWarning: /*[[#{clinic.modal.delete.warning}]]*/ 'This action cannot be undone.'
-		};
-
-		$(document).ready(function() {
-			var deleteClinicModal = new bootstrap.Modal(document.getElementById('deleteClinicModal'));
-			var selectedClinicId = null;
-			var selectedClinicName = null;
-
-
-			$('#clinicTable').DataTable({
-				"deferRender": true,
-				"paging": true,
-				"ordering": true,
-				"columnDefs": [{ orderable: false, targets: [1] }],
-				"initComplete": function(settings, json) {
-					$('#loadingSpinner').fadeOut();
-					$('#loadingContainer').addClass("d-none")
-					$('#clinicTable').fadeIn();
-				}
-			});
-
-			$(document).on('click', '.delete-clinic-btn', function(e) {
-				e.preventDefault();
-				selectedClinicId = $(this).data('clinic-id');
-				selectedClinicName = $(this).data('clinic-name');
-				showDeleteConfirmation();
-			});
-
-			$(document).on('click', '.delete-clinic-btn-mobile', function(e) {
-				e.preventDefault();
-				selectedClinicId = $(this).data('clinic-id');
-				selectedClinicName = $(this).data('clinic-name');
-				var offcanvasElement = $(this).closest('.offcanvas');
-				if (offcanvasElement.length > 0) {
-					var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement[0]);
-					if (offcanvas) {
-						offcanvas.hide();
-					}
-				}
-				showDeleteConfirmation();
-			});
-
-			$('#confirmDeleteBtn').on('click', function() {
-				if (selectedClinicId) {
-					window.location.href = contextPath + 'clinic/remove?id=' + selectedClinicId;
-				}
-			});
-
-			function showDeleteConfirmation() {
-				var question = messages.deleteQuestion
-				.replace('{0}', '<strong>' + escapeHtml(selectedClinicName) + '</strong>');
-
-				$('#deleteClinicModalBody').html(
-						'<p>' + question + '</p>' +
-						'<div class="alert alert-warning mb-0">' +
-						'<i class="bi bi-exclamation-triangle-fill me-2"></i>' +
-						messages.deleteWarning +
-						'</div>'
-				);
-				$('#confirmDeleteBtn').show();
-				deleteClinicModal.show();
-			}
-
-			function escapeHtml(text) {
-				var map = {
-					'&': '&amp;',
-					'<': '&lt;',
-					'>': '&gt;',
-					'"': '&quot;',
-					"'": '&#039;'
-				};
-				return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-			}
-		});
-	</script>
+        $(document).ready(function() {
+            $("#clinicTable").DataTable({
+                "deferRender": true,
+                "paging": true,
+                "ordering": true,
+                "columnDefs": [{ orderable: false, targets: [1] }],
+                "initComplete": function(settings, json) {
+                    $("#loadingSpinner").fadeOut();
+                    $("#loadingContainer").addClass("d-none");
+                    $("#clinicTable").fadeIn();
+                }
+            });
+        });
+    </script>
+    <th:block layout:replace="~{fragments/deleteModal :: deleteModalScript}"></th:block>
 </th:block>
