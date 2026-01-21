@@ -87,6 +87,7 @@
                                         </a>
                                         <button
                                             class="btn btn-sm btn-primary-list btn-red delete-clinic-btn"
+                                            th:data-clinic-id="${clinic.id}"
                                             data-bs-toggle="modal"
                                             th:data-bs-target="|#deleteModal_${clinic.id}|"
                                             type="button"
