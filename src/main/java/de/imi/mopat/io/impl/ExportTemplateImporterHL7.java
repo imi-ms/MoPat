@@ -21,14 +21,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * This is an instance of {@link ExportTemplateImporterOrbis} and represents the implementation for
- * the KIS "ORBIS". It is designed to load an XML file according to the structure provided by ORBIS.
+ * This is an instance of {@link ExportTemplateImporterHL7} and represents the implementation for
+ * the KIS "HL7". It is designed to load an XML file according to the structure provided by HL7.
  * See {@link ExportTemplateImporter#importFile(InputStream)} for further explanation.
  */
 @Service
-public class ExportTemplateImporterOrbis implements ExportTemplateImporter {
+public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExportTemplateImporterOrbis.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExportTemplateImporterHL7.class);
 
     private final String[] ignoreTagsArray = {"Document", "Instance", "Formname"};
     private final List<String> ignoreTags;
@@ -36,17 +36,17 @@ public class ExportTemplateImporterOrbis implements ExportTemplateImporter {
     /**
      * Constructor only initializes the ignore list for tags.
      */
-    public ExportTemplateImporterOrbis() {
+    public ExportTemplateImporterHL7() {
         // create a list of all tags which should be ignored for the import of
         // the export template file.
         this.ignoreTags = Arrays.asList(ignoreTagsArray);
     }
 
     /**
-     * This method builds a {@link List} based on the template provided by "ORBIS". The following
+     * This method builds a {@link List} based on the template provided by "HL7". The following
      * informations have to be inside the List: <br>
      * <code>Formname</code> which represents the questionnaire name given by
-     * ORBIS. Add all tags to the List. They usually look like this
+     * HL7. Add all tags to the List. They usually look like this
      * <code>cbx1Gut</code>. See {@link Encounter} for information.
      *
      * @param inputStream {@link InputStream} containing the uploaded file from

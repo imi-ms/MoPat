@@ -878,7 +878,6 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_OID, "OID input not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_URL_ODM_TO_PDF, "URL ODM to PDF input not found")
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_SYSTEM_URI_FOR_FHIR, "System URI for FHIR input not found")
-        self.utils.fill_text_field(ConfigurationSelectors.INPUT_EXPORT_PATH_ORBIS, self.configuration_helper.DEFAULT_EXPORT_PATH)
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_EXPORT_HL7_INTO_DIRECTORY)
         self.utils.check_visibility_of_element(ConfigurationSelectors.INPUT_EXPORT_PATH_HL7_DIRECTORY, "Export Path HL7 Directory input not found")
         self.utils.toggle_checkbox(ConfigurationSelectors.CHECKBOX_EXPORT_HL7_VIA_SERVER)
