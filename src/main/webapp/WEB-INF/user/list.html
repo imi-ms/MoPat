@@ -71,6 +71,10 @@
 							th:text="${messages.get(#locale, 'user.label.status', 'Status')}"
 						></th>
 						<th
+								data-priority="9"
+								th:text="${messages.get(#locale, 'user.label.expirationDate', 'Expires')}"
+						></th>
+						<th
 							data-priority="2"
 							class="actionColumn"
 							th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
@@ -125,6 +129,13 @@
 										th:unless="${#bools.isTrue(item.isEnabled)}"
 										th:text="${messages.get(#locale, 'user.status.disabled', 'disabled')}"
 									/>
+								</td>
+								<td>
+									<th:block
+											th:if="${not #strings.isEmpty(item.expirationDate)}"
+											th:text="${#dates.format(item.expirationDate, 'dd.MM.yyyy')}"
+									>
+									</th:block>
 								</td>
 								<td class="actionColumn">
 									<div class="d-none d-xl-block">
@@ -232,7 +243,7 @@
 				"deferRender": true,
 				"paging": true,
 				"ordering": true,
-				"columnDefs": [{ orderable: false, targets: [7] }],
+				"columnDefs": [{ orderable: false, targets: [8] }],
 				"initComplete": function(settings, json) {
 					$('#loadingSpinner').fadeOut(); // Hide the loading indicator
 					$('#loadingContainer').addClass("d-none")

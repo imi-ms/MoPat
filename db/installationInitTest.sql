@@ -370,6 +370,7 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
   `last_selected_clinic_id` BIGINT NULL,
   `use_pin` tinyint(1),
   `pin` varchar(255),
+  `expiration_date` date DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
