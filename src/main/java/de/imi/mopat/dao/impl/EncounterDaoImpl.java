@@ -153,6 +153,17 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     }
 
     @Override
+    public Boolean checkEncountersExistsByClinicId(Long clinicId) {
+
+        TypedQuery<Long> query = moPatEntityManager.createQuery(
+            "SELECT 1 FROM Encounter e WHERE e.clinic.id=" + clinicId,
+            Long.class).setMaxResults(1);
+
+        return !query.getResultList().isEmpty();
+
+    }
+
+    @Override
     public Long getEncounterCountByBundleInInterval(final Long bundleId, final Date startDate,
         Date endDate) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
