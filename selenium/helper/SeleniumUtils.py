@@ -279,13 +279,13 @@ class SeleniumUtils:
                 search_box_selector = SearchBoxSelectors.QUESTIONNAIRE
                 button_id = RemoveButtonSelectors.QUESTIONNAIRE.format(item_id)
                 button_selector = (By.ID, button_id)
-                needs_modal_confirmation = False
+                needs_modal_confirmation = True
             elif item_type == "bundle":
                 self.navigator.navigate_to_manage_bundles()
                 search_box_selector = SearchBoxSelectors.BUNDLE
                 button_id = RemoveButtonSelectors.BUNDLE.format(item_id)
                 button_selector = (By.ID, button_id)
-                needs_modal_confirmation = False
+                needs_modal_confirmation = True
             elif item_type == "clinic":
                 self.navigator.navigate_to_manage_clinics()
                 search_box_selector = SearchBoxSelectors.CLINIC
@@ -303,11 +303,11 @@ class SeleniumUtils:
 
             if needs_modal_confirmation:
                 # Wait for modal to appear
-                modal_selector = (By.ID, "deleteClinicModal")
+                modal_selector = (By.ID, "deleteModal_" + item_id)
                 WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(modal_selector))
 
                 # Wait and click the confirm button
-                confirm_button_selector = (By.ID, "confirmDeleteBtn")
+                confirm_button_selector = (By.ID, "remove_" + item_id)
                 confirm_button = WebDriverWait(self.driver, 10).until(
                     EC.element_to_be_clickable(confirm_button_selector)
                 )
