@@ -38,8 +38,6 @@ class ConfigurationSelectors:
     INPUT_URL_ODM_TO_PDF = (By.ID, "configurationGroupDTOsmetadataExporter0\\.configurationDTOs1\\.value")
     INPUT_SYSTEM_URI_FOR_FHIR = (By.ID, "configurationGroupDTOsmetadataExporter0\\.configurationDTOs2\\.value")
 
-    INPUT_EXPORT_PATH_ORBIS = (By.ID, "configurationGroupDTOsORBIS0\\.configurationDTOs0\\.value")
-
     CHECKBOX_EXPORT_HL7_INTO_DIRECTORY = (By.CSS_SELECTOR, "#configurationGroup\\.label\\.HLSeven > fieldset:nth-child(2) > ul:nth-child(2) > li:nth-child(1) > div:nth-child(1) > div:nth-child(2) > label:nth-child(1) > input:nth-child(2)")
     INPUT_EXPORT_PATH_HL7_DIRECTORY = (By.ID, "configurationGroupDTOsHLSeven0\\.configurationDTOs0\\.children0\\.value")
 
