@@ -52,7 +52,7 @@ By default these paths are mounted:
 
 You can customize these paths in the .container files.
 
-## Secrets and Permissions
+## Secrets Certs and Permissions
 
 This setup uses Podman secrets to store confidential values instead of environment variables.
 
@@ -73,6 +73,11 @@ Rootless containers use user namespace remapping. Update the ownership of direct
 podman unshare chown -R 999:999 .config/containers/systemd/mopat/db/
 podman unshare chown -R 999:999 /data/db/
 ```
+
+For securing your connection with TLS you need to place your cert under:
+
+- `.config/containers/systemd/mopat/ssl/server.crt`
+- `.config/containers/systemd/mopat/ssl/server.key`
 
 ## Starting and Logs
 
