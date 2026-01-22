@@ -41,6 +41,20 @@
                                     class="btn btn-outline-primary mx-1"
                                     th:for="|MoPat__${item.id}__|"
                                 >MoPat</label>
+
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|MoPatComplete__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="MoPatComplete">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|MoPatComplete__${item.id}__|"
+                                >MoPat With Export Templates</label>
                             </div>
 
                             <h4 class="d-flex w-100 align-content-start mt-3">FHIR</h4>
