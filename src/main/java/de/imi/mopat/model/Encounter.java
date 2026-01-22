@@ -328,10 +328,14 @@ public class Encounter implements Serializable {
      *                   <code>null</code>. Must not be empty (after trimming).
      */
     public void setCaseNumber(final String caseNumber) {
-        assert caseNumber != null : "The given case number is null";
-        assert !caseNumber.trim().isEmpty() :
-            "The given case number is empty (after" + " trimming)";
-        this.caseNumber = caseNumber.trim();
+        if (caseNumber == null) {
+            throw new IllegalArgumentException("The given case number is null");
+        }
+        String trimmedCaseNumber = caseNumber.trim();
+        if (trimmedCaseNumber.isEmpty()) {
+            throw new IllegalArgumentException("The given case number is empty (after trimming)");
+        }
+        this.caseNumber = trimmedCaseNumber;
     }
 
     /**
