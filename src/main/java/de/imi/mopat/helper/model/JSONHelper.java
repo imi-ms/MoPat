@@ -3,7 +3,6 @@ package de.imi.mopat.helper.model;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
-import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.BodyPartAnswer;
 import de.imi.mopat.model.DateAnswer;
@@ -33,17 +32,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JSONHelper {
 
-    @Autowired
-    private ConfigurationDao configurationDao;
-
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
-        final Questionnaire questionnaire) {
+        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -68,7 +63,7 @@ public class JSONHelper {
 
         for (Question question : questionnaire.getQuestions()) {
             JsonQuestionDTO jsonQuestionDTO = new JsonQuestionDTO();
-            this.initializeJsonQuestionDTO(jsonQuestionDTO, question);
+            this.initializeJsonQuestionDTO(jsonQuestionDTO, question, configurationDao);
             jsonQuestionnaireDTO.setQuestionDTO(question.getId(), jsonQuestionDTO);
             jsonQuestionDTO.setJsonQuestionnaireDTO(jsonQuestionnaireDTO);
         }
@@ -81,7 +76,7 @@ public class JSONHelper {
         }
     }
 
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question) {
+    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question, ConfigurationDao configurationDao) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -94,13 +89,13 @@ public class JSONHelper {
 
         for (Answer answer : question.getAnswers()) {
             JsonAnswerDTO jsonAnswerDTO = new JsonAnswerDTO();
-            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer);
+            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer, configurationDao);
             jsonQuestionDTO.setAnswers(answer.getId(), jsonAnswerDTO);
             jsonAnswerDTO.setJsonQuestionDTO(jsonQuestionDTO);
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer) {
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer, ConfigurationDao configurationDao) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
