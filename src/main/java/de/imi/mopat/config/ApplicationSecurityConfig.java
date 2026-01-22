@@ -340,10 +340,10 @@ public class ApplicationSecurityConfig {
                     "/mobile/survey/questionnaireScheduled",
                     "/mobile/survey/scores",
                     "/mobile/survey/finishQuestionnaire",
-                    "/mobile/survey/finishQuestionnaireExportTest",
                     "/mobile/survey/pseudonym",
                     "/error/maintenance",
-                    "/error/internalservererror"
+                    "/error/internalservererror",
+                    "/error/accessdenied"
                 ).permitAll()
                 // Login page GET
                 .requestMatchers(HttpMethod.GET, "/mobile/user/login").permitAll()
