@@ -73,6 +73,8 @@ public class SurveyController {
     @Autowired
     private ApplicationContext appContext;
     @Autowired
+    private AuthService authService;
+    @Autowired
     private ConfigurationDao configurationDao;
     @Autowired
     private BundleDao bundleDao;
@@ -496,6 +498,13 @@ public class SurveyController {
             return "redirect:/mobile/survey/clinicSelect";
         }
 
+        if (!encounterDTO.getCaseNumber().isEmpty() && encounterDTO.getCaseNumber().trim().isEmpty()) {
+            result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                messageSource.getMessage("encounter.error" + ".caseNumberIsEmpty", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+            return showCheckCaseNumber(model, result);
+        }
+
         // Start the survey
         if (action.equalsIgnoreCase("startSurvey")) {
             // If the bunlde language is null or empty, stay on the current site
@@ -602,37 +611,42 @@ public class SurveyController {
      * @param bundleId           The id of the current {@link Bundle}.
      * @param model              The model, which holds the information for the view.
      * @param request            The request, which was sent from the client's browser.
-     * @param redirectAttributes Stores the information for a redirect scenario.
      * @return The <i>bundle/fill</i> website.
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.GET)
     public String testBundle(@RequestParam(value = "id", required = false) final Long bundleId,
         @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
         @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
-        final Model model, final HttpServletRequest request,
-        final RedirectAttributes redirectAttributes) {
+        final Model model, final HttpServletRequest request) {
+
+        if (performExportTest && !authService.isCurrentUserAdmin()) {
+            return "redirect:/error/accessdenied";
+        }
 
         Bundle bundle = bundleDao.getElementById(bundleId);
         if (bundle == null || bundle.getIsPublished()) {
-            return "redirect:error/accessdenied";
+            return "redirect:/error/accessdenied";
 
         } else {
             if(caseNumber == null || caseNumber.isBlank()) {
                 caseNumber = "test";
             }
-            EncounterDTO encounterDTO = new EncounterDTO(
-                true, caseNumber
-                );
-            encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
+
+            EncounterDTO encounterDTO =
+                (EncounterDTO) model.asMap().get("encounterDTO");
+
+            if (encounterDTO == null) {
+                encounterDTO = new EncounterDTO(true, caseNumber);
+                encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
+                model.addAttribute("encounterDTO", encounterDTO);
+            }
+
             model.addAttribute(
                 "hideProfile",
                 "false");
             model.addAttribute(
                 "bundle",
                 bundle);
-            model.addAttribute(
-                "encounterDTO",
-                encounterDTO);
             model.addAttribute("performExportTest",performExportTest);
 
             // Check all questionnaireDTOs for conditions and set the boolean
@@ -672,15 +686,35 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.POST)
     public String testBundle(
-        @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO,
+        @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO, BindingResult result,
         @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
         @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
         @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
-        final Model model) {
+        final Model model, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            redirectAttributes.addFlashAttribute(
+                "org.springframework.validation.BindingResult.encounterDTO",
+                result
+            );
+            redirectAttributes.addFlashAttribute(
+                "encounterDTO",
+                encounterDTO
+            );
+
+            return "redirect:/mobile/survey/test?id="
+                + encounterDTO.getBundleDTO().getId()
+                + "&performExportTest=" + performExportTest
+                + "&caseNumber=" + encounterDTO.getCaseNumber();
+        }
+
+        if (performExportTest && !authService.isCurrentUserAdmin()) {
+            return "redirect:/error/accessdenied";
+        }
+
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
         if (bundle.getIsPublished()) {
-            return "redirect:error/accessdenied";
+            return "redirect:/error/accessdenied";
         }
 
         encounterDTO.setBundleLanguage(bundleLanguage);
@@ -1202,7 +1236,6 @@ public class SurveyController {
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
         @RequestBody final EncounterDTO encounterDTO) {
         if (!encounterDTO.getIsTest()) {
-
             if (encounterDTO.getId() != null) {
                 Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
                 // If the attached bundle is not in test mode write the changes
@@ -1217,8 +1250,6 @@ public class SurveyController {
                     }
                 }
             }
-        } else {
-            finishQuestionnaireTest(questionnaireId, encounterDTO, false);
         }
     }
 
@@ -1267,8 +1298,9 @@ public class SurveyController {
 
                 }
                 encounter.setResponses(responses);
-                if(performExportTest)
+                if(performExportTest) {
                     encounterExporter.export(encounter, questionnaire, true);
+                }
             }
         }
     }
