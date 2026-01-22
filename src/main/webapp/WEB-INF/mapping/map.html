@@ -1171,14 +1171,14 @@
                                         type="button"
                                         class="btn btn-primary"
                                         id="mapDataButton"
-                                        th:text="${messages.get(#locale, 'map.button.mapData', 'Automatically map fields')}"
+                                        th:text="${messages.get(#locale, 'mapping.button.mapData', 'Automatically map fields')}"
                                     >
                                     </button>
                                     <button
                                         type="button"
                                         class="btn btn-secondary"
                                         id="clearMappingButton"
-                                        th:text="${messages.get(#locale, 'map.button.clearMapping', 'Reset mapping')}"
+                                        th:text="${messages.get(#locale, 'mapping.button.clearMapping', 'Reset mapping')}"
                                     >
                                     </button>
                                 </div>
@@ -1218,6 +1218,26 @@
 				</button>
 			</form>
 		</div>
+        <div class="toast-container position-fixed top-0 start-0 p-4 w-25">
+            <div id="autosaveToast" class="toast mw-100 w-100" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <div class="d-flex w-100 align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-green bi-xlarge bi-check-circle-fill me-3"></i>
+                            <h3 class="mb-0"
+                                th:text="${messages.get(#locale, 'mapping.autosave.title', 'Autosave')}"
+                            ></h3>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="toast-body">
+                        <h5
+                            th:text="${messages.get(#locale, 'mapping.autosave.body', 'The mapping has been saved automatically.')}"
+                        ></h5>
+                </div>
+            </div>
+        </div>
 	</th:block>
 </th:block>
 
@@ -1268,6 +1288,11 @@
 		})();
 
 		$(document).ready(function () {
+            // Auto-save configuration - every 2 minutes
+            const AUTOSAVE_INTERVAL = 2 * 60 * 1000;
+            let autoSaveTimer;
+            let isAutoSaving = false;
+
 			numberTypeChanger = function (source) {
 				if ($(source).val() === "INTEGER") {
 					$(source).parent().children(".map-settings-float").first().hide();
@@ -1401,6 +1426,7 @@
 						sortNodeList(); 
 					}
 				}
+                startAutoSave()
 			}
 
 			function moveExistingMappingToTarget(field, target) {
@@ -1433,6 +1459,8 @@
 			});
 
 			sortNodeList();
+            //Autosave should not trigger for initial load
+            stopAutoSave();
 
 
 			$("#mapDataButton").on("click", function () {
@@ -1475,6 +1503,67 @@
 				});
 
 				sortNodeList();
+			});
+
+
+			function performAutoSave() {
+				if (isAutoSaving) {
+					return;
+				}
+				isAutoSaving = true;
+				const formData = $('form[name="exportRules"]').serialize();
+
+				$.ajax({
+					url: '/mapping/map?autoSave=true',
+					type: 'POST',
+					data: formData,
+					success: function(response) {
+                        var toastEl = $('#autosaveToast');
+                        var toast = new bootstrap.Toast(toastEl, {
+                            delay: 5000
+                        });
+                        toast.show();
+					},
+					error: function(xhr, textStatus, errorThrown) {
+
+					},
+					complete: function() {
+						isAutoSaving = false;
+                        stopAutoSave();
+					}
+				});
+			}
+
+			// Start autosave timer
+			function startAutoSave() {
+				if (autoSaveTimer) {
+                    // Is already running, no need to start another
+                    return;
+				}
+                // Clear any existing timer
+                clearInterval(autoSaveTimer);
+				autoSaveTimer = setInterval(function() {
+					performAutoSave();
+				}, AUTOSAVE_INTERVAL);
+
+			}
+
+			// Stop autosave timer
+			function stopAutoSave() {
+				if (autoSaveTimer) {
+					clearInterval(autoSaveTimer);
+					autoSaveTimer = null;
+				}
+			}
+
+			// Stop auto-save when manually saving
+			$('#saveButton').on('click', function(e) {
+				stopAutoSave();
+			});
+
+			// Clean up on page unload
+			$(window).on('unload', function() {
+				stopAutoSave();
 			});
 
 		});

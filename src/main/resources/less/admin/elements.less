@@ -26,6 +26,11 @@
     font-weight: 700;
 }
 
+.bi-xlarge {
+    font-size: 200%;
+    font-weight: 900;
+}
+
 .bi-action {
     &:hover {
         cursor: grab;
@@ -83,11 +88,18 @@
 
 .btn {
     box-shadow: @box-shadow-material-sm;
+    transition: @transition-value;
+    border-radius: @border-radius-sm;
 
     &:disabled {
         background-color: @mdc-grey-300;
         color: @mdc-grey-600;
         border-color: @mdc-grey-600;
+    }
+
+    &:hover {
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
     }
 }
 
@@ -163,6 +175,10 @@
     display: inline-block;
     width:2em;
     height:1em;
+}
+
+.bi-green {
+    color: @color-success-text !important
 }
 
 .btn-red {
