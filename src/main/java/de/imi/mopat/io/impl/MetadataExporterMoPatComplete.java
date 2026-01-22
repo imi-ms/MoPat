@@ -20,11 +20,13 @@ import de.imi.mopat.model.SliderIcon;
 import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import java.nio.charset.Charset;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for a JSON representation of the metadata of a
  * {@link Questionnaire} and everything that is associated with it.
  */
+@Service
 public class MetadataExporterMoPatComplete implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER =
