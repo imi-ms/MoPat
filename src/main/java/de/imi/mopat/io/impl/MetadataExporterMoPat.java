@@ -64,7 +64,7 @@ public class MetadataExporterMoPat implements MetadataExporter {
 
             JsonQuestionnaireDTO jsonQuestionnaireDTO =
                     new JsonQuestionnaireDTO();
-            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire);
+            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire, configurationDao);
             jsonQuestionnaire =
                     objectMapper.writeValueAsString(jsonQuestionnaireDTO);
             return jsonQuestionnaire.getBytes(Charset.forName("UTF-8"));

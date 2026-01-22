@@ -138,7 +138,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                 //            oldid <> new object with uuid
                 Long newAnswerId = answers.get(oldAnswerId).getId();
                 if (newAnswerId != null) {
-                    ruleDTO.setAnswerId(newAnswerId);;
+                    ruleDTO.setAnswerId(newAnswerId);
                 }
             }
 

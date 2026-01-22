@@ -44,6 +44,8 @@ public class MetadataExporterFactory {
         switch (metadataFormat) {
             case MoPat:
                 return metadataExporterMoPat;
+            case MoPatComplete:
+                return metadataExporterMoPatComplete;
             case ODM:
                 return metadataExporterODM;
             case PDF:
@@ -56,8 +58,6 @@ public class MetadataExporterFactory {
                 return metadataExporterFhirR5;
             case ODMExportTemplate:
                 return metadataExporterODMExportTemplate;
-            case MoPatComplete:
-                return metadataExporterMoPatComplete;
             default:
                 return null;
         }
