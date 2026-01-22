@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(UserService.class);
+        LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private UserDao userDao;
@@ -50,10 +50,10 @@ public class UserService {
      *
      * @return List of UserDTO objects representing all users.
      */
-    public List<UserDTO> getAllUser(){
+    public List<UserDTO> getAllUser() {
         return userDao.getAllElements().stream()
-                .map(userDTOMapper)
-                .collect(Collectors.toList());
+            .map(userDTOMapper)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -68,14 +68,14 @@ public class UserService {
         }
 
         Set<Long> assignedUserIds = aclEntryDao.getAllElements().stream()
-                .filter(aclEntry -> aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID))
-                .map(aclEntry -> aclEntry.getUser().getId())
-                .collect(Collectors.toSet());
+            .filter(aclEntry -> aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID))
+            .map(aclEntry -> aclEntry.getUser().getId())
+            .collect(Collectors.toSet());
 
         return userDao.getAllElements().stream()
-                .filter(user -> !assignedUserIds.contains(user.getId()))
-                .map(userDTOMapper)
-                .collect(Collectors.toList());
+            .filter(user -> !assignedUserIds.contains(user.getId()))
+            .map(userDTOMapper)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -86,13 +86,13 @@ public class UserService {
      */
     public List<UserDTO> getAssignedUserDTOs(final Long clinicId) {
         Set<Long> availableUserIds = getAvailableUserDTOs(clinicId).stream()
-                .map(UserDTO::getId)
-                .collect(Collectors.toSet());
+            .map(UserDTO::getId)
+            .collect(Collectors.toSet());
 
         return userDao.getAllElements().stream()
-                .map(userDTOMapper)
-                .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
-                .collect(Collectors.toList());
+            .map(userDTOMapper)
+            .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -125,13 +125,13 @@ public class UserService {
     /**
      * Updates the clinic rights for a user. Assigns or revokes permissions based on the provided clinic IDs.
      *
-     * @param user The user to update.
+     * @param user      The user to update.
      * @param clinicIDs The list of clinic IDs to assign rights to.
      */
     public void updateUserClinicRights(User user, List<Long> clinicIDs) {
         // Previously assigned clinics
         Collection<Clinic> previouslyAssignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
+            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
 
         // Newly assigned clinics based on input
         Collection<Clinic> newlyAssignedClinics = new ArrayList<>();
@@ -176,10 +176,23 @@ public class UserService {
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 
         GrantedAuthority highestAuthority = authorities.stream()
-                .max(Comparator.comparingInt(authority ->
-                        roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
-                .orElse(null);
+            .max(Comparator.comparingInt(authority ->
+                roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
+            .orElse(null);
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
+    }
+
+
+    /**
+     * Sorts a list of users in ascending order by their name.
+     *
+     * @param users The list of users to sort.
+     * @return The sorted list of users.
+     */
+    public List<User> sortUsersByNameAsc(List<User> users) {
+        return users.stream()
+            .sorted(Comparator.comparing(User::getUsername))
+            .collect(Collectors.toList());
     }
 }

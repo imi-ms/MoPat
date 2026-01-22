@@ -39,8 +39,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class JSONHelper {
 
+    @Autowired
+    private ConfigurationDao configurationDao;
+
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
-        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
+        final Questionnaire questionnaire) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -65,7 +68,7 @@ public class JSONHelper {
 
         for (Question question : questionnaire.getQuestions()) {
             JsonQuestionDTO jsonQuestionDTO = new JsonQuestionDTO();
-            this.initializeJsonQuestionDTO(jsonQuestionDTO, question, configurationDao);
+            this.initializeJsonQuestionDTO(jsonQuestionDTO, question);
             jsonQuestionnaireDTO.setQuestionDTO(question.getId(), jsonQuestionDTO);
             jsonQuestionDTO.setJsonQuestionnaireDTO(jsonQuestionnaireDTO);
         }
@@ -78,8 +81,7 @@ public class JSONHelper {
         }
     }
 
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO,
-        final Question question, ConfigurationDao configurationDao) {
+    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -92,13 +94,13 @@ public class JSONHelper {
 
         for (Answer answer : question.getAnswers()) {
             JsonAnswerDTO jsonAnswerDTO = new JsonAnswerDTO();
-            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer, configurationDao);
+            jsonAnswerDTO = this.initializeJsonAnswerDTO(jsonAnswerDTO, answer);
             jsonQuestionDTO.setAnswers(answer.getId(), jsonAnswerDTO);
             jsonAnswerDTO.setJsonQuestionDTO(jsonQuestionDTO);
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer, ConfigurationDao configurationDao) {
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 

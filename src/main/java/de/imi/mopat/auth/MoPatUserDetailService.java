@@ -3,6 +3,7 @@ package de.imi.mopat.auth;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MoPatUserDetailService implements UserDetailsService {
 
+    @Qualifier("userDaoImpl")
     @Autowired
     private UserDao moPatUserDao;
 

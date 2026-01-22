@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odm:ODM xmlns:odm="http://www.cdisc.org/ns/odm/v1.3" xmlns:ns0="http://www.w3.org/2000/09/xmldsig#" FileType="Snapshot" FileOID=".257.1754853839280" CreationDateTime="2025-08-10T19:23:59.250Z" ODMVersion="1.3.2">
+   <odm:Study OID=".257.1754853839280.1">
+      <odm:GlobalVariables>
+         <odm:StudyName>Questionnaire (Question types: MULTIPLE_CHOICE)</odm:StudyName>
+         <odm:StudyDescription>This description of the questionnaire is a dummy text.</odm:StudyDescription>
+         <odm:ProtocolName>Protocol</odm:ProtocolName>
+      </odm:GlobalVariables>
+      <odm:MetaDataVersion OID=".257.1754853839280.2" Name="MD.1">
+         <odm:Protocol>
+            <odm:StudyEventRef OrderNumber="1" Mandatory="No" StudyEventOID=".257.1754853839280.1.1"/>
+         </odm:Protocol>
+         <odm:StudyEventDef OID=".257.1754853839280.1.1" Name="SE.1" Repeating="No" Type="Common">
+            <odm:FormRef OrderNumber="1" Mandatory="No" FormOID=".257"/>
+         </odm:StudyEventDef>
+         <odm:FormDef OID=".257" Name="Questionnaire (Question types: MULTIPLE_CHOICE)" Repeating="No">
+            <odm:Description>
+               <odm:TranslatedText xml:lang="de-DE">This description of the questionnaire is a dummy text.</odm:TranslatedText>
+            </odm:Description>
+            <odm:ItemGroupRef ItemGroupOID=".257.1" OrderNumber="1" Mandatory="No"/>
+         </odm:FormDef>
+         <odm:ItemGroupDef OID=".257.1" Name="IG.1" Repeating="No">
+            <odm:ItemRef OrderNumber="1" Mandatory="No" ItemOID=".258"/>
+         </odm:ItemGroupDef>
+         <odm:ItemDef OID=".258" Name="I.258" DataType="string">
+            <odm:Description>
+               <odm:TranslatedText xml:lang="en-GB">Choose up to 3 answers.</odm:TranslatedText>
+            </odm:Description>
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Default Question Text - MULTIPLE_CHOICE</odm:TranslatedText>
+            </odm:Question>
+            <odm:CodeListRef CodeListOID=".258.1"/>
+         </odm:ItemDef>
+         <odm:CodeList OID=".258.1" Name=".258.1" DataType="string">
+            <odm:CodeListItem CodedValue="Option 1">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="de-DE">Option 1</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="259"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="Option 2">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="de-DE">Option 2</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="260"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="Option 3">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="de-DE">Option 3</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="261"/>
+            </odm:CodeListItem>
+         </odm:CodeList>
+      </odm:MetaDataVersion>
+   </odm:Study>
+</odm:ODM>

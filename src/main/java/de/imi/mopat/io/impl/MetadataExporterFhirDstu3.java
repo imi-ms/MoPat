@@ -11,7 +11,6 @@ import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.DateAnswer;
-import de.imi.mopat.model.FreetextAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -31,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DateType;
@@ -44,12 +42,13 @@ import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemEnableWhenCompone
 import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemOptionComponent;
 import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemType;
 import org.hl7.fhir.dstu3.model.StringType;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for FHIR metadata reprasentation of a {@link Questionnaire}.
  */
+@Service
 public class MetadataExporterFhirDstu3 implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
@@ -81,7 +80,7 @@ public class MetadataExporterFhirDstu3 implements MetadataExporter {
         fhirQuestionnaire.setTitleElement(
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
-        fhirQuestionnaire.setLanguage(currentDefaultLanguage);
+        fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
@@ -493,7 +492,7 @@ public class MetadataExporterFhirDstu3 implements MetadataExporter {
                                             targetQuestions.get(selectAnswerCondition.getTarget())
                                                 .addEnableWhen(enableWhen);
                                         }
-                                    } catch (FHIRException ex) {
+                                    } catch (Exception ex) {
                                         // Log or handle exception if needed
                                     }
                                 }
@@ -576,6 +575,14 @@ public class MetadataExporterFhirDstu3 implements MetadataExporter {
             return localeList.get(0);
         }
 
+    }
+
+    private String formatLanguageForBcp47(String language) {
+        if (language.contains("_")) {
+            return language.replace("_", "-");
+        } else {
+            return language;
+        }
     }
 
     private List<String> getLocaleListFromQuestionnaire(Questionnaire questionnaire) {

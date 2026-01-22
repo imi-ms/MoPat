@@ -57,6 +57,7 @@ import org.hl7.fhir.r4b.model.QuestionnaireResponse.QuestionnaireResponseStatus;
 import org.hl7.fhir.r4b.model.Resource;
 import org.hl7.fhir.r4b.model.StringType;
 import org.hl7.fhir.r4b.model.TimeType;
+import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.web.multipart.MultipartFile;
@@ -173,6 +174,11 @@ public class FhirR4bHelper extends FhirHelper {
             validationSupport.addValidationSupport(prePopulated);
 
             FhirInstanceValidator instanceValidator = new FhirInstanceValidator(validationSupport);
+
+            instanceValidator.setAnyExtensionsAllowed(true);
+            instanceValidator.setErrorForUnknownProfiles(false);
+            instanceValidator.setNoTerminologyChecks(true);
+            instanceValidator.setBestPracticeWarningLevel(BestPracticeWarningLevel.Ignore);
 
             FhirValidator validator = getContext().newValidator();
             validator.registerValidatorModule(instanceValidator);

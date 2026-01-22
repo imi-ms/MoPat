@@ -24,7 +24,8 @@ public enum ConfigurationType {
     // in UTF8.
     PASSWORD("PASSWORD"), // Path to the File. Application must have read and
     // write rights
-    FILE("FILE");
+    FILE("FILE"),
+    RICH_TEXT("RICH_TEXT");
 
     private final String textValue;
 

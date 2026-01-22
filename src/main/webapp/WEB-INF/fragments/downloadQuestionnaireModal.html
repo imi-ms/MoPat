@@ -1,0 +1,167 @@
+<th:block layout:fragment="downloadQuestionnaireModal(item)">
+    <div
+        class="modal fade"
+        th:id="|downloadPopup__${item.id}__|"
+        data-name="downloadPopup"
+        tabindex="1"
+        role="dialog"
+        th:attr="aria-labelledby=|downloadPopupLabel__${item.id}|"
+    >
+
+
+        <div class="modal-dialog help-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3
+                        class="modal-title"
+                        th:id="|downloadPopupLabel__${item.id}|"
+                        th:text="|Download __${item.name}__|"
+                    >
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <div id="downloadPopupContent">
+                        <div
+                            role="group"
+                            th:attr="aria-label=|Download format for __${item.name}__|">
+
+                            <h4 class="d-flex w-100 align-content-start">MoPat</h4>
+                            <hr/>
+                            <div class="d-flex w-100 justify-content-start flex-wrap">
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|MoPat__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="MoPat">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|MoPat__${item.id}__|"
+                                >MoPat</label>
+                            </div>
+
+                            <h4 class="d-flex w-100 align-content-start mt-3">FHIR</h4>
+                            <hr/>
+                            <div class="d-flex w-100 justify-content-start flex-wrap">
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|FHIRDSTU3__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="FHIRDSTU3">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|FHIRDSTU3__${item.id}__|"
+                                >FHIR STU3</label>
+
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|FHIRR4B__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="FHIRR4B">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|FHIRR4B__${item.id}__|"
+                                >FHIR R4B</label>
+
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|FHIRR5__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="FHIRR5">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|FHIRR5__${item.id}__|"
+                                >FHIR R5</label>
+                            </div>
+
+                            <h4 class="d-flex w-100 align-content-start mt-3">ODM</h4>
+                            <hr/>
+                            <div class="d-flex w-100 justify-content-start flex-wrap">
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|ODM__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="ODM">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|ODM__${item.id}__|"
+                                >ODM</label>
+
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       th:id="|ODMExportTemplate__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="ODMExportTemplate">
+                                <label
+                                    class="btn btn-outline-primary mx-1"
+                                    th:for="|ODMExportTemplate__${item.id}__|"
+                                >ODM Export Template</label>
+                            </div>
+                            <h4 class="d-flex w-100 align-content-start mt-3"
+                                th:text="${messages.get(#locale, 'import.fhir.item.other', 'Other')}"
+                            >Other</h4>
+                            <hr/>
+                            <div class="d-flex w-100 justify-content-start flex-wrap">
+                                <input autocomplete="off"
+                                       class="btn-check"
+                                       disabled
+                                       th:id="|PDF__${item.id}__|"
+                                       th:name="|downloadType__${item.id}__|"
+                                       data-name="downloadType"
+                                       th:attr="data-value=${item.id}"
+                                       onchange="toggleDownloadButton(this)"
+                                       type="checkbox"
+                                       value="PDF">
+                                <label
+                                    class="btn btn-outline-secondary disabled"
+                                    th:for="|PDF__${item.id}__|"
+                                >PDF</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        class="btn btn-mobile"
+                        th:text="${messages.get(#locale, 'layout.button.back', 'Go Back')}"
+                        data-bs-dismiss="modal"
+                    >
+                    </button>
+                    <button
+                        disabled="disabled"
+                        type="button"
+                        onclick="downloadQuestionnaire(this)"
+                        th:id="|confirmDownload__${item.id}__|"
+                        th:data-value="${item.id}"
+                        th:data-name="confirmDownload"
+                        class="btn btn-primary"
+                        th:text="${messages.get(#locale, 'questionnaire.button.download', 'Download questionnaire')}"
+                    ></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>

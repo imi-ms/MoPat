@@ -62,6 +62,7 @@ import org.hl7.fhir.dstu3.model.TimeType;
 import org.hl7.fhir.dstu3.model.ValueSet;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.web.multipart.MultipartFile;
@@ -180,6 +181,11 @@ public class FhirDstu3Helper extends FhirHelper {
             validationSupport.addValidationSupport(prePopulated);
 
             FhirInstanceValidator instanceValidator = new FhirInstanceValidator(validationSupport);
+
+            instanceValidator.setAnyExtensionsAllowed(true);
+            instanceValidator.setErrorForUnknownProfiles(false);
+            instanceValidator.setNoTerminologyChecks(true);
+            instanceValidator.setBestPracticeWarningLevel(BestPracticeWarningLevel.Ignore);
 
             FhirValidator validator = getContext().newValidator();
             validator.registerValidatorModule(instanceValidator);

@@ -22,12 +22,18 @@ import java.nio.charset.Charset;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for a JSON representation of the metadata of a
  * {@link Questionnaire} and everything that is associated with it.
  */
+@Service
 public class MetadataExporterMoPat implements MetadataExporter {
+
+    @Autowired
+    private JSONHelper jsonHelper;
+
     private static final org.slf4j.Logger LOGGER =
             org.slf4j.LoggerFactory.getLogger(MetadataExporterMoPat.class);
 
@@ -58,8 +64,7 @@ public class MetadataExporterMoPat implements MetadataExporter {
 
             JsonQuestionnaireDTO jsonQuestionnaireDTO =
                     new JsonQuestionnaireDTO();
-            JSONHelper jsonHelper = new JSONHelper();
-            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire, configurationDao);
+            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire);
             jsonQuestionnaire =
                     objectMapper.writeValueAsString(jsonQuestionnaireDTO);
             return jsonQuestionnaire.getBytes(Charset.forName("UTF-8"));

@@ -1,5 +1,7 @@
 package de.imi.mopat.auth;
 
+import java.nio.charset.StandardCharsets;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -7,16 +9,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  * ruby implementation.
  */
 public class PepperedBCryptPasswordEncoder extends BCryptPasswordEncoder {
-
-    private final String PEPPER = "AdP5ktlaIVaon53yJg8zEZSnFr33Dinil69ZtZMTWXubKMUEpfyNvOgWLdwNLhedY3WT5TVcqgg";
+    private final String PEPPER;
 
     /**
      * Simply call the according constructor of BCryptPasswordEncoder.
      *
      * @param strength Rounds for BCrypt encoder.
      */
-    public PepperedBCryptPasswordEncoder(final int strength) {
+    public PepperedBCryptPasswordEncoder(final int strength, String pepper) {
         super(strength);
+        this.PEPPER = pepper;
+    }
+
+    private String truncate(String rawPassword) {
+        byte[] bytes = rawPassword.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length > 72) {
+            bytes = java.util.Arrays.copyOf(bytes, 72);
+        }
+        return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     /**
@@ -27,7 +37,7 @@ public class PepperedBCryptPasswordEncoder extends BCryptPasswordEncoder {
      */
     @Override
     public String encode(final CharSequence rawPassword) {
-        return super.encode(rawPassword + PEPPER);
+        return super.encode(truncate(rawPassword + PEPPER));
     }
 
     /**
@@ -39,6 +49,6 @@ public class PepperedBCryptPasswordEncoder extends BCryptPasswordEncoder {
      */
     @Override
     public boolean matches(final CharSequence rawPassword, final String encodedPassword) {
-        return super.matches(rawPassword + PEPPER, encodedPassword);
+        return super.matches(truncate(rawPassword + PEPPER), encodedPassword);
     }
 }

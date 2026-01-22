@@ -616,7 +616,11 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      * <code>null</code>.
      */
     public boolean hasConditionsAsTarget() {
-        return hasConditionsAsTarget;
+        try {
+            return hasConditionsAsTarget;
+        } catch(Exception ex) {
+            return false;
+        }
     }
 
     /**

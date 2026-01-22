@@ -8,6 +8,7 @@ import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
+import de.imi.mopat.helper.controller.InvitationService;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.model.Clinic;
@@ -73,6 +74,8 @@ public class InvitationController {
     private ApplicationMailer applicationMailer;
     @Autowired
     private ClinicDTOMapper clinicDTOMapper;
+    @Autowired
+    private InvitationService invitationService;
 
     /**
      * Returns a list of {@link ClinicDTO clinicDTOs}, which are not assigned to the given
@@ -113,7 +116,7 @@ public class InvitationController {
     @RequestMapping(value = "invitation/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showInvitations(final Model model) {
-        model.addAttribute("invitedUsers", invitationDao.getAllElements());
+        model.addAttribute("invitedUsers", invitationService.sortInvitationByNameAsc(invitationDao.getAllElements()));
         return "invitation/list";
     }
 

@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4b.model.CodeType;
 import org.hl7.fhir.r4b.model.Coding;
 import org.hl7.fhir.r4b.model.DateType;
@@ -45,10 +44,12 @@ import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemOperator;
 import org.hl7.fhir.r4b.model.Questionnaire.QuestionnaireItemType;
 import org.hl7.fhir.r4b.model.StringType;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
 
 /**
  * An exporter for FHIR metadata reprasentation of a {@link Questionnaire}.
  */
+@Service
 public class MetadataExporterFhirR4b implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
@@ -80,7 +81,7 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
         fhirQuestionnaire.setTitleElement(
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
-        fhirQuestionnaire.setLanguage(currentDefaultLanguage);
+        fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
@@ -492,7 +493,7 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
                                             targetQuestions.get(selectAnswerCondition.getTarget())
                                                 .addEnableWhen(enableWhen);
                                         }
-                                    } catch (FHIRException ex) {
+                                    } catch (Exception ex) {
                                         // Log or handle exception if needed
                                     }
                                 }
@@ -576,6 +577,14 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
             return localeList.get(0);
         }
 
+    }
+
+    private String formatLanguageForBcp47(String language) {
+        if (language.contains("_")) {
+            return language.replace("_", "-");
+        } else {
+            return language;
+        }
     }
 
     private List<String> getLocaleListFromQuestionnaire(Questionnaire questionnaire) {
