@@ -322,6 +322,7 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
         bundleQuestionnaireDTO.setPosition((long) this.getPosition());
         bundleQuestionnaireDTO.setIsEnabled(this.isEnabled);
         bundleQuestionnaireDTO.setShowScores(this.showScores);
+        bundleQuestionnaireDTO.setExportTemplateObjects(this.getExportTemplates());
 
         Set<Long> exportTemplateIds = new HashSet<>();
         for (ExportTemplate exportTemplate : this.getExportTemplates()) {
