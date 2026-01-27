@@ -1,8 +1,5 @@
 package de.imi.mopat.controller;
 
-import static de.imi.mopat.model.enumeration.MetadataFormat.MoPat;
-import static de.imi.mopat.model.enumeration.MetadataFormat.MoPatComplete;
-
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
@@ -186,7 +183,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
+        model.addAttribute("allQuestionnaires",
+            questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
         model.addAttribute("localizedDisplayNamesForQuestionnaire",
@@ -266,6 +264,14 @@ public class QuestionnaireController {
         }
     }
 
+    /**
+     * Populates the MVC {@link Model} with attributes required to re-render the questionnaire form
+     * after validation errors, including editability state, the current DTO, and available
+     * locales.
+     *
+     * @param questionnaireDTO form-backing DTO containing the submitted values
+     * @param model            model to fill for view rendering
+     */
     private void fillModelForValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
         boolean isEditableState = true;
 
@@ -480,7 +486,8 @@ public class QuestionnaireController {
         templateTypes.add("ODM");
         templateTypes.add("FHIR");
 
-        List<FhirVersion> fhirVersions = List.of(FhirVersion.DSTU3, FhirVersion.R4B, FhirVersion.R5);
+        List<FhirVersion> fhirVersions = List.of(FhirVersion.DSTU3, FhirVersion.R4B,
+            FhirVersion.R5);
         model.addAttribute("templateTypes", templateTypes);
         model.addAttribute("fhirVersions", fhirVersions);
         return "questionnaire/import/upload";
@@ -613,6 +620,17 @@ public class QuestionnaireController {
         return "questionnaire/import/result";
     }
 
+    /**
+     * Validates the uploaded XML and determines the {@link ExportTemplateType} by inspecting root
+     * nodes (e.g., ODM vs. Questionnaire/FHIR). Returns {@code null} if the type cannot be
+     * detected.
+     *
+     * @param file uploaded XML file
+     * @return detected export template type, or {@code null} if unknown
+     * @throws ParserConfigurationException if the XML parser cannot be configured
+     * @throws IOException                  if the file cannot be read
+     * @throws SAXException                 if the XML is not well-formed
+     */
     private ExportTemplateType checkXmlUpload(MultipartFile file)
         throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();

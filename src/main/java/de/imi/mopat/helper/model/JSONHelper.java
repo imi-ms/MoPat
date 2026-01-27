@@ -37,9 +37,23 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 
+/**
+ * Helper for (de)serializing questionnaires to/from JSON DTOs. Populates export DTOs from domain
+ * objects (questions, answers, scores, export templates/rules), including optional Base64-encoded
+ * assets loaded from storage.
+ */
 @Component
 public class JSONHelper {
 
+    /**
+     * Initializes the given {@link JsonQuestionnaireDTO} from the provided {@link Questionnaire}.
+     * Populates questionnaire metadata, embeds the logo as Base64 when available, and adds DTOs for
+     * all questions (including their answers) and scores.
+     *
+     * @param jsonQuestionnaireDTO target DTO to populate
+     * @param questionnaire        source questionnaire
+     * @param configurationDao     used to resolve storage paths for optional assets (e.g., logo)
+     */
     public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
         final Questionnaire questionnaire, ConfigurationDao configurationDao) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
@@ -79,7 +93,16 @@ public class JSONHelper {
         }
     }
 
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question, ConfigurationDao configurationDao) {
+    /**
+     * Initializes the given {@link JsonQuestionDTO} from the provided {@link Question}. Copies
+     * question metadata and populates answer DTOs for all answers of the question.
+     *
+     * @param jsonQuestionDTO  target DTO to populate
+     * @param question         source question
+     * @param configurationDao used for resolving optional answer assets (e.g., images)
+     */
+    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question,
+        ConfigurationDao configurationDao) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -98,7 +121,19 @@ public class JSONHelper {
         }
     }
 
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer, ConfigurationDao configurationDao) {
+
+    /**
+     * Initializes the given {@link JsonAnswerDTO} from the provided {@link Answer}. Copies common
+     * fields, exports applicable conditions, and fills type-specific properties (e.g.,
+     * select/slider/number/date/image/body-part). Images may be embedded as Base64 when available.
+     *
+     * @param jsonAnswerDTO    target DTO to populate
+     * @param answer           source answer
+     * @param configurationDao used to resolve storage paths for optional assets (e.g., images)
+     * @return the populated {@link JsonAnswerDTO}
+     */
+    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer,
+        ConfigurationDao configurationDao) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
@@ -115,15 +150,13 @@ public class JSONHelper {
             }
         }
 
-        if (answer instanceof SelectAnswer) {
-            SelectAnswer selectAnswer = (SelectAnswer) answer;
+        if (answer instanceof SelectAnswer selectAnswer) {
             jsonAnswerDTO.setLocalizedLabel(selectAnswer.getLocalizedLabel());
             jsonAnswerDTO.setValue(selectAnswer.getValue());
             jsonAnswerDTO.setCodedValue(selectAnswer.getCodedValue());
             jsonAnswerDTO.setIsOther(selectAnswer.getIsOther());
         }
-        if (answer instanceof SliderAnswer) {
-            SliderAnswer sliderAnswer = (SliderAnswer) answer;
+        if (answer instanceof SliderAnswer sliderAnswer) {
             jsonAnswerDTO.setMinValue(sliderAnswer.getMinValue());
             jsonAnswerDTO.setMaxValue(sliderAnswer.getMaxValue());
             jsonAnswerDTO.setStepsize(sliderAnswer.getStepsize()
@@ -136,8 +169,7 @@ public class JSONHelper {
             jsonAnswerDTO.setIcons(sliderAnswer.getIcons());
 
         }
-        if (answer instanceof NumberInputAnswer) {
-            NumberInputAnswer numberInputAnswer = (NumberInputAnswer) answer;
+        if (answer instanceof NumberInputAnswer numberInputAnswer) {
             jsonAnswerDTO.setMinValue(numberInputAnswer.getMinValue());
             jsonAnswerDTO.setMaxValue(numberInputAnswer.getMaxValue());
             if (numberInputAnswer.getStepsize()
@@ -146,8 +178,7 @@ public class JSONHelper {
                     .toString());
             }
         }
-        if (answer instanceof DateAnswer) {
-            DateAnswer dateAnswer = (DateAnswer) answer;
+        if (answer instanceof DateAnswer dateAnswer) {
             if (dateAnswer.getStartDate()
                 != null) {
                 jsonAnswerDTO.setStartDate(Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
@@ -157,9 +188,7 @@ public class JSONHelper {
                 jsonAnswerDTO.setEndDate(Constants.DATE_FORMAT.format(dateAnswer.getEndDate()));
             }
         }
-        if (answer instanceof SliderFreetextAnswer) {
-            SliderFreetextAnswer sliderFreetextAnswer =
-                (SliderFreetextAnswer) answer;
+        if (answer instanceof SliderFreetextAnswer sliderFreetextAnswer) {
             jsonAnswerDTO.setLocalizedFreetextLabel(
                 sliderFreetextAnswer.getLocalizedFreetextLabel());
             jsonAnswerDTO.setLocalizedMaximumText(sliderFreetextAnswer.getLocalizedMaximumText());
@@ -169,8 +198,7 @@ public class JSONHelper {
             jsonAnswerDTO.setStepsize(sliderFreetextAnswer.getStepsize()
                 .toString());
         }
-        if (answer instanceof ImageAnswer) {
-            ImageAnswer imageAnswer = (ImageAnswer) answer;
+        if (answer instanceof ImageAnswer imageAnswer) {
             jsonAnswerDTO.setImagePath(imageAnswer.getImagePath());
             // Try to load the image from the disk as a BufferedImage and get
             // the Base64 representation
@@ -186,14 +214,21 @@ public class JSONHelper {
             } catch (IOException e) {
             }
         }
-        if (answer instanceof BodyPartAnswer) {
-            BodyPartAnswer bodyPartAnswer = (BodyPartAnswer) answer;
+        if (answer instanceof BodyPartAnswer bodyPartAnswer) {
             jsonAnswerDTO.setBodyPart(bodyPartAnswer.getBodyPart());
         }
         return jsonAnswerDTO;
     }
 
-    //initialize export template
+    /**
+     * Adds export templates (including template files and export rules) from the given
+     * {@link Questionnaire} to the provided {@link JsonCompleteQuestionnaireDTO}.
+     *
+     * @param jsonCompleteQuestionnaireDTO target DTO to populate
+     * @param questionnaire                source questionnaire
+     * @param configurationDao             used to resolve the export template file location for
+     *                                     Base64 embedding
+     */
     public void initializeJsonExportTemplateDTO(
         JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO,
         final Questionnaire questionnaire, ConfigurationDao configurationDao) {
@@ -207,7 +242,8 @@ public class JSONHelper {
             jsonExportTemplateDTO.setFilename(exportTemplate.getFilename());
             jsonExportTemplateDTO.setOriginalFilename(exportTemplate.getOriginalFilename());
             jsonExportTemplateDTO.setExportTemplateType(exportTemplate.getExportTemplateType());
-            jsonExportTemplateDTO.setConfigurationGroupLabelCode(exportTemplate.getConfigurationGroup().getLabelMessageCode());
+            jsonExportTemplateDTO.setConfigurationGroupLabelCode(
+                exportTemplate.getConfigurationGroup().getLabelMessageCode());
 
             try {
                 // construct the context path based on the object storage path
@@ -218,9 +254,10 @@ public class JSONHelper {
                 File file = new File(contextPath, exportTemplate.getFilename());
                 FileInputStream inputStream = new FileInputStream(file);
 
-                jsonExportTemplateDTO.setFileByteArrayEncoded(Base64.encodeBase64(IOUtils.toByteArray(inputStream)));
+                jsonExportTemplateDTO.setFileByteArrayEncoded(
+                    Base64.encodeBase64(IOUtils.toByteArray(inputStream)));
 
-            } catch ( Exception e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
 
@@ -232,8 +269,9 @@ public class JSONHelper {
                 jsonExportRuleDTO.setExportField(exportRule.getExportField());
                 jsonExportRuleDTO.setType(exportRule.getType());
 
-                if (exportRule.getExportRuleFormat() != null)
+                if (exportRule.getExportRuleFormat() != null) {
                     jsonExportRuleDTO.setExportRuleFormat(getJsonExportRuleFormatDTO(exportRule));
+                }
 
                 if (exportRule instanceof ExportRuleAnswer exportRuleAnswer) {
                     jsonExportRuleDTO.setAnswerId(exportRuleAnswer.getAnswer().getId());
@@ -252,13 +290,15 @@ public class JSONHelper {
 
             jsonCompleteQuestionnaireDTO.addExportDTOs(exportTemplate.getId(),
                 jsonExportTemplateDTO);
-
-
         }
-
-
     }
 
+    /**
+     * Builds a {@link JsonExportRuleFormatDTO} from the format associated with the given {@link ExportRule}.
+     *
+     * @param exportRule source rule providing the format
+     * @return DTO containing the export rule format settings
+     */
     private JsonExportRuleFormatDTO getJsonExportRuleFormatDTO(ExportRule exportRule) {
         JsonExportRuleFormatDTO jsonExportRuleFormatDTO = new JsonExportRuleFormatDTO();
         jsonExportRuleFormatDTO.setId(exportRule.getExportRuleFormat().getId());
@@ -273,5 +313,4 @@ public class JSONHelper {
             exportRule.getExportRuleFormat().getRoundingStrategy());
         return jsonExportRuleFormatDTO;
     }
-
 }

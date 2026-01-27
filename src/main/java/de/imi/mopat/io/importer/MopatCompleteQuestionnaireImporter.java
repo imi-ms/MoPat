@@ -71,6 +71,14 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
     @Autowired
     private ScoreDao scoreDao;
 
+    /**
+     * Imports a {@link Questionnaire} from a JSON {@link MultipartFile}.
+     * Also imports export templates/mappings when the JSON is a {@link JsonCompleteQuestionnaireDTO}.
+     *
+     * @param file uploaded JSON file
+     * @return imported questionnaire
+     * @throws IOException on read/parse errors
+     */
     public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -99,6 +107,17 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         return questionnaire;
     }
 
+    /**
+     * Imports a single export template from JSON into the given {@link Questionnaire}.
+     * Creates the template(s), uploads the associated template file, and persists export rules/formats
+     * with IDs remapped via the provided lookup maps.
+     *
+     * @param exportTemplateDTO exported template data to import
+     * @param questionnaire target questionnaire to attach templates to
+     * @param questions map of old question IDs to newly created {@link Question} instances
+     * @param answers map of old answer IDs to newly created {@link Answer} instances
+     * @param scores map of old score IDs to newly created {@link Score} instances
+     */
     private void importExportTemplate(JsonExportTemplateDTO exportTemplateDTO,
         Questionnaire questionnaire,
         Map<Long, Question> questions,
@@ -127,11 +146,20 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
 
                 persistRulesAndFormats(exportRulesDTO, exportTemplate);
             }
-
         }
-
     }
 
+    /**
+     * Converts a {@link JsonExportTemplateDTO} into an {@link ExportRulesDTO} for persistence.
+     * Remaps old question/answer/score IDs to newly created entities and collects optional rule formats.
+     *
+     * @param exportTemplateDTO source template DTO containing exported rules
+     * @param newExportTemplateId ID of the newly created export template
+     * @param questions old question ID -> new {@link Question}
+     * @param answers old answer ID -> new {@link Answer}
+     * @param scores old score ID -> new {@link Score}
+     * @return populated {@link ExportRulesDTO} for the given export template
+     */
     private ExportRulesDTO convertToExportRulesDTO(JsonExportTemplateDTO exportTemplateDTO,
         Long newExportTemplateId,
         Map<Long, Question> questions,
@@ -225,7 +253,15 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         }
     }
 
-
+    /**
+     * Stores the export template file from the given DTO and attaches the created templates to the questionnaire.
+     * Decodes the Base64 payload, writes the file to object storage, updates filenames, and persists templates.
+     * On I/O errors, attempts to clean up created templates/files.
+     *
+     * @param questionnaire target questionnaire
+     * @param exportTemplates templates to update and persist
+     * @param exportTemplateDTO source DTO providing filename and Base64-encoded file contents
+     */
     private void uploadExportFile(Questionnaire questionnaire, List<ExportTemplate> exportTemplates,
         JsonExportTemplateDTO exportTemplateDTO) {
 
@@ -277,6 +313,14 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
     }
 
 
+    /**
+     * Persists export rules for the given template and applies optional rule formats.
+     * Resolves referenced entities (answer/score/question) by ID, creates the corresponding rule type,
+     * attaches it to the template, and finally merges the template.
+     *
+     * @param exportRulesDTO rules/formats to persist
+     * @param exportTemplate target export template
+     */
     private void persistRulesAndFormats(
         ExportRulesDTO exportRulesDTO,
         ExportTemplate exportTemplate
@@ -329,9 +373,11 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
     }
 
     /**
-     * Copies the format referenced by {@code exportRuleDTO} from {@code exportRuleFormatDTOMap} onto
-     * {@code newExportRule}. Does nothing if no format is found.
+     * Copies the referenced format from the DTO map onto the given export rule, if present.
      *
+     * @param exportRuleFormatDTOMap temp format ID -> format DTO
+     * @param exportRuleDTO rule DTO referencing an optional temp format ID
+     * @param newExportRule target rule to receive the copied format
      */
     private void copyExportRuleFormatOntoExportRule(
         Map<Long, ExportRuleFormatDTO> exportRuleFormatDTOMap,
