@@ -8,6 +8,9 @@ import de.imi.mopat.model.BodyPartAnswer;
 import de.imi.mopat.model.DateAnswer;
 import de.imi.mopat.model.ExportRule;
 import de.imi.mopat.model.ExportRuleAnswer;
+import de.imi.mopat.model.ExportRuleEncounter;
+import de.imi.mopat.model.ExportRuleQuestion;
+import de.imi.mopat.model.ExportRuleScore;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.ImageAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
@@ -20,7 +23,7 @@ import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.dto.export.JsonAnswerDTO;
 import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonConditionDTO;
-import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleDTO;
 import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
 import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionDTO;
@@ -222,20 +225,26 @@ public class JSONHelper {
             }
 
             for (ExportRule exportRule : exportTemplate.getExportRules()) {
-                JsonExportRuleAnswerDTO jsonExportRuleDTO = new JsonExportRuleAnswerDTO();
+                JsonExportRuleDTO jsonExportRuleDTO = new JsonExportRuleDTO();
 
                 jsonExportRuleDTO.setId(exportRule.getId());
                 jsonExportRuleDTO.setUuid(exportRule.getUuid());
                 jsonExportRuleDTO.setExportField(exportRule.getExportField());
+                jsonExportRuleDTO.setType(exportRule.getType());
 
                 if (exportRule.getExportRuleFormat() != null)
                     jsonExportRuleDTO.setExportRuleFormat(getJsonExportRuleFormatDTO(exportRule));
 
-                // Check if this is specifically an ExportRuleAnswer
-                if (exportRule instanceof ExportRuleAnswer) {
-                    ExportRuleAnswer exportRuleAnswer = (ExportRuleAnswer) exportRule;
+                if (exportRule instanceof ExportRuleAnswer exportRuleAnswer) {
                     jsonExportRuleDTO.setAnswerId(exportRuleAnswer.getAnswer().getId());
                     jsonExportRuleDTO.setUseFreetextValue(exportRuleAnswer.getUseFreetextValue());
+                } else if (exportRule instanceof ExportRuleEncounter exportRuleEncounter) {
+                    jsonExportRuleDTO.setEncounterField(exportRuleEncounter.getEncounterField());
+                } else if (exportRule instanceof ExportRuleScore exportRuleScore) {
+                    jsonExportRuleDTO.setScoreId(exportRuleScore.getScore().getId());
+                    jsonExportRuleDTO.setScoreField(exportRuleScore.getScoreField());
+                } else if (exportRule instanceof ExportRuleQuestion exportRuleQuestion) {
+                    jsonExportRuleDTO.setQuestionId(exportRuleQuestion.getQuestion().getId());
                 }
 
                 jsonExportTemplateDTO.addExportRuleDTOs(exportRule.getId(), jsonExportRuleDTO);
