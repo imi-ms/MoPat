@@ -30,7 +30,7 @@ public class JsonExportTemplateDTO {
     private String originalFilename;
     private String configurationGroupLabelCode;
 
-    private SortedMap<Long, JsonExportRuleAnswerDTO> exportRuleDTOs = new TreeMap<>();
+    private SortedMap<Long, JsonExportRuleDTO> exportRuleDTOs = new TreeMap<>();
 
     private byte[] fileByteArrayEncoded;
 
@@ -98,19 +98,19 @@ public class JsonExportTemplateDTO {
         this.originalFilename = originalFilename;
     }
 
-    public void addExportRuleDTOs(long id, JsonExportRuleAnswerDTO jsonExportRuleDTO) {
+    public void addExportRuleDTOs(long id, JsonExportRuleDTO jsonExportRuleDTO) {
         this.exportRuleDTOs.put(
             id,
             jsonExportRuleDTO);
 
     }
 
-    public SortedMap<Long, JsonExportRuleAnswerDTO> getExportRuleDTOs() {
+    public SortedMap<Long, JsonExportRuleDTO> getExportRuleDTOs() {
         return exportRuleDTOs;
     }
 
     public void setExportRuleDTOs(
-        SortedMap<Long, JsonExportRuleAnswerDTO> exportRuleDTOs) {
+        SortedMap<Long, JsonExportRuleDTO> exportRuleDTOs) {
         this.exportRuleDTOs = exportRuleDTOs;
     }
 
