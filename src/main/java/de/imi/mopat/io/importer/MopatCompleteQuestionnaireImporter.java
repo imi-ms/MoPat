@@ -1,13 +1,21 @@
 package de.imi.mopat.io.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import de.imi.mopat.controller.ExportMappingController;
+import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
+import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.ExportRule;
+import de.imi.mopat.model.ExportRuleAnswer;
+import de.imi.mopat.model.ExportRuleEncounter;
+import de.imi.mopat.model.ExportRuleFormat;
+import de.imi.mopat.model.ExportRuleQuestion;
+import de.imi.mopat.model.ExportRuleScore;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
@@ -15,10 +23,11 @@ import de.imi.mopat.model.dto.ExportRuleDTO;
 import de.imi.mopat.model.dto.ExportRuleFormatDTO;
 import de.imi.mopat.model.dto.ExportRulesDTO;
 import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
-import de.imi.mopat.model.dto.export.JsonExportRuleAnswerDTO;
+import de.imi.mopat.model.dto.export.JsonExportRuleDTO;
 import de.imi.mopat.model.dto.export.JsonExportRuleFormatDTO;
 import de.imi.mopat.model.dto.export.JsonExportTemplateDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import de.imi.mopat.model.score.Score;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -54,6 +62,15 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
     @Autowired
     private QuestionnaireDao questionnaireDao;
 
+    @Autowired
+    private AnswerDao answerDao;
+
+    @Autowired
+    private QuestionDao questionDao;
+
+    @Autowired
+    private ScoreDao scoreDao;
+
     public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -67,7 +84,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         Questionnaire questionnaire = createQuestionnaire(jsonQuestionnaireDTO, questions,
             answers, scores);
 
-        if(jsonQuestionnaireDTO instanceof JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO){
+        if (jsonQuestionnaireDTO instanceof JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO) {
             // Import export_templates and their mappings
             if (jsonCompleteQuestionnaireDTO.getExportDTOs() != null) {
                 for (JsonExportTemplateDTO exportTemplateDTO : jsonCompleteQuestionnaireDTO.getExportDTOs()
@@ -78,7 +95,6 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                 }
             }
         }
-
 
         return questionnaire;
     }
@@ -109,7 +125,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                     scores
                 );
 
-                exportMappingController.updateExportMapping(exportRulesDTO);
+                persistRulesAndFormats(exportRulesDTO, exportTemplate);
             }
 
         }
@@ -129,21 +145,17 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         Map<Long, ExportRuleFormatDTO> formatDTOs = new HashMap<>();
         Long tempFormatIdCounter = 0L;
 
-        for (JsonExportRuleAnswerDTO jsonRuleDTO : exportTemplateDTO.getExportRuleDTOs().values()) {
+        for (JsonExportRuleDTO jsonRuleDTO : exportTemplateDTO.getExportRuleDTOs().values()) {
 
             ExportRuleDTO ruleDTO = new ExportRuleDTO();
-            Long oldAnswerId = jsonRuleDTO.getAnswerId();
-            if(oldAnswerId != null){
-                // Find the new answer ID using UUID
-                //            oldid <> new object with uuid
-                Long newAnswerId = answers.get(oldAnswerId).getId();
-                if (newAnswerId != null) {
-                    ruleDTO.setAnswerId(newAnswerId);
-                }
-            }
+
+            matchNewIdsFromOldTemplates(ruleDTO, jsonRuleDTO, questions, answers, scores);
 
             ruleDTO.setExportField(Collections.singletonList(jsonRuleDTO.getExportField()));
             ruleDTO.setUseFreetextValue(jsonRuleDTO.getUseFreetextValue());
+            ruleDTO.setEncounterField(jsonRuleDTO.getEncounterField());
+            ruleDTO.setScoreField(jsonRuleDTO.getScoreField());
+            ruleDTO.setType(jsonRuleDTO.getType());
 
             // Handle format if present
             if (jsonRuleDTO.getExportRuleFormat() != null) {
@@ -172,6 +184,45 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         exportRulesDTO.setExportRuleFormats(formatDTOs);
 
         return exportRulesDTO;
+    }
+
+    /**
+     * Helper function that matches the ids from the new questionnaire to the old ids from the json
+     * import
+     *
+     * @param ruleDTO     new ExportRuleDTO to match ids for
+     * @param jsonRuleDTO importet JsonExportRuleDTO to match ids from
+     * @param questions   to use for matching
+     * @param answers     to use for matching
+     * @param scores      to use for matching
+     */
+    private void matchNewIdsFromOldTemplates(
+        ExportRuleDTO ruleDTO, JsonExportRuleDTO jsonRuleDTO,
+        Map<Long, Question> questions, Map<Long, Answer> answers, Map<Long, Score> scores
+    ) {
+        Long oldAnswerId = jsonRuleDTO.getAnswerId();
+        if (oldAnswerId != null) {
+            Long newAnswerId = answers.get(oldAnswerId).getId();
+            if (newAnswerId != null) {
+                ruleDTO.setAnswerId(newAnswerId);
+            }
+        }
+
+        Long oldScoreId = jsonRuleDTO.getScoreId();
+        if (oldScoreId != null) {
+            Long newScoreId = scores.get(oldScoreId).getId();
+            if (newScoreId != null) {
+                ruleDTO.setScoreId(newScoreId);
+            }
+        }
+
+        Long oldQuestionId = jsonRuleDTO.getQuestionId();
+        if (oldQuestionId != null) {
+            Long newQuestionId = questions.get(oldQuestionId).getId();
+            if (newQuestionId != null) {
+                ruleDTO.setQuestionId(newQuestionId);
+            }
+        }
     }
 
 
@@ -223,7 +274,88 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
 
             questionnaireDao.merge(questionnaire);
         }
+    }
 
 
+    private void persistRulesAndFormats(
+        ExportRulesDTO exportRulesDTO,
+        ExportTemplate exportTemplate
+    ) {
+        for (ExportRuleDTO exportRuleDTO : exportRulesDTO.getExportRules()) {
+            for (String mapping : exportRuleDTO.getExportField()) {
+                ExportRule newExportRule = null;
+
+                if (exportRuleDTO.getType() == ExportRuleType.ANSWER) {
+                    Answer answer = answerDao.getElementById(exportRuleDTO.getAnswerId());
+                    if (answer != null) {
+                        newExportRule = new ExportRuleAnswer(
+                            exportTemplate, mapping,
+                            answer
+                        );
+                    }
+
+                } else if (exportRuleDTO.getType() == ExportRuleType.SCORE) {
+                    Score score = scoreDao.getElementById(exportRuleDTO.getScoreId());
+                    if (score != null) {
+                        newExportRule = new ExportRuleScore(
+                            exportTemplate, mapping, score,
+                            exportRuleDTO.getScoreField()
+                        );
+                    }
+                } else if (exportRuleDTO.getType() == ExportRuleType.QUESTION) {
+                    Question question = questionDao.getElementById(exportRuleDTO.getQuestionId());
+                    if (question != null) {
+                        newExportRule = new ExportRuleQuestion(
+                            exportTemplate, mapping, question
+                        );
+                    }
+                } else if (exportRuleDTO.getType() == ExportRuleType.ENCOUNTER) {
+                    newExportRule = new ExportRuleEncounter(
+                        exportTemplate, mapping, exportRuleDTO.getEncounterField()
+                    );
+                }
+
+                if (newExportRule != null) {
+                    copyExportRuleFormatOntoExportRule(
+                        exportRulesDTO.getExportRuleFormats(), exportRuleDTO, newExportRule
+                    );
+                    exportTemplate.addExportRule(newExportRule);
+                }
+
+            }
+        }
+
+        exportTemplateDao.merge(exportTemplate);
+    }
+
+    /**
+     * Copies the format referenced by {@code exportRuleDTO} from {@code exportRuleFormatDTOMap} onto
+     * {@code newExportRule}. Does nothing if no format is found.
+     *
+     */
+    private void copyExportRuleFormatOntoExportRule(
+        Map<Long, ExportRuleFormatDTO> exportRuleFormatDTOMap,
+        ExportRuleDTO exportRuleDTO,
+        ExportRule newExportRule
+    ) {
+        ExportRuleFormatDTO existingExportRuleFormat = exportRuleFormatDTOMap.get(
+            exportRuleDTO.getTempExportFormatId()
+        );
+
+        if (existingExportRuleFormat != null) {
+            ExportRuleFormat newExportRuleFormat = new ExportRuleFormat();
+            newExportRuleFormat.setDateFormat(existingExportRuleFormat.getDateFormat());
+            newExportRuleFormat.setNumberType(existingExportRuleFormat.getNumberType());
+            newExportRuleFormat.setRoundingStrategy(existingExportRuleFormat.getRoundingStrategy());
+            newExportRuleFormat.setDecimalDelimiter(existingExportRuleFormat.getDecimalDelimiter());
+            try {
+                newExportRuleFormat.setDecimalPlaces(
+                    Integer.parseInt(existingExportRuleFormat.getDecimalPlaces()));
+            } catch (Exception e) {
+                //Do Nothing
+            }
+
+            newExportRule.setExportRuleFormat(newExportRuleFormat);
+        }
     }
 }
