@@ -38,7 +38,6 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (1, 'SELECT', 1, NULL, 1, 'defaultLanguage', 'SELECT', NULL, 'GLOBAL', 'configuration.label.defaultLanguage', NULL, '', '44bfc178-b763-4cb7-a4ea-c34d5eaafcc3', 'de_DE', ''),
 (2, 'GENERAL', 1, NULL, 2, 'logo', 'IMAGE', 'configuration.description.logo', 'GLOBAL', 'configuration.label.logo', NULL, '', 'd22708cf-8804-4463-a39f-66c10509b242', NULL, ''),
 (3, 'SELECT', 1, NULL, 3, 'caseNumberType', 'SELECT', NULL, 'de.imi.mopat.controller.SurveyController', 'configuration.label.caseNumberType', NULL, '', '83dc6771-e305-4793-91bc-44a9b36ca501', 'text', ''),
-(4, 'GENERAL', 4, NULL, 1, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateOrbis', 'configuration.label.exportOrbisPath', NULL, '', '76d2fb9b-735a-4017-8b05-3e36476068df', '/var/lib/tomcat10/export/', ''),
 (5, 'GENERAL', 6, NULL, 1, 'exportInDirectory', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMInDirectory', NULL, '', 'b7ac8e70-1fe1-11e5-867f-0800200c9a66', 'false', ''),
 (6, 'GENERAL', 6, 5, 2, 'exportPath', 'LOCAL_PATH', 'configuration.description.exportPath', 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMPath', NULL, NULL, 'd044a646-88d4-4a87-bd74-6a23f8c90bf1', '/var/lib/tomcat10/export/ODM/', ''),
 (7, 'GENERAL', 6, NULL, 3, 'exportViaRest', 'BOOLEAN', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateODM', 'configuration.label.exportODMViaRest', NULL, '', '0d5f5690-1fe2-11e5-867f-0800200c9a66', 'false', ''),
@@ -176,7 +175,6 @@ PRIMARY KEY (`id`)
 INSERT INTO `configuration_group` (`id`, `uuid`, `position`, `name`, `label_message_code`, `repeating`) VALUES
 (1, '2ec9135e-f690-44ed-8984-d9165aa35a42', 1, 'name', 'configurationGroup.label.general', 0),
 (2, 'b17f4076-acfc-4000-a9cd-ffaa245674d2', 2, 'name', 'configurationGroup.label.activeDirectoryAuthentication', 0),
-(4, '8febaeec-8319-4a42-8560-4fa102004df0', 6, 'name', 'configurationGroup.label.ORBIS', 1),
 (5, '8721ce9d-4e48-4b8e-98a3-7dd55c9314f2', 7, 'name', 'configurationGroup.label.HLSeven', 1),
 (6, '0f1ce478-0302-42b8-9cb0-902821ebcdf4', 8, 'name', 'configurationGroup.label.ODM', 1),
 (7, '3f3e368b-b2f8-44a5-ab30-92c49fb7d1a9', 11, 'name', 'configurationGroup.label.encounter', 0),

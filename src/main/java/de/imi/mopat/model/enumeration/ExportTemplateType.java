@@ -7,14 +7,13 @@ import de.imi.mopat.io.impl.EncounterExporterTemplateFhirDstu3;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR4b;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR5;
 import de.imi.mopat.io.impl.EncounterExporterTemplateODM;
-import de.imi.mopat.io.impl.EncounterExporterTemplateOrbis;
 import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
 import de.imi.mopat.io.impl.ExportTemplateImporterFhirDstu3;
 import de.imi.mopat.io.impl.ExportTemplateImporterFhirR4b;
 import de.imi.mopat.io.impl.ExportTemplateImporterFhirR5;
 import de.imi.mopat.io.impl.ExportTemplateImporterODM;
-import de.imi.mopat.io.impl.ExportTemplateImporterOrbis;
+import de.imi.mopat.io.impl.ExportTemplateImporterHL7;
 import de.imi.mopat.io.impl.ExportTemplateImporterREDCap;
 import org.slf4j.MarkerFactory;
 
@@ -23,18 +22,13 @@ import org.slf4j.MarkerFactory;
  */
 public enum ExportTemplateType {
 
-    ORBIS(
-            ExportTemplateImporterOrbis.class,
-            EncounterExporterTemplateOrbis.class,
-            "configurationGroup.label.ORBIS"
-    ),
     ODM(
             ExportTemplateImporterODM.class,
             EncounterExporterTemplateODM.class,
             "configurationGroup.label.ODM"
     ),
     HL7v2(
-            ExportTemplateImporterOrbis.class,
+            ExportTemplateImporterHL7.class,
             EncounterExporterTemplateHL7v2.class,
             "configurationGroup.label.HLSeven"
     ),
@@ -117,7 +111,12 @@ public enum ExportTemplateType {
         }
         return null;
     }
-    
+
+    /**
+     * Checks if the ExportTemplateType is a FHIR type
+     * @param exportTemplateType to check
+     * @return true if DSTU3, R4B or R5, false otherwise
+     */
     public static boolean isExportTemplateTypeAFhirType(ExportTemplateType exportTemplateType) {
         switch (exportTemplateType) {
             case FHIR_DSTU3, FHIR_R4B, FHIR_R5 -> {

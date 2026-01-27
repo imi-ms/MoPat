@@ -394,7 +394,7 @@ public class EncounterTest {
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue("It was possible to set null as the CaseNumber", e instanceof AssertionError);
+        assertTrue("It was possible to set null as the CaseNumber", e instanceof IllegalArgumentException);
 
         testCaseNumber = "   ";
         e = null;
@@ -403,7 +403,7 @@ public class EncounterTest {
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue("It was possible to set a empty CaseNumber", e instanceof AssertionError);
+        assertTrue("It was possible to set a empty CaseNumber", e instanceof IllegalArgumentException);
 
         testCaseNumber = UUID.randomUUID().toString();
         testEncounter.setCaseNumber(testCaseNumber);

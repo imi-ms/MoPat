@@ -934,9 +934,45 @@ function getIncompleteQuestionsCountFromQuestionnaire(questionnaire) {
  * to redirect to the start page. If it is <code>false</code>, nothing will happen.
  */
 function postEncounter(encounter, finalSubmit) {
-    if (encounter.isTest === true) {
+    if (encounter.isTest === true && performExportTest === true) {
         if (finalSubmit) {
-            window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
+            var data = ["bundle"];
+            $.ajax({
+                url: "encountertest",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                async: true,
+                timeout: waitBeforeResubmit,
+                // Exclude the bundle object
+                data: JSON.stringify(excludeFromJSON(encounter, data)),
+                success: function () {
+                    if (finalSubmit) {
+                        // Open the success popup, which will overlay the previous one $("#submitDialog").popup("close");
+                        setInterval(function() {
+                            var submitDialog = document.getElementById("submitDialog");
+                            bootstrap.Modal.getOrCreateInstance(submitDialog).hide();
+                        }, 100)
+
+                        setTimeout(function () {
+                            setInterval(function () {
+                                var successDialog = document.getElementById("successDialog");
+                                bootstrap.Modal.getOrCreateInstance(successDialog).show();
+                            }, 250);
+                        }, 500);
+
+
+                        setTimeout(function () {
+                            window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
+                        }, waitBeforeRedirect);
+                    }
+                },
+                error: function () {
+                    if (finalSubmit) {
+                        postEncounter(encounter, true);
+                    }
+                }
+            });
+            // window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
         }
         return true;
     } else {
@@ -1016,13 +1052,31 @@ function postEncounterForScore(encounter) {
  * @param questionnaireId The id of the questionnaire
  */
 function exportEncounter(encounter, questionnaireId) {
-    $.ajax({
-        url: "finishQuestionnaire?questionnaireId=" + questionnaireId,
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        // Exclude the bundle object
-        data: JSON.stringify(excludeFromJSON(encounter, ["bundle", "bundleDTO"]))
-    });
+
+    var filterdata = []
+
+    if(encounter.isTest !== true) {
+        filterdata = ["bundle", "bundleDTO"]
+    }
+
+    if(performExportTest === true) {
+        $.ajax({
+            url: "finishQuestionnaireExportTest?questionnaireId=" + questionnaireId + "&caseNumber="+ encounter.caseNumber,
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            // Exclude the bundle object
+            data: JSON.stringify(excludeFromJSON(encounter,filterdata))
+        });
+    }
+    else{
+        $.ajax({
+            url: "finishQuestionnaire?questionnaireId=" + questionnaireId,
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            // Exclude the bundle object
+            data: JSON.stringify(excludeFromJSON(encounter, filterdata))
+        });
+    }
 }
 
 /**
