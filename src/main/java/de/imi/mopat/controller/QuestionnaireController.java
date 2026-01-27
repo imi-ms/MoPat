@@ -313,6 +313,11 @@ public class QuestionnaireController {
                     conditionDao.remove(condition);
                 }
 
+                for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
+                    //Remove ExportTemplates manually to prevent integrity clashes with scores
+                    exportTemplateDao.remove(exportTemplate);
+                }
+
                 // Collect all scores in an array list to make sure they will
                 // be removed in correct order
                 List<Score> scoresToDelete = new ArrayList<>();
