@@ -73,6 +73,7 @@ public class JSONHelper {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
+        jsonQuestionDTO.setIsJustInfo(question.getIsJustInfo());
         jsonQuestionDTO.setIsEnabled(question.getIsEnabled());
         jsonQuestionDTO.setQuestionType(question.getQuestionType());
         jsonQuestionDTO.setMaxNumberAnswers(question.getMaxNumberAnswers());
