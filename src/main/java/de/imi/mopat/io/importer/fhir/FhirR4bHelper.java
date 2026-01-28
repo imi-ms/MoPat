@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,6 +73,7 @@ public class FhirR4bHelper extends FhirHelper {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirR4bHelper.class);
     private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
+    private static final String PROFILE_UNKNOWN_ID = "Validation_VAL_Profile_Unknown";
 
     /**
      * Set the error handler to the fhir parser.
@@ -189,10 +191,11 @@ public class FhirR4bHelper extends FhirHelper {
             ValidationResult result = validator.validateWithResult(fhirResourceString);
 
             List<SingleValidationMessage> messages = result.getMessages().stream().filter(
-                    singleValidationMessage ->
-                        singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
-                            || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
-                .toList();
+                singleValidationMessage ->
+                    (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
+                        || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
+                        && !Objects.equals(singleValidationMessage.getMessageId(),
+                        PROFILE_UNKNOWN_ID)).toList();
 
             for (SingleValidationMessage message : messages) {
                 addDefaultError(errors, message);

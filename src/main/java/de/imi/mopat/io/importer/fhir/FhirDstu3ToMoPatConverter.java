@@ -398,6 +398,7 @@ public class FhirDstu3ToMoPatConverter {
             LOGGER.debug("Mapping item {}", item.getLinkId());
             Question question = new Question();
             question.setIsRequired(item.getRequired());
+            question.setIsJustInfo(Boolean.FALSE);
             question.setIsEnabled(Boolean.TRUE);
 
             setLocalizedTextForQuestion(question, item, messageSource, locale);

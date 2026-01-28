@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,12 +38,10 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.PrePopulatedValidationSupport;
-import org.hl7.fhir.common.hapi.validation.support.RemoteTerminologyServiceValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.hl7.fhir.r5.model.BooleanType;
 import org.hl7.fhir.r5.model.CodeType;
 import org.hl7.fhir.r5.model.Coding;
@@ -60,6 +59,7 @@ import org.hl7.fhir.r5.model.Resource;
 import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.model.StructureDefinition;
 import org.hl7.fhir.r5.model.TimeType;
+import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,6 +72,7 @@ import org.xml.sax.SAXException;
 public class FhirR5Helper extends FhirHelper {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirR5Helper.class);
+    private static final String PROFILE_UNKNOWN_ID = "Validation_VAL_Profile_Unknown";
     private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
 
@@ -191,10 +192,11 @@ public class FhirR5Helper extends FhirHelper {
             ValidationResult result = validator.validateWithResult(fhirResourceString);
 
             List<SingleValidationMessage> messages = result.getMessages().stream().filter(
-                    singleValidationMessage ->
-                        singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
-                            || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
-                .toList();
+                singleValidationMessage ->
+                    (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
+                        || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
+                        && !Objects.equals(singleValidationMessage.getMessageId(),
+                        PROFILE_UNKNOWN_ID)).toList();
 
             for (SingleValidationMessage message : messages) {
                 addDefaultError(errors, message);
