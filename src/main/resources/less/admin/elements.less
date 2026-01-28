@@ -361,6 +361,18 @@ a[data-bs-toggle='collapse'] {
     max-width: 400px;
 }
 
+.upload-info-box {
+    @media only screen and (min-width: @element-breakpoint) {
+        min-width: @upload-box-max-width;
+    }
+}
+
+#errorAccordion {
+    @media only screen and (min-width: @element-breakpoint) {
+        max-width: @upload-box-max-width;
+    }
+}
+
 
 .span-status-mixin() {
     padding: 2px;
