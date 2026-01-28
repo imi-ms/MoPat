@@ -315,7 +315,7 @@ public class ExportMappingController {
                 //Do the upload for FHIR resource.
                 if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
                     try {
-                        fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType);
+                        fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType, questionnaire);
                     } catch (Exception e) {
                         LOGGER.error("error while uploading a new export template {}", e);
                         for (ExportTemplate exportTemplate : exportTemplates) {
