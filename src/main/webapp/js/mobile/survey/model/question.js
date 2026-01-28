@@ -80,13 +80,13 @@ function Question() {
 
     /**
      * Appends the HTML representation of the current question given its
-     * questiontype to the questioncontent object.
+     * questiontype to the questionContent object.
      * 
-     * @param questioncontent
+     * @param questionContent
      *            The element into which the content is to be injected
      *            (ATTENTION: PASS BY REFERENCE)
      */
-    this.getHTML = function (questioncontent) {
+    this.getHTML = function (questionContent) {
         // This is necessary so that the current object can be accessed from
         // within the jQuery functions
 
@@ -97,7 +97,7 @@ function Question() {
 
             // MULTIPLE CHOICE
             case Questiontypes.MULTIPLE_CHOICE:
-                questioncontent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
+                questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
                 var inputType = 'checkbox';
                 // If only one response is allowed, create radio buttons instead of checkboxes
                 if (this.maxNumberAnswers === 1) {
@@ -212,7 +212,7 @@ function Question() {
                     multipleChoiceContainer.append(textareaWrapper);
                 }
 
-                questioncontent.append(multipleChoiceContainer); 
+                questionContent.append(multipleChoiceContainer);
 
 
                 break;
@@ -277,7 +277,7 @@ function Question() {
                     }).appendTo(dropDown);
 
                     // Append drop down to the question content
-                    questioncontent.append(dropDownWrapper);
+                    questionContent.append(dropDownWrapper);
 
                     var textarea = $("<textarea/>", {
                         "id": "textarea",
@@ -290,10 +290,10 @@ function Question() {
                         "disabled": "disabled"
                     });
 
-                    questioncontent.append(textarea); 
+                    questionContent.append(textarea);
                 } else {
                     // Append drop down to the question content
-                    questioncontent.append(dropDownWrapper);
+                    questionContent.append(dropDownWrapper);
                 }
                 break;
                 //SLIDER
@@ -480,13 +480,13 @@ function Question() {
 
                 sliderDiv.append(sliderWidthElement); 
 
-                questioncontent.append(sliderDiv); 
+                questionContent.append(sliderDiv);
                 break; 
 
                 
                 // INFO TEXT 
             case Questiontypes.INFO_TEXT:
-                questioncontent.append($("<span/>", {"html": question.localizedQuestionText[encounter.bundleLanguage], "class": "resizable"}));
+                questionContent.append($("<span/>", {"html": question.localizedQuestionText[encounter.bundleLanguage], "class": "resizable"}));
                 $("#questionTitle").empty();
                 $("#questionTitle").append($("<span />", {"text": strings['survey.question.infotext.hint']}));
                 break;
@@ -501,7 +501,7 @@ function Question() {
                     "rows": "8",
                     "style": "height: auto;"
                 });
-                questioncontent.append(textarea);
+                questionContent.append(textarea);
                 break;
             case Questiontypes.BARCODE:
 
@@ -516,7 +516,7 @@ function Question() {
                     "style": "height: auto;",
                     "disabled": "disabled"
                 });
-                questioncontent.append(textarea);
+                questionContent.append(textarea);
 
                 // Check if the device supports WebRTC
                 if (Modernizr.getusermedia === true) {
@@ -742,8 +742,8 @@ function Question() {
                             videoModal.append(modalDialog); 
 
 
-                            questioncontent.prepend(videoModal); 
-                            questioncontent.prepend(buttonDiv);
+                            questionContent.prepend(videoModal);
+                            questionContent.prepend(buttonDiv);
                             
                             setFontSize(fontSizeClass);
 
@@ -806,14 +806,14 @@ function Question() {
                     "class": "resizable"
                 });
 
-                questioncontent.append(topicLabel);
+                questionContent.append(topicLabel);
 
                 if (this.answers[0].stepsize != null) {
                     var roundingNoteLabel = $("<p/>", {
                         "html": roundNoteHtml,
                         "class": "mb-5"
                     });
-                    questioncontent.append(roundingNoteLabel);
+                    questionContent.append(roundingNoteLabel);
                 }
 
                 var row = $("<div/>", {
@@ -852,11 +852,11 @@ function Question() {
                 row.append(inputLabel); 
                 row.append(inputDiv); 
 
-                questioncontent.append(row); 
+                questionContent.append(row);
                 break;
                 // NUMBER CHECKBOX TEXT
             case Questiontypes.NUMBER_CHECKBOX_TEXT:
-                createNumberCheckboxes(this, questioncontent);
+                createNumberCheckboxes(this, questionContent);
 
                 var label = $("<div/>", {
                     "for": "textarea",
@@ -879,11 +879,11 @@ function Question() {
                     "style": "height: auto;"
                 });
                 textareaWrapper.append(label).append(textarea); 
-                questioncontent.append(textareaWrapper);
+                questionContent.append(textareaWrapper);
                 break;
                 // NUMBER CHECKBOX
             case Questiontypes.NUMBER_CHECKBOX :
-                createNumberCheckboxes(this, questioncontent);
+                createNumberCheckboxes(this, questionContent);
                 break;
             case Questiontypes.DATE:
 
@@ -906,7 +906,7 @@ function Question() {
                     "class": "resizable"
                 });
 
-                questioncontent.append(topicLabel);
+                questionContent.append(topicLabel);
 
                 var row = $("<div/>", {
                     "class": "row mt-5"
@@ -950,7 +950,7 @@ function Question() {
                 row.append(inputLabel); 
                 row.append(inputDiv); 
 
-                questioncontent.append(row); 
+                questionContent.append(row);
                 break;
                 // IMAGE
             case Questiontypes.IMAGE:
@@ -1049,11 +1049,11 @@ function Question() {
                 }
                 // Append the divs to the question content
                 canvasDiv.append(canvas);
-                questioncontent.append(canvasDiv);
+                questionContent.append(canvasDiv);
                 if (this.isJustInfo) {
                     break;
                 }
-                questioncontent.append(toolbarDiv);
+                questionContent.append(toolbarDiv);
 
                 // Bind mouse actions on canvas and buttons
                 canvas.addEventListener('click', function (e) {
@@ -1073,8 +1073,8 @@ function Question() {
                 };
                 break;
             case Questiontypes.BODY_PART:
-                questioncontent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
-                questioncontent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
+                questionContent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
+                questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
                 //Get the imageType of this question by walking through attached images
                 var imageType;
                 for (var i = 0; i < this.bodyPartImages.length; i++) {
@@ -1104,7 +1104,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var frontImageContent = $('<div/>', {
                             "class": 'col-12',
@@ -1134,7 +1134,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var backImageContent = $('<div/>', {
                             "class": 'col-12',
@@ -1165,7 +1165,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var frontImageContent = $('<div/>', {
                             "class": 'col-12 col-bp-6',
@@ -1219,7 +1219,7 @@ function Question() {
             "id": "overflowDiv",
             "style": "float:left; height:1px; width:100%;"
         });
-        questioncontent.append(overflowDiv);
+        questionContent.append(overflowDiv);
     };
 
     /**
@@ -1483,17 +1483,17 @@ function Question() {
     };
 
     /**
-     * Function that adds numbered checkboxes to the questioncontent
+     * Function that adds numbered checkboxes to the questionContent
      * for a given question
      * @param {*} question for which the checkboxes should be created
-     * @param {*} questioncontent to which the checkboxes should be added 
+     * @param {*} questionContent to which the checkboxes should be added
      */
-    function createNumberCheckboxes(question, questioncontent) {
+    function createNumberCheckboxes(question, questionContent) {
         //Handle vertical and horizontal checkboxes completely separately
         if (question.answers[0].vertical === true) {
-            questioncontent.append(handleVerticalCheckboxes(question)); 
+            questionContent.append(handleVerticalCheckboxes(question));
         } else {
-            questioncontent.append(handleHorizontalCheckboxes(question)); 
+            questionContent.append(handleHorizontalCheckboxes(question));
         }
     }
 
