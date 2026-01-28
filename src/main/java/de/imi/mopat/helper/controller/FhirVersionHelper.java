@@ -57,6 +57,20 @@ public class FhirVersionHelper {
         }
     }
 
+    /**
+     * Maps the String representation of the FHIR version to the internal enum.
+     * @param fhirVersion to map
+     * @return FhirVersion enum or null if no match is found
+     */
+    public FhirVersion mapFrontendFhirStringToVersion(String fhirVersion) {
+        return switch (fhirVersion) {
+            case "FHIRDSTU3" -> FhirVersion.DSTU3;
+            case "FHIRR4B" -> FhirVersion.R4B;
+            case "FHIRR5" -> FhirVersion.R5;
+            default -> null;
+        };
+    }
+
 
     /**
      * Checks if the given export template type is a FHIR-related export type.
