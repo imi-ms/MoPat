@@ -55,6 +55,7 @@
 		<input
 			th:id="${configuration.id}"
 			type="file"
+            class="standard-file-input"
 			accept=".png,.jpg,.jpeg"
 			th:attr="data-path=|${configuration.value ne null ? configuration.value : ''}|"
 			th:attrappend="name=files[__${configuration.id}__]"
@@ -202,7 +203,7 @@
 				th:id="${configuration.id}"
 				th:name="|files[${configuration.id}]|"
 				type="file"
-				class="file-input"
+				class="file-input standard-file-input"
 			/>
 			<input
 				type="hidden"
