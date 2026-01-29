@@ -37,6 +37,7 @@ import org.hl7.fhir.r5.model.DecimalType;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r5.model.Extension;
 import org.hl7.fhir.r5.model.IntegerType;
+import org.hl7.fhir.r5.model.Questionnaire.EnableWhenBehavior;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireAnswerConstraint;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemAnswerOptionComponent;
 import org.hl7.fhir.r5.model.Questionnaire.QuestionnaireItemComponent;
@@ -83,6 +84,13 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
         fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
+
+        String fhirUrl = configurationDao.getFHIRsystemURI();
+        String questionnaireUrl = String.format("%s/%s",
+            fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
+            questionnaire.getId());
+
+        fhirQuestionnaire.setUrl(questionnaireUrl);
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
@@ -491,6 +499,8 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
                                             enableWhen.setQuestion(item.getLinkId());
                                             targetQuestions.get(selectAnswerCondition.getTarget())
                                                 .addEnableWhen(enableWhen);
+                                            targetQuestions.get(selectAnswerCondition.getTarget())
+                                                .setEnableBehavior(EnableWhenBehavior.ALL);
                                         }
                                     } catch (Exception ex) {
                                         // Log or handle exception if needed

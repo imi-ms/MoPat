@@ -808,7 +808,7 @@ public class ODMv132ToMoPatConverter {
                                 dataType, itemDef.getOID());
                             questionType = QuestionType.FREE_TEXT;
                             question = new Question(localizedQuestionTexts, isRequired, true,
-                                questionType, position, questionnaire);
+                                questionType, position, questionnaire, false );
                             // Create the answer and include the export rules
                             FreetextAnswer freeTextAnswer = new FreetextAnswer(question, true);
                             for (ExportTemplate exportTemplate : exportTemplates) {
@@ -866,7 +866,7 @@ public class ODMv132ToMoPatConverter {
                             }
 
                             question = new Question(localizedQuestionTexts, isRequired, true,
-                                questionType, position, questionnaire);
+                                questionType, position, questionnaire, false);
                             if (questionType == QuestionType.NUMBER_INPUT) {
 
                                 // Create the answer and include the export
@@ -975,7 +975,7 @@ public class ODMv132ToMoPatConverter {
                             }
 
                             question = new Question(localizedQuestionTexts, isRequired, true,
-                                questionType, position, questionnaire);
+                                questionType, position, questionnaire, false);
 
                             if (questionType == QuestionType.NUMBER_INPUT) {
                                 // Create the answer and include the export
@@ -1264,7 +1264,7 @@ public class ODMv132ToMoPatConverter {
 
                             questionType = QuestionType.DATE;
                             question = new Question(localizedQuestionTexts, isRequired, true,
-                                questionType, position, questionnaire);
+                                questionType, position, questionnaire, false);
                             // Create the answer and include the export rules
                             DateAnswer dateAnswer = new DateAnswer(question, true, startDate,
                                 endDate);
@@ -1287,7 +1287,7 @@ public class ODMv132ToMoPatConverter {
                                 itemDef.getOID(), dataType);
                             questionType = QuestionType.MULTIPLE_CHOICE;
                             question = new Question(localizedQuestionTexts, isRequired, true,
-                                questionType, position, questionnaire);
+                                questionType, position, questionnaire, false);
                             question.setMinMaxNumberAnswers(DEFAULT_MIN_NUMBER_ANSWERS,
                                 DEFAULT_MAX_NUMBER_ANSWERS);
                             String answerLabelYes = BOOLEAN_ANSWER_LABEL_YES;
@@ -1383,7 +1383,7 @@ public class ODMv132ToMoPatConverter {
                         QuestionType.FREE_TEXT);
 
                     question = new Question(localizedQuestionTexts, isRequired, true,
-                        QuestionType.FREE_TEXT, position, questionnaire);
+                        QuestionType.FREE_TEXT, position, questionnaire, false);
 
                     String codeListOID = codeListRef.getCodeListOID();
                     List<ODMcomplexTypeDefinitionCodeList> codeListList = metaDataVersion.getCodeList();

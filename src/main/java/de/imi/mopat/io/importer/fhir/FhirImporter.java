@@ -234,7 +234,7 @@ public class FhirImporter {
 
 
     public void uploadFhirExportTemplate(MultipartFile file, File uploadFile,
-        ExportTemplateType exportTemplateType) throws IOException {
+        ExportTemplateType exportTemplateType, Questionnaire questionnaire) throws IOException {
         //Parse the upload file to get the fhir resource type
         FhirVersion fhirVersion =
             fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
@@ -243,6 +243,11 @@ public class FhirImporter {
 
             if (adapter != null) {
                 adapter.setFhirQuestionnaire(adapter.parseResourceFromFile(file.getInputStream()));
+                String fhirUrl = configurationDao.getFHIRsystemURI();
+                String questionnaireUrl = String.format("%s/%s",
+                    fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
+                    questionnaire.getId());
+                adapter.setFhirQuestionnaireUrl(questionnaireUrl);
                 adapter.writeQuestionnaireToFile(uploadFile);
             }
         }

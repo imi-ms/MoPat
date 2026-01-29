@@ -10,3 +10,10 @@ VALUES(1, NULL, 16, 'GENERAL', 'imprintText', 'RICH_TEXT', 'configuration.descri
 UPDATE export_template
 SET export_template_type = REPLACE(export_template_type, 'FHIR', 'FHIR_DSTU3')
 WHERE export_template_type LIKE 'FHIR';
+
+DELETE FROM moPat.configuration WHERE label_message_code = 'configuration.label.exportOrbisPath'
+DELETE FROM moPat.configuration_group WHERE label_message_code = 'configurationGroup.label.ORBIS'
+
+UPDATE moPat.export_template SET export_type = 'HL7v2' WHERE export_type = 'ORBIS';
+
+ALTER TABLE question ADD COLUMN is_just_info TINYINT(1) NOT NULL DEFAULT 0;

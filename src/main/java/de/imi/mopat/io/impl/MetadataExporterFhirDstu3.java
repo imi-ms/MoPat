@@ -76,11 +76,19 @@ public class MetadataExporterFhirDstu3 implements MetadataExporter {
 
         org.hl7.fhir.dstu3.model.Questionnaire fhirQuestionnaire = new org.hl7.fhir.dstu3.model.Questionnaire();
 
+
         fhirQuestionnaire.setName(questionnaire.getName());
         fhirQuestionnaire.setTitleElement(
             convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
         fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
+
+        String fhirUrl = configurationDao.getFHIRsystemURI();
+        String questionnaireUrl = String.format("%s/%s",
+            fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
+            questionnaire.getId());
+
+        fhirQuestionnaire.setUrl(questionnaireUrl);
 
         if (questionnaire.getUpdatedAt() != null) {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));

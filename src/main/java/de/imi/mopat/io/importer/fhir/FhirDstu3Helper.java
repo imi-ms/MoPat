@@ -3,7 +3,6 @@ package de.imi.mopat.io.importer.fhir;
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
-import ca.uhn.fhir.i18n.HapiLocalizer;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
@@ -11,7 +10,6 @@ import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.ResultSeverityEnum;
 import ca.uhn.fhir.validation.SingleValidationMessage;
-import ca.uhn.fhir.validation.ValidationOptions;
 import ca.uhn.fhir.validation.ValidationResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.model.enumeration.FHIRExtensionType;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -75,6 +74,7 @@ import org.xml.sax.SAXException;
 public class FhirDstu3Helper extends FhirHelper {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirDstu3Helper.class);
+    private static final String PROFILE_UNKNOWN_ID = "Validation_VAL_Profile_Unknown";
     private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
 
@@ -196,10 +196,11 @@ public class FhirDstu3Helper extends FhirHelper {
             ValidationResult result = validator.validateWithResult(fhirResourceString);
 
             List<SingleValidationMessage> messages = result.getMessages().stream().filter(
-                    singleValidationMessage ->
-                        singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
-                            || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
-                .toList();
+                singleValidationMessage ->
+                    (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
+                        || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
+                        && !Objects.equals(singleValidationMessage.getMessageId(),
+                        PROFILE_UNKNOWN_ID)).toList();
 
             for (SingleValidationMessage message : messages) {
                 addDefaultError(errors, message);

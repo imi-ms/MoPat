@@ -404,6 +404,7 @@ public class FhirR5ToMoPatConverter {
             LOGGER.debug("Mapping item {}", item.getLinkId());
             Question question = new Question();
             question.setIsRequired(item.getRequired());
+            question.setIsJustInfo(Boolean.FALSE);
             question.setIsEnabled(Boolean.TRUE);
 
             setLocalizedTextForQuestion(question, item, messageSource, locale);
@@ -1276,34 +1277,35 @@ public class FhirR5ToMoPatConverter {
                         // triggerQuestion and check if there's any answer text
                         // that fits to the enableWhen's answer text
                         for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
-                            SelectAnswer selectAnswer = (SelectAnswer) answer;
-                            for (String text : selectAnswer.getLocalizedLabel().values()) {
-                                // If the answer's text fits, create condition
-                                // where answer is the trigger and the
-                                // targetQuestionResult the target
-                                if (text.equals(answerText)) {
-                                    answer.addCondition(new SelectAnswerCondition(answer,
-                                        targetQuestionResult.getQuestion(), action, null));
-                                    // Gets the localized answer text by the
-                                    // current locale, if the locale doesn't
-                                    // exist in the map, it returns the first
-                                    // value, same for the question at the next line
-                                    // These params have to be set for the
-                                    // validationMessage. This way it's more
-                                    // clearly arranged.
-                                    Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
-                                    triggerQuestionResult.addValidationMessage(
-                                        "import.fhir.condition" + ".selectAnswerCondition",
-                                        new String[]{localizedLabel.getOrDefault(
-                                            LocaleContextHolder.getLocale().toString(),
-                                            localizedLabel.values().toArray()[0].toString()),
-                                            targetQuestionResult.getQuestion()
-                                                .getLocalizedQuestionText().getOrDefault(
+                            if (answer instanceof SelectAnswer selectAnswer) {
+                                for (String text : selectAnswer.getLocalizedLabel().values()) {
+                                    // If the answer's text fits, create condition
+                                    // where answer is the trigger and the
+                                    // targetQuestionResult the target
+                                    if (text.equals(answerText)) {
+                                        answer.addCondition(new SelectAnswerCondition(answer,
+                                            targetQuestionResult.getQuestion(), action, null));
+                                        // Gets the localized answer text by the
+                                        // current locale, if the locale doesn't
+                                        // exist in the map, it returns the first
+                                        // value, same for the question at the next line
+                                        // These params have to be set for the
+                                        // validationMessage. This way it's more
+                                        // clearly arranged.
+                                        Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
+                                        triggerQuestionResult.addValidationMessage(
+                                            "import.fhir.condition" + ".selectAnswerCondition",
+                                            new String[]{localizedLabel.getOrDefault(
                                                 LocaleContextHolder.getLocale().toString(),
+                                                localizedLabel.values().toArray()[0].toString()),
                                                 targetQuestionResult.getQuestion()
-                                                    .getLocalizedQuestionText().values()
-                                                    .toArray()[0].toString()), action.name()});
-                                    break;
+                                                    .getLocalizedQuestionText().getOrDefault(
+                                                    LocaleContextHolder.getLocale().toString(),
+                                                    targetQuestionResult.getQuestion()
+                                                        .getLocalizedQuestionText().values()
+                                                        .toArray()[0].toString()), action.name()});
+                                        break;
+                                    }
                                 }
                             }
                         }

@@ -254,18 +254,6 @@
 						</tr>
 						<tr>
 							<td
-								th:text="${messages.get(#locale, 'statistic.label.ORBISExportCount', 'Number of ORBIS exports:')}"
-							>
-							</td>
-
-							<td
-								th:each="statistic: ${statisticDTO.getStatistics()}"
-								th:text="${statistic.getORBISExportCount()}"
-							>
-							</td>
-						</tr>
-						<tr>
-							<td
 								th:text="${messages.get(#locale, 'statistic.label.HL7ExportCount', 'Number of HL7v2 exports:')}"
 							>
 							</td>

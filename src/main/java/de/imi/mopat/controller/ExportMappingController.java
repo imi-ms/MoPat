@@ -51,6 +51,7 @@ import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.validator.ExportRulesDTOValidator;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -314,7 +315,7 @@ public class ExportMappingController {
                 //Do the upload for FHIR resource.
                 if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
                     try {
-                        fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType);
+                        fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType, questionnaire);
                     } catch (Exception e) {
                         LOGGER.error("error while uploading a new export template {}", e);
                         for (ExportTemplate exportTemplate : exportTemplates) {
@@ -492,7 +493,9 @@ public class ExportMappingController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String submitAssignment(
         @ModelAttribute("exportRules") final ExportRulesDTO exportRulesDTO,
-        final BindingResult result, final HttpServletRequest request, final Model model) {
+        @RequestParam(value = "autoSave", required = false, defaultValue = "false") boolean autoSave,
+        final BindingResult result, final HttpServletRequest request, final Model model,
+        final HttpServletResponse response) {
 
         // Validation: Only if the exportRuleDTO is not null. If it is null
         // there
@@ -511,6 +514,11 @@ public class ExportMappingController {
 
         ExportTemplate exportTemplate = exportTemplateDao.getElementById(
             exportRulesDTO.getExportTemplateId());
+
+        if(autoSave){
+            response.setStatus(HttpServletResponse.SC_OK);
+            return null;
+        }
 
         return "redirect:/mapping/list?id=" + exportTemplate.getQuestionnaire().getId();
     }

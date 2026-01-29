@@ -188,7 +188,8 @@
                                                     th:id="'removeQuestionnaire_' + ${item.id}"
                                                     class="btn btn-sm btn-primary-list link removeQuestionnaireLink btn-red"
                                                     th:attr="data-hasConditions=${item.isHasConditions()}"
-                                                    th:href="@{remove?id=__${item.id}__}"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="|#deleteModal_${item.id}|"
                                                 >
                                                     <i
                                                         class="bi-trash-fill bi-list-icon"
@@ -245,7 +246,8 @@
 												<a
 													class="link"
 													th:attr="data-hasConditions=${item.isHasConditions()}"
-													th:href="@{remove?id=__${item.id}__}"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="|#deleteModal_${item.id}|"
 													th:text="${messages.get(#locale, 'questionnaire.button.remove', 'Remove')}"
 												></a>
 											</th:block>
@@ -253,6 +255,13 @@
 									</div>
 								</td>
 							</tr>
+                            <deleteModal layout:replace="~{fragments/deleteModal :: deleteModal(
+                                type='questionnaire',
+                                id=${item.id},
+                                name=${item.name},
+                                deleteUrl='remove?id=__${item.id}__')}"
+                            >
+                            </deleteModal>
 						</th:block>
 					</th:block>
 				</tbody>
@@ -359,4 +368,5 @@
 		/*]]>*/
 
 	</script>
+    <th:block layout:replace="~{fragments/deleteModal :: deleteModalScript}"></th:block>
 </th:block>

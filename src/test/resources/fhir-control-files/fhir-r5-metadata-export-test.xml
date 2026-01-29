@@ -1,128 +1,134 @@
 <Questionnaire xmlns="http://hl7.org/fhir">
-    <language value="en-GB"></language>
-    <name value="Demo Questionnaire"></name>
+    <language value="en-GB"/>
+    <url value="http://mopat-test/fhir/null"/>
+    <name value="Demo Questionnaire"/>
     <title value="Demo Questionnaire">
         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
             <extension url="lang">
-                <valueCode value="de-DE"></valueCode>
+                <valueCode value="de-DE"/>
             </extension>
             <extension url="content">
-                <valueString value="Demo Fragebogen"></valueString>
+                <valueString value="Demo Fragebogen"/>
             </extension>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
             <extension url="lang">
-                <valueCode value="es-ES"></valueCode>
+                <valueCode value="es-ES"/>
             </extension>
             <extension url="content">
-                <valueString value="Cuestionario de demostración"></valueString>
+                <valueString value="Cuestionario de demostración"/>
             </extension>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/translation">
             <extension url="lang">
-                <valueCode value="en-GB"></valueCode>
+                <valueCode value="en-GB"/>
             </extension>
             <extension url="content">
-                <valueString value="Demo Questionnaire"></valueString>
+                <valueString value="Demo Questionnaire"/>
             </extension>
         </extension>
     </title>
-    <status value="draft"></status>
-    <date value="2000-01-01T20:00:00+01:00"></date>
-    <description value="Dieser Fragebogen enthält alle bisher implementierten Fragetypen"></description>
+    <status value="draft"/>
+    <date value="2000-01-01T20:00:00+01:00"/>
+    <description value="Dieser Fragebogen enthält alle bisher implementierten Fragetypen"/>
     <item>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="This is an info-text question">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Ésta es una pregunta de tipo informativa"></valueString>
+                    <valueString value="Ésta es una pregunta de tipo informativa"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine InfoText-Frage"></valueString>
+                    <valueString value="Dies ist eine InfoText-Frage"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is an info-text question"></valueString>
+                    <valueString value="This is an info-text question"/>
                 </extension>
             </extension>
         </text>
-        <type value="display"></type>
+        <type value="display"/>
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
-            <valueInteger value="1"></valueInteger>
+            <valueInteger value="1"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
-            <valueInteger value="2"></valueInteger>
+            <valueInteger value="2"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p&gt;&lt;p&gt;In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p&gt;&lt;p&gt;Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"></valueString>
+                    <valueString
+                        value="Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p&gt;&lt;p&gt;El número de respuestas posible es configurable. &lt;/p&gt;&lt;p&gt;Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br&gt;&lt;/p&gt;&lt;p&gt;La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"></valueString>
+                    <valueString
+                        value="Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?"></valueString>
+                    <valueString
+                        value="This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="true"></required>
-        <repeats value="true"></repeats>
+        <type value="coding"/>
+        <required value="true"/>
+        <repeats value="true"/>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Monday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Lunes"></valueString>
+                            <valueString value="Lunes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Montag"></valueString>
+                            <valueString value="Montag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Monday"></valueString>
+                            <valueString value="Monday"/>
                         </extension>
                     </extension>
                 </display>
@@ -130,30 +136,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Tuesday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Martes"></valueString>
+                            <valueString value="Martes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Dienstag"></valueString>
+                            <valueString value="Dienstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Tuesday"></valueString>
+                            <valueString value="Tuesday"/>
                         </extension>
                     </extension>
                 </display>
@@ -161,30 +168,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Wednesday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Miércoles"></valueString>
+                            <valueString value="Miércoles"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Mittwoch"></valueString>
+                            <valueString value="Mittwoch"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Wednesday"></valueString>
+                            <valueString value="Wednesday"/>
                         </extension>
                     </extension>
                 </display>
@@ -192,30 +200,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Thursday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Jueves"></valueString>
+                            <valueString value="Jueves"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Donnerstag"></valueString>
+                            <valueString value="Donnerstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Thursday"></valueString>
+                            <valueString value="Thursday"/>
                         </extension>
                     </extension>
                 </display>
@@ -223,30 +232,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Friday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Viernes"></valueString>
+                            <valueString value="Viernes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Freitag"></valueString>
+                            <valueString value="Freitag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Friday"></valueString>
+                            <valueString value="Friday"/>
                         </extension>
                     </extension>
                 </display>
@@ -254,30 +264,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Saturday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sábado"></valueString>
+                            <valueString value="Sábado"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Samstag"></valueString>
+                            <valueString value="Samstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Saturday"></valueString>
+                            <valueString value="Saturday"/>
                         </extension>
                     </extension>
                 </display>
@@ -285,30 +296,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Sunday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Domingo"></valueString>
+                            <valueString value="Domingo"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sonntag"></valueString>
+                            <valueString value="Sonntag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sunday"></valueString>
+                            <valueString value="Sunday"/>
                         </extension>
                     </extension>
                 </display>
@@ -317,67 +329,72 @@
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
-            <valueInteger value="1"></valueInteger>
+            <valueInteger value="1"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
-            <valueInteger value="2"></valueInteger>
+            <valueInteger value="2"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br&gt;&lt;/p&gt;&lt;p&gt;This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br&gt;&lt;/p&gt;&lt;p&gt;Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p&gt;&lt;p&gt;El número de respuestas posible es configurable. &lt;/p&gt;&lt;p&gt;La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"></valueString>
+                    <valueString
+                        value="Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p&gt;&lt;p&gt;In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p&gt;&lt;p&gt;Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"></valueString>
+                    <valueString
+                        value="Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br&gt;&lt;/p&gt;&lt;p&gt;This is a multiple choice question. There are multiple answers posible to this question. &lt;/p&gt;&lt;p&gt;In this kind of questions, the number of posible answers can be configured. &lt;/p&gt;&lt;p&gt;The question reads: What day(s) of the week do you like best?"></valueString>
+                    <valueString
+                        value="This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="true"></required>
-        <repeats value="true"></repeats>
+        <type value="coding"/>
+        <required value="true"/>
+        <repeats value="true"/>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Monday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Lunes"></valueString>
+                            <valueString value="Lunes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Montag"></valueString>
+                            <valueString value="Montag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Monday"></valueString>
+                            <valueString value="Monday"/>
                         </extension>
                     </extension>
                 </display>
@@ -385,30 +402,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Tuesday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Martes"></valueString>
+                            <valueString value="Martes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Dienstag"></valueString>
+                            <valueString value="Dienstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Tuesday"></valueString>
+                            <valueString value="Tuesday"/>
                         </extension>
                     </extension>
                 </display>
@@ -416,30 +434,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Wednesday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Miércoles"></valueString>
+                            <valueString value="Miércoles"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Mittwoch"></valueString>
+                            <valueString value="Mittwoch"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Wednesday"></valueString>
+                            <valueString value="Wednesday"/>
                         </extension>
                     </extension>
                 </display>
@@ -447,30 +466,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Thursday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Jueves"></valueString>
+                            <valueString value="Jueves"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Donnerstag"></valueString>
+                            <valueString value="Donnerstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Thursday"></valueString>
+                            <valueString value="Thursday"/>
                         </extension>
                     </extension>
                 </display>
@@ -478,30 +498,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Friday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Viernes"></valueString>
+                            <valueString value="Viernes"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Freitag"></valueString>
+                            <valueString value="Freitag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Friday"></valueString>
+                            <valueString value="Friday"/>
                         </extension>
                     </extension>
                 </display>
@@ -509,30 +530,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Saturday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sábado"></valueString>
+                            <valueString value="Sábado"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Samstag"></valueString>
+                            <valueString value="Samstag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Saturday"></valueString>
+                            <valueString value="Saturday"/>
                         </extension>
                     </extension>
                 </display>
@@ -540,30 +562,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Sunday">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Domingo"></valueString>
+                            <valueString value="Domingo"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sonntag"></valueString>
+                            <valueString value="Sonntag"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Sunday"></valueString>
+                            <valueString value="Sunday"/>
                         </extension>
                     </extension>
                 </display>
@@ -572,281 +595,305 @@
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
-            <valueDecimal value="0.0"></valueDecimal>
+            <valueDecimal value="0.0"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
-            <valueDecimal value="1.0"></valueDecimal>
+            <valueDecimal value="1.0"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a horizontal slider.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a horizontal slider.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.&lt;/p&gt;&lt;p&gt;Die Frage lautet hier: Wie gut geht es Ihnen gerade?"></valueString>
+                    <valueString
+                        value="Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.&lt;/p>&lt;p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Ésta es una barra deslizante horizontal. &lt;br&gt; La pregunta dice así: qué tal se encuentra? "></valueString>
+                    <valueString
+                        value="Ésta es una barra deslizante horizontal. &lt;br> La pregunta dice así: qué tal se encuentra? "/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a horizontal slider.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?"></valueString>
+                    <valueString
+                        value="This is a horizontal slider.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?"/>
                 </extension>
             </extension>
         </text>
-        <type value="decimal"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
+        <type value="decimal"/>
+        <required value="false"/>
+        <repeats value="false"/>
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
-            <valueDecimal value="0.0"></valueDecimal>
+            <valueDecimal value="0.0"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
-            <valueDecimal value="1.0"></valueDecimal>
+            <valueDecimal value="1.0"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a horizontal slider. It also displays symbols above the scale.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a horizontal slider. It also displays symbols above the scale.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist ein horizontaler Schieberegler. Er zeigt zusätzlich Symbole über der Skala an.&lt;br&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Die Frage lautet hier: Wie gut geht es Ihnen gerade?"></valueString>
+                    <valueString
+                        value="Dies ist ein horizontaler Schieberegler. Er zeigt zusätzlich Symbole über der Skala an.&lt;br>&lt;p>&lt;/p>&lt;p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Se trata de un deslizador horizontal. También muestra símbolos encima de la escala.&lt;br&gt; La pregunta dice así: qué tal se encuentra? "></valueString>
+                    <valueString
+                        value="Se trata de un deslizador horizontal. También muestra símbolos encima de la escala.&lt;br> La pregunta dice así: qué tal se encuentra? "/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a horizontal slider. It also displays symbols above the scale.&lt;br&gt;&lt;/p&gt;&lt;p&gt;The question reads: How do you feel?"></valueString>
+                    <valueString
+                        value="This is a horizontal slider. It also displays symbols above the scale.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?"/>
                 </extension>
             </extension>
         </text>
-        <type value="decimal"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
+        <type value="decimal"/>
+        <required value="false"/>
+        <repeats value="false"/>
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
-            <valueDecimal value="1.0"></valueDecimal>
+            <valueDecimal value="1.0"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
-            <valueDecimal value="6.0"></valueDecimal>
+            <valueDecimal value="6.0"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br&gt;&lt;/p&gt;&lt;p&gt;The question here is: If you had to give a grade to MoPat, what would it be? ">
+        <linkId value="Question/null"/>
+        <text
+            value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br>&lt;/p>&lt;p>The question here is: If you had to give a grade to MoPat, what would it be? ">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen/Klicken einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.&lt;/p&gt;&lt;p&gt;Wir möchten gerne wissen: Wenn Sie Ihrer bisherigen MoPat-Erfahrung eine Schulnote geben müssten, welche wäre das?&lt;br&gt;"></valueString>
+                    <valueString
+                        value="Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen/Klicken einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.&lt;/p>&lt;p>Wir möchten gerne wissen: Wenn Sie Ihrer bisherigen MoPat-Erfahrung eine Schulnote geben müssten, welche wäre das?&lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Aquí puede elegir uno entre una gama de diferentes valores numéricos.Al seleccionar una respuesta previamente seleccionada, la respuesta será des-seleccionada.&lt;br&gt;&lt;/p&gt;&lt;p&gt;La pregunta dicta: Si tuviera que dar una nota a MoPat, qué nota le pondría?"></valueString>
+                    <valueString
+                        value="Aquí puede elegir uno entre una gama de diferentes valores numéricos.Al seleccionar una respuesta previamente seleccionada, la respuesta será des-seleccionada.&lt;br>&lt;/p>&lt;p>La pregunta dicta: Si tuviera que dar una nota a MoPat, qué nota le pondría?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br&gt;&lt;/p&gt;&lt;p&gt;The question here is: If you had to give a grade to MoPat, what would it be? "></valueString>
+                    <valueString
+                        value="Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br>&lt;/p>&lt;p>The question here is: If you had to give a grade to MoPat, what would it be? "/>
                 </extension>
             </extension>
         </text>
-        <type value="integer"></type>
-        <required value="true"></required>
-        <repeats value="false"></repeats>
+        <type value="integer"/>
+        <required value="true"/>
+        <repeats value="false"/>
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
-            <valueDecimal value="0.0"></valueDecimal>
+            <valueDecimal value="0.0"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
-            <valueDecimal value="10.0"></valueDecimal>
+            <valueDecimal value="10.0"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p&gt;&lt;p&gt;The question would be: How many restaurants have you visited in the last week? Which ones? ">
+        <linkId value="Question/null"/>
+        <text
+            value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p>&lt;p>The question would be: How many restaurants have you visited in the last week? Which ones? ">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.&lt;/p&gt;&lt;p&gt;Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? &lt;br&gt;&lt;br&gt;"></valueString>
+                    <valueString
+                        value="Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.&lt;/p>&lt;p>Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? &lt;br>&lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. &lt;/p&gt;&lt;p&gt;La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?"></valueString>
+                    <valueString
+                        value="Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. &lt;/p>&lt;p>La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p&gt;&lt;p&gt;The question would be: How many restaurants have you visited in the last week? Which ones? "></valueString>
+                    <valueString
+                        value="As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p>&lt;p>The question would be: How many restaurants have you visited in the last week? Which ones? "/>
                 </extension>
             </extension>
         </text>
-        <type value="integer"></type>
-        <required value="true"></required>
-        <repeats value="false"></repeats>
+        <type value="integer"/>
+        <required value="true"/>
+        <repeats value="false"/>
     </item>
     <item>
-        <linkId value="Question/null-ft"></linkId>
+        <linkId value="Question/null-ft"/>
         <text value="Restaurants:">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Restaurantes:"></valueString>
+                    <valueString value="Restaurantes:"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Süßigkeiten:"></valueString>
+                    <valueString value="Süßigkeiten:"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Restaurants:"></valueString>
+                    <valueString value="Restaurants:"/>
                 </extension>
             </extension>
         </text>
-        <type value="text"></type>
+        <type value="text"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a date question. &lt;/p&gt;&lt;p&gt;Tap/click on the empty field to introduce your answer.&lt;br&gt;&lt;/p&gt;&lt;p&gt;What is your date of birth?&lt;br&gt;">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a date question. &lt;/p>&lt;p>Tap/click on the empty field to introduce your answer.&lt;br>&lt;/p>&lt;p>What is your date of birth?&lt;br>">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine Datumsfrage. &lt;br&gt;&lt;/p&gt;&lt;p&gt;Bitte tippen/klicken Sie in das Eingabefeld, um die Datumsauswahl zu starten.&lt;/p&gt;&lt;p&gt; Die Frage hier lautet: Wann sind Sie geboren?&lt;br&gt;"></valueString>
+                    <valueString
+                        value="Dies ist eine Datumsfrage. &lt;br>&lt;/p>&lt;p>Bitte tippen/klicken Sie in das Eingabefeld, um die Datumsauswahl zu starten.&lt;/p>&lt;p> Die Frage hier lautet: Wann sind Sie geboren?&lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Esta pregunta es de tipo temporal. &lt;/p&gt;&lt;p&gt;Haga click en el campo en blanco para introducir su respuesta.&lt;br&gt;&lt;/p&gt;&lt;p&gt;Cuál es su fecha de nacimiento? &lt;br&gt;&lt;br&gt;"></valueString>
+                    <valueString
+                        value="Esta pregunta es de tipo temporal. &lt;/p>&lt;p>Haga click en el campo en blanco para introducir su respuesta.&lt;br>&lt;/p>&lt;p>Cuál es su fecha de nacimiento? &lt;br>&lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a date question. &lt;/p&gt;&lt;p&gt;Tap/click on the empty field to introduce your answer.&lt;br&gt;&lt;/p&gt;&lt;p&gt;What is your date of birth?&lt;br&gt;"></valueString>
+                    <valueString
+                        value="This is a date question. &lt;/p>&lt;p>Tap/click on the empty field to introduce your answer.&lt;br>&lt;/p>&lt;p>What is your date of birth?&lt;br>"/>
                 </extension>
             </extension>
         </text>
-        <type value="date"></type>
-        <required value="true"></required>
-        <repeats value="false"></repeats>
+        <type value="date"/>
+        <required value="true"/>
+        <repeats value="false"/>
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
-            <valueInteger value="1"></valueInteger>
+            <valueInteger value="1"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
-            <valueInteger value="3"></valueInteger>
+            <valueInteger value="3"/>
         </extension>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a drop down list question. You may select a value from the drop down list. ">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a drop down list question. You may select a value from the drop down list. ">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="&lt;p&gt;Dies ist eine Auswahllistenfrage.&lt;br&gt;&lt;/p&gt;"></valueString>
+                    <valueString value="&lt;p>Dies ist eine Auswahllistenfrage.&lt;br>&lt;/p>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista. "></valueString>
+                    <valueString
+                        value="Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista. "/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a drop down list question. You may select a value from the drop down list. "></valueString>
+                    <valueString
+                        value="This is a drop down list question. You may select a value from the drop down list. "/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="true"></required>
-        <repeats value="true"></repeats>
+        <type value="coding"/>
+        <required value="true"/>
+        <repeats value="true"/>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Answer one">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Respuesta uno"></valueString>
+                            <valueString value="Respuesta uno"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Antwort 1"></valueString>
+                            <valueString value="Antwort 1"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Answer one"></valueString>
+                            <valueString value="Answer one"/>
                         </extension>
                     </extension>
                 </display>
@@ -854,30 +901,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Answer two">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Respuesta dos"></valueString>
+                            <valueString value="Respuesta dos"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Antwort 2"></valueString>
+                            <valueString value="Antwort 2"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Answer two"></valueString>
+                            <valueString value="Answer two"/>
                         </extension>
                     </extension>
                 </display>
@@ -885,30 +933,31 @@
         </answerOption>
         <answerOption>
             <valueCoding>
-                <code value="MoPat/Answer/null"></code>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null"/>
                 <display value="Answer three">
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="es-ES"></valueCode>
+                            <valueCode value="es-ES"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Respuesta tres"></valueString>
+                            <valueString value="Respuesta tres"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="de-DE"></valueCode>
+                            <valueCode value="de-DE"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Antwort 3"></valueString>
+                            <valueString value="Antwort 3"/>
                         </extension>
                     </extension>
                     <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                         <extension url="lang">
-                            <valueCode value="en-GB"></valueCode>
+                            <valueCode value="en-GB"/>
                         </extension>
                         <extension url="content">
-                            <valueString value="Answer three"></valueString>
+                            <valueString value="Answer three"/>
                         </extension>
                     </extension>
                 </display>
@@ -917,240 +966,247 @@
     </item>
     <item>
         <extension url="http://hl7.org/fhir/StructureDefinition/minValue">
-            <valueDecimal value="1.0"></valueDecimal>
+            <valueDecimal value="1.0"/>
         </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/maxValue">
-            <valueDecimal value="111.0"></valueDecimal>
+            <valueDecimal value="111.0"/>
         </extension>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="This is a numeric question. Introduce a number between 1 and 111.">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine numerische Frage. Bitte geben Sie ein Zahl zwischen 1 und 111 ein.&lt;br&gt;"></valueString>
+                    <valueString
+                        value="Dies ist eine numerische Frage. Bitte geben Sie ein Zahl zwischen 1 und 111 ein.&lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Esta pregunta es de tipo numérica. Introduzca un valor entre 1 y 111. "></valueString>
+                    <valueString
+                        value="Esta pregunta es de tipo numérica. Introduzca un valor entre 1 y 111. "/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a numeric question. Introduce a number between 1 and 111."></valueString>
+                    <valueString
+                        value="This is a numeric question. Introduce a number between 1 and 111."/>
                 </extension>
             </extension>
         </text>
-        <type value="decimal"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
+        <type value="decimal"/>
+        <required value="false"/>
+        <repeats value="false"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
-        <text value="&lt;p&gt;Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.
-&lt;/p&gt;&lt;p&gt;We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p&gt;">
+        <linkId value="Question/null"/>
+        <text
+            value="&lt;p>Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it. &#xd;&#xa;&lt;/p>&lt;p>We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p>">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="&lt;p&gt;Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.
-&lt;/p&gt;&lt;p&gt;Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!&lt;/p&gt;"></valueString>
+                    <valueString
+                        value="&lt;p>Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.&#xd;&#xa;&lt;/p>&lt;p>Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!&lt;/p>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="&lt;p&gt;Para terminar, les mostramos una pregunta de tipo texto libre. Aquí pueden introducir un comentario.
-&lt;/p&gt;&lt;p&gt;Nos gustaría que nos comentara qué le parece el sistema, si ha detectado algún error y/o si tiene alguna sugerencia.&lt;/p&gt;"></valueString>
+                    <valueString
+                        value="&lt;p>Para terminar, les mostramos una pregunta de tipo texto libre. Aquí pueden introducir un comentario. &#xd;&#xa;&lt;/p>&lt;p>Nos gustaría que nos comentara qué le parece el sistema, si ha detectado algún error y/o si tiene alguna sugerencia.&lt;/p>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="&lt;p&gt;Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.
-&lt;/p&gt;&lt;p&gt;We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p&gt;"></valueString>
+                    <valueString
+                        value="&lt;p>Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it. &#xd;&#xa;&lt;/p>&lt;p>We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p>"/>
                 </extension>
             </extension>
         </text>
-        <type value="text"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
+        <type value="text"/>
+        <required value="false"/>
+        <repeats value="false"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
-        <text value="This is a barcode question. Codes can be scanned with this question type. &lt;br&gt;">
+        <linkId value="Question/null"/>
+        <text
+            value="This is a barcode question. Codes can be scanned with this question type. &lt;br>">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Se trata de una pregunta con código de barras. Los códigos se pueden escanear con este tipo de pregunta. &lt;br&gt;"></valueString>
+                    <valueString
+                        value="Se trata de una pregunta con código de barras. Los códigos se pueden escanear con este tipo de pregunta. &lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Dies ist eine Barcode Frage. Mit diesem Fragetypen können Codes gescannt werden. &lt;br&gt;"></valueString>
+                    <valueString
+                        value="Dies ist eine Barcode Frage. Mit diesem Fragetypen können Codes gescannt werden. &lt;br>"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="This is a barcode question. Codes can be scanned with this question type. &lt;br&gt;"></valueString>
+                    <valueString
+                        value="This is a barcode question. Codes can be scanned with this question type. &lt;br>"/>
                 </extension>
             </extension>
         </text>
-        <type value="text"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
+        <type value="text"/>
+        <required value="false"/>
+        <repeats value="false"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="Where do you have pain on the front of your body?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="¿Dónde le duele la parte delantera del cuerpo?"></valueString>
+                    <valueString value="¿Dónde le duele la parte delantera del cuerpo?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers?"></valueString>
+                    <valueString value="Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Where do you have pain on the front of your body?"></valueString>
+                    <valueString value="Where do you have pain on the front of your body?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
-        <answerConstraint value="optionsOrString"></answerConstraint>
+        <type value="coding"/>
+        <required value="false"/>
+        <repeats value="false"/>
+        <answerConstraint value="optionsOrString"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="Where do you have pain on the back of your body?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="¿Dónde le duele la parte posterior del cuerpo?"></valueString>
+                    <valueString value="¿Dónde le duele la parte posterior del cuerpo?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers?"></valueString>
+                    <valueString value="Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Where do you have pain on the back of your body?"></valueString>
+                    <valueString value="Where do you have pain on the back of your body?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
-        <answerConstraint value="optionsOrString"></answerConstraint>
+        <type value="coding"/>
+        <required value="false"/>
+        <repeats value="false"/>
+        <answerConstraint value="optionsOrString"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="Where do you still have pain?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="¿Dónde le duele todavía?"></valueString>
+                    <valueString value="¿Dónde le duele todavía?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Wo haben Sie noch Schmerzen?"></valueString>
+                    <valueString value="Wo haben Sie noch Schmerzen?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Where do you still have pain?"></valueString>
+                    <valueString value="Where do you still have pain?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
-        <answerConstraint value="optionsOrString"></answerConstraint>
+        <type value="coding"/>
+        <required value="false"/>
+        <repeats value="false"/>
+        <answerConstraint value="optionsOrString"/>
     </item>
     <item>
-        <linkId value="Question/null"></linkId>
+        <linkId value="Question/null"/>
         <text value="Where else do you have pain?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="es-ES"></valueCode>
+                    <valueCode value="es-ES"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="¿Dónde más te duele?"></valueString>
+                    <valueString value="¿Dónde más te duele?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="de-DE"></valueCode>
+                    <valueCode value="de-DE"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Wo haben Sie außerdem noch Schmerzen?"></valueString>
+                    <valueString value="Wo haben Sie außerdem noch Schmerzen?"/>
                 </extension>
             </extension>
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
-                    <valueCode value="en-GB"></valueCode>
+                    <valueCode value="en-GB"/>
                 </extension>
                 <extension url="content">
-                    <valueString value="Where else do you have pain?"></valueString>
+                    <valueString value="Where else do you have pain?"/>
                 </extension>
             </extension>
         </text>
-        <type value="coding"></type>
-        <required value="false"></required>
-        <repeats value="false"></repeats>
-        <answerConstraint value="optionsOrString"></answerConstraint>
+        <type value="coding"/>
+        <required value="false"/>
+        <repeats value="false"/>
+        <answerConstraint value="optionsOrString"/>
     </item>
 </Questionnaire>

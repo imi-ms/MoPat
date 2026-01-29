@@ -118,4 +118,11 @@ public interface EncounterDao extends MoPatDao<Encounter> {
      * @return All encounter from stored {@link Encounter encounters} for a clinic
      */
     List<Encounter> getEncountersByClinicId(Long clinicId);
+
+    /**
+     * Checks if there exists encounter from stored {@link Encounter encounters} for a clinic.
+     *
+     * @return If there exists a {@link Encounter encounters} for a clinic
+     */
+    Boolean checkEncountersExistsByClinicId(Long clinicId);
 }

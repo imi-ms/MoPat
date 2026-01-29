@@ -1,0 +1,190 @@
+<th:block layout:fragment="deleteModal(type, id, name, deleteUrl)">
+
+    <th:block th:switch="${type}">
+        <th:block th:case="clinic">
+            <addVar
+                layout:replace="~{helper/var :: add(
+                key='deleteMessage',
+                value=${messages.get(
+                        #locale,
+                        'modal.delete.question.clinic',
+                        messages.buildArguments('__${name}__'),
+                        'Are you sure you want to delete clinic'
+                    )}
+                )}">
+            </addVar>
+        </th:block>
+
+        <th:block th:case="questionnaire">
+            <addVar
+                layout:replace="~{helper/var :: add(
+                key='deleteMessage',
+                value=${messages.get(
+                        #locale,
+                        'modal.delete.question.questionnaire',
+                        messages.buildArguments('__${name}__'),
+                        'Are you sure you want to delete questionnaire'
+                    )}
+                )}">
+            </addVar>
+        </th:block>
+
+        <th:block th:case="bundle">
+            <addVar
+                layout:replace="~{helper/var :: add(
+                key='deleteMessage',
+                value=${messages.get(
+                        #locale,
+                        'modal.delete.question.bundle',
+                        messages.buildArguments('__${name}__'),
+                        'Are you sure you want to delete bundle'
+                    )}
+                )}">
+            </addVar>
+        </th:block>
+
+        <th:block th:case="question">
+            <addVar
+                layout:replace="~{helper/var :: add(
+                key='deleteMessage',
+                value=${messages.get(
+                        #locale,
+                        'modal.delete.question.question',
+                        messages.buildArguments('__${name}__'),
+                        'Are you sure you want to delete question'
+                    )}
+                )}">
+            </addVar>
+        </th:block>
+
+    </th:block>
+
+    <!-- Delete Confirmation Modal -->
+    <div aria-hidden="true" aria-labelledby="deleteModalLabel"
+         class="modal fade" tabindex="-1"
+         th:id="|deleteModal_${id}|">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <th:block th:text="${messages.get(#locale, 'modal.delete.title', 'Confirm Deletion')}" />
+                    </h5>
+                    <button aria-label="Close" class="btn-close"
+                            data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body" id="deleteModalBody">
+                    <span class="h5" th:text="${vars['deleteMessage']}" ></span>
+
+                    <div th:id="|additionalInformation_${id}|" class="fw-bolder mt-2"></div>
+
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span th:text="${messages.get(
+                                                    #locale,
+                                                    'modal.delete.warning',
+                                                    'This action cannot be undone.'
+                                                )}">
+                                                </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-bs-dismiss="modal"
+                            type="button">
+                        <th:block th:text="${messages.get(#locale, 'modal.delete.cancel', 'Cancel')}" />
+                    </button>
+                    <a class="btn btn-danger"
+                       th:href="@{__${deleteUrl}__}"
+                       th:id="'remove_' + ${id}"
+                       type="button"
+                    >
+                        <th:block th:text="${messages.get(#locale, 'modal.delete.confirm', 'Delete')}" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="deleteModalScript">
+    <script th:inline="javascript">
+        var deleteBundleFromClinics =
+            /*[[${messages.get(#locale, 'bundle.warning.deleteBundleFromClinics', 'This bundle is assigned to at least one clinic. Do you want to delete it anyway?')}]]*/ "This bundle is assigned to at least one clinic. Do you want to delete it anyway?";
+        var deleteBundleWithConditions =
+            /*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditions', 'The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
+        var deleteBundleWithConditionsAndClinics =
+            /*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditionsAndClinics', 'The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
+
+        const labels = {
+            deleteNotPossible: /*[[#{question.label.deleteQuestionNotPossible}]]*/ "Question cannot be deleted because it is already answered in a survey.",
+            deleteWarningStart: /*[[#{question.label.deleteQuestionWarningStart}]]*/ "The removal of the question will also delete the following:",
+            deleteWarningConditions: /*[[#{question.label.changeQuestionTypeWarningConditions}]]*/ "Conditions",
+            deleteWarningExportRules: /*[[#{question.label.changeQuestionTypeWarningExportRules}]]*/ "Export rules",
+            deleteWarningScores: /*[[#{question.label.changeQuestionTypeWarningScores}]]*/ "Scores",
+            deleteWarningEnd: /*[[#{question.label.changeQuestionTypeWarningEnd}]]*/ "Do you really want to continue?"
+        };
+
+        $(".removeBundleLink").click(function () {
+            /*[- Initialize the result as true if there are no conditions or clinics asssociated -]*/
+            var id = $(this).attr("data-id");
+            clearAdditionalInformation(id);
+
+            var hasConditions = $(this).attr("data-hasConditions");
+            var usedInClinics = $(this).attr("data-usedInClinics");
+
+            /*[- Check if the bundle has any corresponding clinics and/or conditions -]*/
+            if (usedInClinics === "true" && hasConditions === "true") {
+                /*[- Let the user confirm, that these clinics and conditions will also be deleted -]*/
+                $('#additionalInformation_' + id).html(
+                    deleteBundleWithConditionsAndClinics
+                )
+            } else if (usedInClinics === "true") {
+                /*[- Let the user confirm, that these clinics will also be deleted -]*/
+                $('#additionalInformation_' + id).html(
+                    deleteBundleFromClinics
+                )
+            } else if (hasConditions === "true") {
+                /*[- Let the user confirm, that these conditions will also be deleted -]*/
+                $('#additionalInformation_' + id).html(
+                    deleteBundleWithConditions
+                )
+            }
+        });
+
+        /*[-
+        --- called if question should be deleted
+        --- warns about appended conditions and export rules
+        --- with a custom made message
+        -]*/
+        function checkQuestionDelete(id, hasExportRule, hasConditionsAsTrigger, hasConditionsAsTarget, hasScores) {
+            clearAdditionalInformation(id);
+
+            if (
+                hasExportRule ||
+                hasConditionsAsTrigger ||
+                hasConditionsAsTarget ||
+                hasScores
+            ) {
+                $('#additionalInformation_' + id).append($("<span/>", {"html": labels.deleteWarningStart}))
+
+                $('#additionalInformation_' + id).append($("<ul/>", {'id': 'itemsToDelete_' + id}));
+
+                if (hasConditionsAsTrigger || hasConditionsAsTarget) {
+                    $('#itemsToDelete_' + id).append($("<li/>", {"html": labels.deleteWarningConditions}));
+                }
+                if (hasExportRule) {
+                    $('#itemsToDelete_' + id).append($("<li/>", {"html": labels.deleteWarningExportRules}));
+                }
+                if (hasScores) {
+                    $('#itemsToDelete_' + id).append($("<li/>", {"html": labels.deleteWarningScores}));
+
+                }
+
+                $('#additionalInformation_' + id).append($("<span/>", {"html": labels.deleteWarningEnd}));
+            }
+        }
+
+        function clearAdditionalInformation(id) {
+            $('#additionalInformation_' + id).empty();
+        }
+    </script>
+</th:block>

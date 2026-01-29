@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -45,10 +44,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -85,60 +81,41 @@ public class FhirImporterTest {
 
     @Mock
     private static ServletContext context;
-
-    @Mock
-    private RedirectAttributes redirectAttributes;
-
-    @Mock
-    private BindingResult result;
-
-    @Mock
-    private Model model;
-
-    @Mock
-    private ImportQuestionnaireValidation importQuestionnaireValidation;
-
-    @Mock
-    private MessageSource messageSource;
-
-    @Mock
-    private ConfigurationDao configurationDao;
-
     @Mock
     private static ConfigurationGroupDao configurationGroupDao;
-
-    @Mock
-    private ExportTemplateDao exportTemplateDao;
-
     @Mock
     private static QuestionnaireDao questionnaireDao;
-
-    @Mock
-    private QuestionDao questionDao;
-
-    @Mock
-    private ScoreDao scoreDao;
-
     private static MockedStatic<SecurityContextHolder> mockedSecurityContextHolder;
-
     @Mock
     private static SecurityContext mockContext;
-
     @Mock
     private static Authentication mockAuth;
-
     @Mock
     private static User mockUser;
-
     @Mock
     private static OperatorDao operatorDao;
-
     @Mock
     private static QuestionnaireVersionGroup questionnaireVersionGroup;
-
     @Mock
     private static QuestionnaireVersionGroupService questionnaireVersionGroupService;
-
+    @Mock
+    private RedirectAttributes redirectAttributes;
+    @Mock
+    private BindingResult result;
+    @Mock
+    private Model model;
+    @Mock
+    private ImportQuestionnaireValidation importQuestionnaireValidation;
+    @Mock
+    private MessageSource messageSource;
+    @Mock
+    private ConfigurationDao configurationDao;
+    @Mock
+    private ExportTemplateDao exportTemplateDao;
+    @Mock
+    private QuestionDao questionDao;
+    @Mock
+    private ScoreDao scoreDao;
     @Mock
     private ExportTemplate exportTemplate;
 
@@ -150,6 +127,16 @@ public class FhirImporterTest {
 
     @InjectMocks
     private FhirImporter fhirImporter;
+
+    @BeforeClass
+    public static void init() throws IOException {
+        mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class);
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        mockedSecurityContextHolder.close();  // Important!
+    }
 
     @Before
     public void setUp() {
@@ -173,6 +160,8 @@ public class FhirImporterTest {
         when(configurationGroupDao.getConfigurationGroups(any(String.class))).thenReturn(
             new ArrayList<>());
 
+        when(configurationDao.getFHIRsystemURI()).thenReturn("http://mopat-test/fhir");
+
         try (MockedStatic<ExportTemplate> mocked = mockStatic(ExportTemplate.class)) {
 
             mocked.when(() -> ExportTemplate.createExportTemplates(any(String.class),
@@ -182,16 +171,6 @@ public class FhirImporterTest {
         }
 
         TimeZone.setDefault(TimeZone.getTimeZone("CET"));
-    }
-
-    @BeforeClass
-    public static void init() throws IOException {
-        mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class);
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        mockedSecurityContextHolder.close();  // Important!
     }
 
     @Test
@@ -399,11 +378,11 @@ public class FhirImporterTest {
 
             //<!-- Repeated linkId (should be unique per Questionnaire) -->
             assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire",
-                "!!Regel que-2: 'The link ids for groups and questions must be unique within the questionnaire' fehlgeschlagen"));
+                "Regel que-2: 'The link ids for groups and questions must be unique within the questionnaire' fehlgeschlagen"));
 
             //<!-- Invalid element: 'titel' instead of 'title' -->
             assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire",
-                "!!Undefiniertes Element 'titel'"));
+                "Undefiniertes Element 'titel'"));
 
             //<!-- Missing description value -->
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description",
@@ -415,11 +394,11 @@ public class FhirImporterTest {
 
             //<!-- Invalid date format -->
             assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Kein gültiges Datum/Uhrzeit ('30-06-2025' doesn't meet format requirements for dateTime)"));
+                "Kein gültiges Datum/Uhrzeit (30-06-2025)"));
 
             //<!-- Missing 'type' -->
             assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
-                "!!Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen (type: ; item: ) (log:  (type: ; item: ))"));
+                "Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen (type: ; item: ) (log:  (type: ; item: ))"));
             assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
                 "Questionnaire.item.type: mindestens erforderlich = 1, aber nur gefunden 0"));
 
@@ -429,7 +408,7 @@ public class FhirImporterTest {
 
             //<!-- Group without items (constraint violation) -->
             assertTrue(checkIfErrorIsPresent(result, "error", 70, "Questionnaire.item[3]",
-                "!!Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen"));
+                "Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen"));
 
             //<!-- Invalid code, should be 'en' per BCP-47 -->
             assertTrue(checkIfErrorIsPresent(result, "error", 4, "Questionnaire.language",
@@ -439,10 +418,11 @@ public class FhirImporterTest {
             assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
                 "Unknown code 'http://hl7.org/fhir/publication-status#drafted'"));
             assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "!!Der angegebene Wert ('drafted') ist nicht im ValueSet 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|3.0.2), und ein Code aus diesem Valueset ist erforderlich) (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
+                "Der angegebene Wert ('drafted') ist nicht im ValueSet 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|3.0.2), und ein Code aus diesem Valueset ist erforderlich) (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
 
             //<!-- Invalid system URL -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 35, "Questionnaire.item[0].option[0].value.ofType(Coding)",
+            assertTrue(checkIfErrorIsPresent(result, "error", 35,
+                "Questionnaire.item[0].option[0].value.ofType(Coding)",
                 "Coding.system muss eine absolute Referenz sein, nicht eine lokale Referenz"));
 
 
@@ -485,7 +465,7 @@ public class FhirImporterTest {
 
             //<!-- Invalid date format -->
             assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Not a valid date/time ('30-06-2025' doesn't meet format requirements for dateTime)"));
+                "Not a valid date/time format: '30-06-2025'"));
 
             //<!-- Missing 'type' -->
             assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
@@ -504,7 +484,8 @@ public class FhirImporterTest {
                 "The value provided ('drafted') was not found in the value set 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|4.3.0), and a code is required from this value set  (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
 
             //<!-- Invalid system URL -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 35, "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
+            assertTrue(checkIfErrorIsPresent(result, "error", 35,
+                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
                 "Coding.system must be an absolute reference, not a local reference"));
 
 
@@ -547,7 +528,7 @@ public class FhirImporterTest {
 
             //<!-- Invalid date format -->
             assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Not a valid date/time ('30-06-2025' doesn't meet format requirements for dateTime)"));
+                "Not a valid date/time format: '30-06-2025'"));
 
             //<!-- Missing 'type' -->
             assertTrue(checkIfErrorIsPresent(result, "error", 44, "Questionnaire.item[1]",
@@ -570,7 +551,8 @@ public class FhirImporterTest {
                 "The value provided ('choice') was not found in the value set 'Questionnaire Item Type' (http://hl7.org/fhir/ValueSet/item-type|5.0.0), and a code is required from this value set  (error message = Unknown code 'http://hl7.org/fhir/item-type#choice' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/item-type')"));
 
             //<!-- Invalid system URL -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 36, "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
+            assertTrue(checkIfErrorIsPresent(result, "error", 36,
+                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
                 "Coding.system must be an absolute reference, not a local reference"));
 
 
