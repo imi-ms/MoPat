@@ -1,7 +1,6 @@
 package de.imi.mopat.io.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.imi.mopat.controller.ExportMappingController;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionnaireDao;
@@ -16,7 +15,6 @@ import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.dto.export.JsonAnswerDTO;
-import de.imi.mopat.model.dto.export.JsonCompleteQuestionnaireDTO;
 import de.imi.mopat.model.dto.export.JsonConditionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionDTO;
 import de.imi.mopat.model.dto.export.JsonQuestionnaireDTO;

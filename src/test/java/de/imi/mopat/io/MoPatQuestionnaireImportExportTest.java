@@ -22,10 +22,10 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.io.impl.MetadataExporterMoPatComplete;
-import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.io.importer.MopatCompleteQuestionnaireImporter;
 import de.imi.mopat.model.Answer;
-import de.imi.mopat.model.AnswerTest;
+import de.imi.mopat.model.Configuration;
+import de.imi.mopat.model.ConfigurationGroup;
 import de.imi.mopat.model.ExportRuleAnswer;
 import de.imi.mopat.model.ExportRuleAnswerTest;
 import de.imi.mopat.model.ExportRuleFormat;
@@ -43,11 +43,12 @@ import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.user.User;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -93,9 +94,6 @@ public class MoPatQuestionnaireImportExportTest {
 
 
     @Autowired
-    private ConfigurationDao configurationDao;
-
-    @Autowired
     private ConfigurationGroupDao configurationGroupDao;
 
     @Autowired
@@ -119,17 +117,24 @@ public class MoPatQuestionnaireImportExportTest {
     @Autowired
     private ScoreDao scoreDao;
 
+    @Autowired
+    private ConfigurationDao configurationDao;
+
     @Mock
     private MessageSource messageSource;
 
     @Autowired
     private MopatCompleteQuestionnaireImporter importer;
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
 
     @Before
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
         exporter = new MetadataExporterMoPatComplete();
+        updateStoragePath();
         setupSecurityContext();
         setupTestData();
     }
@@ -168,6 +173,22 @@ public class MoPatQuestionnaireImportExportTest {
                     "Actual type: " + principal.getClass().getName()
             );
         }
+    }
+
+    private void updateStoragePath() {
+        List<ConfigurationGroup> configurationGroups = configurationGroupDao.getConfigurationGroups(
+            "configurationGroup.label.general"
+        );
+
+        ConfigurationGroup objectStoragePath = configurationGroups.stream().filter(
+                group -> group.getConfigurations().stream()
+                    .anyMatch(config -> config.getAttribute().equals("objectStoragePath"))
+            ).toList().get(0);
+
+        Configuration objectStoragePathConfig = objectStoragePath.getConfigurations().stream().filter(config -> config.getAttribute().equals("objectStoragePath")).toList().get(0);
+        objectStoragePathConfig.setValue(tempFolder.getRoot().getAbsolutePath() + File.separator);
+        configurationDao.merge(objectStoragePathConfig);
+
     }
 
     private void setupTestData() throws IOException {
@@ -229,7 +250,7 @@ public class MoPatQuestionnaireImportExportTest {
         exportTemplateDao.merge(template);
 
         // Create template file
-        createTemplateFile(template);
+        createTemplateFile(template, Path.of(URI.create("file://" + configurationDao.getObjectStoragePath())));
 
         // Add export rules for all answers in questionnaire
         addExportRulesToTemplate(template);
@@ -238,19 +259,22 @@ public class MoPatQuestionnaireImportExportTest {
         questionnaireDao.merge(testQuestionnaire);
     }
 
-    private void createTemplateFile(ExportTemplate exportTemplate) throws IOException {
+    private void createTemplateFile(
+        ExportTemplate exportTemplate,
+        Path basePath
+    ) throws IOException {
 
-        String objectStoragePath = configurationDao.getObjectStoragePath();
-        String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+        Path contextPath = basePath.resolve(Constants.EXPORT_TEMPLATE_SUB_DIRECTORY);
+        Files.createDirectories(contextPath);
 
-        File templateFile = new File(contextPath, exportTemplate.getFilename());
-        templateFile.createNewFile();
+        Path templateFile = contextPath.resolve(exportTemplate.getFilename());
 
         String content = String.format(
             "<?xml version=\"1.0\"?>\n<template name=\"%s\">Test Content</template>",
             exportTemplate.getName()
         );
-        Files.writeString(templateFile.toPath(), content);
+
+        Files.writeString(templateFile, content);
     }
 
     private void addExportRulesToTemplate(ExportTemplate template) {

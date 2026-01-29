@@ -18,7 +18,6 @@ import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
-import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.io.importer.MoPatQuestionnaireImporter;
@@ -37,7 +36,6 @@ import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.MetadataFormat;
 import de.imi.mopat.model.score.Score;
@@ -138,7 +136,6 @@ public class QuestionnaireController {
     private OdmQuestionnaireImporter odmQuestionnaireImporter;
     @Autowired
     private FhirVersionHelper fhirVersionHelper;
-
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
 
@@ -535,7 +532,7 @@ public class QuestionnaireController {
     /**
      * Handles the upload and import of a MoPat-native JSON questionnaire.
      * <p>
-     * This method attempts to parse a {@link MultipartFile} using the {@link MoPatQuestionnaireImporter}.
+     * This method attempts to parse a {@link MultipartFile} using the {@link MopatCompleteQuestionnaireImporter}.
      * If successful, it redirects the user to the questionnaire configuration page.
      * In case of an {@link IOException}, it logs the error and returns the user to the upload
      * page with a validation error message.
@@ -551,7 +548,7 @@ public class QuestionnaireController {
         Questionnaire questionnaire = null;
         try {
             model.addAttribute("fileUpload", true);
-            questionnaire = moPatQuestionnaireImporter.importQuestionnaire(file);
+            questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(file);
         } catch (IOException e) {
             LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
                 + "failed. The following error occurred: {}", e.getLocalizedMessage());
