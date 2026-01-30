@@ -510,6 +510,20 @@ public class ExportMappingController {
             return assignTemplate(exportRulesDTO.getExportTemplateId(), request, model);
         }
 
+        updateExportMapping(exportRulesDTO);
+
+        ExportTemplate exportTemplate = exportTemplateDao.getElementById(
+            exportRulesDTO.getExportTemplateId());
+
+        if(autoSave){
+            response.setStatus(HttpServletResponse.SC_OK);
+            return null;
+        }
+
+        return "redirect:/mapping/list?id=" + exportTemplate.getQuestionnaire().getId();
+    }
+
+    public void updateExportMapping(ExportRulesDTO exportRulesDTO){
         for (ExportRuleDTO exportRuleDTO : exportRulesDTO.getExportRules()) {
             ExportTemplate exportTemplate = exportTemplateDao.getElementById(
                 exportRulesDTO.getExportTemplateId());
@@ -936,14 +950,6 @@ public class ExportMappingController {
 
             }
         }
-        ExportTemplate exportTemplate = exportTemplateDao.getElementById(
-            exportRulesDTO.getExportTemplateId());
 
-        if(autoSave){
-            response.setStatus(HttpServletResponse.SC_OK);
-            return null;
-        }
-
-        return "redirect:/mapping/list?id=" + exportTemplate.getQuestionnaire().getId();
     }
 }

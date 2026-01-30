@@ -7,35 +7,29 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Contains all encounter fields which are used in export template mapping. Every entry represents
- * an attribute in the {@link de.imi.mopat.model.Encounter} model and makes them assignable as a
- * value in the export process.
- */
-public enum ExportEncounterFieldType {
+public enum ExportRuleType {
 
-    PATIENT_ID("getPatientID", "java.lang.Long"), CASE_NUMBER("getCaseNumber",
-        "java.lang.String"), START_TIME("getStartTime", "java.sql.Timestamp"), LANGUAGE(
-        "getBundleLanguage", "java.lang.String");
+    ANSWER("ExportRuleAnswer"),
+    ENCOUNTER("ExportRuleEncounter"),
+    QUESTION("ExportRuleQuestion"),
+    SCORE("ExportRuleScore");
 
-    private static final Map<String, ExportEncounterFieldType> map = new HashMap<>(4);
+    private static final Map<String, ExportRuleType> map = new HashMap<>(4);
 
     static {
-        for (ExportEncounterFieldType cValue : values()) {
-            map.put(cValue.methodName, cValue);
+        for (ExportRuleType cValue : values()) {
+            map.put(cValue.type, cValue);
         }
     }
 
-    private final String methodName;
     private final String type;
 
-    ExportEncounterFieldType(final String methodName, final String type) {
-        this.methodName = methodName;
+    ExportRuleType(final String type) {
         this.type = type;
     }
 
     /**
-     * Jackson factory method used to deserialize an {@link ExportEncounterFieldType} from a string
+     * Jackson factory method used to deserialize an {@link ExportRuleType} from a string
      * representation.
      * <p>
      * The provided {@code value} is interpreted as the serialized form of an enum constant (the
@@ -45,11 +39,11 @@ public enum ExportEncounterFieldType {
      *
      * @param value serialized value (typically the encounter getter/method name); may be
      *              {@code null}
-     * @return the matching {@link ExportEncounterFieldType}, or {@code null} if {@code value} is
+     * @return the matching {@link ExportRuleType}, or {@code null} if {@code value} is
      * {@code null} or no matching entry exists
      */
     @JsonCreator
-    public static ExportEncounterFieldType forValue(String value) {
+    public static ExportRuleType forValue(String value) {
         return map.get(value);
     }
 
@@ -65,17 +59,6 @@ public enum ExportEncounterFieldType {
     }
 
     /**
-     * Returns the method name from the encounter field to be able to access the value of an
-     * {@link de.imi.mopat.model.Encounter} object.
-     *
-     * @return The method name to the encounter field to be able to access the value of an
-     * {@link de.imi.mopat.model.Encounter} object.
-     */
-    public String getMethodName() {
-        return methodName;
-    }
-
-    /**
      * Jackson serialization method for this enum.
      * <p>
      * Returns the string representation used in JSON (the key under which this enum constant is
@@ -88,7 +71,7 @@ public enum ExportEncounterFieldType {
      */
     @JsonValue
     public String toValue() {
-        for (Entry<String, ExportEncounterFieldType> entry : map.entrySet()) {
+        for (Entry<String, ExportRuleType> entry : map.entrySet()) {
             if (entry.getValue() == this) {
                 return entry.getKey();
             }
@@ -96,4 +79,5 @@ public enum ExportEncounterFieldType {
 
         return null;
     }
+
 }

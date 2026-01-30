@@ -1,6 +1,5 @@
 package de.imi.mopat.io.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +22,6 @@ import java.nio.charset.Charset;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 /**
@@ -66,7 +64,7 @@ public class MetadataExporterMoPat implements MetadataExporter {
 
             JsonQuestionnaireDTO jsonQuestionnaireDTO =
                     new JsonQuestionnaireDTO();
-            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire);
+            jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire, configurationDao);
             jsonQuestionnaire =
                     objectMapper.writeValueAsString(jsonQuestionnaireDTO);
             return jsonQuestionnaire.getBytes(Charset.forName("UTF-8"));

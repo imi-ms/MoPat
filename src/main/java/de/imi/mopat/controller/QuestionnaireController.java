@@ -18,16 +18,17 @@ import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
-import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.io.importer.MoPatQuestionnaireImporter;
+import de.imi.mopat.io.importer.MopatCompleteQuestionnaireImporter;
 import de.imi.mopat.io.importer.fhir.FhirImporter;
 import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.io.importer.odm.OdmQuestionnaireImporter;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.conditions.Condition;
@@ -35,7 +36,6 @@ import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
-import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.MetadataFormat;
 import de.imi.mopat.model.score.Score;
@@ -93,6 +93,8 @@ public class QuestionnaireController {
     @Autowired
     MoPatQuestionnaireImporter moPatQuestionnaireImporter;
     @Autowired
+    MopatCompleteQuestionnaireImporter mopatCompleteQuestionnaireImporter;
+    @Autowired
     private AnswerDao answerDao;
     @Autowired
     private BundleDao bundleDao;
@@ -134,7 +136,6 @@ public class QuestionnaireController {
     private OdmQuestionnaireImporter odmQuestionnaireImporter;
     @Autowired
     private FhirVersionHelper fhirVersionHelper;
-
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
 
@@ -178,7 +179,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
+        model.addAttribute("allQuestionnaires",
+            questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
             availableLanguagesInQuestionForQuestionnaires);
         model.addAttribute("localizedDisplayNamesForQuestionnaire",
@@ -258,6 +260,14 @@ public class QuestionnaireController {
         }
     }
 
+    /**
+     * Populates the MVC {@link Model} with attributes required to re-render the questionnaire form
+     * after validation errors, including editability state, the current DTO, and available
+     * locales.
+     *
+     * @param questionnaireDTO form-backing DTO containing the submitted values
+     * @param model            model to fill for view rendering
+     */
     private void fillModelForValidationErrors(QuestionnaireDTO questionnaireDTO, Model model) {
         boolean isEditableState = true;
 
@@ -303,6 +313,11 @@ public class QuestionnaireController {
                         answerDao.merge((Answer) conditionTrigger);
                     }
                     conditionDao.remove(condition);
+                }
+
+                for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
+                    //Remove ExportTemplates manually to prevent integrity clashes with scores
+                    exportTemplateDao.remove(exportTemplate);
                 }
 
                 // Collect all scores in an array list to make sure they will
@@ -517,7 +532,7 @@ public class QuestionnaireController {
     /**
      * Handles the upload and import of a MoPat-native JSON questionnaire.
      * <p>
-     * This method attempts to parse a {@link MultipartFile} using the {@link MoPatQuestionnaireImporter}.
+     * This method attempts to parse a {@link MultipartFile} using the {@link MopatCompleteQuestionnaireImporter}.
      * If successful, it redirects the user to the questionnaire configuration page.
      * In case of an {@link IOException}, it logs the error and returns the user to the upload
      * page with a validation error message.
@@ -533,7 +548,7 @@ public class QuestionnaireController {
         Questionnaire questionnaire = null;
         try {
             model.addAttribute("fileUpload", true);
-            questionnaire = moPatQuestionnaireImporter.importQuestionnaire(file);
+            questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(file);
         } catch (IOException e) {
             LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
                 + "failed. The following error occurred: {}", e.getLocalizedMessage());

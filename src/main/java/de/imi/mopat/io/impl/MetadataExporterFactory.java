@@ -31,6 +31,9 @@ public class MetadataExporterFactory {
 
     @Autowired
     private MetadataExporterFhirR5 metadataExporterFhirR5;
+
+    @Autowired
+    private MetadataExporterMoPatComplete metadataExporterMoPatComplete;
     /**
      * Returns a {@link MetadataExporter} for the given {@link MetadataFormat}.
      *
@@ -41,6 +44,8 @@ public class MetadataExporterFactory {
         switch (metadataFormat) {
             case MoPat:
                 return metadataExporterMoPat;
+            case MoPatComplete:
+                return metadataExporterMoPatComplete;
             case ODM:
                 return metadataExporterODM;
             case PDF:

@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class JsonAnswerDTO {
 
     private Long id = null;
+    private String uuid = null;
     private JsonQuestionDTO jsonQuestionDTO = null;
     private String startDate = null;
     private String endDate = null;
@@ -94,6 +95,10 @@ public class JsonAnswerDTO {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public String getUuid() { return uuid; }
+
+    public void setUuid(String uuid) { this.uuid = uuid; }
 
     public JsonQuestionDTO getJsonQuestionDTO() {
         return jsonQuestionDTO;

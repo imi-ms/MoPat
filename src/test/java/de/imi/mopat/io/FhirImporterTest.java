@@ -25,7 +25,7 @@ import de.imi.mopat.io.impl.MetadataExporterFhirR5;
 import de.imi.mopat.io.importer.ImportFailedException;
 import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
-import de.imi.mopat.io.importer.MoPatQuestionnaireImporter;
+import de.imi.mopat.io.importer.MopatCompleteQuestionnaireImporter;
 import de.imi.mopat.io.importer.fhir.FhirDstu3Helper;
 import de.imi.mopat.io.importer.fhir.FhirImporter;
 import de.imi.mopat.io.importer.fhir.FhirR4bHelper;
@@ -118,13 +118,10 @@ public class FhirImporterTest {
     private ScoreDao scoreDao;
     @Mock
     private ExportTemplate exportTemplate;
-
     @InjectMocks
-    private MoPatQuestionnaireImporter moPatQuestionnaireImporter;
-
+    private MopatCompleteQuestionnaireImporter mopatCompleteQuestionnaireImporter;
     @InjectMocks
     private QuestionnaireController questionnaireController;
-
     @InjectMocks
     private FhirImporter fhirImporter;
 
@@ -181,7 +178,7 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);
@@ -209,7 +206,7 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);
@@ -237,7 +234,7 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = moPatQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);

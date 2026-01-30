@@ -13,7 +13,8 @@ public enum MetadataFormat {
     ODMExportTemplate(
         "ODMExportTemplate", ".xml"
     ),
-    MoPat("MoPat", ".json");
+    MoPat("MoPat", ".json"),
+    MoPatComplete("MoPatComplete",".json");
 
     private final String textValue;
     private final String fileExtension;

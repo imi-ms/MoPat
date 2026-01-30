@@ -362,13 +362,20 @@ a[data-bs-toggle='collapse'] {
 }
 
 .upload-info-box {
-    @media only screen and (min-width: @element-breakpoint) {
+    @media only screen and (min-width:@b5-screen-xl-min) {
         min-width: @upload-box-max-width;
+        max-width: @upload-box-max-width;
+    }
+}
+
+#uploadForm {
+    @media only screen and (max-width: @b5-screen-xl-min) {
+        width: 100%;
     }
 }
 
 #errorAccordion {
-    @media only screen and (min-width: @element-breakpoint) {
+    @media only screen and (min-width: @b5-screen-xxl-min) {
         max-width: @upload-box-max-width;
     }
 }
