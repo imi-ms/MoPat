@@ -52,6 +52,7 @@
         >
             <button
                 class="btn btn-primary"
+                id="adminPanelButton"
                 data-bs-toggle="modal"
                 data-bs-target="#adminPanel"
                 th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
@@ -78,22 +79,22 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <table>
+                            <table id="gitInformationTable">
                                 <!-- Git Properties -->
                                 <h6
                                         th:text="${messages.get(#locale, 'admin.information.git.title', 'Git Repository Information')}"
                                 ></h6>
                                 <tr>
                                     <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.build.version', 'Build Version')}"></td>
-                                    <td class="w-50" th:text="${gitRepositoryMetadata.buildVersion}"></td>
+                                    <td id="gitBuildVersion" class="w-50" th:text="${gitRepositoryMetadata.buildVersion}"></td>
                                 </tr>
                                 <tr>
                                     <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.branch', 'Branch')}"></td>
-                                    <td class="w-50" th:text="${gitRepositoryMetadata.branch}"></td>
+                                    <td id="gitBranch" class="w-50" th:text="${gitRepositoryMetadata.branch}"></td>
                                 </tr>
                                 <tr>
                                     <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.id', 'Commit ID')}"></td>
-                                    <td class="w-50">
+                                    <td id="gitCommitId" class="w-50">
                                         <a class="link" target="_blank"
                                            th:href="${gitRepositoryMetadata.latestCommitUrl}"
                                            th:text="${gitRepositoryMetadata.commitId}">
@@ -102,7 +103,7 @@
                                 </tr>
                                 <tr>
                                     <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.message', 'Commit Message')}"></td>
-                                    <td class="w-50" th:text="${gitRepositoryMetadata.commitMessageShort}"></td>
+                                    <td id="gitCommitMessage" class="w-50" th:text="${gitRepositoryMetadata.commitMessageShort}"></td>
                                 </tr>
                                 <!-- End of Git Properties -->
                                 <tr>

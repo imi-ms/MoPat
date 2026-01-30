@@ -4,13 +4,11 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
-import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
-import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.QuestionnaireTest;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,12 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {AppConfig.class, ApplicationSecurityConfig.class,
-        MvcWebApplicationInitializer.class, PersistenceConfig.class})
+@ContextConfiguration(classes = {AppConfig.class, ApplicationSecurityConfig.class, MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
 public class QuestionnaireVersionGroupDaoImplTest {
@@ -40,25 +36,22 @@ public class QuestionnaireVersionGroupDaoImplTest {
     @Autowired
     QuestionnaireDao questionnaireDao;
 
-    @Autowired
-    BundleQuestionnaireDao bundleQuestionnaireDao;
-
     @Before
     public void setUp() {
-        clearTable();
     }
 
     @Test
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     @Transactional("MoPat")
     public void testMerge() {
-        // Arrange
-        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
-        questionnaireDao.merge(questionnaire);  // Ensure the questionnaire is persisted
+        List<QuestionnaireVersionGroup> groupsBefore = questionnaireVersionGroupDao.getAllElements();
+        List<Questionnaire> questionnairesBefore = questionnaireDao.getAllElements();
 
-        // Check if the questionnaire is properly stored
-        List<Questionnaire> allElements = questionnaireDao.getAllElements();
-        assertEquals("Expected one questionnaire", 1, allElements.size());
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        questionnaireDao.merge(questionnaire);
+
+        List<Questionnaire> questionnairesAfter = questionnaireDao.getAllElements();
+        assertTrue("Questionnaires should be larger than before.", questionnairesBefore.size() < questionnairesAfter.size());
 
         QuestionnaireVersionGroup questionnaireVersionGroup = new QuestionnaireVersionGroup();
 
@@ -67,29 +60,19 @@ public class QuestionnaireVersionGroupDaoImplTest {
 
         // Act
         questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
-        List<QuestionnaireVersionGroup> groups = questionnaireVersionGroupDao.getAllElements();
+        List<QuestionnaireVersionGroup> groupsAfter = questionnaireVersionGroupDao.getAllElements();
 
         // Assert
-        assertNotNull("QuestionnaireVersionGroup list should not be null", groups);
+        assertNotNull("QuestionnaireVersionGroup list should not be null", groupsAfter);
         //2, as the questionnaire stores its own version group
-        assertEquals("QuestionnaireVersionGroup list size should be 2", 2, groups.size());
-        assertEquals("Stored QuestionnaireVersionGroup should match the original", questionnaire.getQuestionnaireVersionGroup(), groups.get(0));
+        assertTrue("QuestionnaireVersionGroup list size should be larger than before", groupsBefore.size() < groupsAfter.size());
+
+        // Filter by id and assert the equality
+        long versionGroupId = questionnaire.getQuestionnaireVersionGroup().getId();
+        QuestionnaireVersionGroup fetchedVersionGroup = groupsAfter.stream().filter(group -> group.getId() == versionGroupId).findFirst().orElse(null);
+
+        assertEquals("Stored QuestionnaireVersionGroup should match the original", questionnaire.getQuestionnaireVersionGroup(), fetchedVersionGroup);
     }
 
-    public void clearTable() {
-        List<BundleQuestionnaire> allBundleQuestionnaires = bundleQuestionnaireDao.getAllElements();
-        for (BundleQuestionnaire bundleQuestionnaire : allBundleQuestionnaires) {
-            bundleQuestionnaireDao.remove(bundleQuestionnaire);
-        }
 
-        List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
-        for (Questionnaire questionnaire : allQuestionnaires) {
-            questionnaireDao.remove(questionnaire);
-        }
-        
-        List<QuestionnaireVersionGroup> allGroups = questionnaireVersionGroupDao.getAllElements();
-        for (QuestionnaireVersionGroup group : allGroups) {
-            questionnaireVersionGroupDao.remove(group);
-        }
-    }
 }

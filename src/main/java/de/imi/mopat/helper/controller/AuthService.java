@@ -84,4 +84,16 @@ public class AuthService {
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
+
+    public boolean isCurrentUserAdmin() {
+        Authentication authentication = getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(role -> role.equals("ROLE_ADMIN"));
+    }
 }

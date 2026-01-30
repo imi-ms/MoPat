@@ -101,7 +101,6 @@ public class StatisticFiller {
 
         statistic.setHL7ExportCount(exportTemplateDao.getExportCount(ExportTemplateType.HL7v2));
         statistic.setODMExportCount(exportTemplateDao.getExportCount(ExportTemplateType.ODM));
-        statistic.setORBISExportCount(exportTemplateDao.getExportCount(ExportTemplateType.ORBIS));
 
         statisticDao.merge(statistic);
     }

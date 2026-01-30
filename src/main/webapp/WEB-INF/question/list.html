@@ -51,6 +51,7 @@
 
 		<div class="table-responsive">
 			<table
+				id="questionTable"
 				class="sortable table table-hover responsive"
 				style="width: 100%"
 			>
@@ -103,7 +104,7 @@
 					<th:block th:each="item, questionCounter: ${questionnaire.questions}">
 						<tr th:id="${item.id}" th:data-question-type="${item.questionType.name}">
 							<td>
-								<i class="bi bi-large bi-grip-vertical bi-action"></i>
+								<i th:id="|grip-${item.id}|" class="bi bi-large bi-grip-vertical bi-action"></i>
 							</td>
 							<td>
 								<th:block th:text="|${item.position}.|" />
@@ -166,82 +167,90 @@
 							<td class="actionColumn">
 								<!--/* Action column for desktop view */-->
 								<div class="d-none d-xl-block">
-									<a
-										class="link"
-										th:href="@{fill?id=__${item.id}__}"
-									>
-										<i
-											class="bi-pencil-fill"
-											th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
-										></i>
-									</a>
-									<a
-										class="link"
-										th:href="@{duplicate?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
-									>
-										<i
-											class="bi-clipboard-plus-fill"
-											th:title="${messages.get(#locale, 'question.button.dublicateAppend', 'Duplicate and Append')}"
-										></i>
-									</a>
+                                    <div class="btn-group" role="group">
+                                        <a
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{fill?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-pencil-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'question.button.edit', 'Edit')}"
+                                            ></i>
+                                        </a>
+                                        <a
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{duplicate?id=__${item.id}__&questionnaireId=__${questionnaire.id}__}"
+                                        >
+                                            <i
+                                                class="bi-clipboard-plus-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'question.button.dublicateAppend', 'Duplicate and Append')}"
+                                            ></i>
+                                        </a>
 
-									<addVar
-										layout:replace="~{helper/var :: add(
-                                        key='questionConditionable', 
-                                        value=false)}"
-									>
-									</addVar>
-									<th:block
-										th:if="${item.position eq questionnaire.questions.size()}"
-									>
-										<th:block
-											th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
-										>
-											<th:block
-												th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
-											>
-												<th:block
-													th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
-												>
-													<addVar
-														layout:replace="~{helper/var :: add(
-                                                        key='questionConditionable', 
-                                                        value=true)}"
-													>
-													</addVar>
-												</th:block>
-											</th:block>
-										</th:block>
-									</th:block>
-										<th:block
-											th:if="${item.questionType.name == 'MULTIPLE_CHOICE' or
-                                                    item.questionType.name == 'SLIDER' or 
-                                                    item.questionType.name  == 'NUMBER_CHECKBOX' or 
-                                                    item.questionType.name == 'NUMBER_INPUT' or 
-                                                    item.questionType.name == 'DROP_DOWN'}"
-										>
+                                        <addVar
+                                            layout:replace="~{helper/var :: add(
+                                            key='questionConditionable',
+                                            value=false)}"
+                                        >
+                                        </addVar>
+                                        <th:block
+                                            th:if="${item.position eq questionnaire.questions.size()}"
+                                        >
+                                            <th:block
+                                                th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
+                                            >
+                                                <th:block
+                                                    th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
+                                                >
+                                                    <th:block
+                                                        th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
+                                                    >
+                                                        <addVar
+                                                            layout:replace="~{helper/var :: add(
+                                                            key='questionConditionable',
+                                                            value=true)}"
+                                                        >
+                                                        </addVar>
+                                                    </th:block>
+                                                </th:block>
+                                            </th:block>
+                                        </th:block>
+										<th:block>
 											<a
-												class="link condition-button"
+												class="btn btn-sm btn-primary-list link condition-button"
+												th:attr="aria-disabled=${!(item.questionType.name == 'MULTIPLE_CHOICE' or
+														item.questionType.name == 'SLIDER' or
+														item.questionType.name == 'NUMBER_CHECKBOX' or
+														item.questionType.name == 'NUMBER_INPUT' or
+														item.questionType.name == 'DROP_DOWN')}"
+												th:classappend="${!(item.questionType.name == 'MULTIPLE_CHOICE' or
+														item.questionType.name == 'SLIDER' or
+														item.questionType.name == 'NUMBER_CHECKBOX' or
+														item.questionType.name == 'NUMBER_INPUT' or
+														item.questionType.name == 'DROP_DOWN') or
+														item.position == questionnaire.questions.size()} ? ' btn-crossed' : ''"
 												th:data-question-id="${item.id}"
 												th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
-												th:style="${item.position == questionnaire.questions.size() ? 'display: none;' : ''}"
 											>
 												<i
-													class="bi-signpost-split-fill"
+													class="bi-signpost-split-fill bi-list-icon"
 													th:title="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
 												></i>
 											</a>
 										</th:block>
-									<a
-										class="link"
-										th:href="@{remove?id=__${item.id}__}"
-										th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
-									>
-										<i
-											class="bi-trash-fill"
-											th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
-										></i>
-									</a>
+                                        <a
+                                            class="btn btn-sm btn-primary-list link btn-red"
+                                            th:classappend="${item.isDeletable() ? '' : 'btn-crossed'}"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="|#deleteModal_${item.id}|"
+                                            th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
+                                        >
+                                            <i
+                                                class="bi-trash-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'question.button.remove', 'Remove')}"
+                                            ></i>
+                                        </a>
+                                    </div>
 								</div>
 								<!--/* Mobile action menu for smaller resolutions */-->
 								<div class="d-block d-xl-none">
@@ -326,8 +335,10 @@
 
 											<a
 												class="link"
-												th:href="@{remove?id=__${item.id}__}"
-												th:onclick="|return confirm_delete(${item.isDeletable()}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
+                                                th:classappend="${item.isDeletable() ? '' : 'd-none'}"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="|#deleteModal_${item.id}|"
+												th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
 												th:text="${messages.get(#locale, 'question.button.remove', 'Remove')}"
 											>
 											</a>
@@ -336,6 +347,13 @@
 								</div>
 							</td>
 						</tr>
+                        <deleteModal layout:replace="~{fragments/deleteModal :: deleteModal(
+                                type='question',
+                                id=${item.id},
+                                name=${item.position},
+                                deleteUrl='remove?id=__${item.id}__')}"
+                        >
+                        </deleteModal>
 					</th:block>
 				</tbody>
 			</table>
@@ -382,14 +400,6 @@
 			repositionError: /*[[#{questionnaire.questions.reposition.error}]]*/ "Error! Questions could not be repositioned."
 		};
 
-		const labels = {
-			deleteNotPossible: /*[[#{question.label.deleteQuestionNotPossible}]]*/ "Question cannot be deleted because it is already answered in a survey.",
-			deleteWarningStart: /*[[#{question.label.deleteQuestionWarningStart}]]*/ "The removal of the question will also delete the following:",
-			deleteWarningConditions: /*[[#{question.label.changeQuestionTypeWarningConditions}]]*/ "Conditions",
-			deleteWarningExportRules: /*[[#{question.label.changeQuestionTypeWarningExportRules}]]*/ "Export rules",
-			deleteWarningScores: /*[[#{question.label.changeQuestionTypeWarningScores}]]*/ "Scores",
-			deleteWarningEnd: /*[[#{question.label.changeQuestionTypeWarningEnd}]]*/ "Do you really want to continue?"
-		};
 
 		new Sortable(sortableTable, {
 			items: "tr:not(:first)",
@@ -411,37 +421,6 @@
 			notification.classList.add(isError ? "alert-danger" : "alert-success");
 			notification.style.display = "block";
 			$("#notification").stop().fadeOut(0).fadeIn(0).fadeOut(5000);
-		}
-		/*[- 
-        --- called if question should be deleted
-        --- warns about appended conditions and export rules      
-        --- with a custom made message
-        -]*/
-		window.confirm_delete = function (isDeletable, hasExportRule, hasConditionsAsTrigger, hasConditionsAsTarget, hasScores) {
-			if (!isDeletable) {
-				alert(labels.deleteNotPossible);
-				return false;
-			}
-			if (
-				hasExportRule ||
-				hasConditionsAsTrigger ||
-				hasConditionsAsTarget ||
-				hasScores
-			) {
-				var message = labels.deleteWarningStart + "\n\n";
-				if (hasConditionsAsTrigger || hasConditionsAsTarget) {
-					message += "\u2022 " + labels.deleteWarningConditions + "\n";
-				}
-				if (hasExportRule) {
-					message += "\u2022 " + labels.deleteWarningExportRules + "\n";
-				}
-				if (hasScores) {
-					message += "\u2022 " + labels.deleteWarningScores + "\n";
-				}
-				message += "\n" + labels.deleteWarningEnd;
-				return confirm(message);
-			}
-			return true;
 		}
 
 		function toggleEmptyRow() {
@@ -501,9 +480,11 @@
 				let questionRow = document.getElementById(questionId);
 
 				if (questionRow === lastQuestionRow && isConditionable(questionRow)) {
-					button.style.display = "none";
+                    button.classList.add("btn-crossed");
 				} else {
-					button.style.display = "inline";
+                    if (isConditionable(questionRow)) {
+                        button.classList.remove("btn-crossed");
+                    }
 				}
 			});
 		}
@@ -514,4 +495,5 @@
 		}
 	});
 	</script>
+    <th:block layout:replace="~{fragments/deleteModal :: deleteModalScript}"></th:block>
 </th:block>
