@@ -1,9 +1,9 @@
 package de.imi.mopat.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import de.imi.mopat.model.enumeration.ExportScoreFieldType;
 import de.imi.mopat.model.score.Score;
-
-import java.io.Serializable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
@@ -12,6 +12,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.io.Serializable;
 
 /**
  * Represents an {@link ExportRule} corresponding to an {@link Score} field.
@@ -53,6 +54,12 @@ public class ExportRuleScore extends ExportRule implements Serializable {
         super(exportTemplate, exportField);
         setScoreField(scoreField);
         setScore(score);
+    }
+
+    @Override
+    @JsonProperty("type")
+    public ExportRuleType getType() {
+        return ExportRuleType.SCORE;
     }
 
     /**

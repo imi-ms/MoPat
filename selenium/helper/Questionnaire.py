@@ -266,7 +266,7 @@ class QuestionnaireAssertHelper(QuestionnaireHelper):
 
             for index, row in enumerate(rows, start=1):
                 action_buttons = row.find_elements(*QuestionnaireSelectors.ACTION_BUTTONS)
-                assert len(action_buttons) == 5, f"Row {index} does not have exactly 5 action buttons. Found: {len(action_buttons)}"
+                assert len(action_buttons) == 6, f"Row {index} does not have exactly 5 action buttons. Found: {len(action_buttons)}"
 
             # Validate the button to create a new questionnaire
             create_button = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(

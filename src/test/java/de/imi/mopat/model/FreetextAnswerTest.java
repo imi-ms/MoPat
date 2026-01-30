@@ -39,6 +39,19 @@ public class FreetextAnswerTest {
         return freetextAnswer;
     }
 
+    /**
+     * Returns a valid new FreetextAnswer
+     *
+     * @return Returns a valid new FreetextAnswer
+     */
+    public static FreetextAnswer getNewValidFreetextAnswer(Question question) {
+        Boolean isEnabled = random.nextBoolean();
+
+        FreetextAnswer freetextAnswer = new FreetextAnswer(question, isEnabled);
+
+        return freetextAnswer;
+    }
+
     @Before
     public void setUp() {
         testFreetextAnswer = getNewValidFreetextAnswer();

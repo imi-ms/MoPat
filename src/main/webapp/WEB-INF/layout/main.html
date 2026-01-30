@@ -195,7 +195,7 @@
 				/*[- Get the current used language -]*/
 				var currentLanguage = /*[[${#locale.language.toString()}]]*/ "en";
 
-				$.each($("input:file"), function (index, value) {
+				$.each($("input:file[class='standard-file-input']"), function (index, value) {
 					var imagePath = $(value).attr("data-path");
 					/*[- Check if the selected input is an image, or just a file -]*/
 					if (imagePath !== null && imagePath !== undefined) {
@@ -226,6 +226,18 @@
 						});
 					}
 				});
+
+                $.each($("input:file[class='dropzone-file-input']"), function (index, value) {
+                    $(value).fileinput({
+                        theme: "bs5",
+                        allowedFileExtensions: $(value).data('extensions') || [],
+                        dropZoneEnabled: true,
+                        showUpload: false,
+                        showRemove: false,
+                        showPreview: true,
+                        language: currentLanguage,
+                    });
+                });
 			});
 		</script>
 

@@ -5,8 +5,16 @@ package de.imi.mopat.model.enumeration;
  */
 public enum MetadataFormat {
     // For now supported formats and their file extensions
-    ODM("ODM", ".xml"), PDF("PDF", ".zip"), FHIR("FHIR", ".xml"), ODMExportTemplate(
-        "ODMExportTemplate", ".xml"), MoPat("MoPat", ".json");
+    ODM("ODM", ".xml"),
+    PDF("PDF", ".zip"),
+    FHIRDSTU3("FHIR STU3", ".xml"),
+    FHIRR4B("FHIR R4B", ".xml"),
+    FHIRR5("FHIR R5", ".xml"),
+    ODMExportTemplate(
+        "ODMExportTemplate", ".xml"
+    ),
+    MoPat("MoPat", ".json"),
+    MoPatComplete("MoPatComplete",".json");
 
     private final String textValue;
     private final String fileExtension;

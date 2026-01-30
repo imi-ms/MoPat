@@ -3,11 +3,15 @@ package de.imi.mopat.model.enumeration;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.io.ExportTemplateImporter;
-import de.imi.mopat.io.impl.EncounterExporterTemplateFHIR;
+import de.imi.mopat.io.impl.EncounterExporterTemplateFhirDstu3;
+import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR4b;
+import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR5;
 import de.imi.mopat.io.impl.EncounterExporterTemplateODM;
 import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
-import de.imi.mopat.io.impl.ExportTemplateImporterFHIR;
+import de.imi.mopat.io.impl.ExportTemplateImporterFhirDstu3;
+import de.imi.mopat.io.impl.ExportTemplateImporterFhirR4b;
+import de.imi.mopat.io.impl.ExportTemplateImporterFhirR5;
 import de.imi.mopat.io.impl.ExportTemplateImporterODM;
 import de.imi.mopat.io.impl.ExportTemplateImporterHL7;
 import de.imi.mopat.io.impl.ExportTemplateImporterREDCap;
@@ -18,13 +22,41 @@ import org.slf4j.MarkerFactory;
  */
 public enum ExportTemplateType {
 
-    ODM(ExportTemplateImporterODM.class,
-        EncounterExporterTemplateODM.class, "configurationGroup.label.ODM"), HL7v2(
-        ExportTemplateImporterHL7.class, EncounterExporterTemplateHL7v2.class,
-        "configurationGroup.label.HLSeven"), FHIR(ExportTemplateImporterFHIR.class,
-        EncounterExporterTemplateFHIR.class, "configurationGroup.label.FHIR"), REDCap(
-        ExportTemplateImporterREDCap.class, EncounterExporterTemplateREDCap.class,
-        "configurationGroup.label.REDCap");
+    ODM(
+            ExportTemplateImporterODM.class,
+            EncounterExporterTemplateODM.class,
+            "configurationGroup.label.ODM"
+    ),
+    HL7v2(
+            ExportTemplateImporterHL7.class,
+            EncounterExporterTemplateHL7v2.class,
+            "configurationGroup.label.HLSeven"
+    ),
+    FHIR(
+            null,
+            null,
+            "configurationGroup.label.FHIR"
+    ),
+    FHIR_DSTU3(
+        ExportTemplateImporterFhirDstu3.class,
+        EncounterExporterTemplateFhirDstu3.class,
+        "configurationGroup.label.FHIR"
+    ),
+    FHIR_R4B(
+        ExportTemplateImporterFhirR4b.class,
+        EncounterExporterTemplateFhirR4b.class,
+        "configurationGroup.label.FHIR"
+    ),
+    FHIR_R5(
+        ExportTemplateImporterFhirR5.class,
+        EncounterExporterTemplateFhirR5.class,
+        "configurationGroup.label.FHIR"
+    ),
+    REDCap(
+            ExportTemplateImporterREDCap.class,
+            EncounterExporterTemplateREDCap.class,
+            "configurationGroup.label.REDCap"
+    );
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         ExportTemplateType.class);
@@ -78,6 +110,22 @@ public enum ExportTemplateType {
                 "fatal error while creating importer instance from type " + "{}: {}", this, ex);
         }
         return null;
+    }
+
+    /**
+     * Checks if the ExportTemplateType is a FHIR type
+     * @param exportTemplateType to check
+     * @return true if DSTU3, R4B or R5, false otherwise
+     */
+    public static boolean isExportTemplateTypeAFhirType(ExportTemplateType exportTemplateType) {
+        switch (exportTemplateType) {
+            case FHIR_DSTU3, FHIR_R4B, FHIR_R5 -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     /**
