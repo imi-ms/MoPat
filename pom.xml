@@ -75,6 +75,10 @@
                     <artifactId>bcprov-jdk18on</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcmail-jdk18on</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
@@ -676,7 +680,12 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.82</version>
+            <version>1.83</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk18on</artifactId>
+            <version>1.83</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.angus</groupId>
