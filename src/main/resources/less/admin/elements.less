@@ -118,6 +118,27 @@
     }
 }
 
+.btn-outline-primary {
+    border-color: @color-blue-dark;
+    color: @color-blue-dark;
+    border-radius: @border-radius-sm;
+    transition: @transition-value;
+
+    &:hover {
+        border-color: @color-blue-light;
+        color: @color-blue-light;
+        transition: @transition-value;
+        box-shadow: @box-shadow-material-md;
+    }
+}
+
+.btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+    background-color: @color-blue-dark;
+    border-color: @color-blue-dark;
+    color: @color-white;
+    transition: @transition-value;
+}
+
 .btn-secondary{
     background-color: @color-gray-dark;
     border-color: @color-gray-dark;
@@ -338,6 +359,25 @@ a[data-bs-toggle='collapse'] {
 
 .custom-tooltip {
     max-width: 400px;
+}
+
+.upload-info-box {
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        min-width: @upload-box-max-width;
+        max-width: @upload-box-max-width;
+    }
+}
+
+#uploadForm {
+    @media only screen and (max-width: @b5-screen-xl-min) {
+        width: 100%;
+    }
+}
+
+#errorAccordion {
+    @media only screen and (min-width: @b5-screen-xxl-min) {
+        max-width: @upload-box-max-width;
+    }
 }
 
 

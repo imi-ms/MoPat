@@ -16,6 +16,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ResponseDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.dao.user.PinAuthorizationDao;
+import de.imi.mopat.helper.controller.HL7v22PatientInformationRetrieverByPID;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
