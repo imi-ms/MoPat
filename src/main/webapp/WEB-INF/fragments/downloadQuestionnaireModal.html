@@ -54,7 +54,10 @@
                                 <label
                                     class="btn btn-outline-primary mx-1"
                                     th:for="|MoPatComplete__${item.id}__|"
-                                >MoPat With Export Templates</label>
+                                    th:text="${messages.get(#locale,
+                                    'questionnaire.download.mopatComplete',
+                                    'MoPat With Export Templates')}"
+                                ></label>
                             </div>
 
                             <h4 class="d-flex w-100 align-content-start mt-3">FHIR</h4>
