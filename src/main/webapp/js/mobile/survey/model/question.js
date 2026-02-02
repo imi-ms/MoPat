@@ -1030,15 +1030,15 @@ function Question() {
                 buttonDiv.append(redoButton); 
 
                 // Append all tools to the toolbar div
-                toolbarDiv.append(buttonDiv); 
+                toolbarDiv.append(buttonDiv);
                 // Create an empty canvas element and set its context to 2d
                 var canvas = document.createElement("canvas");
                 canvas.setAttribute("id", "canvas");
 
-                this.rearrange();
+                this.rearrange(isPreview);
 
                 var rearrangeEvent = ()=> {
-                    this.rearrange(); 
+                    this.rearrange(isPreview);
                 }
 
                 $(window).on("resize", rearrangeEvent); 
@@ -1056,20 +1056,20 @@ function Question() {
                 questionContent.append(toolbarDiv);
 
                 // Bind mouse actions on canvas and buttons
-                if(!isPreview) canvas.addEventListener('click', function (e) {
+                canvas.addEventListener('click', function (e) {
                     var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
-                    Selector.selectElement(question.id, question.answers[0].id, mouseClickPosition, '', '', true);
-                    question.redraw(image);
+                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, mouseClickPosition, '', '', true);
+                    question.redraw(image, isPreview);
                 });
 
-                if(!isPreview) document.getElementById("undoButton").onclick = function () {
-                    Selector.selectElement(question.id, question.answers[0].id, 'undo', null, null, true);
-                    question.redraw(image);
+                document.getElementById("undoButton").onclick = function () {
+                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, 'undo', null, null, true);
+                    question.redraw(image, isPreview);
                 };
 
-                if(!isPreview) document.getElementById("redoButton").onclick = function () {
-                    Selector.selectElement(question.id, question.answers[0].id, 'redo', null, null, true);
-                    question.redraw(image);
+                document.getElementById("redoButton").onclick = function () {
+                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, 'redo', null, null, true);
+                    question.redraw(image, isPreview);
                 };
                 break;
             case Questiontypes.BODY_PART:
@@ -1786,7 +1786,7 @@ function Question() {
     };
 
 
-    this.rearrange = function () {
+    this.rearrange = function (isPreview) {
         var question = this;
         switch (question.questionType) {
             case Questiontypes.IMAGE:
@@ -1819,17 +1819,27 @@ function Question() {
                     $('#canvas')[0].height = optimalHeight;
 
                     // Call the redraw function to draw the image and if applicable its points
-                    question.redraw(this);
+                    question.redraw(this, isPreview);
                 };
 
                 // Set the image source after the onload function to get sure that it's fired
-                image.src = this.answers[0].imageBase64;
+                if(isPreview) {
+                    var blob = $("#imageFile")[0].files[0];
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        var base64Data = event.target.result;
+                        image.src = base64Data;
+                    }
+                    reader.readAsDataURL(blob);
+                } else {
+                    image.src = this.answers[0].imageBase64;
+                }
 
                 break;
         }
     };
 
-    this.redraw = function (image) {
+    this.redraw = function (image, isPreview) {
         // Get the context from the existing canvas
         var context = $('#canvas')[0].getContext("2d");
         // Clear the canvas
@@ -1841,7 +1851,7 @@ function Question() {
         context.lineWidth = 2;
 
         // If the encounter has already a response
-        if (encounter.getResponse(this.answers[0].id) !== null) {
+        if (!isPreview && encounter.getResponse(this.answers[0].id) !== null) {
             // Draw every point that must be shown
             for (var i = 0; i <= encounter.getResponse(this.answers[0].id).currentPointsPosition; i++) {
                 // Get the current point and calculate its x and y coordinates depending on the canvas size
