@@ -372,6 +372,18 @@ public class QuestionController {
         return SaveAndEditNextInOrderUtil.determineNextRoute("question", action, defaultSaveRoute);
     }
 
+    @PostMapping(value = "/question/updateDTO")
+    @PreAuthorize("hasRole('ROLE_EDITOR')")
+    @ResponseBody
+    public QuestionDTO updateDTO(
+                               @ModelAttribute("questionDTO") final QuestionDTO questionDTO,
+                               final Model model, final HttpServletRequest request) {
+        if (questionDTO.getQuestionType() == QuestionType.BODY_PART) {
+            updateLocalizedLabelsWithBodyPartLabels(questionDTO);
+        }
+        return questionDTO;
+    }
+
     private void setImagePathForImageQuestion(QuestionDTO questionDTO, Question question) {
         if (questionDTO.getQuestionType()
                 .equals(QuestionType.IMAGE) && question.getQuestionType()

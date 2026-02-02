@@ -86,7 +86,7 @@ function Question() {
      *            The element into which the content is to be injected
      *            (ATTENTION: PASS BY REFERENCE)
      */
-    this.getHTML = function (questionContent) {
+    this.getHTML = function (questionContent, isPreview, language) {
         // This is necessary so that the current object can be accessed from
         // within the jQuery functions
 
@@ -135,14 +135,14 @@ function Question() {
                                 type: inputType, 
                                 id: "input" + answer.id, 
                                 name: "check",
-                                "onclick": "Selector.selectElement(" + question.id + ", " + answer.id + ",'','','',true);",
+                                "onclick": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + answer.id + ",'','','',true);",
                             }); 
 
                             var rightDiv =$("<div/>", {
                                 "class": "right"
                             }); 
 
-                            rightDiv.html(answer.localizedLabel[encounter.bundleLanguage]);
+                            rightDiv.html(answer.localizedLabel[language]);
                             leftDiv.html(answerInput);
                             answerLabel.append(leftDiv);
                             answerLabel.append(rightDiv); 
@@ -178,14 +178,14 @@ function Question() {
                         type: inputType, 
                         id: "input" + isOtherAnswer.id, 
                         name: "check",
-                        "onclick": "Selector.selectElement(" + question.id + ", " + isOtherAnswer.id + ",'','','',true);",
+                        "onclick": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + isOtherAnswer.id + ",'','','',true);",
                     }); 
 
                     var rightDiv =$("<div/>", {
                         "class": "right"
                     }); 
 
-                    rightDiv.html(isOtherAnswer.localizedLabel[encounter.bundleLanguage]);
+                    rightDiv.html(isOtherAnswer.localizedLabel[language]);
                     leftDiv.html(answerInput);
                     answerLabel.append(leftDiv);
                     answerLabel.append(rightDiv); 
@@ -201,7 +201,7 @@ function Question() {
                         "id": "textarea",
                         "class": "resizable",
                         "name": "textarea",
-                        "onChange": "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
+                        "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
                         "rows": "8",
                         "style": "height: auto;",
@@ -229,7 +229,7 @@ function Question() {
 
                 dropDown.change(function () {
                     var selectedOption = $(this).find(":selected");
-                    Selector.selectElement(question.id, selectedOption.attr('id'), selectedOption.html(), '', '', true);
+                    if(!isPreview) Selector.selectElement(question.id, selectedOption.attr('id'), selectedOption.html(), '', '', true);
                 });
                 // Create first option for no answer
                 $("<option/>", {
@@ -251,7 +251,7 @@ function Question() {
                         $("<option/>", {
                             "id": answer.id,
                             "value": answer.id,
-                            "text": answer.localizedLabel[encounter.bundleLanguage],
+                            "text": answer.localizedLabel[language],
                             "style": enable
                         }).appendTo(dropDown);
                     } else if (answer.isOther === true) {
@@ -272,7 +272,7 @@ function Question() {
                     $("<option/>", {
                         "id": isOtherAnswer.id,
                         "value": isOtherAnswer.id,
-                        "text": isOtherAnswer.localizedLabel[encounter.bundleLanguage],
+                        "text": isOtherAnswer.localizedLabel[language],
                         "style": enable
                     }).appendTo(dropDown);
 
@@ -283,7 +283,7 @@ function Question() {
                         "id": "textarea",
                         "class": "resizable mt-5",
                         "name": "textarea",
-                        "onChange": "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
+                        "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
                         "rows": "8",
                         "style": "height: auto;" + enable,
@@ -406,7 +406,7 @@ function Question() {
                     } else {
                         changed = false; 
                     }
-                    Selector.selectElement(question.id, _object.answers[0].id, $("#sliderInput").val(), '', '', true);
+                    if(!isPreview) Selector.selectElement(question.id, _object.answers[0].id, $("#sliderInput").val(), '', '', true);
                 };
 
                 //Simple function to set changed to true
@@ -451,8 +451,8 @@ function Question() {
                 sliderDiv.append(contentDiv); 
 
                 //Fetch localized texts from answerDTO
-                var localizedMinText = this.answers[0].localizedMinimumText[encounter.bundleLanguage];
-                var localizedMaxText = this.answers[0].localizedMaximumText[encounter.bundleLanguage];
+                var localizedMinText = this.answers[0].localizedMinimumText[language];
+                var localizedMaxText = this.answers[0].localizedMaximumText[language];
 
                 // Create text divs that are below the range slider, on each end respectively 
                 var textDiv = $("<div/>", {
@@ -486,7 +486,7 @@ function Question() {
                 
                 // INFO TEXT 
             case Questiontypes.INFO_TEXT:
-                questionContent.append($("<span/>", {"html": question.localizedQuestionText[encounter.bundleLanguage], "class": "resizable"}));
+                questionContent.append($("<span/>", {"html": question.localizedQuestionText[language], "class": "resizable"}));
                 $("#questionTitle").empty();
                 $("#questionTitle").append($("<span />", {"text": strings['survey.question.infotext.hint']}));
                 break;
@@ -496,7 +496,7 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", '', $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
                     "rows": "8",
                     "style": "height: auto;"
@@ -510,7 +510,7 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + question.answers[0].id + ", '', $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + question.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
                     "rows": "8",
                     "style": "height: auto;",
@@ -553,7 +553,7 @@ function Question() {
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                         qrcodeReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
@@ -563,7 +563,7 @@ function Question() {
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                         datamatrixReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
@@ -573,7 +573,7 @@ function Question() {
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                     };
@@ -745,7 +745,7 @@ function Question() {
                             questionContent.prepend(videoModal);
                             questionContent.prepend(buttonDiv);
                             
-                            setFontSize(fontSizeClass);
+                            if(!isPreview) setFontSize(fontSizeClass);
 
                             $("#videoModal").on("hidden.bs.modal", closeModal);
 
@@ -753,7 +753,7 @@ function Question() {
                             // Add the EventListener for the click event to the scan button
                             document.getElementById('clearButton').addEventListener('click', function () {
                                 $('#textarea').val('');
-                                Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                                if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                             });
                         } else {
                             $('#textarea').removeAttr('disabled');
@@ -842,7 +842,7 @@ function Question() {
                     "step": this.answers[0].stepsize,
                     "name": "numberInput",
                     "id": "numberInput",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", this.value, '', '', true)"
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", this.value, '', '', true)"
                 }));
 
                 inputDiv.append($("<span/>", {
@@ -856,12 +856,12 @@ function Question() {
                 break;
                 // NUMBER CHECKBOX TEXT
             case Questiontypes.NUMBER_CHECKBOX_TEXT:
-                createNumberCheckboxes(this, questionContent);
+                createNumberCheckboxes(this, questionContent, isPreview, language);
 
                 var label = $("<div/>", {
                     "for": "textarea",
                     "class": "resizable",
-                    "html": this.answers[0].localizedFreetextLabel[encounter.bundleLanguage]
+                    "html": this.answers[0].localizedFreetextLabel[language]
                 });
                 
 
@@ -873,7 +873,7 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", parseInt($('input[name*=numberedCheckbox_]:checked').val()), $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", parseInt($('input[name*=numberedCheckbox_]:checked').val()), $('textarea').val(), '', true)",
                     "cols": "40",
                     "rows": "8",
                     "style": "height: auto;"
@@ -883,7 +883,7 @@ function Question() {
                 break;
                 // NUMBER CHECKBOX
             case Questiontypes.NUMBER_CHECKBOX :
-                createNumberCheckboxes(this, questionContent);
+                createNumberCheckboxes(this, questionContent, isPreview, language);
                 break;
             case Questiontypes.DATE:
 
@@ -898,8 +898,8 @@ function Question() {
                 }
                 // Replace the placeholders.
                 var dateOptions = {year: 'numeric', month: '2-digit', day: '2-digit'};
-                topicLabelHtml = topicLabelHtml.replace('{startDate}', new Date(this.answers[0].startDate).toLocaleDateString(encounter.bundleLanguage.replace("_", "-"), dateOptions));
-                topicLabelHtml = topicLabelHtml.replace('{endDate}', new Date(this.answers[0].endDate).toLocaleDateString(encounter.bundleLanguage.replace("_", "-"), dateOptions));
+                topicLabelHtml = topicLabelHtml.replace('{startDate}', new Date(this.answers[0].startDate).toLocaleDateString(language.replace("_", "-"), dateOptions));
+                topicLabelHtml = topicLabelHtml.replace('{endDate}', new Date(this.answers[0].endDate).toLocaleDateString(language.replace("_", "-"), dateOptions));
 
                 var topicLabel = $("<label/>", {
                     "html": topicLabelHtml,
@@ -944,7 +944,7 @@ function Question() {
                     "min": startDateString,
                     "max": endDateString,
                     "onFocus": "this.showPicker()",
-                    "onBlur": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", null, null, $(this).val(), true)"
+                    "onBlur": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", null, null, $(this).val(), true)"
                 }));
 
                 row.append(inputLabel); 
@@ -1044,7 +1044,7 @@ function Question() {
                 $(window).on("resize", rearrangeEvent); 
 
                 // Enable the undo button if there are already points on th image
-                if (encounter.getResponse(question.answers[0].id) !== null && encounter.getResponse(question.answers[0].id).pointsOnImage.length > 0) {
+                if (!isPreview && encounter.getResponse(question.answers[0].id) !== null && encounter.getResponse(question.answers[0].id).pointsOnImage.length > 0) {
                     undoButton.removeAttr("disabled");
                 }
                 // Append the divs to the question content
@@ -1056,18 +1056,18 @@ function Question() {
                 questionContent.append(toolbarDiv);
 
                 // Bind mouse actions on canvas and buttons
-                canvas.addEventListener('click', function (e) {
+                if(!isPreview) canvas.addEventListener('click', function (e) {
                     var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
                     Selector.selectElement(question.id, question.answers[0].id, mouseClickPosition, '', '', true);
                     question.redraw(image);
                 });
 
-                document.getElementById("undoButton").onclick = function () {
+                if(!isPreview) document.getElementById("undoButton").onclick = function () {
                     Selector.selectElement(question.id, question.answers[0].id, 'undo', null, null, true);
                     question.redraw(image);
                 };
 
-                document.getElementById("redoButton").onclick = function () {
+                if(!isPreview) document.getElementById("redoButton").onclick = function () {
                     Selector.selectElement(question.id, question.answers[0].id, 'redo', null, null, true);
                     question.redraw(image);
                 };
@@ -1189,12 +1189,12 @@ function Question() {
                         });
                         backImageContent.append(backDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
-                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
+                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
-                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
+                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
                         }
 
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
@@ -1212,7 +1212,7 @@ function Question() {
         }
 
         // Set the font size
-        setFontSize(fontSizeClass);
+        if(!isPreview) setFontSize(fontSizeClass);
 
         // Div to check if the question is overflowing
         var overflowDiv = $("<div/>", {
@@ -1231,7 +1231,7 @@ function Question() {
      * @param {type} imageSource The image represented as base64 string.
      * @param {type} div containing the svg whose size has to be specified.
      */
-    this.createAndScaleImageAndSvg = function (imageType, imagePath, imageSource, div) {
+    this.createAndScaleImageAndSvg = function (imageType, imagePath, imageSource, div, isPreview) {
         //create image to get height and width to size svg correctly
         try {
             var id = $("#svgDiv-" + imageType).find("svg").attr("id")
@@ -1290,7 +1290,7 @@ function Question() {
                         groupPath.attr('id', 'answer' + answers[i].id);
                         groupPath.attr('class', answerPath.attr('class'));
                         groupPath.attr('style', answerPath.attr('style'));
-                        groupPath.attr('onclick', 'Selector.selectElement(' + question.id + ',' + answers[i].id + ', null, null, null, true);');
+                        if(!isPreview) groupPath.attr('onclick', 'Selector.selectElement(' + question.id + ',' + answers[i].id + ', null, null, null, true);');
                     }
                 }
             } else {
@@ -1325,7 +1325,7 @@ function Question() {
 
             //Select answers that has been already selected again because this load method is called asynchronously to the survey.showQuestion function
             //so if you try to do this there no path objects will be found because they won't be available then
-            if (createNew === true) {
+            if (!isPreview && createNew === true) {
                 var responses = encounter.getResponsesForQuestion(question);
                 if (responses.length > 0) {
                     $.each(responses, function () {
@@ -1488,12 +1488,12 @@ function Question() {
      * @param {*} question for which the checkboxes should be created
      * @param {*} questionContent to which the checkboxes should be added
      */
-    function createNumberCheckboxes(question, questionContent) {
+    function createNumberCheckboxes(question, questionContent, isPreview, language) {
         //Handle vertical and horizontal checkboxes completely separately
         if (question.answers[0].vertical === true) {
-            questionContent.append(handleVerticalCheckboxes(question));
+            questionContent.append(handleVerticalCheckboxes(question, isPreview, language));
         } else {
-            questionContent.append(handleHorizontalCheckboxes(question));
+            questionContent.append(handleHorizontalCheckboxes(question, isPreview, language));
         }
     }
 
@@ -1504,10 +1504,10 @@ function Question() {
      * @param {*} question element 
      * @returns numberedCheckboxes div
      */
-    function handleVerticalCheckboxes(question) {
+    function handleVerticalCheckboxes(question, isPreview, language) {
         // Cretae the minimum und maximum text
-        var localizedMinText = question.answers[0].localizedMinimumText[encounter.bundleLanguage];
-        var localizedMaxText = question.answers[0].localizedMaximumText[encounter.bundleLanguage];
+        var localizedMinText = question.answers[0].localizedMinimumText[language];
+        var localizedMaxText = question.answers[0].localizedMaximumText[language];
         var hasMinMaxText = typeof localizedMinText !== 'undefined' && localizedMinText !== "" || typeof localizedMaxText !== 'undefined' && localizedMaxText !== "";
 
         var checkboxDiv = $("<div/>", {
@@ -1559,7 +1559,7 @@ function Question() {
             }); 
     
             //Event triggers checkbox toggle and saves encounter response
-            inputElement[0].addEventListener("click", function() {
+            if(!isPreview) inputElement[0].addEventListener("click", function() {
                 Selector.selectElement(question.id ,question.answers[0].id, i, $('textarea').val(), '', true);
             });
     
@@ -1599,10 +1599,10 @@ function Question() {
      * @param {*} question element
      * @returns numberedCheckboxes div
      */
-    function handleHorizontalCheckboxes(question) {
-        // Cretae the minimum und maximum text
-        var localizedMinText = question.answers[0].localizedMinimumText[encounter.bundleLanguage];
-        var localizedMaxText = question.answers[0].localizedMaximumText[encounter.bundleLanguage];
+    function handleHorizontalCheckboxes(question, isPreview, language) {
+        // Create the minimum und maximum text
+        var localizedMinText = question.answers[0].localizedMinimumText[language];
+        var localizedMaxText = question.answers[0].localizedMaximumText[language];
         var hasMinMaxText = typeof localizedMinText !== 'undefined' && localizedMinText !== "" || typeof localizedMaxText !== 'undefined' && localizedMaxText !== "";
 
         var checkboxDiv = $("<div/>", {
@@ -1677,7 +1677,7 @@ function Question() {
             }); 
     
             //Event triggers checkbox toggle and saves encounter response
-            inputElement[0].addEventListener("click", function() {
+            if(!isPreview) inputElement[0].addEventListener("click", function() {
                 Selector.selectElement(question.id ,question.answers[0].id, i, $('textarea').val(), '', true);
             });
     

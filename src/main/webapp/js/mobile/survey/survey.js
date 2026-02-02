@@ -421,7 +421,7 @@ function showCompletenessCheck(incompletedQuestions) {
 function showQuestion(question) {
     updateQuestionTitles(question); 
 
-    question.getHTML($("#questionContent"));
+    question.getHTML($("#questionContent"), false, encounter.bundleLanguage);
 
     // Select previously selected elements, if there were any
     if (question.questionType !== Questiontypes.IMAGE && question.questionType !== Questiontypes.BODY_PART && encounter.getResponsesForQuestion(question).length > 0) {
