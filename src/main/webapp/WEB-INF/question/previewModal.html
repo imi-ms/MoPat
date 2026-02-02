@@ -37,7 +37,7 @@
             let form = document.getElementsByName("questionDTO")[0];
             const formData = new FormData(form);
 
-            fetch("/question/updateDTO", {
+            fetch("/question/previewDTO", {
                 method: "POST",
                 body: formData
             })

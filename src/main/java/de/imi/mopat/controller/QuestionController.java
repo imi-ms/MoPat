@@ -372,11 +372,11 @@ public class QuestionController {
         return SaveAndEditNextInOrderUtil.determineNextRoute("question", action, defaultSaveRoute);
     }
 
-    @PostMapping(value = "/question/updateDTO")
+    @PostMapping(value = "/question/previewDTO")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     @ResponseBody
-    public QuestionDTO updateDTO(
-                               @ModelAttribute("questionDTO") final QuestionDTO questionDTO,
+    public QuestionDTO previewDTO(
+                               @ModelAttribute("questionDTO") final QuestionDTO questionDTO, final BindingResult result,
                                final Model model, final HttpServletRequest request) {
         if (questionDTO.getQuestionType() == QuestionType.BODY_PART) {
             updateLocalizedLabelsWithBodyPartLabels(questionDTO);
