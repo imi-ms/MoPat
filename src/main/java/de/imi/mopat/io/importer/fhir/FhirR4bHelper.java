@@ -255,6 +255,21 @@ public class FhirR4bHelper extends FhirHelper {
     }
 
     /**
+     * Encodes the given FHIR resource into a string representation.
+     *
+     * @param resource the FHIR resource to be encoded. Must not be null.
+     * @return a string representation of the encoded FHIR resource, or null if an error occurs during encoding.
+     */
+    public static String decodeResourceToString(final IBaseResource resource) {
+        try {
+            return PARSER.encodeResourceToString(resource);
+        } catch (DataFormatException e) {
+            LOGGER.error("Error while decoding resource...", e);
+            return null;
+        }
+    }
+
+    /**
      * Sets {@link QuestionnaireResponse} object which consists of {@link Questionnaire} object.
      *
      * @param questionnaire Object the questionnaireResponse is created of.
