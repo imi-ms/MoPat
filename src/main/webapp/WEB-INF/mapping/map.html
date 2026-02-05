@@ -1476,7 +1476,7 @@
 
 				for (let i = 0; i < totalToMap; i++) {
 					let $field = $("#templateContainer .draggable:not(.node-assigned)").first();
-					let $answer = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node)").first();
+					let $answer = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node):not([id^='score'])").first();
 
 					if ($field.length === 0 || $answer.length === 0) break;
 
