@@ -539,7 +539,6 @@ public class SurveyController {
                 encounter.setPatientID(encounterDTO.getPatientID());
 
                 try {
-                    encounterDTO.setCaseNumber(null);
                     encounter.setCaseNumber(encounterDTO.getCaseNumber());
                 } catch (Exception e) {
 
