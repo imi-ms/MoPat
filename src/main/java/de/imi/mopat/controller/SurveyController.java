@@ -64,6 +64,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -499,10 +501,14 @@ public class SurveyController {
             return "redirect:/mobile/survey/clinicSelect";
         }
 
-        if (!encounterDTO.getCaseNumber().isEmpty() && encounterDTO.getCaseNumber().trim().isEmpty()) {
+        String caseNumber = encounterDTO.getCaseNumber();
+        if (caseNumber == null || caseNumber.isEmpty() || caseNumber.trim().isEmpty()) {
             result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("encounter.error" + ".caseNumberIsEmpty", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+                messageSource.getMessage(
+                    "encounter.error.caseNumberInvalid",
+                    new Object[]{},
+                    LocaleContextHolder.getLocale()
+                ));
             return showCheckCaseNumber(model, result);
         }
 
@@ -535,7 +541,39 @@ public class SurveyController {
 
                 encounter.setStartTime(encounterDTO.getStartTime());
                 encounter.setPatientID(encounterDTO.getPatientID());
-                encounter.setCaseNumber(encounterDTO.getCaseNumber());
+
+                try {
+                    encounter.setCaseNumber(encounterDTO.getCaseNumber());
+                } catch (Exception e) {
+                    //This line should not be reachable, but is somehow reached in production. This is for
+                    //debugging purposes and can be removed if the error is solved.
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    HttpServletRequest request =
+                        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+
+                    String userAgent = request.getHeader("User-Agent");
+                    String ip = request.getRemoteAddr();
+
+                    LOGGER.error("Exception setting case number : {},"
+                            + " activeClinicId {}, bundleId {}, action {}, encounterUuid {}, "
+                            + "\nSESSION STATE: new={}, ageMs={}, sessionLastAccessesTime {}, auth={}, "
+                            + "userId: {}, userAgent: {}, ip: {}",
+                        encounterDTO.getCaseNumber(), activeClinicId, bundleId,
+                        action, encounter.getUUID(), session.isNew(),
+                        System.currentTimeMillis() - session.getCreationTime(),
+                        session.getLastAccessedTime(), auth.isAuthenticated(), auth.getName(),
+                        userAgent, ip
+                    );
+                    
+                    result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                            "encounter.error.caseNumberInvalid",
+                            new Object[]{},
+                            LocaleContextHolder.getLocale()
+                        ));
+                    return showCheckCaseNumber(model, result);
+                }
+
                 encounter.setBundleLanguage(bundleLanguage);
                 encounter.setClinic(clinicDao.getElementById(activeClinicId));
                 encounterDao.merge(encounter);
