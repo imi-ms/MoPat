@@ -62,6 +62,9 @@ sudo chmod -R 775 ./data
 
 While the application is runnable without any additional settings, it is highly advised to adjust the `.env` file in the root directory of the project to use secure settings.
 
+### Rootless Podman with TLS
+
+If you want to run MoPat as container without root privileges and using secrets instead of envars for sensitive information like passwords, you can use [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html). An example with setup instructions can be found under /examples/quadlet-with-traefik.
 
 ### Manual Installation
 To install the application manually, follow these steps carefully:
