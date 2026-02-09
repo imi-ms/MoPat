@@ -1,6 +1,8 @@
 package de.imi.mopat.io.impl;
 
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.hl7v2.model.DataTypeException;
+import ca.uhn.hl7v2.model.v23.message.ORU_R01;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.io.EncounterExporterTemplate;
@@ -194,6 +196,13 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
         Boolean exportViaREST = null;
         String exportPath = null;
         String exportUrl = null;
+        Boolean exportViaHL7 = null;
+        String hl7Hostname = null;
+        Integer hl7Port = null;
+        String sendingFacility = null;
+        String receivingApplication = null;
+        String receivingFacility = null;
+        String obrFillerOrderNumber = null;
         for (Configuration configuration : exportTemplate.getConfigurationGroup()
             .getConfigurations()) {
             switch (configuration.getAttribute()) {
@@ -209,6 +218,31 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
                 case "exportUrl":
                     exportUrl = configuration.getValue();
                     break;
+                case "exportFHIRViaHL7v2":
+                    exportViaHL7 = Boolean.parseBoolean(configuration.getValue());
+                    break;
+                case "FHIRViaHL7v2Host":
+                    hl7Hostname = configuration.getValue();
+                    break;
+                case "FHIRViaHL7v2Port":
+                    try {
+                        hl7Port = Integer.parseInt(configuration.getValue());
+                    } catch (NumberFormatException numberFormatException) {
+                        hl7Port = null;
+                    }
+                    break;
+                case "FHIRViaHL7v2SendingFacility":
+                    sendingFacility = configuration.getValue();
+                    break;
+                case "FHIRViaHL7v2ReceivingApplication":
+                    receivingApplication = configuration.getValue();
+                    break;
+                case "FHIRViaHL7v2ReceivingFacility":
+                    receivingFacility = configuration.getValue();
+                    break;
+                case "FHIRViaHL7v2OBRFillerOrderNumber":
+                    obrFillerOrderNumber = configuration.getValue();
+                    break;
                 default:
                     break;
             }
@@ -217,33 +251,97 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
         questionnaireResponse.setStatus(
             QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
 
-        if (exportToDirectory) {
-            File path = new File(exportPath);
-            if (!path.isDirectory()) {
-                path.mkdirs();
-            }
+        ExportStatus exportStatus = ExportStatus.SUCCESS;
 
-            // Create a sub-directory for the exported files
-            String filepath =
-                exportPath + File.separator + exportTemplate.getQuestionnaire().getName()
-                    .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_")
-                    + "/";
-            File subDirectory = new File(filepath);
-            if (!subDirectory.isDirectory()) {
-                subDirectory.mkdirs();
+        if (exportToDirectory != null && exportToDirectory && exportPath != null) {
+            try {
+                File path = new File(exportPath);
+                if (!path.isDirectory()) {
+                    path.mkdirs();
+                }
+
+                // Create a sub-directory for the exported files
+                String filepath =
+                    exportPath + File.separator + exportTemplate.getQuestionnaire().getName()
+                        .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_")
+                        + "/";
+                File subDirectory = new File(filepath);
+                if (!subDirectory.isDirectory()) {
+                    subDirectory.mkdirs();
+                }
+                String result =
+                    encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "_"
+                        + FILENAMEDATEFORMAT.format(new Date()) + ".xml";
+                // Write to disk
+                File exportFile = new File(subDirectory, result);
+                FhirR4bHelper.writeResourceToFile(questionnaireResponse, exportFile);
+            } catch (Exception e) {
+                LOGGER.error("Could not write to disk. {}", e.getMessage());
+                exportStatus = ExportStatus.FAILURE;
             }
-            String result =
-                encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "_"
-                    + FILENAMEDATEFORMAT.format(new Date()) + ".xml";
-            // Write to disk
-            File exportFile = new File(subDirectory, result);
-            FhirR4bHelper.writeResourceToFile(questionnaireResponse, exportFile);
         }
 
-        if (exportViaREST && exportUrl != null && !exportUrl.isEmpty()) {
-            return exportViaREST(exportUrl);
+        try {
+            doHandleHL7Export(
+                exportViaHL7, hl7Hostname, hl7Port, sendingFacility,
+                receivingApplication, receivingFacility, obrFillerOrderNumber
+            );
+        } catch (Exception e) {
+            LOGGER.error("Could not send via HL7. {}", e.getMessage());
+            exportStatus = ExportStatus.FAILURE;
         }
-        return ExportStatus.SUCCESS;
+
+
+        if (exportViaREST != null && exportViaREST && exportUrl != null && !exportUrl.isEmpty()) {
+            exportStatus = exportViaREST(exportUrl);
+        }
+
+        return exportStatus;
+    }
+
+    /**
+     * Handles the HL7 export process by generating and transmitting an HL7 message.
+     *
+     * @param exportViaHL7 Indicates whether to proceed with HL7 export. If set to {@code true},
+     *                     the method generates and sends the HL7 message.
+     * @param hl7Hostname The hostname of the HL7 server to which the message should be sent.
+     * @param hl7Port The port of the HL7 server to which the message should be sent.
+     * @param sendingFacility The facility identifier that is sending the HL7 message.
+     * @param receivingApplication The application designated to receive the HL7 message.
+     * @param receivingFacility The facility designated to receive the HL7 message.
+     * @param obrFillerOrderNumber The filler order number to be included in the HL7 message within the OBR segment.
+     * @throws Exception If any error occurs during the message generation or transmission process.
+     */
+    private void doHandleHL7Export(
+        Boolean exportViaHL7, String hl7Hostname, Integer hl7Port,
+        String sendingFacility, String receivingApplication, String receivingFacility,
+        String obrFillerOrderNumber
+    ) throws Exception {
+
+        if (exportViaHL7 != null && exportViaHL7 && hl7Hostname != null && !hl7Hostname.isEmpty()
+            && hl7Port != null && sendingFacility != null && receivingApplication != null
+            && receivingFacility != null && obrFillerOrderNumber != null) {
+            HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+
+            ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(
+                exportTemplate, encounter, sendingFacility, receivingApplication,
+                receivingFacility, obrFillerOrderNumber,
+                FhirR4bHelper.decodeResourceToString(questionnaireResponse)
+            );
+
+            Questionnaire containedQuestionnaire = questionnaireResponse.getContained().stream()
+                .filter(Questionnaire.class::isInstance)
+                .map(Questionnaire.class::cast)
+                .findFirst()
+                .orElse(null);
+
+            if (containedQuestionnaire != null) {
+                hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(hl7Message,
+                    containedQuestionnaire.getName());
+            }
+
+            hl7MessageHelper.sendMessageViaComServer(hl7Hostname, hl7Port, hl7Message);
+        }
     }
 
     /**
