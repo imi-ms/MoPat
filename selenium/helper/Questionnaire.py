@@ -195,7 +195,7 @@ class QuestionnaireHelper:
 
         # Navigate to "Manage Questionnaires"
         self.navigation_helper.navigate_to_manage_questionnaires()
-        time.sleep(10)
+        time.sleep(30)
 
         # Create the questionnaire
         self.click_add_questionnaire_button()
