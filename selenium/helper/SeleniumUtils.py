@@ -35,12 +35,13 @@ class SeleniumUtils:
         self.driver = driver
         self.navigator = navigation_helper
 
-    def click_element(self, selector):
+    def click_element(self, selector, timeout=20):
         """
+        :param timeout: timeout value to use
         :param selector: A tuple representing the element locator (e.g., (By.ID, "element_id")).
         """
         try:
-            element = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(selector))
+            element = WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(selector))
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
             element.click()
         except ElementClickInterceptedException:
