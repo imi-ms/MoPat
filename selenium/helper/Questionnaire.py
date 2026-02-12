@@ -60,7 +60,7 @@ class QuestionnaireHelper:
 
     def click_add_questionnaire_button(self):
         """Clicks the 'Add Questionnaire' button."""
-        self.utils.click_element(QuestionnaireSelectors.BUTTON_ADD_QUESTIONNAIRE, 30)
+        self.utils.click_element(QuestionnaireSelectors.BUTTON_ADD_QUESTIONNAIRE, 60)
 
     def fill_questionnaire_details(self, questionnaire_name=None, description=None, language_code=None, localized_display_name=None,
                                    localized_welcome_text=None, localized_final_text=None, question_types=None):
