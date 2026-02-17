@@ -86,6 +86,12 @@ function Question() {
      *            The element into which the content is to be injected
      *            (ATTENTION: PASS BY REFERENCE)
      */
+
+     // TODOS:
+     // - Bild Zugriff
+     // - bei Fehlern/fehlenden Eingaben wird nichts / nicht richtig geladen; hier Flag hinzufügen
+     // - can't access property "length", this.bodyPartImages is null
+     // - ReferenceError: ZXing is not defined (Barcode)
     this.getHTML = function (questionContent, isPreview, language) {
         // This is necessary so that the current object can be accessed from
         // within the jQuery functions
@@ -1830,7 +1836,7 @@ function Question() {
                         var base64Data = event.target.result;
                         image.src = base64Data;
                     }
-                    reader.readAsDataURL(blob);
+                    if(blob) reader.readAsDataURL(blob);
                 } else {
                     image.src = this.answers[0].imageBase64;
                 }
