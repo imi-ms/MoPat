@@ -167,30 +167,23 @@
                         </div>
                     </div>
                 </div>
-                <div
-                        class="d-flex justify-content-between align-items-center flex-nowrap overflow-hidden px-2 py-2 border-bottom"
-                        id="progressContainer"
-                >
-                </div>
-
+            </div>
+            <div class="px-5 content">
                 <!--/* placeholder for the question title. Set in survey.js */-->
-                <!--/* Only visible when content is scrollable and title is half hidden */-->
-                <div
-                        id="scrollQuestionTitle"
-                        class="itemRow questionTitle resizable w-100"
-                ></div>
                 <div
                         id="questionTitle"
                         class="itemRow questionTitle resizable w-100 border-bottom"
                 ></div>
+                <!--/* placeholder for the question content. Set in survey.js */-->
                 <div
                         id="questionContent"
                         class="itemRow questionContent"
                 >
                 </div>
             </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
+        </div>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
 </div>
 
 <th:block
@@ -243,6 +236,8 @@
                 "class": "px-5",
             });
         }
+
+        // Bug bei Schrittgröße lohl, 90 - 91 mit 0.1 ergibt 90.1, 90.1999999 anstatt 90.2
 
     </script>
 </th:block>
