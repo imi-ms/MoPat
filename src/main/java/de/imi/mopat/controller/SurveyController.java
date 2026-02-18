@@ -671,14 +671,9 @@ public class SurveyController {
                 caseNumber = "test";
             }
 
-            EncounterDTO encounterDTO =
-                (EncounterDTO) model.asMap().get("encounterDTO");
-
-            if (encounterDTO == null) {
-                encounterDTO = new EncounterDTO(true, caseNumber);
-                encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
-                model.addAttribute("encounterDTO", encounterDTO);
-            }
+            EncounterDTO encounterDTO = new EncounterDTO(true, caseNumber);
+            encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
+            model.addAttribute("encounterDTO", encounterDTO);
 
             model.addAttribute(
                 "hideProfile",
