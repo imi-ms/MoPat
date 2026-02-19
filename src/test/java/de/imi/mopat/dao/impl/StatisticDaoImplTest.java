@@ -53,7 +53,9 @@ public class StatisticDaoImplTest {
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetEarliestDate() {
         clearTable();
-        java.util.Date expectedDate = java.sql.Date.valueOf(LocalDate.of(2025, 11, 28));
+
+        LocalDate base = LocalDate.of(2025, 11, 28);
+        java.util.Date expectedDate = java.sql.Timestamp.valueOf(base.atTime(12, 0));
 
         Statistic earliest = new Statistic();
         earliest.setDate(expectedDate);
@@ -61,7 +63,7 @@ public class StatisticDaoImplTest {
 
         for (int i = 1; i <= 5; i++) {
             Statistic s = new Statistic();
-            s.setDate(java.sql.Date.valueOf(LocalDate.of(2025, 11, 28).plusDays(i)));
+            s.setDate(java.sql.Timestamp.valueOf(base.plusDays(i).atTime(12, 0)));
             testStatisticDao.merge(s);
         }
 
@@ -80,7 +82,9 @@ public class StatisticDaoImplTest {
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetLatestDate() {
         clearTable();
-        java.util.Date expectedDate = java.sql.Date.valueOf(LocalDate.of(2025, 11, 28));
+
+        LocalDate base = LocalDate.of(2025, 11, 28);
+        java.util.Date expectedDate = java.sql.Timestamp.valueOf(base.atTime(12, 0));
 
         Statistic earliest = new Statistic();
         earliest.setDate(expectedDate);
@@ -88,7 +92,7 @@ public class StatisticDaoImplTest {
 
         for (int i = 1; i <= 5; i++) {
             Statistic s = new Statistic();
-            s.setDate(java.sql.Date.valueOf(LocalDate.of(2025, 11, 28).minusDays(i)));
+            s.setDate(java.sql.Timestamp.valueOf(base.minusDays(i).atTime(12, 0)));
             testStatisticDao.merge(s);
         }
 
