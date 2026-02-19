@@ -66,13 +66,10 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getEarliestDate();
+        String actualStr = new java.sql.Date(actualFromDb.getTime()).toString();
+        String expectedStr = "2025-11-28";
 
-        LocalDate actual = actualFromDb.toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
-
-        assertEquals("The getting Date was not the expected one",
-            expectedDate.toString(), actual.toString());
+        assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
     }
 
     /**
@@ -96,13 +93,10 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getLatestDate();
+        String actualStr = new java.sql.Date(actualFromDb.getTime()).toString();
+        String expectedStr = "2025-11-28";
 
-        LocalDate actual = actualFromDb.toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
-
-        assertEquals("The getting Date was not the expected one",
-            expectedDate.toString(), actual.toString());
+        assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
     }
 
     /**
