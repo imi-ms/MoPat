@@ -12,6 +12,7 @@ import de.imi.mopat.model.Statistic;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,25 +52,24 @@ public class StatisticDaoImplTest {
         assertNull(
             "The getting earliest date was not null although there was no entry in the table",
             testStatisticDao.getEarliestDate());
+
+        ZoneId zone = ZoneOffset.UTC;
+        LocalDate baseDate = LocalDate.of(2025, 11, 28);
+
         int countStatistics = random.nextInt(25) + 1;
-        long testDateInMillis = System.currentTimeMillis() - random.nextInt(250) * 86400000L;
         for (int i = 0; i < countStatistics; i++) {
-            Statistic testStatistic = new Statistic();
-            testStatistic.setDate(new Date(testDateInMillis + (i + 1) * 86400000L));
-            testStatisticDao.merge(testStatistic);
+            Statistic s = new Statistic();
+            s.setDate(Date.from(baseDate.plusDays(i+1).atStartOfDay(zone).toInstant()));
+            testStatisticDao.merge(s);
         }
 
-        LocalDate testDate = Instant.ofEpochMilli(testDateInMillis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
-
-        Date date = Date.from(testDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date expected = Date.from(baseDate.atStartOfDay(zone).toInstant());
 
         Statistic testStatistic = new Statistic();
-        testStatistic.setDate(date);
+        testStatistic.setDate(expected);
         testStatisticDao.merge(testStatistic);
-        assertEquals("The getting Date was not the expected one", date,
-            testStatisticDao.getEarliestDate());
+
+        assertEquals(expected, testStatisticDao.getEarliestDate());
     }
 
     /**
