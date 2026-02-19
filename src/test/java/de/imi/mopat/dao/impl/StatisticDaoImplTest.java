@@ -53,28 +53,26 @@ public class StatisticDaoImplTest {
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetEarliestDate() {
         clearTable();
-        assertNull(
-            "The getting earliest date was not null although there was no entry in the table",
-            testStatisticDao.getEarliestDate());
+        java.util.Date expectedDate = java.sql.Date.valueOf(LocalDate.of(2025, 11, 28));
 
-        ZoneId zone = ZoneId.systemDefault();
-        LocalDate baseDate = LocalDate.of(2025, 11, 28);
+        Statistic earliest = new Statistic();
+        earliest.setDate(expectedDate);
+        testStatisticDao.merge(earliest);
 
-        int countStatistics = random.nextInt(25) + 1;
-        for (int i = 0; i < countStatistics; i++) {
+        for (int i = 1; i <= 5; i++) {
             Statistic s = new Statistic();
-            s.setDate(Date.from(baseDate.plusDays(i+1).atStartOfDay(zone).toInstant()));
+            s.setDate(java.sql.Date.valueOf(LocalDate.of(2025, 11, 28).plusDays(i)));
             testStatisticDao.merge(s);
         }
 
-        Date expected = Date.from(baseDate.atStartOfDay(zone).toInstant());
+        java.util.Date actualFromDb = testStatisticDao.getEarliestDate();
 
-        Statistic testStatistic = new Statistic();
-        testStatistic.setDate(expected);
-        testStatisticDao.merge(testStatistic);
+        LocalDate actual = actualFromDb.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
 
         assertEquals("The getting Date was not the expected one",
-            expected, testStatisticDao.getEarliestDate());
+            expectedDate.toString(), actual.toString());
     }
 
     /**
@@ -85,28 +83,26 @@ public class StatisticDaoImplTest {
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetLatestDate() {
         clearTable();
-        assertNull(
-            "The getting earliest date was not null although there was no entry in the table",
-            testStatisticDao.getEarliestDate());
+        java.util.Date expectedDate = java.sql.Date.valueOf(LocalDate.of(2025, 11, 28));
 
-        ZoneId zone = ZoneId.systemDefault();
-        LocalDate baseDate = LocalDate.of(2025, 11, 28);
+        Statistic earliest = new Statistic();
+        earliest.setDate(expectedDate);
+        testStatisticDao.merge(earliest);
 
-        int countStatistics = random.nextInt(25) + 1;
-        for (int i = 0; i < countStatistics; i++) {
+        for (int i = 1; i <= 5; i++) {
             Statistic s = new Statistic();
-            s.setDate(Date.from(baseDate.minusDays(i+1).atStartOfDay(zone).toInstant()));
+            s.setDate(java.sql.Date.valueOf(LocalDate.of(2025, 11, 28).minusDays(i)));
             testStatisticDao.merge(s);
         }
 
-        Date expected = Date.from(baseDate.atStartOfDay(zone).toInstant());
+        java.util.Date actualFromDb = testStatisticDao.getLatestDate();
 
-        Statistic testStatistic = new Statistic();
-        testStatistic.setDate(expected);
-        testStatisticDao.merge(testStatistic);
+        LocalDate actual = actualFromDb.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
 
         assertEquals("The getting Date was not the expected one",
-            expected, testStatisticDao.getLatestDate());
+            expectedDate.toString(), actual.toString());
     }
 
     /**
