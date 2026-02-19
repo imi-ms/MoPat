@@ -12,6 +12,8 @@ import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.QuestionTest;
 import de.imi.mopat.model.SelectAnswerTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,6 +25,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -35,6 +38,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public class QuestionDaoImplTest {
 
     private static final Random random = new Random();
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     QuestionDao testQuestionDao;
     @Autowired
@@ -82,13 +87,12 @@ public class QuestionDaoImplTest {
             testQuestions, testQuestionDao.getAllElements());
     }
 
-    /**
-     * Deletes all {@link Question Questions} from the database.
-     */
-    private void clearTable() {
+    @Transactional
+    protected void clearTable() {
         List<Question> allQuestions = testQuestionDao.getAllElements();
         for (Question question : allQuestions) {
             testQuestionDao.remove(question);
         }
+        entityManager.flush();
     }
 }

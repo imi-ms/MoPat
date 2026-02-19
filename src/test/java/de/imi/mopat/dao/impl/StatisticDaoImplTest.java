@@ -9,7 +9,8 @@ import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.StatisticDao;
 import de.imi.mopat.model.Statistic;
-import java.time.Instant;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -40,6 +41,8 @@ public class StatisticDaoImplTest {
     private static final Random random = new Random();
     @Autowired
     StatisticDao testStatisticDao;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Test of {@link StatisticDaoImpl#getEarliestDate}.<br> Valid input: random number of
@@ -147,5 +150,6 @@ public class StatisticDaoImplTest {
         for (Statistic statistic : allStatistics) {
             testStatisticDao.remove(statistic);
         }
+        entityManager.flush();
     }
 }
