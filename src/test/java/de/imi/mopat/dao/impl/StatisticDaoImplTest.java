@@ -13,7 +13,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,6 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -36,12 +36,13 @@ import org.springframework.test.context.web.WebAppConfiguration;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("myTxManagerMoPat")
 public class StatisticDaoImplTest {
 
     private static final Random random = new Random();
     @Autowired
     StatisticDao testStatisticDao;
-    @PersistenceContext
+    @PersistenceContext(unitName = "MoPat")
     private EntityManager entityManager;
 
     /**
@@ -56,7 +57,7 @@ public class StatisticDaoImplTest {
             "The getting earliest date was not null although there was no entry in the table",
             testStatisticDao.getEarliestDate());
 
-        ZoneId zone = ZoneOffset.UTC;
+        ZoneId zone = ZoneId.systemDefault();
         LocalDate baseDate = LocalDate.of(2025, 11, 28);
 
         int countStatistics = random.nextInt(25) + 1;
@@ -72,7 +73,8 @@ public class StatisticDaoImplTest {
         testStatistic.setDate(expected);
         testStatisticDao.merge(testStatistic);
 
-        assertEquals(expected, testStatisticDao.getEarliestDate());
+        assertEquals("The getting Date was not the expected one",
+            expected, testStatisticDao.getEarliestDate());
     }
 
     /**
@@ -83,28 +85,28 @@ public class StatisticDaoImplTest {
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetLatestDate() {
         clearTable();
-        assertNull("The getting latest date was not null although there was no entry in the table",
-            testStatisticDao.getLatestDate());
+        assertNull(
+            "The getting earliest date was not null although there was no entry in the table",
+            testStatisticDao.getEarliestDate());
+
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDate baseDate = LocalDate.of(2025, 11, 28);
+
         int countStatistics = random.nextInt(25) + 1;
-        long testDateInMillis = System.currentTimeMillis() + random.nextInt(250) * 86400000L;
         for (int i = 0; i < countStatistics; i++) {
-            Statistic testStatistic = new Statistic();
-            testStatistic.setDate(new Date(testDateInMillis - (i + 1) * 86400000L));
-            testStatisticDao.merge(testStatistic);
+            Statistic s = new Statistic();
+            s.setDate(Date.from(baseDate.minusDays(i+1).atStartOfDay(zone).toInstant()));
+            testStatisticDao.merge(s);
         }
-        Calendar testCalendar = Calendar.getInstance();
-        testCalendar.setTimeInMillis(testDateInMillis);
-        testCalendar.set(Calendar.MILLISECOND, 0);
-        testCalendar.set(Calendar.SECOND, 0);
-        testCalendar.set(Calendar.MINUTE, 0);
-        testCalendar.set(Calendar.HOUR_OF_DAY, 0);
-        Date testDate = testCalendar.getTime();
+
+        Date expected = Date.from(baseDate.atStartOfDay(zone).toInstant());
 
         Statistic testStatistic = new Statistic();
-        testStatistic.setDate(testDate);
+        testStatistic.setDate(expected);
         testStatisticDao.merge(testStatistic);
-        assertEquals("The getting Date was not the expected one", testDate,
-            testStatisticDao.getLatestDate());
+
+        assertEquals("The getting Date was not the expected one",
+            expected, testStatisticDao.getLatestDate());
     }
 
     /**
@@ -145,7 +147,8 @@ public class StatisticDaoImplTest {
     /**
      * Deletes all {@link Statistic Statistics} from the database.
      */
-    private void clearTable() {
+    @Transactional
+    protected void clearTable() {
         List<Statistic> allStatistics = testStatisticDao.getAllElements();
         for (Statistic statistic : allStatistics) {
             testStatisticDao.remove(statistic);

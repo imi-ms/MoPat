@@ -35,13 +35,17 @@ import org.springframework.transaction.annotation.Transactional;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("myTxManagerMoPat")
 public class QuestionDaoImplTest {
 
     private static final Random random = new Random();
-    @PersistenceContext
+    
+    @PersistenceContext(unitName = "MoPat")
     private EntityManager entityManager;
+
     @Autowired
     QuestionDao testQuestionDao;
+
     @Autowired
     QuestionnaireDao questionnaireDao;
 
