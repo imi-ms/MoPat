@@ -9,6 +9,9 @@ import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.StatisticDao;
 import de.imi.mopat.model.Statistic;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,18 +58,17 @@ public class StatisticDaoImplTest {
             testStatistic.setDate(new Date(testDateInMillis + (i + 1) * 86400000L));
             testStatisticDao.merge(testStatistic);
         }
-        Calendar testCalendar = Calendar.getInstance();
-        testCalendar.setTimeInMillis(testDateInMillis);
-        testCalendar.set(Calendar.MILLISECOND, 0);
-        testCalendar.set(Calendar.SECOND, 0);
-        testCalendar.set(Calendar.MINUTE, 0);
-        testCalendar.set(Calendar.HOUR_OF_DAY, 0);
-        Date testDate = testCalendar.getTime();
+
+        LocalDate testDate = Instant.ofEpochMilli(testDateInMillis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+
+        Date date = Date.from(testDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         Statistic testStatistic = new Statistic();
-        testStatistic.setDate(testDate);
+        testStatistic.setDate(date);
         testStatisticDao.merge(testStatistic);
-        assertEquals("The getting Date was not the expected one", testDate,
+        assertEquals("The getting Date was not the expected one", date,
             testStatisticDao.getEarliestDate());
     }
 
