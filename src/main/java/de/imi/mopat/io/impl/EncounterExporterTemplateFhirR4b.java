@@ -323,10 +323,11 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
             && receivingFacility != null && obrFillerOrderNumber != null) {
             HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
 
+            String fhirString = FhirR4bHelper.decodeResourceToString(questionnaireResponse, false);
+
             ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(
                 exportTemplate, encounter, sendingFacility, receivingApplication,
-                receivingFacility, obrFillerOrderNumber,
-                FhirR4bHelper.decodeResourceToString(questionnaireResponse)
+                receivingFacility, obrFillerOrderNumber, fhirString
             );
 
             Questionnaire containedQuestionnaire = questionnaireResponse.getContained().stream()
