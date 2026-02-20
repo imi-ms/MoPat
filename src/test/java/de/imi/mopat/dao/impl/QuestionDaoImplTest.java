@@ -6,6 +6,7 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
@@ -45,6 +46,9 @@ public class QuestionDaoImplTest {
 
     @Autowired
     QuestionDao testQuestionDao;
+
+    @Autowired
+    AnswerDao testAnswerDao;
 
     @Autowired
     QuestionnaireDao questionnaireDao;
@@ -93,6 +97,12 @@ public class QuestionDaoImplTest {
 
     @Transactional
     protected void clearTable() {
+        List<Answer> allAnswers = testAnswerDao.getAllElements();
+        for (Answer answer : allAnswers) {
+            testAnswerDao.remove(answer);
+        }
+        entityManager.flush();
+
         List<Question> allQuestions = testQuestionDao.getAllElements();
         for (Question question : allQuestions) {
             testQuestionDao.remove(question);
