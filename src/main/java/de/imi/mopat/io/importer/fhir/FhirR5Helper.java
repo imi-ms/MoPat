@@ -256,13 +256,28 @@ public class FhirR5Helper extends FhirHelper {
     }
 
     /**
-     * Encodes the given FHIR resource into a string representation.
+     * Encodes the provided FHIR resource into a string representation. Uses pretty print.
      *
-     * @param resource the FHIR resource to be encoded. Must not be null.
-     * @return a string representation of the encoded FHIR resource, or null if an error occurs during encoding.
+     * @param resource The IBaseResource instance to be decoded. Must not be null.
+     * @return A String representation of the given resource.
      */
     public static String decodeResourceToString(final IBaseResource resource) {
+        return decodeResourceToString(resource, true);
+    }
+
+    /**
+     * Encodes the provided FHIR resource into a string representation.
+     *
+     * @param resource    The FHIR resource to be encoded. Must not be null.
+     * @param prettyPrint A boolean indicating whether or not to format the output as pretty-printed
+     *                    JSON.
+     * @return A string representation of the FHIR resource, or null if encoding fails due to a
+     * DataFormatException.
+     */
+    public static String decodeResourceToString(final IBaseResource resource,
+        final boolean prettyPrint) {
         try {
+            PARSER.setPrettyPrint(prettyPrint);
             return PARSER.encodeResourceToString(resource);
         } catch (DataFormatException e) {
             LOGGER.error("Error while decoding resource...", e);
