@@ -16,7 +16,9 @@ import ca.uhn.hl7v2.model.v23.message.ORU_R01;
 import ca.uhn.hl7v2.model.v23.segment.MSH;
 import ca.uhn.hl7v2.model.v23.segment.OBR;
 import ca.uhn.hl7v2.model.v23.segment.OBX;
+import ca.uhn.hl7v2.parser.DefaultEscaping;
 import ca.uhn.hl7v2.parser.DefaultXMLParser;
+import ca.uhn.hl7v2.parser.EncodingCharacters;
 import ca.uhn.hl7v2.parser.PipeParser;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportTemplate;
@@ -200,7 +202,12 @@ public class HL7MessageHelper {
         obx.getObservationValue(0).setData(clinicalDataString);
         obx.getObx10_NatureOfAbnormalTest().setValue("F");
 
-        clinicalDataString.setValue(messageBlob);
+        EncodingCharacters encodingCharacters = EncodingCharacters.getInstance(hl7Message);
+
+        DefaultEscaping escaping = new DefaultEscaping();
+        String escapedMessageBlob = escaping.escape(messageBlob, encodingCharacters);
+
+        clinicalDataString.setValue(escapedMessageBlob);
 
         return hl7Message;
     }
