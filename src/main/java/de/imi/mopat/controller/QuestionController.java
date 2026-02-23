@@ -311,7 +311,7 @@ public class QuestionController {
 
         // Update the answerDTOs localizedLabels with the bodyPart label
         if (questionDTO.getQuestionType() == QuestionType.BODY_PART) {
-            updateLocalizedLabelsWithBodyPartLabels(questionDTO);
+            updateBodyPartAttributes(questionDTO);
         }
 
         // Validate the question dto first
@@ -379,7 +379,7 @@ public class QuestionController {
                                @ModelAttribute("questionDTO") final QuestionDTO questionDTO, final BindingResult result,
                                final Model model, final HttpServletRequest request) {
         if (questionDTO.getQuestionType() == QuestionType.BODY_PART) {
-            updateLocalizedLabelsWithBodyPartLabels(questionDTO);
+            updateBodyPartAttributes(questionDTO);
         }
         return questionDTO;
     }
@@ -405,8 +405,11 @@ public class QuestionController {
         }
     }
 
-    public void setLocalizedLabelByBodyPartMessage(QuestionDTO questionDTO, AnswerDTO answerDTO) {
+    public void setLocalizedLabelsAndAttributesForBodyPart(QuestionDTO questionDTO, AnswerDTO answerDTO) {
         if (answerDTO.getBodyPartMessageCode() != null) {
+            BodyPart bodyPart = BodyPart.fromString(answerDTO.getBodyPartMessageCode());
+            answerDTO.setBodyPartPath(bodyPart.getPath());
+            answerDTO.setBodyPartImage(bodyPart.getImagePath());
             SortedMap<String, String> localizedLabel = new TreeMap<>();
             for (String locale : questionDTO.getLocalizedQuestionText().keySet()) {
                 localizedLabel.put(locale,
@@ -417,7 +420,7 @@ public class QuestionController {
         }
     }
 
-    private void updateLocalizedLabelsWithBodyPartLabels(QuestionDTO questionDTO) {
+    private void updateBodyPartAttributes(QuestionDTO questionDTO) {
         if (questionDTO.getAnswers() != null && !questionDTO.getAnswers().isEmpty()) {
             List<String> bodyPartImages = new ArrayList<>();
             for (AnswerDTO answerDTO : questionDTO.getAnswers().values()) {
@@ -425,8 +428,9 @@ public class QuestionController {
                 if (!bodyPartImages.contains(answerDTO.getBodyPartImage())) {
                     bodyPartImages.add(answerDTO.getBodyPartImage());
                 }
-                setLocalizedLabelByBodyPartMessage(questionDTO, answerDTO);
+                setLocalizedLabelsAndAttributesForBodyPart(questionDTO, answerDTO);
             }
+            questionDTO.setBodyPartImages(bodyPartImages);
         }
     }
 

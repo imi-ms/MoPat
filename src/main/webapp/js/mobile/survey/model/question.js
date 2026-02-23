@@ -39,6 +39,7 @@ function Question() {
     this.questionType;
     this.answers;
     this.bodyPartImages;
+    this.imageType;
 
     var response;
     var image;
@@ -86,12 +87,6 @@ function Question() {
      *            The element into which the content is to be injected
      *            (ATTENTION: PASS BY REFERENCE)
      */
-
-     // TODOS:
-     // - Bild Zugriff
-     // - bei Fehlern/fehlenden Eingaben wird nichts / nicht richtig geladen; hier Flag hinzufügen
-     // - can't access property "length", this.bodyPartImages is null
-     // - ReferenceError: ZXing is not defined (Barcode)
     this.getHTML = function (questionContent, isPreview, language) {
         // This is necessary so that the current object can be accessed from
         // within the jQuery functions
@@ -1082,24 +1077,7 @@ function Question() {
                 questionContent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
                 questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
                 //Get the imageType of this question by walking through attached images
-                var imageType;
-                for (var i = 0; i < this.bodyPartImages.length; i++) {
-                    if (this.bodyPartImages[i] == ImagePath.FRONT) {
-                        if (imageType != ImageType.BACK) {
-                            imageType = ImageType.FRONT;
-                        } else {
-                            imageType = ImageType.FRONT_BACK;
-                        }
-                    }
-
-                    if (this.bodyPartImages[i] == ImagePath.BACK) {
-                        if (imageType != ImageType.FRONT) {
-                            imageType = ImageType.BACK;
-                        } else {
-                            imageType = ImageType.FRONT_BACK;
-                        }
-                    }
-                }
+                var imageType = this.imageType;
 
                 //Create the div that contains the image element
                 var imageContent;
@@ -1123,10 +1101,10 @@ function Question() {
                         });
                         frontImageContent.append(frontDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
+                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
+                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
                         }
                         
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
@@ -1153,10 +1131,10 @@ function Question() {
                         });
                         backImageContent.append(backDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
                         }
 
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
