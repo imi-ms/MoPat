@@ -1830,13 +1830,15 @@ function Question() {
 
                 // Set the image source after the onload function to get sure that it's fired
                 if(isPreview) {
-                    var blob = $("#imageFile")[0].files[0];
                     var reader = new FileReader();
                     reader.onload = function(event) {
                         var base64Data = event.target.result;
                         image.src = base64Data;
                     }
-                    if(blob) reader.readAsDataURL(blob);
+                    var imageFile = $("#imageFile")[0];
+                    var blob = imageFile.files[0];
+                    if(blob) reader.readAsDataURL(blob); // Image was uploaded in this session
+                    else image.src = imageFile.dataset.path; // Image was uploaded previously
                 } else {
                     image.src = this.answers[0].imageBase64;
                 }
