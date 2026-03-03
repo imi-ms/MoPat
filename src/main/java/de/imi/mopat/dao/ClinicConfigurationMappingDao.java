@@ -11,10 +11,10 @@ import java.util.List;
 @Component
 public interface ClinicConfigurationMappingDao extends MoPatDao<ClinicConfigurationMapping> {
 
-    public List<ClinicConfigurationMapping> getAllElementsByClinicId(final Integer clinicId);
+    List<ClinicConfigurationMapping> getAllElementsByClinicId(final Integer clinicId);
 
-    public ClinicConfigurationMapping getConfigurationByAttributeAndClass(final Long clinicId, final String attribute,
-        final String clazz);
+    ClinicConfigurationMapping getConfigurationByAttributeAndClass(
+        final Long clinicId, final String attribute, final String clazz);
 
     /**
      * Returns true if registryOfPatient is activated and false otherwise. Get this boolean from the

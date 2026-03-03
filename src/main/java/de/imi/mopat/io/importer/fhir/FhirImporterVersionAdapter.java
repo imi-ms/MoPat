@@ -20,73 +20,73 @@ import org.springframework.web.multipart.MultipartFile;
  * of the specific FHIR version.
  */
 public abstract class FhirImporterVersionAdapter {
-    
+
     /**
      * Returns the path of the schema files based
      * on the Fhir Version present
      * @return String
      */
     abstract String getValidationPath();
-    
+
     /**
      * Returns the ExportTemplateType for the
      * corresponding FHIR Version of the adapter
      * @return ExportTemplateType
      */
     abstract ExportTemplateType getExportTemplateType();
-    
+
     /**
      * Creates a new instance of a FHIR Questionnaire
      */
     abstract void createFhirQuestionnaire();
-    
+
     /**
      * Sets the URL for the FHIR Questionnaire
      *
      * @param url URL to set
      */
     abstract void setFhirQuestionnaireUrl(String url);
-    
+
     /**
      * Checks if the title for the questionnaire is empty
      *
      * @return true if empty, false otherwise
      */
     abstract boolean isFhirQuestionnaireTitleEmpty();
-    
+
     /**
      * Returns the title of the FHIR questionnaire
      * @return String of the title
      */
     abstract String getFhirQuestionnaireTitle();
-    
+
     /**
      * Sets the title of the FHIR Questionnaire
      * @param title to set
      */
     abstract void setFhirQuestionnaireTitle(String title);
-    
+
     /**
      * Returns the questionnaire instance and asserts that the type is correct
      *
      * @return Object(Questionnaire)
      */
     abstract Object getFhirQuestionnaire();
-    
+
     /**
      * Sets the questionnaire. Asserts that object is of type Questionnaire for the specific FHIR Version
      *
      * @param questionnaire to set
      */
     abstract void setFhirQuestionnaire(Object questionnaire);
-    
+
     /**
      * Returns the class type of the questionnaire.
      * Will be FHIR Version specific
      * @return Class type of Questionnaire
      */
     abstract Class<?> getFhirQuestionnaireClass();
-    
+
     /**
      * This method validates a file against a XML-Schema-Definition file.
      *
@@ -96,10 +96,12 @@ public abstract class FhirImporterVersionAdapter {
      * @return True, if the validation was successfull, otherwise there's a {@link DataFormatException} thrown.
      */
     @Deprecated
-    abstract boolean validateFileAgainstSchema(final MultipartFile fileToValidate, final String validationPath,
-        final ImportQuestionnaireValidation result, final MessageSource messageSource);
-    
-    
+    abstract boolean validateFileAgainstSchema(
+            final MultipartFile fileToValidate,
+            final String validationPath,
+            final ImportQuestionnaireValidation result,
+            final MessageSource messageSource);
+
     /**
      * Validates a given resource string with
      * the HAPI resource instance validators.
@@ -108,10 +110,9 @@ public abstract class FhirImporterVersionAdapter {
      * @param frontendLocale locale to use for error messages
      * @return true, if valid; false otherwise
      */
-    abstract boolean validateFileWithFhirInstanceValidator(final String fhirResourceString,
-        final ImportQuestionnaireValidation errors, String frontendLocale);
-    
-    
+    abstract boolean validateFileWithFhirInstanceValidator(
+            final String fhirResourceString, final ImportQuestionnaireValidation errors, String frontendLocale);
+
     /**
      * Parses the given inputStream to a {@link IBaseResource IBaseResource} object.
      *
@@ -119,28 +120,28 @@ public abstract class FhirImporterVersionAdapter {
      * @return Resource the file is representing.
      */
     abstract IBaseResource parseResourceFromFile(final InputStream inputStream);
-    
+
     /**
      * Returns a singleton instance of class {@link FhirContext}.
      *
      * @return FhirContext instance.
      */
     abstract FhirContext getContext();
-    
+
     /**
      * Encodes the given resource to XML format and writes it to the given file.
      *
      * @param file     File where the encoded resource should be written to.
      */
     abstract void writeQuestionnaireToFile(final File file);
-    
+
     /**
      * Set the error handler to the fhir parser.
      *
      * @param errorHandler ErrorHandler that handles the errors thrown while parsing a file
      */
     abstract void setParserValidator(final IParserErrorHandler errorHandler);
-    
+
     /**
      * Maps FHIR questionnaire to MoPat questionnaire instance.
      *
@@ -151,6 +152,5 @@ public abstract class FhirImporterVersionAdapter {
      * {@link ValidationMessage validationMessages}.
      */
     abstract ImportQuestionnaireResult convertFHIRQuestionnaireToMoPatQuestionnaire(
-        List<ExportTemplate> exportTemplates, MessageSource messageSource);
-    
+            List<ExportTemplate> exportTemplates, MessageSource messageSource);
 }

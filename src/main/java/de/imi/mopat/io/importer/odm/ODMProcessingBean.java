@@ -31,8 +31,7 @@ import org.w3c.dom.Node;
 @Component
 public class ODMProcessingBean {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ODMProcessingBean.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ODMProcessingBean.class);
     private final String namespace = "http://www.cdisc.org/ns/odm/v1.3";
     private final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private Unmarshaller unmarshaller;
@@ -181,8 +180,8 @@ public class ODMProcessingBean {
         for (Node node = source.getFirstChild(); node != null; node = node.getNextSibling()) {
             if (node instanceof Element sourceElement) {
                 // Create elements with the new namespace and copy all children
-                Element targetElement = target.getOwnerDocument()
-                    .createElementNS(namespaceURI, sourceElement.getNodeName());
+                Element targetElement =
+                        target.getOwnerDocument().createElementNS(namespaceURI, sourceElement.getNodeName());
                 target.appendChild(targetElement);
 
                 if (sourceElement.hasAttributes()) {
@@ -199,5 +198,4 @@ public class ODMProcessingBean {
             }
         }
     }
-
 }

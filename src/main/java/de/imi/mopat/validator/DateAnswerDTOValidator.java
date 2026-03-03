@@ -23,6 +23,7 @@ public class DateAnswerDTOValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -42,22 +43,32 @@ public class DateAnswerDTOValidator implements Validator {
 
         SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
         try {
-            if (answerDTO.getStartDate() != null && !answerDTO.getStartDate().isEmpty()
-                && answerDTO.getEndDate() != null && !answerDTO.getEndDate().isEmpty()) {
+            if (answerDTO.getStartDate() != null
+                    && !answerDTO.getStartDate().isEmpty()
+                    && answerDTO.getEndDate() != null
+                    && !answerDTO.getEndDate().isEmpty()) {
 
                 Date startDate = dateFormat.parse(answerDTO.getStartDate());
                 Date endDate = dateFormat.parse(answerDTO.getEndDate());
 
                 if (startDate.equals(endDate)) {
-                    errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("dateAnswer.validator" + ".startEqualsEnd",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "startDate",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "dateAnswer.validator" + ".startEqualsEnd",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
 
                 if (endDate.before(startDate)) {
-                    errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("dateAnswer.validator" + ".endEarlierThanStart",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "startDate",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "dateAnswer.validator" + ".endEarlierThanStart",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             }
         } catch (ParseException ex) {

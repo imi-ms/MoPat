@@ -102,8 +102,8 @@ public interface EncounterDao extends MoPatDao<Encounter> {
      * @return The count of {@link Encounter encounters} concerning the given {@link Bundle}
      * answered by a patient with the given case number during a given time period.
      */
-    Long getEncounterCountByCaseNumberByBundleInInterval(Long bundleId, String caseNumber,
-        Date startDate, Date endDate);
+    Long getEncounterCountByCaseNumberByBundleInInterval(
+            Long bundleId, String caseNumber, Date startDate, Date endDate);
 
     /**
      * Returns all case numbers from stored {@link Encounter encounters}.

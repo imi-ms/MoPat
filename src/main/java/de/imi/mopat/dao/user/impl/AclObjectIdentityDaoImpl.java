@@ -13,16 +13,15 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class AclObjectIdentityDaoImpl extends UserManagementDaoImpl<AclObjectIdentity> implements
-    AclObjectIdentityDao {
+public class AclObjectIdentityDaoImpl extends UserManagementDaoImpl<AclObjectIdentity> implements AclObjectIdentityDao {
 
     @Override
-    public AclObjectIdentity getElementByClassAndObjectId(final AclClass clazz,
-        final Long objectId) {
+    public AclObjectIdentity getElementByClassAndObjectId(final AclClass clazz, final Long objectId) {
         try {
             TypedQuery<AclObjectIdentity> query = moPatUserEntityManager.createQuery(
-                "SELECT a FROM AclObjectIdentity a WHERE a.objectIdClass" + ".id='" + clazz.getId()
-                    + "' AND a" + ".objectIdIdentity='" + objectId + "'", getEntityClass());
+                    "SELECT a FROM AclObjectIdentity a WHERE a.objectIdClass" + ".id='" + clazz.getId() + "' AND a"
+                            + ".objectIdIdentity='" + objectId + "'",
+                    getEntityClass());
             AclObjectIdentity aclObjectIdentity = query.getSingleResult();
             return aclObjectIdentity;
         } catch (NoResultException e) {
@@ -34,13 +33,12 @@ public class AclObjectIdentityDaoImpl extends UserManagementDaoImpl<AclObjectIde
     public List<AclObjectIdentity> getElementsByClass(final AclClass clazz) {
         try {
             TypedQuery<AclObjectIdentity> query = moPatUserEntityManager.createQuery(
-                "SELECT a FROM AclObjectIdentity a WHERE a.objectIdClass" + ".id=" + clazz.getId(),
-                getEntityClass());
+                    "SELECT a FROM AclObjectIdentity a WHERE a.objectIdClass" + ".id=" + clazz.getId(),
+                    getEntityClass());
             List<AclObjectIdentity> aclObjectIdentities = query.getResultList();
             return aclObjectIdentities;
         } catch (Exception e) {
             return null;
         }
     }
-
 }

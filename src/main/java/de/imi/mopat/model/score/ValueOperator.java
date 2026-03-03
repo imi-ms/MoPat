@@ -16,8 +16,7 @@ public class ValueOperator extends UnaryOperator {
 
     @Override
     public Double evaluate(final Expression expression, final Encounter encounter) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
             return unaryExpression.getValue();
         } else {
             LOGGER.error("Wrong type of Expression. Must be an unary " + "expression.");
@@ -28,8 +27,7 @@ public class ValueOperator extends UnaryOperator {
     @Override
     public String getFormula(final Expression expression, final Encounter encounter,
         String defaultLanguage) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
             if (unaryExpression.getValue() == null) {
                 return "null";
             } else {

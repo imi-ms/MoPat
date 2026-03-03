@@ -8,6 +8,4 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class PointOnImageDaoImpl extends MoPatDaoImpl<PointOnImage> implements PointOnImageDao {
-
-}
+public class PointOnImageDaoImpl extends MoPatDaoImpl<PointOnImage> implements PointOnImageDao {}

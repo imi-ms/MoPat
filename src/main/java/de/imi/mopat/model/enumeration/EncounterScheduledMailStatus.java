@@ -12,16 +12,23 @@ import java.util.Map;
  * Definition of mail status of a encounterScheduled.
  */
 public enum EncounterScheduledMailStatus {
-    ACTIVE("ACTIVE"), ADDRESS_REJECTED("ADDRESS_REJECTED"), CONSENT_PENDING(
-        "CONSENT_PENDING"), DEACTIVATED_PATIENT(
-        "DEACTIVATED_PATIENT"), DEACTIVATED_ENCOUNTER_MANAGER(
-        "DEACTIVATED_ENCOUNTER_MANAGER"), INTERRUPTED("INTERRUPTED");
+    ACTIVE("ACTIVE"),
+    ADDRESS_REJECTED("ADDRESS_REJECTED"),
+    CONSENT_PENDING("CONSENT_PENDING"),
+    DEACTIVATED_PATIENT("DEACTIVATED_PATIENT"),
+    DEACTIVATED_ENCOUNTER_MANAGER("DEACTIVATED_ENCOUNTER_MANAGER"),
+    INTERRUPTED("INTERRUPTED");
 
+    private static final Map<String, EncounterScheduledMailStatus> stringToEnum =
+            new HashMap<String, EncounterScheduledMailStatus>();
     private final String textValue;
-    private static final Map<String, EncounterScheduledMailStatus> stringToEnum = new HashMap<String, EncounterScheduledMailStatus>();
 
     EncounterScheduledMailStatus(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static EncounterScheduledMailStatus fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -31,9 +38,5 @@ public enum EncounterScheduledMailStatus {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static EncounterScheduledMailStatus fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

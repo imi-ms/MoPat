@@ -43,6 +43,5 @@ public interface ClinicDao extends MoPatDao<Clinic> {
      *                         all users.
      * @param assignedUserDTOs The assigned users for the given clinic.
      */
-    void updateUserRights(Clinic clinic, List<Bundle> deletedBundles,
-        List<UserDTO> assignedUserDTOs);
+    void updateUserRights(Clinic clinic, List<Bundle> deletedBundles, List<UserDTO> assignedUserDTOs);
 }

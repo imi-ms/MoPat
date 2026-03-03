@@ -34,8 +34,9 @@ public class EncounterScheduledDTO {
     private BundleDTO bundleDTO;
 
     @JsonIgnore
-    @Pattern(regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+    @Pattern(
+            regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     private String email;
 
     // No email validation necessary, custom validator checks this property
@@ -66,7 +67,7 @@ public class EncounterScheduledDTO {
     private EncounterScheduledMailStatus mailStatus;
 
     private List<EncounterDTO> encounterDTOs;
-    //possible reply to email addresses
+    // possible reply to email addresses
     private Map<Long, Set<String>> replyMails;
 
     public Long getId() {
@@ -121,8 +122,7 @@ public class EncounterScheduledDTO {
         return encounterScheduledSerialType;
     }
 
-    public void setEncounterScheduledSerialType(
-        EncounterScheduledSerialType encounterScheduledSerialType) {
+    public void setEncounterScheduledSerialType(EncounterScheduledSerialType encounterScheduledSerialType) {
         this.encounterScheduledSerialType = encounterScheduledSerialType;
     }
 
@@ -197,6 +197,7 @@ public class EncounterScheduledDTO {
     public void setClinicDTO(ClinicDTO clinicDTO) {
         this.clinicDTO = clinicDTO;
     }
+
     public Boolean isCompleted() {
         if (this.endDate != null) {
             return new Date().after(endDate);

@@ -23,12 +23,6 @@ public class GitPropertiesHolder {
     private String commitMessageShort;
 
     public GitProperties getGitProperties() {
-        return new GitProperties(
-                buildVersion,
-                branch,
-                commitId,
-                commitIdAbbrev,
-                commitMessageShort
-        );
+        return new GitProperties(buildVersion, branch, commitId, commitIdAbbrev, commitMessageShort);
     }
 }

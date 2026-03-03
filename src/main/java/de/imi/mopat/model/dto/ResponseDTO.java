@@ -16,8 +16,10 @@ public class ResponseDTO {
     private Long answerId;
     private String customtext = null;
     private Double value = null;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date date = null;
+
     private boolean enabled = true;
     private List<PointOnImageDTO> pointsOnImage;
 

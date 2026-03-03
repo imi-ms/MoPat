@@ -7,10 +7,12 @@ import java.util.Map;
  * Definition of action types that are logged for auditing purposes.
  */
 public enum AuditEntryActionType {
-
-    READ("READ"), WRITE("WRITE"), CHANGE("CHANGE"), RECEIVED("RECEIVED"), SENT("SENT"), DELETE(
-        "DELETE");
-    private final String textValue;
+    READ("READ"),
+    WRITE("WRITE"),
+    CHANGE("CHANGE"),
+    RECEIVED("RECEIVED"),
+    SENT("SENT"),
+    DELETE("DELETE");
     private static final Map<String, AuditEntryActionType> stringToEnum = new HashMap<String, AuditEntryActionType>();
 
     static // Initialize map from constant name to enum constant
@@ -20,8 +22,14 @@ public enum AuditEntryActionType {
         }
     }
 
+    private final String textValue;
+
     AuditEntryActionType(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static AuditEntryActionType fromString(String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -31,9 +39,5 @@ public enum AuditEntryActionType {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static AuditEntryActionType fromString(String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

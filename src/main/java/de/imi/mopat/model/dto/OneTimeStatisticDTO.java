@@ -7,26 +7,32 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class OneTimeStatisticDTO {
 
     private Long bundleId;
+
     @NotNull(message = "{statistic.startdate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date bundleStartDate;
+
     @NotNull(message = "{statistic.enddate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date bundleEndDate;
 
     private String patientId;
+
     @NotNull(message = "{statistic.startdate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date patientStartDate;
+
     @NotNull(message = "{statistic.enddate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date patientEndDate;
 
     private String bundlePatientPatientId;
     private Long bundlePatientBundleId;
+
     @NotNull(message = "{statistic.startdate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date bundlePatientStartDate;
+
     @NotNull(message = "{statistic.enddate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date bundlePatientEndDate;
@@ -35,10 +41,7 @@ public class OneTimeStatisticDTO {
     private Long encounterCountByCaseNumberInInterval;
     private Long encounterCountByCaseNumberByBundleInInterval;
 
-
-    public OneTimeStatisticDTO() {
-
-    }
+    public OneTimeStatisticDTO() {}
 
     public OneTimeStatisticDTO(final Date startdate, final Date enddate) {
         this.bundleStartDate = startdate;
@@ -141,8 +144,7 @@ public class OneTimeStatisticDTO {
         return encounterCountByCaseNumberInInterval;
     }
 
-    public void setEncounterCountByCaseNumberInInterval(
-        final Long encounterCountByCaseNumberInInterval) {
+    public void setEncounterCountByCaseNumberInInterval(final Long encounterCountByCaseNumberInInterval) {
         this.encounterCountByCaseNumberInInterval = encounterCountByCaseNumberInInterval;
     }
 
@@ -151,7 +153,7 @@ public class OneTimeStatisticDTO {
     }
 
     public void setEncounterCountByCaseNumberByBundleInInterval(
-        final Long encounterCountByCaseNumberByBundleInInterval) {
+            final Long encounterCountByCaseNumberByBundleInInterval) {
         this.encounterCountByCaseNumberByBundleInInterval = encounterCountByCaseNumberByBundleInInterval;
     }
 }

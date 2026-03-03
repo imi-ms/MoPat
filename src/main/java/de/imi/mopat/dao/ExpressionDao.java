@@ -9,6 +9,4 @@ import org.springframework.stereotype.Component;
  * Provides specific methods for the objects of type {@link Expression}.
  */
 @Component
-public interface ExpressionDao extends MoPatDao<Expression> {
-
-}
+public interface ExpressionDao extends MoPatDao<Expression> {}

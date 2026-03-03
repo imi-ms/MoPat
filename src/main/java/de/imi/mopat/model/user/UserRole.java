@@ -7,10 +7,11 @@ import java.util.Map;
  * Definition of user roles supported within MoPat 2.0
  */
 public enum UserRole {
-
-    ROLE_USER("ROLE_USER"), ROLE_ENCOUNTERMANAGER("ROLE_ENCOUNTERMANAGER"), ROLE_EDITOR(
-        "ROLE_EDITOR"), ROLE_MODERATOR("ROLE_MODERATOR"), ROLE_ADMIN("ROLE_ADMIN");
-    private final String textValue;
+    ROLE_USER("ROLE_USER"),
+    ROLE_ENCOUNTERMANAGER("ROLE_ENCOUNTERMANAGER"),
+    ROLE_EDITOR("ROLE_EDITOR"),
+    ROLE_MODERATOR("ROLE_MODERATOR"),
+    ROLE_ADMIN("ROLE_ADMIN");
     private static final Map<String, UserRole> stringToEnum = new HashMap<String, UserRole>();
 
     static // Initialize map from constant name to enum constant
@@ -20,8 +21,14 @@ public enum UserRole {
         }
     }
 
+    private final String textValue;
+
     UserRole(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static UserRole fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -31,9 +38,5 @@ public enum UserRole {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static UserRole fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

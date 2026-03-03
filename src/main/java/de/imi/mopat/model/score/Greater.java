@@ -16,8 +16,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Greater")
 public class Greater extends BinaryOperatorBoolean {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ValueOfQuestionOperator.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ValueOfQuestionOperator.class);
 
     @Override
     public Boolean evaluate(final Expression expression, final Encounter encounter) {
@@ -42,8 +41,7 @@ public class Greater extends BinaryOperatorBoolean {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             List<Expression> greaterExpressions = binaryExpression.getExpressions();
@@ -56,7 +54,7 @@ public class Greater extends BinaryOperatorBoolean {
             Iterator<Expression> iterator = greaterExpressions.iterator();
 
             return "(" + iterator.next().getFormula(encounter, defaultLanguage) + " > "
-                + iterator.next().getFormula(encounter, defaultLanguage) + ")";
+                    + iterator.next().getFormula(encounter, defaultLanguage) + ")";
         } else {
             LOGGER.error("Wrong type of Expression. Must be an binary " + "expression.");
             return null;

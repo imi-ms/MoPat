@@ -1,7 +1,5 @@
 package de.imi.mopat.cron;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.EncounterDao;
@@ -12,7 +10,7 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
-
+import jakarta.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,11 +19,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 /**
  * This class generates the {@link Encounter encounters} on a daily basis.
@@ -33,23 +32,29 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Service
 public class EncounterScheduledExecutor {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterScheduledExecutor.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(EncounterScheduledExecutor.class);
 
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private EncounterDao encounterDao;
+
     @Autowired
     private EncounterScheduledDao encounterScheduledDao;
+
     @Autowired
     private ApplicationMailer applicationMailer;
+
     @Autowired
     private MessageSource messageSource;
+
     @Value("${de.imi.mopat.cron.EncounterScheduledExecutor.scheduleEncounter}")
     private String cronPattern;
+
     private Date lastExecutionTime = null;
     private Date nextExecutionTime = null;
 
@@ -124,28 +129,32 @@ public class EncounterScheduledExecutor {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         Date today = calendar.getTime();
 
-        //update lastExecutionTime and nextExecutionTime
+        // update lastExecutionTime and nextExecutionTime
         this.lastExecutionTime = now;
         calendar.add(Calendar.DATE, 1);
         this.nextExecutionTime = calendar.getTime();
 
-        List<EncounterScheduled> listEncounterScheduled = encounterScheduledDao.getEncounterScheduledByDate(
-            today);
+        List<EncounterScheduled> listEncounterScheduled = encounterScheduledDao.getEncounterScheduledByDate(today);
         for (EncounterScheduled encounterScheduled : listEncounterScheduled) {
-            long timeDifference = today.getTime() - encounterScheduled.getStartDate().getTime();
+            long timeDifference =
+                    today.getTime() - encounterScheduled.getStartDate().getTime();
             long daysBetween = TimeUnit.DAYS.convert(timeDifference, TimeUnit.MILLISECONDS);
-            if ((encounterScheduled.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.UNIQUELY) && encounterScheduled.getStartDate()
-                .equals(today)) || (encounterScheduled.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.WEEKLY) && daysBetween % 7 == 0) || (
-                encounterScheduled.getEncounterScheduledSerialType()
-                    .equals(EncounterScheduledSerialType.MONTHLY) && daysBetween % 30 == 0) || (
-                encounterScheduled.getEncounterScheduledSerialType()
-                    .equals(EncounterScheduledSerialType.REPEATEDLY)
-                    && daysBetween % encounterScheduled.getRepeatPeriod() == 0)) {
+            if ((encounterScheduled.getEncounterScheduledSerialType().equals(EncounterScheduledSerialType.UNIQUELY)
+                            && encounterScheduled.getStartDate().equals(today))
+                    || (encounterScheduled.getEncounterScheduledSerialType().equals(EncounterScheduledSerialType.WEEKLY)
+                            && daysBetween % 7 == 0)
+                    || (encounterScheduled
+                                    .getEncounterScheduledSerialType()
+                                    .equals(EncounterScheduledSerialType.MONTHLY)
+                            && daysBetween % 30 == 0)
+                    || (encounterScheduled
+                                    .getEncounterScheduledSerialType()
+                                    .equals(EncounterScheduledSerialType.REPEATEDLY)
+                            && daysBetween % encounterScheduled.getRepeatPeriod() == 0)) {
 
                 Encounter encounter = new Encounter();
-                Bundle bundle = bundleDao.getElementById(encounterScheduled.getBundle().getId());
+                Bundle bundle =
+                        bundleDao.getElementById(encounterScheduled.getBundle().getId());
                 encounter.setBundle(bundle);
                 encounter.setCaseNumber(encounterScheduled.getCaseNumber());
                 encounter.setStartTime(new Timestamp(today.getTime()));
@@ -165,14 +174,14 @@ public class EncounterScheduledExecutor {
      * .deleteFinishedEncounterMailaddress set in the mopat.properties. This method deletes all mail
      * addresses of finished {@link EncounterScheduled}.
      */
-    @Scheduled(cron = "${de.imi.mopat.cron.EncounterScheduledExecutor"
-        + ".deleteFinishedEncounterMailaddress}")
+    @Scheduled(cron = "${de.imi.mopat.cron.EncounterScheduledExecutor" + ".deleteFinishedEncounterMailaddress}")
     public void deleteFinishedEncounterMailadress() {
-        Long finishedEncounterMailaddressTimeWindowInMillis = configurationDao.getFinishedEncounterMailaddressTimeWindow();
+        Long finishedEncounterMailaddressTimeWindowInMillis =
+                configurationDao.getFinishedEncounterMailaddressTimeWindow();
         if (finishedEncounterMailaddressTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (30 days) instead",
-                Constants.FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS);
+            LOGGER.info(
+                    "Could not find a value for the property {}; will take " + "the default (30 days) instead",
+                    Constants.FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS);
             finishedEncounterMailaddressTimeWindowInMillis = (30L * 24L * 60L * 60L * 1000L);
         } else if (finishedEncounterMailaddressTimeWindowInMillis == -1) {
             return;
@@ -185,10 +194,12 @@ public class EncounterScheduledExecutor {
         try {
             pastEncounterScheduled.addAll(encounterScheduledDao.getPastEncounterScheduled());
         } catch (Exception e) {
-            LOGGER.error("Something went wrong while checking for past "
-                + "EncounterScheduled. Since this is important for "
-                + "not storing the patients email adresses too "
-                + "long, investigate this error ASAP", e);
+            LOGGER.error(
+                    "Something went wrong while checking for past "
+                            + "EncounterScheduled. Since this is important for "
+                            + "not storing the patients email adresses too "
+                            + "long, investigate this error ASAP",
+                    e);
         }
 
         // Check if every Encounter of a past EncounterScheduled is done and
@@ -198,8 +209,9 @@ public class EncounterScheduledExecutor {
         for (EncounterScheduled encouterScheduled : pastEncounterScheduled) {
             if (!encouterScheduled.getEncounters().isEmpty()) {
                 for (Encounter encounter : encouterScheduled.getEncounters()) {
-                    if (encounter.getEndTime() == null || (encounter.getEndTime().getTime()
-                        + finishedEncounterMailaddressTimeWindowInMillis) > now) {
+                    if (encounter.getEndTime() == null
+                            || (encounter.getEndTime().getTime() + finishedEncounterMailaddressTimeWindowInMillis)
+                                    > now) {
                         continue outerloop;
                     }
                 }

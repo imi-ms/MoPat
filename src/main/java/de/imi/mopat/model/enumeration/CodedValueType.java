@@ -7,8 +7,9 @@ import java.util.Map;
  * Definition of coded value types supported within MoPat 2.0
  */
 public enum CodedValueType {
-    STRING("STRING"), INTEGER("INTEGER"), FLOAT("FLOAT");
-    private final String textValue;
+    STRING("STRING"),
+    INTEGER("INTEGER"),
+    FLOAT("FLOAT");
     private static final Map<String, CodedValueType> stringToEnum = new HashMap<>();
 
     static // Initialize map from constant name to enum constant
@@ -18,8 +19,14 @@ public enum CodedValueType {
         }
     }
 
+    private final String textValue;
+
     CodedValueType(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static CodedValueType fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     public String getTextValue() {
@@ -29,9 +36,5 @@ public enum CodedValueType {
     @Override
     public String toString() {
         return textValue;
-    }
-
-    public static CodedValueType fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

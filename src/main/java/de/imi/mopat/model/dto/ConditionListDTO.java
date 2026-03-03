@@ -30,7 +30,7 @@ public class ConditionListDTO {
      * @return The conditionDTOs availableBundleDTOs as list object.
      */
     public List<BundleDTO> getAvailableBundleDTOs() {
-        //Sort availableBundleDTOs by name
+        // Sort availableBundleDTOs by name
         Collections.sort(availableBundleDTOs, new Comparator<BundleDTO>() {
             @Override
             public int compare(BundleDTO o1, BundleDTO o2) {
@@ -69,7 +69,7 @@ public class ConditionListDTO {
      *                                         set.
      */
     public void setAvailableBundleQuestionnaireDTOs(
-        final List<BundleQuestionnaireDTO> availableBundleQuestionnaireDTOs) {
+            final List<BundleQuestionnaireDTO> availableBundleQuestionnaireDTOs) {
         this.availableBundleQuestionnaireDTOs = availableBundleQuestionnaireDTOs;
     }
 }

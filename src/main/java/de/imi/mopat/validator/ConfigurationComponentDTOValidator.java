@@ -43,62 +43,68 @@ public class ConfigurationComponentDTOValidator implements Validator {
         List<String> nameValidationList;
 
         for (String key : configurationComponentDTO.getConfigurationGroupDTOs().keySet()) {
-            //List to validate names
+            // List to validate names
             nameValidationList = new ArrayList<>();
-            for (ConfigurationGroupDTO configurationGroupDTO : configurationComponentDTO.getConfigurationGroupDTOs()
-                .get(key)) {
-                if (configurationGroupDTO.getId() != null
-                    || configurationGroupDTO.getReferringId() != null) {
-                    if (!configurationComponentDTO.getConfigurationsToDelete()
-                        .contains(configurationGroupDTO.getId())) {
-                        int indexOfConfigurationGroup = configurationComponentDTO.getConfigurationGroupDTOs()
-                            .get(key).indexOf(configurationGroupDTO);
-                        //Validate configuration groups' name by comparing it
+            for (ConfigurationGroupDTO configurationGroupDTO :
+                    configurationComponentDTO.getConfigurationGroupDTOs().get(key)) {
+                if (configurationGroupDTO.getId() != null || configurationGroupDTO.getReferringId() != null) {
+                    if (!configurationComponentDTO
+                            .getConfigurationsToDelete()
+                            .contains(configurationGroupDTO.getId())) {
+                        int indexOfConfigurationGroup = configurationComponentDTO
+                                .getConfigurationGroupDTOs()
+                                .get(key)
+                                .indexOf(configurationGroupDTO);
+                        // Validate configuration groups' name by comparing it
                         // with the other ones' names
                         String nameMessage = null;
 
                         if (nameValidationList.contains(configurationGroupDTO.getName())) {
-                            //Name exists multiple times
+                            // Name exists multiple times
                             nameMessage = messageSource.getMessage(
-                                "configuration" + ".validate.multipleName", new Object[]{},
-                                LocaleContextHolder.getLocale());
+                                    "configuration" + ".validate.multipleName",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale());
                             errors.rejectValue(
-                                "configurationGroupDTOs[" + key + "][" + indexOfConfigurationGroup
-                                    + "].name", "errormessage", nameMessage);
+                                    "configurationGroupDTOs[" + key + "][" + indexOfConfigurationGroup + "].name",
+                                    "errormessage",
+                                    nameMessage);
                         }
                         if (configurationGroupDTO.getName() == null
-                            || configurationGroupDTO.getName().equalsIgnoreCase("")) {
-                            //Configuration group has got an empty or no name
+                                || configurationGroupDTO.getName().equalsIgnoreCase("")) {
+                            // Configuration group has got an empty or no name
                             nameMessage = messageSource.getMessage(
-                                "configuration" + ".validate.noName", new Object[]{},
-                                LocaleContextHolder.getLocale());
+                                    "configuration" + ".validate.noName",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale());
                             errors.rejectValue(
-                                "configurationGroupDTOs[" + key + "][" + indexOfConfigurationGroup
-                                    + "].name", "errormessage", nameMessage);
+                                    "configurationGroupDTOs[" + key + "][" + indexOfConfigurationGroup + "].name",
+                                    "errormessage",
+                                    nameMessage);
                         } else {
-                            //There's no other group that has got the same
+                            // There's no other group that has got the same
                             // name yet
                             nameValidationList.add(configurationGroupDTO.getName());
                         }
 
-                        //validate the configurationDTOs adhering to
+                        // validate the configurationDTOs adhering to
                         // configurationGroupDTO
                         int indexOfConfiguration = 0;
                         for (ConfigurationDTO configurationDTO : configurationGroupDTO.getConfigurationDTOs()) {
                             if (configurationDTO.getParent() == null) {
                                 errors.pushNestedPath("configurationGroupDTOs[" + key + "]["
-                                    + indexOfConfigurationGroup + "].configurationDTOs["
-                                    + indexOfConfiguration + "]");
+                                        + indexOfConfigurationGroup + "].configurationDTOs["
+                                        + indexOfConfiguration + "]");
                                 configurationDTOValidator.validate(configurationDTO, errors);
                                 errors.popNestedPath();
                                 if (configurationDTO.getChildren() != null
-                                    && configurationDTO.getValue().equalsIgnoreCase("true")) {
+                                        && configurationDTO.getValue().equalsIgnoreCase("true")) {
                                     int indexOfChild = 0;
                                     for (ConfigurationDTO childDTO : configurationDTO.getChildren()) {
                                         errors.pushNestedPath("configurationGroupDTOs[" + key + "]["
-                                            + indexOfConfigurationGroup + "]"
-                                            + ".configurationDTOs[" + indexOfConfiguration + "]"
-                                            + ".children[" + indexOfChild + "]");
+                                                + indexOfConfigurationGroup + "]"
+                                                + ".configurationDTOs[" + indexOfConfiguration + "]"
+                                                + ".children[" + indexOfChild + "]");
                                         configurationDTOValidator.validate(childDTO, errors);
                                         errors.popNestedPath();
                                         indexOfChild++;

@@ -25,25 +25,23 @@ public class ClinicConfigurationService {
      * @param clinicConfiguration    The configuration element
      * @param clinicConfigurationDTO The currently processed DTO
      */
-    public void processChildrenElements(final ClinicConfiguration clinicConfiguration,
-        final ClinicConfigurationDTO clinicConfigurationDTO) {
-        //Set the children DTOs
+    public void processChildrenElements(
+            final ClinicConfiguration clinicConfiguration, final ClinicConfigurationDTO clinicConfigurationDTO) {
+        // Set the children DTOs
         clinicConfigurationDTO.setChildren(new ArrayList<>());
         for (ClinicConfiguration child : clinicConfiguration.getChildren()) {
             ClinicConfigurationDTO childDTO = clinicConfigurationDTOMapper.apply(child);
             List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
-            for(ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(childDTO.getMappedConfigurationGroup())){
+            for (ConfigurationGroup configurationGroup :
+                    configurationGroupDao.getConfigurationGroups(childDTO.getMappedConfigurationGroup())) {
                 configurationGroupDTOS.add(configurationGroup.toConfigurationGroupDTO());
             }
             childDTO.setMappedConfigurationGroupDTOS(configurationGroupDTOS);
             if (child.getChildren() != null && !child.getChildren().isEmpty()) {
                 processChildrenElements(child, childDTO);
             }
-            //Add dto after processing its children
+            // Add dto after processing its children
             clinicConfigurationDTO.getChildren().add(childDTO);
-
         }
     }
-
-
 }

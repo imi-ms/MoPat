@@ -2,16 +2,27 @@ package de.imi.mopat.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-
-import java.io.Serializable;
-import java.util.*;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,61 +34,77 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Table(name = "acl_sid")
 public class User implements Serializable, UserDetails {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private final Set<AclEntry> rights = new HashSet<>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private Collection<Invitation> invitationCollection;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @Column(name = "uuid")
-    private final String uuid = UUIDGenerator.createUUID();
+
     @Column(name = "sid")
     @NotNull(message = "{user.username.notNull}")
     @NotEmpty(message = "{user.username.notEmpty}")
     private String username;
+
     @NotNull(message = "{user.firstname.notNull}")
     @Size(min = 3, max = 255, message = "{user.firstname.size}")
     @Column(name = "firstname")
     private String firstname;
+
     @NotNull(message = "{user.lastname.notNull}")
     @Size(min = 3, max = 255, message = "{user.lastname.size}")
     @Column(name = "lastname")
     private String lastname;
+
     @NotNull(message = "{user.email.notNull}")
     @Size(min = 3, max = 255, message = "{user.email.size}")
-    @Pattern(regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+    @Pattern(
+            regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     @Column(name = "email")
     private String email;
     //    @NotNull(message = "{user.password.notNull}")
-//    @NotEmpty(message = "{user.password.notEmpty}")
-//    @Size(min = 8, max = 255, message = "{user.password.size}")
+    //    @NotEmpty(message = "{user.password.notEmpty}")
+    //    @Size(min = 8, max = 255, message = "{user.password.size}")
     @Column(name = "password")
     private String password;
+
     private transient String newPassword;
     private transient String oldPassword;
     private transient String passwordCheck;
+
     @Column(name = "salt")
     private String salt;
+
     @NotNull(message = "{user.principal.notNull}")
     @Column(name = "principal")
     private boolean principal;
+
     @Valid
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Authority> authority = new HashSet<>();
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private final Set<AclEntry> rights = new HashSet<>();
+
     @Column(name = "is_enabled")
     private Boolean isEnabled = Boolean.TRUE;
-    @Column(name="use_pin")
+
+    @Column(name = "use_pin")
     private Boolean usePin = Boolean.FALSE;
-    @Column(name="pin")
+
+    @Column(name = "pin")
     private String pin;
+
     @Column(name = "last_selected_clinic_id")
     private Long lastSelectedClinicId;
 
     public User() {
-        //default constructor (in protected state), should not be accessible
+        // default constructor (in protected state), should not be accessible
         // to anything else but the JPA implementation (here: Hibernate) and
         // the JUnit tests
     }
@@ -104,6 +131,10 @@ public class User implements Serializable, UserDetails {
      */
     public Long getId() {
         return id;
+    }
+
+    public void setId(long l) {
+        this.id = l;
     }
 
     private String getUUID() {
@@ -338,10 +369,9 @@ public class User implements Serializable, UserDetails {
      */
     public void setEmail(final String email) {
         assert email != null : "The given eMail String was null";
-        assert email.matches(
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\"
-                + ".[A-Za-z]{2,})$") :
-            "The given eMail " + "String didn't machted the eMail pattern";
+        assert email.matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\"
+                        + ".[A-Za-z]{2,})$")
+                : "The given eMail " + "String didn't machted the eMail pattern";
         this.email = email.trim();
     }
 
@@ -428,13 +458,13 @@ public class User implements Serializable, UserDetails {
         return this.isEnabled;
     }
 
+    public Boolean getIsEnabled() {
+        return this.isEnabled;
+    }
+
     public void setIsEnabled(final Boolean isEnabled) {
         assert isEnabled != null : "The parameter isEnabled must not be null";
         this.isEnabled = isEnabled;
-    }
-
-    public Boolean getIsEnabled() {
-        return this.isEnabled;
     }
 
     /**
@@ -520,16 +550,11 @@ public class User implements Serializable, UserDetails {
         this.pin = pin;
     }
 
-
     public Long getLastSelectedClinicId() {
         return lastSelectedClinicId;
     }
 
     public void setLastSelectedClinicId(Long lastSelectedClinicId) {
         this.lastSelectedClinicId = lastSelectedClinicId;
-    }
-
-    public void setId(long l) {
-        this.id = l;
     }
 }

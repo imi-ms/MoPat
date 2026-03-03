@@ -10,7 +10,6 @@ import java.util.List;
  *
  */
 @Component
-
 public interface EncounterScheduledDao extends MoPatDao<EncounterScheduled> {
 
     /**
@@ -20,7 +19,7 @@ public interface EncounterScheduledDao extends MoPatDao<EncounterScheduled> {
      */
 
     // TODO Once use of Encountermanagers is readded to the application, the filter has to be applied again.
-    //@PostFilter("hasRole('ROLE_ENCOUNTERMANAGER') OR hasPermission(filterObject, 'READ')")
+    // @PostFilter("hasRole('ROLE_ENCOUNTERMANAGER') OR hasPermission(filterObject, 'READ')")
     @Override
     List<EncounterScheduled> getAllElements();
 

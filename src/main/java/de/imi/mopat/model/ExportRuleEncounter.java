@@ -25,9 +25,7 @@ public class ExportRuleEncounter extends ExportRule implements Serializable {
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests
      */
-    protected ExportRuleEncounter() {
-
-    }
+    protected ExportRuleEncounter() {}
 
     /**
      * Constructor. See
@@ -42,8 +40,10 @@ public class ExportRuleEncounter extends ExportRule implements Serializable {
      * @param encounterField The {@link ExportEncounterFieldType} object to which this export rule
      *                       should belong.
      */
-    public ExportRuleEncounter(final ExportTemplate exportTemplate, final String exportField,
-        final ExportEncounterFieldType encounterField) {
+    public ExportRuleEncounter(
+            final ExportTemplate exportTemplate,
+            final String exportField,
+            final ExportEncounterFieldType encounterField) {
         super(exportTemplate, exportField);
         setEncounterField(encounterField);
     }

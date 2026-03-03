@@ -16,19 +16,24 @@ import org.springframework.web.multipart.MultipartFile;
 public class AnswerDTO {
 
     private Long id = null;
+
     @DateFormatForString(value = "yyyy-MM-dd", message = "{dateAnswer.startDate.wrongFormat}")
     private String startDate = null;
+
     @DateFormatForString(value = "yyyy-MM-dd", message = "{dateAnswer.endDate.wrongFormat}")
     private String endDate = null;
+
     private Double value = null;
     // Numerical value used for scoring; can be null since scoring is
     // not mandatory
     private String codedValue = null; // Coded vlaue for select questions
-    private Double minValue = null;   //Lowest point for slider questions
-    private Double maxValue = null;   // Highest point for slider questions
+    private Double minValue = null; // Lowest point for slider questions
+    private Double maxValue = null; // Highest point for slider questions
     private String stepsize = null; // Used for slider and numberInput questions
+
     @JsonIgnore
     private MultipartFile imageFile = null; // Used for image questions
+
     private String imagePath = null;
     private String imageBase64 = null;
 

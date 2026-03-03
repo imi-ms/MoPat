@@ -34,7 +34,6 @@ public class HL7MessageHelper {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HL7MessageHelper.class);
 
-
     /**
      * Sends an HL7 ORU^R01 message containing clinical data in the form of a blob to a
      * communication server. This method uses default settings for secure connections and non-secure
@@ -56,18 +55,29 @@ public class HL7MessageHelper {
      * @return {@code ExportStatus.SUCCESS} if the message is sent successfully,
      * {@code ExportStatus.FAILURE} if an error occurs during message transmission.
      */
-    public ExportStatus createAndSendMessageWithBlob(final String hostname, final Integer port,
-        ExportTemplate exportTemplate, Encounter encounter,
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber,
-        String messageBlob
-    ) {
+    public ExportStatus createAndSendMessageWithBlob(
+            final String hostname,
+            final Integer port,
+            ExportTemplate exportTemplate,
+            Encounter encounter,
+            String sendingFacility,
+            String receivingApplication,
+            String receivingFacility,
+            String obrFillerOrderNumber,
+            String messageBlob) {
         return createAndSendMessageWithBlob(
-            hostname, port, exportTemplate,
-            encounter, sendingFacility, receivingApplication,
-            receivingFacility, obrFillerOrderNumber, messageBlob,
-            false, null, null
-        );
+                hostname,
+                port,
+                exportTemplate,
+                encounter,
+                sendingFacility,
+                receivingApplication,
+                receivingFacility,
+                obrFillerOrderNumber,
+                messageBlob,
+                false,
+                null,
+                null);
     }
 
     /**
@@ -97,23 +107,46 @@ public class HL7MessageHelper {
      * {@code ExportStatus.FAILURE} if an error occurs during message transmission.
      */
     public ExportStatus createAndSendMessageWithBlob(
-        final String hostname, final Integer port,
-        ExportTemplate exportTemplate, Encounter encounter,
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber,
-        String messageBlob, Boolean useTLS, KeyStore keyStore, String keyStorePassphrase
-    ) {
+            final String hostname,
+            final Integer port,
+            ExportTemplate exportTemplate,
+            Encounter encounter,
+            String sendingFacility,
+            String receivingApplication,
+            String receivingFacility,
+            String obrFillerOrderNumber,
+            String messageBlob,
+            Boolean useTLS,
+            KeyStore keyStore,
+            String keyStorePassphrase) {
         try {
             if (useTLS) {
-                sendMessageViaComServer(hostname, port, createMessageWithBlob(
-                    exportTemplate, encounter, sendingFacility, receivingApplication,
-                    receivingFacility, obrFillerOrderNumber, messageBlob
-                ), useTLS, keyStore, keyStorePassphrase);
+                sendMessageViaComServer(
+                        hostname,
+                        port,
+                        createMessageWithBlob(
+                                exportTemplate,
+                                encounter,
+                                sendingFacility,
+                                receivingApplication,
+                                receivingFacility,
+                                obrFillerOrderNumber,
+                                messageBlob),
+                        useTLS,
+                        keyStore,
+                        keyStorePassphrase);
             } else {
-                sendMessageViaComServer(hostname, port, createMessageWithBlob(
-                    exportTemplate, encounter, sendingFacility, receivingApplication,
-                    receivingFacility, obrFillerOrderNumber, messageBlob
-                ));
+                sendMessageViaComServer(
+                        hostname,
+                        port,
+                        createMessageWithBlob(
+                                exportTemplate,
+                                encounter,
+                                sendingFacility,
+                                receivingApplication,
+                                receivingFacility,
+                                obrFillerOrderNumber,
+                                messageBlob));
             }
             return ExportStatus.SUCCESS;
         } catch (Exception e) {
@@ -142,30 +175,31 @@ public class HL7MessageHelper {
      * @throws IOException  If an input or output exception occurs during message handling.
      */
     public ORU_R01 createMessageWithBlob(
-        ExportTemplate exportTemplate, Encounter encounter,
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber,
-        String messageBlob
-    ) throws HL7Exception, IOException {
+            ExportTemplate exportTemplate,
+            Encounter encounter,
+            String sendingFacility,
+            String receivingApplication,
+            String receivingFacility,
+            String obrFillerOrderNumber,
+            String messageBlob)
+            throws HL7Exception, IOException {
         ORU_R01 hl7Message = new ORU_R01();
 
         LOGGER.info("[" + exportTemplate.getExportTemplateType().name()
-            + " via HL7] Creating a HL7 message to send patient data...");
+                + " via HL7] Creating a HL7 message to send patient data...");
         // Message initialization
         hl7Message.initQuickstart("ORU", "R01", "P");
 
         // Set HL7 message header
         MSH msh = hl7Message.getMSH();
 
-        msh.getMsh4_SendingFacility().getHd1_NamespaceID()
-            .setValue(sendingFacility);
-        msh.getMsh5_ReceivingApplication().getHd1_NamespaceID()
-            .setValue(receivingApplication);
-        msh.getMsh6_ReceivingFacility().getHd1_NamespaceID()
-            .setValue(receivingFacility);
+        msh.getMsh4_SendingFacility().getHd1_NamespaceID().setValue(sendingFacility);
+        msh.getMsh5_ReceivingApplication().getHd1_NamespaceID().setValue(receivingApplication);
+        msh.getMsh6_ReceivingFacility().getHd1_NamespaceID().setValue(receivingFacility);
 
-        msh.getMsh3_SendingApplication().getHd1_NamespaceID()
-            .setValue(exportTemplate.getQuestionnaire().getName());
+        msh.getMsh3_SendingApplication()
+                .getHd1_NamespaceID()
+                .setValue(exportTemplate.getQuestionnaire().getName());
 
         msh.getMessageControlID().setValue(encounter.getId() + "_" + exportTemplate.getId());
         msh.getMsh14_ContinuationPointer().setValue("L");
@@ -173,14 +207,16 @@ public class HL7MessageHelper {
         LOGGER.info("Creating Patient data");
         ORU_R01_PATIENT patientData = hl7Message.getRESPONSE().getPATIENT();
         if (encounter.getPatientID() != null) {
-            patientData.getPID().getPatientIDInternalID(0).getCx1_ID()
-                .setValue(Long.toString(encounter.getPatientID()));
+            patientData
+                    .getPID()
+                    .getPatientIDInternalID(0)
+                    .getCx1_ID()
+                    .setValue(Long.toString(encounter.getPatientID()));
         } else {
             LOGGER.error("The patient does not have an ID");
         }
         if (encounter.getCaseNumber() != null) {
-            patientData.getVISIT().getPV1().getPv119_VisitNumber().getCx1_ID()
-                .setValue(encounter.getCaseNumber());
+            patientData.getVISIT().getPV1().getPv119_VisitNumber().getCx1_ID().setValue(encounter.getCaseNumber());
         } else {
             LOGGER.error("The patient does not have a case number");
         }
@@ -188,14 +224,16 @@ public class HL7MessageHelper {
         LOGGER.info("Creating Observation data");
 
         OBR obr = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBR();
-        obr.getObr3_FillerOrderNumber().getEi1_EntityIdentifier()
-            .setValue(obrFillerOrderNumber);
+        obr.getObr3_FillerOrderNumber().getEi1_EntityIdentifier().setValue(obrFillerOrderNumber);
 
         DateFormat dateFormatter = new SimpleDateFormat("yyyyMMddhhmm");
-        obr.getObr7_ObservationDateTime().getTimeOfAnEvent()
-            .setValue(dateFormatter.format(encounter.getStartTime()));
+        obr.getObr7_ObservationDateTime().getTimeOfAnEvent().setValue(dateFormatter.format(encounter.getStartTime()));
 
-        OBX obx = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBSERVATION(0).getOBX();
+        OBX obx = hl7Message
+                .getRESPONSE()
+                .getORDER_OBSERVATION()
+                .getOBSERVATION(0)
+                .getOBX();
         obx.getObx1_SetIDOBX().setValue("1");
         obx.getObx2_ValueType().setValue("ST");
         ST clinicalDataString = new ST(hl7Message);
@@ -221,15 +259,12 @@ public class HL7MessageHelper {
      * @return The updated HL7 ORU_R01 message with the modified MSH-3 Namespace ID.
      * @throws DataTypeException If an error occurs while setting the Namespace ID.
      */
-    public ORU_R01 overwriteMsh3NamespaceId(ORU_R01 message, String namespaceId)
-        throws DataTypeException {
+    public ORU_R01 overwriteMsh3NamespaceId(ORU_R01 message, String namespaceId) throws DataTypeException {
         MSH msh = message.getMSH();
-        msh.getMsh3_SendingApplication().getHd1_NamespaceID()
-            .setValue(namespaceId);
+        msh.getMsh3_SendingApplication().getHd1_NamespaceID().setValue(namespaceId);
 
         return message;
     }
-
 
     /**
      * Sends an HL7 ORU^R01 message to a communication server over a specified connection. The
@@ -248,9 +283,14 @@ public class HL7MessageHelper {
      * @throws Exception If an error occurs during message transmission or connection
      *                   establishment.
      */
-    public void sendMessageViaComServer(final String hostname, final Integer port,
-        final ORU_R01 hl7Message, final Boolean useTLS, final KeyStore keyStore,
-        final String keyStorePassphrase) throws Exception {
+    public void sendMessageViaComServer(
+            final String hostname,
+            final Integer port,
+            final ORU_R01 hl7Message,
+            final Boolean useTLS,
+            final KeyStore keyStore,
+            final String keyStorePassphrase)
+            throws Exception {
         // Set up a context: factory for connections and parsers and so on
         HapiContext context = new DefaultHapiContext();
         MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
@@ -262,8 +302,8 @@ public class HL7MessageHelper {
         LOGGER.debug("Opening a Connection for HL7 messaging...");
         // Create new keystore for client
         if (Boolean.TRUE.equals(useTLS) && keyStore != null && keyStorePassphrase != null) {
-            CustomCertificateTlsSocketFactory sfac = new CustomCertificateTlsSocketFactory(keyStore,
-                keyStorePassphrase);
+            CustomCertificateTlsSocketFactory sfac =
+                    new CustomCertificateTlsSocketFactory(keyStore, keyStorePassphrase);
             context.setSocketFactory(new HapiSocketTlsFactoryWrapper(sfac));
         }
         // Open a new connection with the given hostname and port
@@ -293,13 +333,8 @@ public class HL7MessageHelper {
      * @throws Exception If an error occurs during message transmission or connection
      *                   establishment.
      */
-    public void sendMessageViaComServer(final String hostname, final Integer port,
-        final ORU_R01 hl7Message) throws Exception {
-        this.sendMessageViaComServer(
-            hostname, port, hl7Message,
-            false, null, null
-        );
+    public void sendMessageViaComServer(final String hostname, final Integer port, final ORU_R01 hl7Message)
+            throws Exception {
+        this.sendMessageViaComServer(hostname, port, hl7Message, false, null, null);
     }
-
-
 }

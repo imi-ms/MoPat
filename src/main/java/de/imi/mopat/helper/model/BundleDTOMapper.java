@@ -40,22 +40,17 @@ public class BundleDTOMapper implements BiFunction<Boolean, Bundle, BundleDTO> {
             bundleDTO.setLocalizedFinalText(new TreeMap<>(bundle.getLocalizedFinalText()));
             bundleDTO.setdeactivateProgressAndNameDuringSurvey(bundle.getDeactivateProgressAndNameDuringSurvey());
             bundleDTO.setShowProgressPerBundle(bundle.getShowProgressPerBundle());
-            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs =
-                    new ArrayList<>();
+            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = new ArrayList<>();
             // this.getBundleQuestionnaires() can never be null because it is
             // initialized with an empty HashMap when a Bundle is created
-            if (!bundle.getBundleQuestionnaires()
-                    .isEmpty()) {
-                for (BundleQuestionnaire bundleQuestionnaire :
-                        bundle.getBundleQuestionnaires()) {
-                    if (bundleQuestionnaire.getQuestionnaire()
-                            .getId()
-                            == null) {
+            if (!bundle.getBundleQuestionnaires().isEmpty()) {
+                for (BundleQuestionnaire bundleQuestionnaire : bundle.getBundleQuestionnaires()) {
+                    if (bundleQuestionnaire.getQuestionnaire().getId() == null) {
                         continue;
                     }
-                    BundleQuestionnaireDTO bundleQuestionnaireDTO =
-                            bundleQuestionnaire.toBundleQuestionnaireDTO();
-                    bundleQuestionnaireDTO.setQuestionnaireDTO(questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire()));
+                    BundleQuestionnaireDTO bundleQuestionnaireDTO = bundleQuestionnaire.toBundleQuestionnaireDTO();
+                    bundleQuestionnaireDTO.setQuestionnaireDTO(
+                            questionnaireDTOMapper.apply(bundleQuestionnaire.getQuestionnaire()));
                     bundleQuestionnaireDTO.setBundleId(bundle.getId());
                     bundleQuestionnaireDTOs.add(bundleQuestionnaireDTO);
                 }

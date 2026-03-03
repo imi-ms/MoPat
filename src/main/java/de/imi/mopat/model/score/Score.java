@@ -7,13 +7,6 @@ import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportRuleScore;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.ScoreDTO;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,6 +18,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The database table model for table <i>score</i>.
@@ -33,21 +32,26 @@ import jakarta.persistence.Table;
 @Table(name = "score")
 public class Score implements Serializable {
 
+    @JoinColumn(name = "expression", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    Expression expression;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @JsonIgnore
     @Column(name = "uuid")
     private String uuid = UUIDGenerator.createUUID();
+
     @Column(name = "name")
     private String name;
-    @JoinColumn(name = "expression", referencedColumnName = "id")
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    Expression expression;
+
     @ManyToOne
     @JoinColumn(name = "questionnaire_id", referencedColumnName = "id")
     private Questionnaire questionnaire;
+
     @OneToMany(mappedBy = "score", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ExportRuleScore> exportRules = new HashSet<>();
 
@@ -268,8 +272,8 @@ public class Score implements Serializable {
             // them to the list
             for (Score usedScore : usedInScores) {
                 // Get all Scores of the Questionnaire
-                List<Score> possibleScores = new ArrayList<>(
-                    usedScore.getQuestionnaire().getScores());
+                List<Score> possibleScores =
+                        new ArrayList<>(usedScore.getQuestionnaire().getScores());
                 for (Score possibleScore : possibleScores) {
                     Expression expression = possibleScore.getExpression();
                     // If this Expression includes this Score add it to the
@@ -282,8 +286,8 @@ public class Score implements Serializable {
                         // check if any of its Expressions contains this
                         // Score
                     } else if (expression instanceof BinaryExpression) {
-                        List<Expression> expressionList = new ArrayList<>(
-                            ((BinaryExpression) expression).getExpressions());
+                        List<Expression> expressionList =
+                                new ArrayList<>(((BinaryExpression) expression).getExpressions());
                         for (Expression expressionFromBinaryExpression : expressionList) {
                             if (expressionFromBinaryExpression.includesScore(usedScore)) {
                                 usedInScoresTemp.add(possibleScore);
@@ -293,8 +297,8 @@ public class Score implements Serializable {
                         // Else if this Expression is a MultiExpression check
                         // if any of its Expressions contains this Score
                     } else if (expression instanceof MultiExpression) {
-                        List<Expression> expressionList = new ArrayList<>(
-                            ((MultiExpression) expression).getExpressions());
+                        List<Expression> expressionList =
+                                new ArrayList<>(((MultiExpression) expression).getExpressions());
                         for (Expression expressionFromMultiExpression : expressionList) {
                             if (expressionFromMultiExpression.includesScore(usedScore)) {
                                 usedInScoresTemp.add(possibleScore);

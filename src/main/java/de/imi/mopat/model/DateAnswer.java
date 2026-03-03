@@ -1,12 +1,12 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
-import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * A <i>date</i> answer represents a date as an answer from a question. The user can select a date
@@ -19,6 +19,7 @@ public class DateAnswer extends Answer implements Serializable {
     @Column(name = "start_date")
     @Temporal(TemporalType.DATE)
     private Date startDate;
+
     @Column(name = "end_date")
     @Temporal(TemporalType.DATE)
     private Date endDate;
@@ -39,8 +40,7 @@ public class DateAnswer extends Answer implements Serializable {
      * @param endDate   Sets the latest date the user can choose. Can be
      *                  <code>null</code>
      */
-    public DateAnswer(final Question question, final Boolean isEnabled, final Date startDate,
-        final Date endDate) {
+    public DateAnswer(final Question question, final Boolean isEnabled, final Date startDate, final Date endDate) {
         super(question, isEnabled);
         this.setStartDate(startDate);
         this.setEndDate(endDate);

@@ -1,17 +1,25 @@
 package de.imi.mopat.controller.strategy;
 
 import de.imi.mopat.controller.QuestionController;
-import de.imi.mopat.model.*;
+import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.FreetextAnswer;
+import de.imi.mopat.model.Question;
+import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.SelectAnswer;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
-import org.springframework.validation.BindingResult;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.validation.BindingResult;
 
 public class MultipleChoiceOrDropdownStrategy implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         List<Answer> removalList = new ArrayList<>();
         // Create a list to collect all answers which should be
         // removed from the question
@@ -57,8 +65,8 @@ public class MultipleChoiceOrDropdownStrategy implements CreateOrUpdateAnswerStr
             }
 
             // Create new answer
-            SelectAnswer selectAnswer = new SelectAnswer(question, answerDTO.getIsEnabled(),
-                    answerDTO.getLocalizedLabel(), answerDTO.getIsOther());
+            SelectAnswer selectAnswer = new SelectAnswer(
+                    question, answerDTO.getIsEnabled(), answerDTO.getLocalizedLabel(), answerDTO.getIsOther());
             selectAnswer.setValue(answerDTO.getValue());
             selectAnswer.setCodedValue(answerDTO.getCodedValue());
             // Check if one new answer is marked as other

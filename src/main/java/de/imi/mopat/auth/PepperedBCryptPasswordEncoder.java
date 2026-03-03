@@ -1,7 +1,6 @@
 package de.imi.mopat.auth;
 
 import java.nio.charset.StandardCharsets;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**

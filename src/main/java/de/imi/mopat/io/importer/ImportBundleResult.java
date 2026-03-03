@@ -12,9 +12,9 @@ import de.imi.mopat.model.Bundle;
  */
 public class ImportBundleResult {
 
-    private Bundle bundle;
     private final List<ValidationMessage> validationMessages = new ArrayList<>();
     private final List<ImportQuestionnaireResult> importQuestionnaireResults = new ArrayList<>();
+    private Bundle bundle;
 
     /**
      * Returns the {@link Bundle} for this {@link ImportBundleResult}.

@@ -1,8 +1,16 @@
 package de.imi.mopat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,20 +35,20 @@ public class ClinicConfigurationMapping implements Serializable {
     @Column(name = "value")
     private String value;
 
-    @OneToMany(mappedBy = "clinicConfigurationMapping", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "clinicConfigurationMapping",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings;
 
+    public ClinicConfigurationMapping() {}
 
-    public ClinicConfigurationMapping() {
-    }
-
-    public ClinicConfigurationMapping(final Clinic clinic, final ClinicConfiguration clinicConfiguration,
-        final String value) {
+    public ClinicConfigurationMapping(
+            final Clinic clinic, final ClinicConfiguration clinicConfiguration, final String value) {
         this.clinic = clinic;
         this.clinicConfiguration = clinicConfiguration;
         this.value = value;
     }
-
 
     /**
      * Returns the id of the current configuration object.
@@ -53,7 +61,6 @@ public class ClinicConfigurationMapping implements Serializable {
         return id;
     }
 
-
     /**
      * Returns the value of the current configuration object.
      *
@@ -62,15 +69,6 @@ public class ClinicConfigurationMapping implements Serializable {
      */
     public String getValue() {
         return value;
-    }
-
-
-    public ClinicConfiguration getClinicConfiguration() {
-        return clinicConfiguration;
-    }
-
-    public void setClinicConfiguration(ClinicConfiguration clinicConfiguration) {
-        this.clinicConfiguration = clinicConfiguration;
     }
 
     /**
@@ -89,12 +87,20 @@ public class ClinicConfigurationMapping implements Serializable {
         }
     }
 
+    public ClinicConfiguration getClinicConfiguration() {
+        return clinicConfiguration;
+    }
+
+    public void setClinicConfiguration(ClinicConfiguration clinicConfiguration) {
+        this.clinicConfiguration = clinicConfiguration;
+    }
+
     public Clinic getClinic() {
         return clinic;
     }
 
     public void setClinic(Clinic clinic) {
-        this.clinic=clinic;
+        this.clinic = clinic;
     }
 
     public List<ClinicConfigurationGroupMapping> getClinicConfigurationGroupMappings() {
@@ -102,9 +108,7 @@ public class ClinicConfigurationMapping implements Serializable {
     }
 
     public void setClinicConfigurationGroupMappings(
-        List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings) {
+            List<ClinicConfigurationGroupMapping> clinicConfigurationGroupMappings) {
         this.clinicConfigurationGroupMappings = clinicConfigurationGroupMappings;
     }
-
-
 }

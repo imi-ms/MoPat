@@ -101,13 +101,16 @@ public class FhirDstu3Helper extends FhirHelper {
      * {@link DataFormatException} thrown.
      */
     @Deprecated
-    public static boolean validateFileAgainstSchema(final MultipartFile fileToValidate,
-        final String validationSchemaFileDirectory, final String validationSchemaFileName,
-        final ImportQuestionnaireValidation result, final MessageSource messageSource) {
+    public static boolean validateFileAgainstSchema(
+            final MultipartFile fileToValidate,
+            final String validationSchemaFileDirectory,
+            final String validationSchemaFileName,
+            final ImportQuestionnaireValidation result,
+            final MessageSource messageSource) {
         LOGGER.info("Validating questionnaire resource file against xml " + "schema definition...");
 
-        if (validationSchemaFileDirectory == null || validationSchemaFileDirectory.trim()
-            .isEmpty()) {
+        if (validationSchemaFileDirectory == null
+                || validationSchemaFileDirectory.trim().isEmpty()) {
             result.reject("import.fhir.validate.schemaFileDirectoryNull");
             LOGGER.info("ERROR: Directory of xsd is empty or null.");
             return false;
@@ -117,13 +120,11 @@ public class FhirDstu3Helper extends FhirHelper {
         documentBuilderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = null;
         Document document = null;
-        File validationSchemaFile = new File(validationSchemaFileDirectory,
-            validationSchemaFileName);
+        File validationSchemaFile = new File(validationSchemaFileDirectory, validationSchemaFileName);
         try {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             document = documentBuilder.parse(fileToValidate.getInputStream());
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(
-                "http://www.w3.org/2001/XMLSchema");
+            SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             Schema schema = schemaFactory.newSchema(validationSchemaFile);
             documentBuilderFactory.setSchema(schema);
             Validator schemaValidator = schema.newValidator();
@@ -131,14 +132,18 @@ public class FhirDstu3Helper extends FhirHelper {
             try {
                 schemaValidator.validate(source);
             } catch (SAXException e) {
-                result.reject("import.fhir.validate.invalidFile",
-                    new Object[]{e.getLocalizedMessage()}, "File is invalid: {}");
+                result.reject(
+                        "import.fhir.validate.invalidFile",
+                        new Object[] {e.getLocalizedMessage()},
+                        "File is invalid: {}");
                 LOGGER.info("Validation failed. File is invalid. {}", e.getMessage());
                 return false;
             }
         } catch (SAXException | ParserConfigurationException | IOException e) {
-            result.reject("import.fhir.validate.error", new Object[]{e.getLocalizedMessage()},
-                "Error during validation: {}");
+            result.reject(
+                    "import.fhir.validate.error",
+                    new Object[] {e.getLocalizedMessage()},
+                    "Error during validation: {}");
             LOGGER.info("ERROR: {}", e.getMessage());
             return false;
         }
@@ -154,8 +159,8 @@ public class FhirDstu3Helper extends FhirHelper {
      * @param frontendLocale     locale of the frontend, used to get the correct translation
      * @return true, if valid; false otherwise
      */
-    public static boolean validateFileWithFhirInstanceValidator(final String fhirResourceString,
-        final ImportQuestionnaireValidation errors, String frontendLocale) {
+    public static boolean validateFileWithFhirInstanceValidator(
+            final String fhirResourceString, final ImportQuestionnaireValidation errors, String frontendLocale) {
 
         Locale originalLocale = Locale.getDefault();
 
@@ -168,14 +173,15 @@ public class FhirDstu3Helper extends FhirHelper {
             reinitContext();
 
             ValidationSupportChain validationSupport = new ValidationSupportChain(
-                new DefaultProfileValidationSupport(getContext()),
-                new InMemoryTerminologyServerValidationSupport(getContext()));
+                    new DefaultProfileValidationSupport(getContext()),
+                    new InMemoryTerminologyServerValidationSupport(getContext()));
 
-            PrePopulatedValidationSupport prePopulated = new PrePopulatedValidationSupport(
-                getContext());
-            StructureDefinition translationExt = getContext().newJsonParser()
-                .parseResource(StructureDefinition.class, FhirDstu3Helper.class.getResourceAsStream(
-                    "/fhir/StructureDefinition-translation.json"));
+            PrePopulatedValidationSupport prePopulated = new PrePopulatedValidationSupport(getContext());
+            StructureDefinition translationExt = getContext()
+                    .newJsonParser()
+                    .parseResource(
+                            StructureDefinition.class,
+                            FhirDstu3Helper.class.getResourceAsStream("/fhir/StructureDefinition-translation.json"));
 
             prePopulated.addStructureDefinition(translationExt);
             validationSupport.addValidationSupport(prePopulated);
@@ -195,12 +201,12 @@ public class FhirDstu3Helper extends FhirHelper {
 
             ValidationResult result = validator.validateWithResult(fhirResourceString);
 
-            List<SingleValidationMessage> messages = result.getMessages().stream().filter(
-                singleValidationMessage ->
-                    (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
-                        || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
-                        && !Objects.equals(singleValidationMessage.getMessageId(),
-                        PROFILE_UNKNOWN_ID)).toList();
+            List<SingleValidationMessage> messages = result.getMessages().stream()
+                    .filter(singleValidationMessage ->
+                            (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
+                                            || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
+                                    && !Objects.equals(singleValidationMessage.getMessageId(), PROFILE_UNKNOWN_ID))
+                    .toList();
 
             for (SingleValidationMessage message : messages) {
                 addDefaultError(errors, message);
@@ -212,7 +218,6 @@ public class FhirDstu3Helper extends FhirHelper {
             reinitContext();
         }
     }
-
 
     /**
      * Returns a singleton instance of class {@link FhirContext}.
@@ -256,7 +261,7 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return Resource the file is representing.
      */
     public static IBaseResource parseResourceFromFile(final InputStream inputStream)
-        throws ConfigurationException, DataFormatException {
+            throws ConfigurationException, DataFormatException {
         return PARSER.parseResource(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     }
 
@@ -279,8 +284,7 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return A string representation of the FHIR resource, or null if encoding fails due to a
      * DataFormatException.
      */
-    public static String decodeResourceToString(final IBaseResource resource,
-        final boolean prettyPrint) {
+    public static String decodeResourceToString(final IBaseResource resource, final boolean prettyPrint) {
         try {
             PARSER.setPrettyPrint(prettyPrint);
             return PARSER.encodeResourceToString(resource);
@@ -296,8 +300,7 @@ public class FhirDstu3Helper extends FhirHelper {
      * @param questionnaire Object the questionnaireResponse is created of.
      * @return The {@link QuestionnaireResponse} object appropriate to the questionnaire.
      */
-    public static QuestionnaireResponse getQuestionnaireResponse(
-        final Questionnaire questionnaire) {
+    public static QuestionnaireResponse getQuestionnaireResponse(final Questionnaire questionnaire) {
         QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
         questionnaireResponse.setQuestionnaire(new Reference(questionnaire.getUrl()));
         questionnaireResponse.addContained(questionnaire);
@@ -316,8 +319,8 @@ public class FhirDstu3Helper extends FhirHelper {
      * @param questionnaireResponse {@link QuestionnaireResponse} object containing the answers.
      * @return List of all answers.
      */
-    public static List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> getAllAnswersOfQuestionnaireResponse(
-        final QuestionnaireResponse questionnaireResponse) {
+    public static List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent>
+            getAllAnswersOfQuestionnaireResponse(final QuestionnaireResponse questionnaireResponse) {
         List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> answers = new ArrayList<>();
 
         for (QuestionnaireResponse.QuestionnaireResponseItemComponent currentItem : questionnaireResponse.getItem()) {
@@ -333,7 +336,7 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return List of answers that should be collected.
      */
     private static List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> getAllAnswersOfResponseItem(
-        final QuestionnaireResponse.QuestionnaireResponseItemComponent item) {
+            final QuestionnaireResponse.QuestionnaireResponseItemComponent item) {
         List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> answers = new ArrayList<>();
 
         for (QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer : item.getAnswer()) {
@@ -355,25 +358,27 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return QuestionnaireResponseItemComponent object containing the transferred data.
      */
     private static QuestionnaireResponse.QuestionnaireResponseItemComponent transferItemToResponseItem(
-        final Questionnaire.QuestionnaireItemComponent item) {
-        //if the item type is not supported by mopat ignore it
-        QuestionnaireResponse.QuestionnaireResponseItemComponent responseItem = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+            final Questionnaire.QuestionnaireItemComponent item) {
+        // if the item type is not supported by mopat ignore it
+        QuestionnaireResponse.QuestionnaireResponseItemComponent responseItem =
+                new QuestionnaireResponse.QuestionnaireResponseItemComponent();
         responseItem.setLinkId(item.getLinkId());
         responseItem.setLinkIdElement(item.getLinkIdElement());
         responseItem.setText(item.getText());
         responseItem.setTextElement(item.getTextElement());
 
         if (item.getType() != Questionnaire.QuestionnaireItemType.CHOICE
-            && item.getType() != Questionnaire.QuestionnaireItemType.OPENCHOICE) {
+                && item.getType() != Questionnaire.QuestionnaireItemType.OPENCHOICE) {
             if (item.getType() == Questionnaire.QuestionnaireItemType.GROUP) {
-                //Item has other items, so loop through those ones and call
+                // Item has other items, so loop through those ones and call
                 // this method again
                 for (Questionnaire.QuestionnaireItemComponent currentItem : item.getItem()) {
                     responseItem.addItem(transferItemToResponseItem(currentItem));
                 }
             } else {
-                //Set the single answer value type
-                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
+                // Set the single answer value type
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer =
+                        new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                 answer.setId(item.getLinkId());
                 switch (item.getType()) {
                     case BOOLEAN:
@@ -402,12 +407,13 @@ public class FhirDstu3Helper extends FhirHelper {
                 }
             }
         } else {
-            //Options can be defined as a set of options adhering in the
+            // Options can be defined as a set of options adhering in the
             // resource file (first option) or as reference or contained
             // reference as valueSet (second option)
             if (item.getOption() != null && !item.getOption().isEmpty()) {
                 for (Questionnaire.QuestionnaireItemOptionComponent option : item.getOption()) {
-                    QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
+                    QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer =
+                            new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                     try {
                         if (option.getValue() instanceof Coding) {
                             answer.setId(option.getValueCoding().getCode());
@@ -428,8 +434,9 @@ public class FhirDstu3Helper extends FhirHelper {
                         responseItem.addAnswer(answer);
                     } catch (FHIRException e) {
                         LOGGER.debug(
-                            "Mapping questionnaire option to " + "questionnaire response answer "
-                                + "failed" + ". {}", e);
+                                "Mapping questionnaire option to " + "questionnaire response answer " + "failed"
+                                        + ". {}",
+                                e);
                     }
                 }
                 for (Questionnaire.QuestionnaireItemComponent currentItem : item.getItem()) {
@@ -438,10 +445,11 @@ public class FhirDstu3Helper extends FhirHelper {
             } else if (item.getOptions() != null && !item.getOptions().isEmpty()) {
                 ValueSet valueSet = (ValueSet) item.getOptions().getResource();
                 if (valueSet != null) {
-                    for (ValueSet.ConceptSetComponent conceptComponent : valueSet.getCompose()
-                        .getInclude()) {
+                    for (ValueSet.ConceptSetComponent conceptComponent :
+                            valueSet.getCompose().getInclude()) {
                         for (ValueSet.ConceptReferenceComponent conceptReference : conceptComponent.getConcept()) {
-                            QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
+                            QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer =
+                                    new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                             answer.setId(conceptReference.getCode());
                             answer.setValue(new BooleanType());
                             responseItem.addAnswer(answer);
@@ -450,7 +458,8 @@ public class FhirDstu3Helper extends FhirHelper {
                 }
             }
             if (item.getType() == Questionnaire.QuestionnaireItemType.OPENCHOICE) {
-                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent answer =
+                        new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                 answer.setId(item.getLinkId() + "/other");
                 answer.setValue(new StringType());
                 responseItem.addAnswer(answer);
@@ -467,8 +476,8 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return {@link QuestionnaireItemComponent} object if the list contains the item, or
      * <code>null</code> if it's not the case.
      */
-    public static QuestionnaireItemComponent getItemByLinkId(final String linkId,
-        final List<QuestionnaireItemComponent> items) {
+    public static QuestionnaireItemComponent getItemByLinkId(
+            final String linkId, final List<QuestionnaireItemComponent> items) {
         QuestionnaireItemComponent item = null;
         for (QuestionnaireItemComponent currentItem : items) {
             if (item != null) {
@@ -489,8 +498,7 @@ public class FhirDstu3Helper extends FhirHelper {
      * @param item Object searched for items.
      * @return List of all items that are located at the searched item.
      */
-    public static List<QuestionnaireItemComponent> getAllItems(
-        final QuestionnaireItemComponent item) {
+    public static List<QuestionnaireItemComponent> getAllItems(final QuestionnaireItemComponent item) {
         List<QuestionnaireItemComponent> items = new ArrayList<>();
         for (QuestionnaireItemComponent child : item.getItem()) {
             items.add(child);
@@ -509,8 +517,7 @@ public class FhirDstu3Helper extends FhirHelper {
         List<String> localesAsString = new ArrayList<>();
 
         loop:
-        for (Extension extension : element.getExtensionsByUrl(
-            FHIRExtensionType.TRANSLATION.getTextValue())) {
+        for (Extension extension : element.getExtensionsByUrl(FHIRExtensionType.TRANSLATION.getTextValue())) {
             List<Extension> languageCode = extension.getExtensionsByUrl("lang");
             if (languageCode.get(0) == null || languageCode.get(0).isEmpty()) {
                 continue loop;
@@ -534,19 +541,17 @@ public class FhirDstu3Helper extends FhirHelper {
     public static Map<String, String> getLanugageMapFromLanguageExtension(final Element element) {
         Map<String, String> languageMap = new HashMap<>();
 
-        for (Extension extension : element.getExtensionsByUrl(
-            FHIRExtensionType.TRANSLATION.getTextValue())) {
+        for (Extension extension : element.getExtensionsByUrl(FHIRExtensionType.TRANSLATION.getTextValue())) {
             List<Extension> languageCode = extension.getExtensionsByUrl("lang");
             List<Extension> content = extension.getExtensionsByUrl("content");
             if (languageCode.size() == 1 && content.size() == 1) {
                 CodeType locale = (CodeType) languageCode.get(0).getValue();
                 StringType translation = (StringType) content.get(0).getValue();
-                languageMap.put(locale.getValueAsString().replace("-", "_"),
-                    translation.asStringValue());
+                languageMap.put(locale.getValueAsString().replace("-", "_"), translation.asStringValue());
             } else {
                 LOGGER.error("Language extension can't be mapped. Extension "
-                    + "will be ignored because it's invalid. "
-                    + "It contains more or less than one " + "language codes or translations.");
+                        + "will be ignored because it's invalid. "
+                        + "It contains more or less than one " + "language codes or translations.");
             }
         }
 
@@ -560,15 +565,13 @@ public class FhirDstu3Helper extends FhirHelper {
      * @return {Score Score's} value as double.
      */
     public static Double getScoreFromExtension(final Element element) {
-        List<Extension> extensions = element.getExtensionsByUrl(
-            FHIRExtensionType.SCORE.getTextValue());
+        List<Extension> extensions = element.getExtensionsByUrl(FHIRExtensionType.SCORE.getTextValue());
         if (extensions != null && !extensions.isEmpty()) {
             DecimalType value = null;
             try {
                 value = (DecimalType) extensions.get(0).getValue();
             } catch (Exception e) {
-                LOGGER.debug(
-                    "Casting score (ordinalValue) extension to " + "DecimalType failed. {}", e);
+                LOGGER.debug("Casting score (ordinalValue) extension to " + "DecimalType failed. {}", e);
             }
             return value.getValue().doubleValue();
         }
@@ -584,35 +587,37 @@ public class FhirDstu3Helper extends FhirHelper {
      *                           min and max value of a answer that requires a number as input.
      * @return {@link Entry} containing the max value as key and the min value as value.
      */
-    public static Entry<Double, Double> getMinAndMaxFromExtension(final Element element,
-        final Boolean getNumberOfAnswers) {
+    public static Entry<Double, Double> getMinAndMaxFromExtension(
+            final Element element, final Boolean getNumberOfAnswers) {
         Extension min = null;
         Extension max = null;
         Double key = null;
         Double value = null;
         if (getNumberOfAnswers) {
-            if (element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue())
-                != null && !element.getExtensionsByUrl(
-                FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()).isEmpty()) {
+            if (element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue()) != null
+                    && !element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue())
+                            .isEmpty()) {
                 max = element.getExtensionsByUrl(FHIRExtensionType.MAX_NUMBER_ANSWER.getTextValue())
-                    .get(0);
+                        .get(0);
             }
-            if (element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue())
-                != null && !element.getExtensionsByUrl(
-                FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()).isEmpty()) {
+            if (element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue()) != null
+                    && !element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue())
+                            .isEmpty()) {
                 min = element.getExtensionsByUrl(FHIRExtensionType.MIN_NUMBER_ANSWER.getTextValue())
-                    .get(0);
+                        .get(0);
             }
         } else {
             if (element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue()) != null
-                && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue())
-                .isEmpty()) {
-                max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue()).get(0);
+                    && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue())
+                            .isEmpty()) {
+                max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.getTextValue())
+                        .get(0);
             }
             if (element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue()) != null
-                && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue())
-                .isEmpty()) {
-                min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue()).get(0);
+                    && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue())
+                            .isEmpty()) {
+                min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.getTextValue())
+                        .get(0);
             }
         }
 
@@ -644,12 +649,16 @@ public class FhirDstu3Helper extends FhirHelper {
         Extension max = null;
         Extension min = null;
         if (element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()) != null
-            && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()).isEmpty()) {
-            max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString()).get(0);
+                && !element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString())
+                        .isEmpty()) {
+            max = element.getExtensionsByUrl(FHIRExtensionType.MAX_VALUE.toString())
+                    .get(0);
         }
         if (element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()) != null
-            && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()).isEmpty()) {
-            min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString()).get(0);
+                && !element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString())
+                        .isEmpty()) {
+            min = element.getExtensionsByUrl(FHIRExtensionType.MIN_VALUE.toString())
+                    .get(0);
         }
         Date key = null;
         Date value = null;

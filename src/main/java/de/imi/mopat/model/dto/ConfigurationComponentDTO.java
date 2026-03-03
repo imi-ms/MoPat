@@ -16,8 +16,7 @@ public class ConfigurationComponentDTO {
     private List<Long> configurationsToDelete = new ArrayList<>();
     private Map<Long, Boolean> imageDeleteMap = new HashMap<>();
 
-    public ConfigurationComponentDTO(
-        final Map<String, List<ConfigurationGroupDTO>> configurationGroupDTOs) {
+    public ConfigurationComponentDTO(final Map<String, List<ConfigurationGroupDTO>> configurationGroupDTOs) {
         this.configurationGroupDTOs = configurationGroupDTOs;
     }
 
@@ -78,8 +77,7 @@ public class ConfigurationComponentDTO {
      * @param configurationGroupDTOs Map containing {@link ConfigurationGroupDTO} objects to be
      *                               set.
      */
-    public void setConfigurationGroupDTOs(
-        final Map<String, List<ConfigurationGroupDTO>> configurationGroupDTOs) {
+    public void setConfigurationGroupDTOs(final Map<String, List<ConfigurationGroupDTO>> configurationGroupDTOs) {
         this.configurationGroupDTOs = configurationGroupDTOs;
     }
 }

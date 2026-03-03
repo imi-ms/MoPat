@@ -16,6 +16,7 @@ public class ImageAnswerValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 

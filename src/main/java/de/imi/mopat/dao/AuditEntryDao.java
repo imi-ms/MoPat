@@ -8,17 +8,33 @@ import org.springframework.stereotype.Component;
 @Component
 public interface AuditEntryDao {
 
-    void writeAuditEntry(String module, String method, String caseNumber,
-        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action);
+    void writeAuditEntry(
+            String module,
+            String method,
+            String caseNumber,
+            Set<AuditPatientAttribute> patientAttributes,
+            AuditEntryActionType action);
 
-    void writeAuditEntries(String module, String method, Set<String> caseNumbers,
-        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action);
+    void writeAuditEntries(
+            String module,
+            String method,
+            Set<String> caseNumbers,
+            Set<AuditPatientAttribute> patientAttributes,
+            AuditEntryActionType action);
 
-    void writeAuditEntry(String module, String method, String caseNumber,
-        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action,
-        String senderReceiver);
+    void writeAuditEntry(
+            String module,
+            String method,
+            String caseNumber,
+            Set<AuditPatientAttribute> patientAttributes,
+            AuditEntryActionType action,
+            String senderReceiver);
 
-    void writeAuditEntries(String module, String method, Set<String> caseNumbers,
-        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action,
-        String senderReceiver);
+    void writeAuditEntries(
+            String module,
+            String method,
+            Set<String> caseNumbers,
+            Set<AuditPatientAttribute> patientAttributes,
+            AuditEntryActionType action,
+            String senderReceiver);
 }

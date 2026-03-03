@@ -1,11 +1,21 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import de.imi.mopat.model.conditions.ConditionTrigger;
-
-import java.util.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A <i>slider</i> answer represents the answer of a slider question. A slider question is a
@@ -17,19 +27,21 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
 
     @NotNull(message = "{sliderAnswer.minValue.notNull}")
     @Column(name = "min_value")
-    //@Column(nullable = "false") is not possible due to our inheritance
+    // @Column(nullable = "false") is not possible due to our inheritance
     // strategy (see Answer). Thus, the annotation @NotNull for jakarta
     // .validation and JavaDoc together with asserts and tests will be used
-    private Double minValue;    //Lowest point for slider questions
+    private Double minValue; // Lowest point for slider questions
+
     @NotNull(message = "{sliderAnswer.maxValue.notNull}")
     @Column(name = "max_value")
-    //@Column(nullable = "false") is not possible due to our inheritance
+    // @Column(nullable = "false") is not possible due to our inheritance
     // strategy (see Answer). Thus, the annotation @NotNull for jakarta
     // .validation and JavaDoc together with asserts and tests will be used
-    private Double maxValue;    // Highest point for slider questions
+    private Double maxValue; // Highest point for slider questions
+
     @NotNull(message = "{sliderAnswer.stepsize.notNull}")
     @Column(name = "stepsize")
-    //@Column(nullable = "false") is not possible due to our inheritance
+    // @Column(nullable = "false") is not possible due to our inheritance
     // strategy (see Answer). Thus, the annotation @NotNull for jakarta
     // .validation and JavaDoc together with asserts and tests will be used
     private Double stepsize; // Used for slider questions
@@ -45,7 +57,7 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
     @Column(name = "maximum_text")
     @CollectionTable(name = "answer_maximum_text", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedMaximumText;
-    //text to show besides/above the maximum value
+    // text to show besides/above the maximum value
 
     @Column(name = "show_value_on_button")
     private Boolean showValueOnButton;
@@ -55,12 +67,15 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
 
     @NotNull(message = "{sliderAnswer.vertical.notNull}")
     @Column(name = "vertical")
-    //@Column(nullable = "false") is not possible due to our inheritance
+    // @Column(nullable = "false") is not possible due to our inheritance
     // strategy (see Answer). Thus, the annotation @NotNull for jakarta
     // .validation and JavaDoc together with asserts and tests will be used
     private Boolean vertical;
 
-    @OneToMany(mappedBy = "answer", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "answer",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private Set<SliderIcon> icons = new HashSet<>();
 
     protected SliderAnswer() {
@@ -80,8 +95,13 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
      * @param stepsize  States the difference between two marks
      * @param vertical  States if the slider should be displayed vertically.
      */
-    public SliderAnswer(final Question question, final Boolean isEnabled, final Double min,
-        final Double max, final Double stepsize, final Boolean vertical) {
+    public SliderAnswer(
+            final Question question,
+            final Boolean isEnabled,
+            final Double min,
+            final Double max,
+            final Double stepsize,
+            final Boolean vertical) {
         super(question, isEnabled);
         setMinMax(min, max);
         setStepsize(stepsize);
@@ -125,8 +145,7 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
      */
     public void setMinValue(Double min) {
         assert min != null : "The given min value was null";
-        assert
-            min < maxValue : "The given min value was not lower than the " + "existing max value";
+        assert min < maxValue : "The given min value was not lower than the " + "existing max value";
         this.minValue = min;
     }
 
@@ -144,8 +163,7 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
      */
     public void setMaxValue(Double max) {
         assert max != null : "The given max value was null";
-        assert
-            max > minValue : "The given max value was not greater than the " + "existing min value";
+        assert max > minValue : "The given max value was not greater than the " + "existing min value";
         this.maxValue = max;
     }
 
@@ -230,8 +248,7 @@ public class SliderAnswer extends Answer implements Serializable, ConditionTrigg
 
     @Override
     public String toString() {
-        return "{min: " + getMinValue() + ", max: " + getMaxValue() + ", stepsize: " + getStepsize()
-            + "}";
+        return "{min: " + getMinValue() + ", max: " + getMaxValue() + ", stepsize: " + getStepsize() + "}";
     }
 
     public Boolean getVertical() {

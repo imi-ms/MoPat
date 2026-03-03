@@ -1,13 +1,13 @@
 package de.imi.mopat.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 
 @Entity
 @Table(name = "questionnaire_version_group")
@@ -39,6 +38,7 @@ public class QuestionnaireVersionGroup implements Serializable {
     public Set<Questionnaire> getQuestionnaires() {
         return questionnaires;
     }
+
     public void setQuestionnaires(Set<Questionnaire> questionnaires) {
         this.questionnaires = questionnaires;
     }

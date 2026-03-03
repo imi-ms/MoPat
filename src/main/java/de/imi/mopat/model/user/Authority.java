@@ -1,10 +1,18 @@
 package de.imi.mopat.model.user;
 
 import de.imi.mopat.helper.model.UUIDGenerator;
-
-import java.io.Serializable;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * The database table model for table userroles.
@@ -13,16 +21,19 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "userroles")
 public class Authority implements Serializable {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @Column(name = "uuid")
-    private final String uuid = UUIDGenerator.createUUID();
+
     @NotNull(message = "{userRole.user.notNull}")
     @ManyToOne
     @JoinColumn(name = "user", nullable = false)
     private User user;
+
     @Enumerated(EnumType.STRING)
     @NotNull(message = "{userRole.authority.notNull}")
     @Column(name = "authority")
@@ -31,7 +42,7 @@ public class Authority implements Serializable {
     /**
      * Default Constructor
      */
-    protected Authority() { //default constructor (in protected state),
+    protected Authority() { // default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
     }

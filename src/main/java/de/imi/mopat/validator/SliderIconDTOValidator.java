@@ -14,12 +14,12 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Component
 public class SliderIconDTOValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -53,8 +53,7 @@ public class SliderIconDTOValidator implements Validator {
         }
     }
 
-    public void validateWithAnswer(final Object target, final Errors errors,
-        final AnswerDTO answerDTO) {
+    public void validateWithAnswer(final Object target, final Errors errors, final AnswerDTO answerDTO) {
         validator.validate(target, errors);
 
         SliderIconDTO sliderIconDTO = (SliderIconDTO) target;
@@ -84,10 +83,8 @@ public class SliderIconDTOValidator implements Validator {
         }
     }
 
-
     private void rejectValue(final Errors errors, final String messageCode, final String field) {
-        String message = messageSource.getMessage(messageCode, new Object[]{},
-            LocaleContextHolder.getLocale());
+        String message = messageSource.getMessage(messageCode, new Object[] {}, LocaleContextHolder.getLocale());
 
         errors.rejectValue(field, MoPatValidator.ERRORCODE_ERRORMESSAGE, message);
     }

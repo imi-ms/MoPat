@@ -20,30 +20,115 @@ import de.imi.mopat.model.enumeration.Gender;
  */
 public class RandomPatientDataRetrieverImpl extends PatientDataRetriever {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        RandomPatientDataRetrieverImpl.class);
-
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RandomPatientDataRetrieverImpl.class);
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    private static final String[] FIRSTNAMES = {
+        "Selina",
+        "Tony",
+        "Bruce",
+        "Bugs",
+        "Clark",
+        "Wonder",
+        "Indiana",
+        "James T.",
+        "Alan",
+        "Edsger" + " W.",
+        "Marie",
+        "Roger",
+        "Serena",
+        "Timo",
+        "Peter",
+        "Micky",
+        "Chuck",
+        "Rob",
+        "Mary"
+    };
+    private static final String[] LASTNAMES = {
+        "Kyle",
+        "Stark",
+        "Wayne",
+        "Bunny",
+        "Kent",
+        "Woman",
+        "Jones",
+        "Kirk",
+        "Turing",
+        "Dijkstra",
+        "Curie",
+        "Federer",
+        "Williams",
+        "Boll",
+        "Pan",
+        "Maus",
+        "Norris",
+        "Cole",
+        "Poppins"
+    };
+    private static final String[] BIRTHDATES = {
+        "14-03-1976",
+        "29-05-1970",
+        "19-02-1939",
+        "27-07-1940",
+        "19-02-1938",
+        "22-03-1941",
+        "01-07" + "-1899",
+        "22-03-2233",
+        "23-06-1912",
+        "11-05-1930",
+        "07-11-1867",
+        "08-08-1981",
+        "26-09-1981",
+        "08-03-1981",
+        "10-01-1902",
+        "18-11" + "-1928",
+        "10-03-1940",
+        "30-01-1019",
+        "15-06-1934"
+    };
+    private static final Gender[] GENDERS = {
+        Gender.FEMALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.FEMALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.FEMALE,
+        Gender.MALE,
+        Gender.FEMALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.MALE,
+        Gender.FEMALE
+    };
+    private static final Long[] PATIENT_IDS = {
+        1L,
+        1010101L,
+        42L,
+        3118181520L,
+        19211651813114L,
+        2342L,
+        4711L,
+        1701L,
+        51497131L,
+        1960L,
+        92L,
+        17L,
+        5734L,
+        435843L,
+        1902L,
+        1423L,
+        4312L,
+        5887634L,
+        4466886644L
+    };
     private final List<EncounterDTO> encounterDTOs = new ArrayList<>();
     private final Random random = new Random();
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
-
-    private static final String[] FIRSTNAMES = {"Selina", "Tony", "Bruce", "Bugs", "Clark",
-        "Wonder", "Indiana", "James T.", "Alan", "Edsger" + " W.", "Marie", "Roger", "Serena",
-        "Timo", "Peter", "Micky", "Chuck", "Rob", "Mary"};
-    private static final String[] LASTNAMES = {"Kyle", "Stark", "Wayne", "Bunny", "Kent", "Woman",
-        "Jones", "Kirk", "Turing", "Dijkstra", "Curie", "Federer", "Williams", "Boll", "Pan",
-        "Maus", "Norris", "Cole", "Poppins"};
-    private static final String[] BIRTHDATES = {"14-03-1976", "29-05-1970", "19-02-1939",
-        "27-07-1940", "19-02-1938", "22-03-1941", "01-07" + "-1899", "22-03-2233", "23-06-1912",
-        "11-05-1930", "07-11-1867", "08-08-1981", "26-09-1981", "08-03-1981", "10-01-1902",
-        "18-11" + "-1928", "10-03-1940", "30-01-1019", "15-06-1934"};
-    private static final Gender[] GENDERS = {Gender.FEMALE, Gender.MALE, Gender.MALE, Gender.MALE,
-        Gender.MALE, Gender.FEMALE, Gender.MALE, Gender.MALE, Gender.MALE, Gender.MALE,
-        Gender.FEMALE, Gender.MALE, Gender.FEMALE, Gender.MALE, Gender.MALE, Gender.MALE,
-        Gender.MALE, Gender.MALE, Gender.FEMALE};
-    private static final Long[] PATIENT_IDS = {1L, 1010101L, 42L, 3118181520L, 19211651813114L,
-        2342L, 4711L, 1701L, 51497131L, 1960L, 92L, 17L, 5734L, 435843L, 1902L, 1423L, 4312L,
-        5887634L, 4466886644L};
 
     public RandomPatientDataRetrieverImpl() {
 
@@ -53,7 +138,7 @@ public class RandomPatientDataRetrieverImpl extends PatientDataRetriever {
             encounterDTO.setLastname(LASTNAMES[i]);
             try {
                 encounterDTO.setBirthdate(
-                    new java.sql.Date(simpleDateFormat.parse(BIRTHDATES[i]).getTime()));
+                        new java.sql.Date(simpleDateFormat.parse(BIRTHDATES[i]).getTime()));
             } catch (ParseException e) {
                 encounterDTO.setBirthdate(new java.sql.Date(System.currentTimeMillis()));
             }
@@ -64,7 +149,7 @@ public class RandomPatientDataRetrieverImpl extends PatientDataRetriever {
     }
 
     @Override
-    public EncounterDTO retrievePatientData(final Clinic clinic,final String caseNumber) {
+    public EncounterDTO retrievePatientData(final Clinic clinic, final String caseNumber) {
         LOGGER.debug("Case number is: {}", caseNumber);
         assert caseNumber != null : "The given caseNumber was null";
 

@@ -21,54 +21,60 @@ import org.slf4j.MarkerFactory;
  * Definition of export template types. Used in {@link de.imi.mopat.model.ExportTemplate} objects.
  */
 public enum ExportTemplateType {
-
     ODM(
-            ExportTemplateImporterODM.class,
-            EncounterExporterTemplateODM.class,
-            "configurationGroup.label.ODM"
-    ),
+        ExportTemplateImporterODM.class,
+        EncounterExporterTemplateODM.class,
+        "configurationGroup.label.ODM"),
     HL7v2(
-            ExportTemplateImporterHL7.class,
-            EncounterExporterTemplateHL7v2.class,
-            "configurationGroup.label.HLSeven"
-    ),
+        ExportTemplateImporterHL7.class,
+        EncounterExporterTemplateHL7v2.class,
+        "configurationGroup.label.HLSeven"),
     FHIR(
-            null,
-            null,
-            "configurationGroup.label.FHIR"
-    ),
+        null,
+        null,
+        "configurationGroup.label.FHIR"),
     FHIR_DSTU3(
-        ExportTemplateImporterFhirDstu3.class,
-        EncounterExporterTemplateFhirDstu3.class,
-        "configurationGroup.label.FHIR"
-    ),
+            ExportTemplateImporterFhirDstu3.class,
+            EncounterExporterTemplateFhirDstu3.class,
+            "configurationGroup.label.FHIR"),
     FHIR_R4B(
-        ExportTemplateImporterFhirR4b.class,
-        EncounterExporterTemplateFhirR4b.class,
-        "configurationGroup.label.FHIR"
-    ),
+            ExportTemplateImporterFhirR4b.class,
+            EncounterExporterTemplateFhirR4b.class,
+            "configurationGroup.label.FHIR"),
     FHIR_R5(
         ExportTemplateImporterFhirR5.class,
         EncounterExporterTemplateFhirR5.class,
-        "configurationGroup.label.FHIR"
-    ),
+        "configurationGroup.label.FHIR"),
     REDCap(
             ExportTemplateImporterREDCap.class,
             EncounterExporterTemplateREDCap.class,
-            "configurationGroup.label.REDCap"
-    );
+            "configurationGroup.label.REDCap");
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ExportTemplateType.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExportTemplateType.class);
     private final Class<?> importer;
     private final Class<?> exporter;
     private final String configurationMessageCode;
 
-    ExportTemplateType(final Class<?> importer, final Class<?> exporter,
-        final String configurationMessageCode) {
+    ExportTemplateType(final Class<?> importer, final Class<?> exporter, final String configurationMessageCode) {
         this.importer = importer;
         this.exporter = exporter;
         this.configurationMessageCode = configurationMessageCode;
+    }
+
+    /**
+     * Checks if the ExportTemplateType is a FHIR type
+     * @param exportTemplateType to check
+     * @return true if DSTU3, R4B or R5, false otherwise
+     */
+    public static boolean isExportTemplateTypeAFhirType(ExportTemplateType exportTemplateType) {
+        switch (exportTemplateType) {
+            case FHIR_DSTU3, FHIR_R4B, FHIR_R5 -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     /**
@@ -78,17 +84,19 @@ public enum ExportTemplateType {
      * @return A new {@link EncounterExporterTemplate} instance. Can be
      * <b>null</b>, which indicates that no exporter is available for the type.
      */
-    public EncounterExporterTemplate createNewExporterInstance(
-        final ConfigurationDao configurationDao) {
+    public EncounterExporterTemplate createNewExporterInstance(final ConfigurationDao configurationDao) {
         if (exporter == null) {
             return null;
         }
         try {
-            return (EncounterExporterTemplate) exporter.getConstructor(ConfigurationDao.class)
-                .newInstance(configurationDao);
+            return (EncounterExporterTemplate)
+                    exporter.getConstructor(ConfigurationDao.class).newInstance(configurationDao);
         } catch (ReflectiveOperationException ex) {
-            LOGGER.error(MarkerFactory.getMarker("FATAL"),
-                "fatal error while creating exporter instance from type " + "{}: {}", this, ex);
+            LOGGER.error(
+                    MarkerFactory.getMarker("FATAL"),
+                    "fatal error while creating exporter instance from type " + "{}: {}",
+                    this,
+                    ex);
         }
         return null;
     }
@@ -106,26 +114,13 @@ public enum ExportTemplateType {
         try {
             return (ExportTemplateImporter) importer.getConstructor().newInstance();
         } catch (ReflectiveOperationException ex) {
-            LOGGER.error(MarkerFactory.getMarker("FATAL"),
-                "fatal error while creating importer instance from type " + "{}: {}", this, ex);
+            LOGGER.error(
+                    MarkerFactory.getMarker("FATAL"),
+                    "fatal error while creating importer instance from type " + "{}: {}",
+                    this,
+                    ex);
         }
         return null;
-    }
-
-    /**
-     * Checks if the ExportTemplateType is a FHIR type
-     * @param exportTemplateType to check
-     * @return true if DSTU3, R4B or R5, false otherwise
-     */
-    public static boolean isExportTemplateTypeAFhirType(ExportTemplateType exportTemplateType) {
-        switch (exportTemplateType) {
-            case FHIR_DSTU3, FHIR_R4B, FHIR_R5 -> {
-                return true;
-            }
-            default -> {
-                return false;
-            }
-        }
     }
 
     /**
@@ -155,5 +150,4 @@ public enum ExportTemplateType {
     public String getConfigurationMessageCode() {
         return configurationMessageCode;
     }
-
 }

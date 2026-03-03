@@ -9,6 +9,4 @@ import org.springframework.stereotype.Repository;
  * Provides specific methods for the objects of type {@link Invitation}.
  */
 @Repository
-public interface InvitationDao extends UserManagementDao<Invitation> {
-
-}
+public interface InvitationDao extends UserManagementDao<Invitation> {}

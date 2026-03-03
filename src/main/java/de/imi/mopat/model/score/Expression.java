@@ -35,9 +35,11 @@ public abstract class Expression implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @JsonIgnore
     @Column(name = "uuid")
     private String uuid = UUIDGenerator.createUUID();
+
     @ManyToOne(cascade = CascadeType.ALL)
     private Expression parent;
 
@@ -128,8 +130,7 @@ public abstract class Expression implements Serializable {
             // Else if this Expression is a BinaryExpression check if any of
             // its Expressions contains this Score
         } else if (expression instanceof BinaryExpression) {
-            List<Expression> expressionList = new ArrayList<>(
-                ((BinaryExpression) expression).getExpressions());
+            List<Expression> expressionList = new ArrayList<>(((BinaryExpression) expression).getExpressions());
             for (Expression expressionFromBinaryExpression : expressionList) {
                 if (expressionFromBinaryExpression.includesScore(score)) {
                     return true;
@@ -138,8 +139,7 @@ public abstract class Expression implements Serializable {
             // Else if this Expression is a MultiExpression check if any of
             // its Expressions contains this Score
         } else if (expression instanceof MultiExpression) {
-            List<Expression> expressionList = new ArrayList<>(
-                ((MultiExpression) expression).getExpressions());
+            List<Expression> expressionList = new ArrayList<>(((MultiExpression) expression).getExpressions());
             for (Expression expressionFromMultiExpression : expressionList) {
                 if (expressionFromMultiExpression.includesScore(score)) {
                     return true;

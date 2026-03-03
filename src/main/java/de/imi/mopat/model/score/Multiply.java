@@ -1,11 +1,10 @@
 package de.imi.mopat.model.score;
 
 import de.imi.mopat.model.Encounter;
-
-import java.util.Iterator;
-import java.util.List;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This {@link Operator} returns either the value of the first {@link Expression} multiplied by the
@@ -16,8 +15,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Multiply")
 public class Multiply extends BinaryOperatorNumeric {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        Multiply.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Multiply.class);
 
     @Override
     public Double evaluate(final Expression expression, final Encounter encounter) {
@@ -44,8 +42,7 @@ public class Multiply extends BinaryOperatorNumeric {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             List<Expression> multiplyExpressions = binaryExpression.getExpressions();
@@ -55,11 +52,10 @@ public class Multiply extends BinaryOperatorNumeric {
             }
             Iterator<Expression> iterator = multiplyExpressions.iterator();
             return "(" + iterator.next().getFormula(encounter, defaultLanguage) + " * "
-                + iterator.next().getFormula(encounter, defaultLanguage) + ")";
+                    + iterator.next().getFormula(encounter, defaultLanguage) + ")";
         } else {
             LOGGER.error("Wrong type of Expression. Must be a binary " + "expression.");
             return null;
         }
-
     }
 }

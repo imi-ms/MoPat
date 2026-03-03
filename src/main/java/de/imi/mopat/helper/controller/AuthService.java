@@ -17,8 +17,7 @@ import java.util.List;
 @Service
 public class AuthService {
 
-    private static final org.slf4j.Logger LOGGER =
-            org.slf4j.LoggerFactory.getLogger(AuthService.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthService.class);
 
     private final RoleHierarchyImpl roleHierarchy;
 
@@ -66,8 +65,8 @@ public class AuthService {
         }
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         return authorities.stream()
-                .anyMatch(authority -> authority.getAuthority().equals(userRole.getTextValue())) ||
-                roleHierarchy.getReachableGrantedAuthorities(authorities).stream()
+                        .anyMatch(authority -> authority.getAuthority().equals(userRole.getTextValue()))
+                || roleHierarchy.getReachableGrantedAuthorities(authorities).stream()
                         .anyMatch(a -> a.getAuthority().equals(userRole.getTextValue()));
     }
 
@@ -79,7 +78,9 @@ public class AuthService {
         Collection<? extends GrantedAuthority> authorities = authenticatedUser.getAuthorities();
 
         GrantedAuthority highestAuthority = authorities.stream()
-                .max(Comparator.comparingInt(authority -> roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
+                .max(Comparator.comparingInt(authority -> roleHierarchy
+                        .getReachableGrantedAuthorities(List.of(authority))
+                        .size()))
                 .orElse(null);
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
@@ -93,7 +94,7 @@ public class AuthService {
         }
 
         return authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .anyMatch(role -> role.equals("ROLE_ADMIN"));
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMIN"));
     }
 }

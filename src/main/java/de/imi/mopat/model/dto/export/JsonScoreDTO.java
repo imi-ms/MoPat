@@ -36,8 +36,7 @@ public class JsonScoreDTO {
     private Long questionnaireId;
     private ExpressionDTO expression;
 
-    public JsonScoreDTO() {
-    }
+    public JsonScoreDTO() {}
 
     public JsonScoreDTO(final Score score) {
         this.setId(score.getId());
@@ -93,11 +92,12 @@ public class JsonScoreDTO {
      *                           {Questionnaire} as values related to its ids as key.
      * @return This object converted to instance of Score model.
      */
-    public Score convertToScore(final Map<Long, Operator> operators,
-        final Map<Long, Question> questions, final Map<Long, UnaryExpression> scoreIdExpressions) {
+    public Score convertToScore(
+            final Map<Long, Operator> operators,
+            final Map<Long, Question> questions,
+            final Map<Long, UnaryExpression> scoreIdExpressions) {
         Score score = new Score();
-        score.setExpression(this.getExpressions(this.getExpression(), null, operators, questions,
-            scoreIdExpressions));
+        score.setExpression(this.getExpressions(this.getExpression(), null, operators, questions, scoreIdExpressions));
         score.setName(this.getName());
         return score;
     }
@@ -112,11 +112,14 @@ public class JsonScoreDTO {
      *                      ids as key.
      * @return ExpressionDTO instance converted to Expression model.
      */
-    private Expression getExpressions(final ExpressionDTO expressionDTO, final Expression parent,
-        final Map<Long, Operator> operators, final Map<Long, Question> questions,
-        final Map<Long, UnaryExpression> scoreIdExpressions) {
+    private Expression getExpressions(
+            final ExpressionDTO expressionDTO,
+            final Expression parent,
+            final Map<Long, Operator> operators,
+            final Map<Long, Question> questions,
+            final Map<Long, UnaryExpression> scoreIdExpressions) {
         List<Expression> expressions = new ArrayList<>();
-        //Get expression type by operator type
+        // Get expression type by operator type
         switch (expressionDTO.getOperatorId().intValue()) {
             case 1:
             case 2:
@@ -129,13 +132,11 @@ public class JsonScoreDTO {
             case 12:
             case 13:
                 BinaryExpression binaryExpression = new BinaryExpression();
-                binaryExpression.setOperator(
-                    (BinaryOperator) operators.get(expressionDTO.getOperatorId()));
-                //walk through all sub expressions
+                binaryExpression.setOperator((BinaryOperator) operators.get(expressionDTO.getOperatorId()));
+                // walk through all sub expressions
                 for (ExpressionDTO currentExpressionDTO : expressionDTO.getExpressions()) {
-                    expressions.add(
-                        this.getExpressions(currentExpressionDTO, binaryExpression, operators,
-                            questions, scoreIdExpressions));
+                    expressions.add(this.getExpressions(
+                            currentExpressionDTO, binaryExpression, operators, questions, scoreIdExpressions));
                 }
                 binaryExpression.setExpressions(expressions);
                 binaryExpression.setParent(parent);
@@ -143,11 +144,10 @@ public class JsonScoreDTO {
             case 5:
             case 6:
             case 16:
-                //recursion anchor, a unary expression servers as a leaf of
+                // recursion anchor, a unary expression servers as a leaf of
                 // the expression tree
                 UnaryExpression unaryExpression = new UnaryExpression();
-                unaryExpression.setOperator(
-                    (UnaryOperator) operators.get(expressionDTO.getOperatorId()));
+                unaryExpression.setOperator((UnaryOperator) operators.get(expressionDTO.getOperatorId()));
                 unaryExpression.setParent(parent);
 
                 if (expressionDTO.getQuestionId() != null) {
@@ -165,13 +165,11 @@ public class JsonScoreDTO {
             case 17:
             case 18:
                 MultiExpression multiExpression = new MultiExpression();
-                multiExpression.setOperator(
-                    (MultiOperator) operators.get(expressionDTO.getOperatorId()));
-                //walk through all sub expressions
+                multiExpression.setOperator((MultiOperator) operators.get(expressionDTO.getOperatorId()));
+                // walk through all sub expressions
                 for (ExpressionDTO currentExpressionDTO : expressionDTO.getExpressions()) {
-                    expressions.add(
-                        this.getExpressions(currentExpressionDTO, multiExpression, operators,
-                            questions, scoreIdExpressions));
+                    expressions.add(this.getExpressions(
+                            currentExpressionDTO, multiExpression, operators, questions, scoreIdExpressions));
                 }
                 multiExpression.setExpressions(expressions);
                 multiExpression.setParent(parent);

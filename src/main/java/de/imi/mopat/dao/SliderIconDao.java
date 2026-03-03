@@ -15,5 +15,4 @@ public interface SliderIconDao extends MoPatDao<SliderIcon> {
      * @return
      */
     List<SliderIcon> getElementsForAnswer(Answer answer);
-
 }

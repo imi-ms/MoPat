@@ -1,11 +1,10 @@
 package de.imi.mopat.model;
 
 import de.imi.mopat.model.enumeration.BodyPart;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.io.Serializable;
 
 /**
  * A <i>BodyPartAnswer</i> represents a selectable region inside an image of a {@link Question} of
@@ -31,8 +30,7 @@ public class BodyPartAnswer extends Answer implements Serializable {
      * @param question  Question this answer belongs to.
      * @param isEnabled Holds information if this answer is enabled or not.
      */
-    public BodyPartAnswer(final BodyPart bodyPart, final Question question,
-        final Boolean isEnabled) {
+    public BodyPartAnswer(final BodyPart bodyPart, final Question question, final Boolean isEnabled) {
         super(question, isEnabled);
         this.bodyPart = bodyPart;
     }

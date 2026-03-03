@@ -16,6 +16,5 @@ public class MoPatValidator implements Validator {
     }
 
     @Override
-    public void validate(final Object o, final Errors errors) {
-    }
+    public void validate(final Object o, final Errors errors) {}
 }

@@ -28,7 +28,7 @@ public abstract class Constants {
     // Date format. For eg.: 2013/05/12
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-    //Paths to body part images
+    // Paths to body part images
     public static final String BODY_FRONT = "images/body_front.svg";
     public static final String BODY_BACK = "images/body_back.svg";
     public static final String[] BODY_PART_IMAGE_TYPES = {"FRONT", "BACK", "FRONT_BACK"};
@@ -64,13 +64,16 @@ public abstract class Constants {
     public static final String INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS = "incompleteEncounterTimeWindowInMillis";
     // Configuration: The name of the attribute for the
     // finishedEncounterScheduledTimeWindowInMillis
-    public static final String FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS = "finishedEncounterScheduledTimeWindowInMillis";
+    public static final String FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS =
+            "finishedEncounterScheduledTimeWindowInMillis";
     // Configuration: The name of the attribute for the
     // incompleteEncounterScheduledTimeWindowInMillis
-    public static final String INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS = "incompleteEncounterScheduledTimeWindowInMillis";
+    public static final String INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS =
+            "incompleteEncounterScheduledTimeWindowInMillis";
     // Configuration: The name of the attribute for the
     // finishedEncounterMailadressTimeWindowInMillis
-    public static final String FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS = "finishedEncounterMailaddressTimeWindowInMillis";
+    public static final String FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS =
+            "finishedEncounterMailaddressTimeWindowInMillis";
     // Configuration: The name of the attribute for the pseudonymizationService
     public static final String USE_PSEUDONYMIZATION_SERVICE = "usePseudonymizationService";
     // Configuration: The name of the attribute for the registryOfPatient
@@ -82,9 +85,9 @@ public abstract class Constants {
     // Configuration: The name of the attribute for the ODM to PDF exporter
     public static final String METADATA_EXPORTER_PDF = "metadataExporterPDF";
 
-    public static final String IMAGE_UPLOAD_PATH= "imageUploadPath";
+    public static final String IMAGE_UPLOAD_PATH = "imageUploadPath";
 
-    public static final String FHIR_SYSTEM_URL= "FHIRsystemURI";
+    public static final String FHIR_SYSTEM_URL = "FHIRsystemURI";
 
     public static final String WEBBAPP_ROOT_PATH = "webappRootPath";
 

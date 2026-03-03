@@ -8,14 +8,18 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
-import org.springframework.validation.BindingResult;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.validation.BindingResult;
 
 public class BodyPartStrategy implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         List<Answer> removalList = new ArrayList<>();
         // Create a list to collect all answers which should be
         // removed from the question
@@ -25,22 +29,24 @@ public class BodyPartStrategy implements CreateOrUpdateAnswerStrategy {
         addAnswersToQuestionFromDTO(questionDTO, question, controller);
     }
 
-    private void findAnswersWithoutDTOToRemoveOrSetBodyPartOn(QuestionDTO questionDTO, Question question, List<Answer> removalList) {
+    private void findAnswersWithoutDTOToRemoveOrSetBodyPartOn(
+            QuestionDTO questionDTO, Question question, List<Answer> removalList) {
         for (int i = 0; i < question.getAnswers().size(); i++) {
-            BodyPartAnswer bodyPartAnswer = (BodyPartAnswer) question.getAnswers().get(i);
-            AnswerDTO relatedAnswerDTO = findRelatedAnswerDTO(questionDTO,bodyPartAnswer);
+            BodyPartAnswer bodyPartAnswer =
+                    (BodyPartAnswer) question.getAnswers().get(i);
+            AnswerDTO relatedAnswerDTO = findRelatedAnswerDTO(questionDTO, bodyPartAnswer);
             if (relatedAnswerDTO == null) {
                 // Add to answer removal list
                 removalList.add(bodyPartAnswer);
             } else {
-                bodyPartAnswer.setBodyPart(
-                        BodyPart.fromString(relatedAnswerDTO.getBodyPartMessageCode()));
+                bodyPartAnswer.setBodyPart(BodyPart.fromString(relatedAnswerDTO.getBodyPartMessageCode()));
                 bodyPartAnswer.setIsEnabled(relatedAnswerDTO.getIsEnabled());
             }
         }
     }
 
-    private void addAnswersToQuestionFromDTO(QuestionDTO questionDTO, Question question, QuestionController controller) {
+    private void addAnswersToQuestionFromDTO(
+            QuestionDTO questionDTO, Question question, QuestionController controller) {
         for (Long i : questionDTO.getAnswers().keySet()) {
             AnswerDTO answerDTO = questionDTO.getAnswers().get(i);
             // If answer existed before, do nothing
@@ -52,8 +58,7 @@ public class BodyPartStrategy implements CreateOrUpdateAnswerStrategy {
 
             // Create new answer
             BodyPartAnswer bodyPartAnswer = new BodyPartAnswer(
-                    BodyPart.fromString(answerDTO.getBodyPartMessageCode()), question,
-                    answerDTO.getIsEnabled());
+                    BodyPart.fromString(answerDTO.getBodyPartMessageCode()), question, answerDTO.getIsEnabled());
         }
     }
 }

@@ -1,8 +1,8 @@
 package de.imi.mopat.model.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.enumeration.PermissionType;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,8 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.imi.mopat.helper.model.UUIDGenerator;
+import java.io.Serializable;
 
 /**
  * The database table model for <i>acl_entry</i>. The Access Control List (ACL) framework secures a
@@ -26,39 +25,45 @@ import de.imi.mopat.helper.model.UUIDGenerator;
 @Table(name = "acl_entry")
 public class AclEntry implements Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private final String uuid = UUIDGenerator.createUUID();
-    //TODO The benefit of aceOrder has to be clarified.
+    // TODO The benefit of aceOrder has to be clarified.
     @NotNull(message = "{aclEntry.aceOrder.notNull}")
     @Column(name = "ace_order")
     private Integer aceOrder;
+
     @NotNull(message = "{aclEntry.permissionType.notNull}")
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "mask")
     private PermissionType permissionType;
+
     @NotNull(message = "{aclEntry.granting.notNull}")
     @Column(name = "granting")
     private Boolean granting;
+
     @NotNull(message = "{aclEntry.auditSuccess.notNull}")
     @Column(name = "audit_success")
     private Boolean auditSuccess;
+
     @NotNull(message = "{aclEntry.autidFailure.notNull}")
     @Column(name = "audit_failure")
     private Boolean auditFailure;
+
     @JoinColumn(name = "sid", referencedColumnName = "id")
     @ManyToOne
     private User user;
+
     @JoinColumn(name = "acl_object_identity", referencedColumnName = "id")
     @ManyToOne
     private AclObjectIdentity aclObjectIdentity;
 
-    public AclEntry() {
-    }
+    public AclEntry() {}
 
     /**
      * Uses the setters to set attributes.See setters for constraints.
@@ -81,9 +86,14 @@ public class AclEntry implements Serializable {
      * @param aclObjectIdentity See{@link AclEntry#setAclObjectIdentity(AclObjectIdentity)} for a
      *                          description.
      */
-    public AclEntry(final User user, final AclObjectIdentity aclObjectIdentity, final int aceOrder,
-        final PermissionType permissionType, final boolean granting, final boolean auditSuccess,
-        final boolean auditFailure) {
+    public AclEntry(
+            final User user,
+            final AclObjectIdentity aclObjectIdentity,
+            final int aceOrder,
+            final PermissionType permissionType,
+            final boolean granting,
+            final boolean auditSuccess,
+            final boolean auditFailure) {
         setAceOrder(aceOrder);
         setPermissionType(permissionType);
         setGranting(granting);

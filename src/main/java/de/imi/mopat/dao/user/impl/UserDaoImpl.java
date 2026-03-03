@@ -25,17 +25,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class UserDaoImpl extends UserManagementDaoImpl<User> implements UserDao {
 
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserDaoImpl.class);
+
     @Autowired
     private PepperedBCryptPasswordEncoder passwordEncoder;
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserDaoImpl.class);
 
     @Override
     @Transactional("MoPat_User")
-    public User loadUserByUsername(final String username)
-        throws UsernameNotFoundException, DataAccessException {
+    public User loadUserByUsername(final String username) throws UsernameNotFoundException, DataAccessException {
         // Get the user from database
         TypedQuery<User> query = moPatUserEntityManager.createQuery(
-            "SELECT u FROM User u WHERE u.username = '" + username.toLowerCase() + "'", User.class);
+                "SELECT u FROM User u WHERE u.username = '" + username.toLowerCase() + "'", User.class);
         try {
             return query.getSingleResult();
         } catch (NoResultException e) {
@@ -64,7 +64,6 @@ public class UserDaoImpl extends UserManagementDaoImpl<User> implements UserDao 
         return passwordEncoder.matches(pin, user.getPin());
     }
 
-
     /* (non-Javadoc)
      * @see de.imi.mopat.dao.UserDao#getAllEnabledEMailAddressesDistinct()
      */
@@ -72,7 +71,7 @@ public class UserDaoImpl extends UserManagementDaoImpl<User> implements UserDao 
     @Transactional("MoPat_User")
     public Set<String> getAllEnabledEMailAddressesDistinct() throws DataAccessException {
         TypedQuery<String> query = moPatUserEntityManager.createQuery(
-            "SELECT DISTINCT u.email FROM User u WHERE u.isEnabled = true", String.class);
+                "SELECT DISTINCT u.email FROM User u WHERE u.isEnabled = true", String.class);
         return new HashSet<>(query.getResultList());
     }
 }

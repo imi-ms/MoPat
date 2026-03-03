@@ -28,7 +28,6 @@ public class PinAuthorization {
     @ManyToOne
     private User user;
 
-
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_on")
@@ -47,7 +46,6 @@ public class PinAuthorization {
         setCurrentDate();
         setInitialTries();
     }
-
 
     public Long getId() {
         return this.id;

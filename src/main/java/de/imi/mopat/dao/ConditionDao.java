@@ -71,6 +71,6 @@ public interface ConditionDao extends MoPatDao<Condition> {
      * @return The list of all {@link Condition conditions} with the given {@link Answer}as trigger
      * and possibly the same threshold value.
      */
-    List<Condition> getConditionsByTriggerAnswer(Answer triggerAnswer, Double thresholdValue,
-        ThresholdComparisonType thresholdComparisonType);
+    List<Condition> getConditionsByTriggerAnswer(
+            Answer triggerAnswer, Double thresholdValue, ThresholdComparisonType thresholdComparisonType);
 }

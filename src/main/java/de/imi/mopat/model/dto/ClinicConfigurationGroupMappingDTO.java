@@ -6,30 +6,26 @@ public class ClinicConfigurationGroupMappingDTO {
     private ConfigurationGroupDTO configurationGroupDTO;
     private String infoName;
 
-    public ClinicConfigurationGroupMappingDTO() {
+    public ClinicConfigurationGroupMappingDTO() {}
+
+    public ClinicConfigurationGroupMappingDTO(ConfigurationGroupDTO configurationGroupDTO, String infoName) {
+        this.configurationGroupDTO = configurationGroupDTO;
+        this.infoName = infoName;
     }
 
-    public ClinicConfigurationGroupMappingDTO(ConfigurationGroupDTO configurationGroupDTO, String infoName){
-        this.configurationGroupDTO=configurationGroupDTO;
-        this.infoName=infoName;
-    }
-
-    public ConfigurationGroupDTO getConfigurationGroupDTO(){
+    public ConfigurationGroupDTO getConfigurationGroupDTO() {
         return configurationGroupDTO;
     }
 
-    public void setConfigurationGroupDTO(ConfigurationGroupDTO configurationGroupDTO){
-        this.configurationGroupDTO=configurationGroupDTO;
+    public void setConfigurationGroupDTO(ConfigurationGroupDTO configurationGroupDTO) {
+        this.configurationGroupDTO = configurationGroupDTO;
     }
 
-    public String getInfoName(){
+    public String getInfoName() {
         return this.infoName;
     }
 
-    public void setInfoName(String infoName){
-        this.infoName=infoName;
-
+    public void setInfoName(String infoName) {
+        this.infoName = infoName;
     }
-
-
 }

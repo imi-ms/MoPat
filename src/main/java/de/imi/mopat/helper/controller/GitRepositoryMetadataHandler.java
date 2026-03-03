@@ -74,20 +74,20 @@ public class GitRepositoryMetadataHandler {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-                LOGGER.warn("Expected a redirect but received HTTP 200 OK. " +
-                        "The URL might be outdated or the server behavior changed.");
+                LOGGER.warn("Expected a redirect but received HTTP 200 OK. "
+                        + "The URL might be outdated or the server behavior changed.");
                 return Optional.empty();
             }
-            if (response.statusCode() != HttpURLConnection.HTTP_MOVED_PERM &&
-                    response.statusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
+            if (response.statusCode() != HttpURLConnection.HTTP_MOVED_PERM
+                    && response.statusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                 LOGGER.warn("No redirection detected; unexpected response code: {}", response.statusCode());
                 return Optional.empty();
             }
 
             Optional<String> location = response.headers().firstValue("Location");
             if (location.isEmpty() || !location.get().contains(TAG_PATH)) {
-                LOGGER.warn("Redirection detected, but the 'Location' header is missing " +
-                        "or does not contain the expected tag path");
+                LOGGER.warn("Redirection detected, but the 'Location' header is missing "
+                        + "or does not contain the expected tag path");
                 return Optional.empty();
             }
 
@@ -110,9 +110,8 @@ public class GitRepositoryMetadataHandler {
             LOGGER.warn("Origin URL or Commit ID is null. Cannot generate commit URL.");
             return Optional.empty();
         }
-        String httpUrlBase = originUrl
-                .replaceFirst(GIT_SSH_PREFIX, GIT_HTTPS_PREFIX)
-                .replaceFirst("\\.git$", "/");
+        String httpUrlBase =
+                originUrl.replaceFirst(GIT_SSH_PREFIX, GIT_HTTPS_PREFIX).replaceFirst("\\.git$", "/");
         return Optional.of(httpUrlBase + COMMIT_PATH + commitId);
     }
 
@@ -143,8 +142,7 @@ public class GitRepositoryMetadataHandler {
                 latestCommitUrl.orElse(null),
                 latestReleaseUrl,
                 latestReleaseVersionOpt.orElse(null),
-                updateAvailable
-        );
+                updateAvailable);
     }
 
     /**
@@ -156,9 +154,12 @@ public class GitRepositoryMetadataHandler {
      */
     private boolean compareWithLatestVersion(String currentBuildVersion, String latestVersionTag) {
         if (currentBuildVersion == null || latestVersionTag == null) {
-            LOGGER.warn("Cannot determine if an update is available because one or both version strings are null. " +
-                    "currentBuildVersion: {}, " +
-                    "latestVersionTag: {}", currentBuildVersion, latestVersionTag);
+            LOGGER.warn(
+                    "Cannot determine if an update is available because one or both version strings are null. "
+                            + "currentBuildVersion: {}, "
+                            + "latestVersionTag: {}",
+                    currentBuildVersion,
+                    latestVersionTag);
             return false;
         }
 
@@ -184,10 +185,10 @@ public class GitRepositoryMetadataHandler {
             LOGGER.warn("Network error during {}: {}", context, e.getMessage());
         } else if (e instanceof IOException) {
             LOGGER.warn("I/O error during {}: {}", context, e.getMessage());
-        } else if(e instanceof InterruptedException){
+        } else if (e instanceof InterruptedException) {
             LOGGER.warn("Request interrupted during {}: {}", context, e.getMessage());
             Thread.currentThread().interrupt();
-        }else{
+        } else {
             LOGGER.warn("Unexpected error during {}: {}", context, e.getMessage());
         }
     }
@@ -227,6 +228,5 @@ public class GitRepositoryMetadataHandler {
             String latestCommitUrl,
             String latestReleaseUrl,
             String latestReleaseVersion,
-            boolean updateAvailable
-    ){}
+            boolean updateAvailable) {}
 }

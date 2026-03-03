@@ -30,17 +30,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PseudonymizationController {
 
-    @Autowired
-    private ConfigurationDao configurationDao;
-
-    // Initialize every needed configuration information as a final string
-    private final String className = this.getClass().getName();
     // Configuration: The name of the attribute for the pseudonymizationUrl
     public static final String PSEUDONYMIZATION_SERVICE_URL = "pseudonymizationServiceUrl";
     private static final String PSEUDONYMIZATION_SERVICE_API_KEY = "pseudonymizationServiceApiKey";
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PseudonymizationController.class);
     public final String usePseudonymizationServiceGroupName = "configurationGroup.label.pseudonymization";
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        PseudonymizationController.class);
+    // Initialize every needed configuration information as a final string
+    private final String className = this.getClass().getName();
+
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     /**
      * Handles the tokening with the psuedonymization server and returns the url with the
@@ -53,7 +52,7 @@ public class PseudonymizationController {
     public String pseudo(@RequestParam(value = "clinicId", required = true) final Long clinicId) {
         HttpClient httpClient = HttpClientBuilder.create().build();
         String sessionURL = getSessionURL(httpClient, clinicId);
-        String tokenId = getTokenId(sessionURL, httpClient,clinicId);
+        String tokenId = getTokenId(sessionURL, httpClient, clinicId);
         return getPseudonymizationServiceURL(clinicId) + "patients?tokenId=" + tokenId;
     }
 
@@ -76,8 +75,7 @@ public class PseudonymizationController {
             return jsonResponse.getString("uri");
 
         } catch (IOException exception) {
-            LOGGER.debug("Error while connecting to the pseudonymization server: {}",
-                exception.getLocalizedMessage());
+            LOGGER.debug("Error while connecting to the pseudonymization server: {}", exception.getLocalizedMessage());
         }
         return "";
     }
@@ -107,8 +105,7 @@ public class PseudonymizationController {
             JSONObject jsonResponse = new JSONObject(response);
             return jsonResponse.getString("tokenId");
         } catch (IOException exception) {
-            LOGGER.debug("Error while connecting to the pseudonymization server: {}",
-                exception.getLocalizedMessage());
+            LOGGER.debug("Error while connecting to the pseudonymization server: {}", exception.getLocalizedMessage());
         }
         return "";
     }
@@ -120,7 +117,7 @@ public class PseudonymizationController {
      */
     public String getPseudonymizationServiceURL(Long clinicId) {
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinicId, PSEUDONYMIZATION_SERVICE_URL, className, usePseudonymizationServiceGroupName);
+                clinicId, PSEUDONYMIZATION_SERVICE_URL, className, usePseudonymizationServiceGroupName);
         return String.valueOf(configuration.getValue());
     }
 
@@ -131,7 +128,7 @@ public class PseudonymizationController {
      */
     public String getPseudonymizationServiceAPIKey(Long clinicId) {
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinicId, PSEUDONYMIZATION_SERVICE_API_KEY, className, usePseudonymizationServiceGroupName);
+                clinicId, PSEUDONYMIZATION_SERVICE_API_KEY, className, usePseudonymizationServiceGroupName);
         return String.valueOf(configuration.getValue());
     }
 }

@@ -24,7 +24,7 @@ public class QuestionnaireVersionGroupService {
 
     @Autowired
     private QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
-    
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
 
@@ -55,12 +55,13 @@ public class QuestionnaireVersionGroupService {
      */
     public QuestionnaireVersionGroup createOrFindQuestionnaireGroup(QuestionnaireDTO questionnaireDTO) {
         if (questionnaireDTO.getQuestionnaireVersionGroupId() != null) {
-            return getQuestionnaireGroupById(questionnaireDTO.getQuestionnaireVersionGroupId()).orElseGet(() -> {
-                QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
-                newGroup.setName(questionnaireDTO.getName());
-                questionnaireVersionGroupDao.merge(newGroup);
-                return newGroup;
-            });
+            return getQuestionnaireGroupById(questionnaireDTO.getQuestionnaireVersionGroupId())
+                    .orElseGet(() -> {
+                        QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
+                        newGroup.setName(questionnaireDTO.getName());
+                        questionnaireVersionGroupDao.merge(newGroup);
+                        return newGroup;
+                    });
         } else {
             QuestionnaireVersionGroup newGroup = new QuestionnaireVersionGroup();
             newGroup.setName(questionnaireDTO.getName());
@@ -90,8 +91,7 @@ public class QuestionnaireVersionGroupService {
     public Optional<QuestionnaireVersionGroup> findGroupForQuestionnaire(Questionnaire questionnaire) {
         validateQuestionnaires(questionnaire);
         return questionnaireVersionGroupDao.getAllElements().stream()
-                .filter(group -> group.getQuestionnaires().stream()
-                        .anyMatch(member -> member.equals(questionnaire)))
+                .filter(group -> group.getQuestionnaires().stream().anyMatch(member -> member.equals(questionnaire)))
                 .findFirst();
     }
 
@@ -166,7 +166,8 @@ public class QuestionnaireVersionGroupService {
      * @param questionnaireVersionGroup the group to which the questionnaire will be added
      * @param newQuestionnaire the new questionnaire to add to the group
      */
-    public void addQuestionnaireToGroup(QuestionnaireVersionGroup questionnaireVersionGroup, Questionnaire newQuestionnaire) {
+    public void addQuestionnaireToGroup(
+            QuestionnaireVersionGroup questionnaireVersionGroup, Questionnaire newQuestionnaire) {
         questionnaireVersionGroup.addQuestionnaire(newQuestionnaire);
         newQuestionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
         questionnaireVersionGroupDao.merge(questionnaireVersionGroup);
@@ -183,7 +184,7 @@ public class QuestionnaireVersionGroupService {
     public void removeQuestionnaire(Long questionnaireVersionGroupId, Questionnaire questionnaire) {
         // Fetch the group by ID, return early if not found
         Optional<QuestionnaireVersionGroup> optionalGroup = getQuestionnaireGroupById(questionnaireVersionGroupId);
-        if (optionalGroup.isEmpty()){
+        if (optionalGroup.isEmpty()) {
             return;
         }
 
@@ -199,8 +200,8 @@ public class QuestionnaireVersionGroupService {
         questionnaire.setQuestionnaireVersionGroup(null);
         questionnaireDao.merge(questionnaire);
 
-        if (questionnairesInGroup.isEmpty()){
-            //If there would be no questionnaire left, delete the group
+        if (questionnairesInGroup.isEmpty()) {
+            // If there would be no questionnaire left, delete the group
             questionnaireVersionGroupDao.remove(questionnaireVersionGroup);
         } else {
             questionnaireVersionGroupDao.merge(questionnaireVersionGroup);

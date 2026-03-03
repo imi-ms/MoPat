@@ -19,8 +19,8 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      */
     Configuration getConfigurationByAttributeAndClass(String attribute, String clazz);
 
-    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
-        final String clazz, final String groupName);
+    Configuration getConfigurationByGroupName(
+        final Long clinicId, final String attribute, final String clazz, final String groupName);
     /**
      * Returns the base url of the application.
      *
@@ -54,14 +54,14 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      *
      * @return The logo base64 of the MoPat application.
      */
-    public String getLogo();
+    String getLogo();
 
     /**
      * Returns the logo path of the MoPat application.
      *
      * @return The logo path of the MoPat application.
      */
-    public String getLogoPath();
+    String getLogoPath();
 
     /**
      * Returns the email address for the MoPat support.
@@ -134,7 +134,6 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      * @return The time window for incomplete encounters in millis as a long.
      */
     Long getFinishedEncounterScheduledTimeWindow();
-    
 
     /**
      * Returns the path, where image are saved.

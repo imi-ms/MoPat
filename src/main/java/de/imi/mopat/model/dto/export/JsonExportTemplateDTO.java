@@ -146,10 +146,7 @@ public class JsonExportTemplateDTO {
      * @param jsonExportRuleDTO rule DTO to add
      */
     public void addExportRuleDTOs(long id, JsonExportRuleDTO jsonExportRuleDTO) {
-        this.exportRuleDTOs.put(
-            id,
-            jsonExportRuleDTO);
-
+        this.exportRuleDTOs.put(id, jsonExportRuleDTO);
     }
 
     /**
@@ -164,8 +161,7 @@ public class JsonExportTemplateDTO {
      *
      * @param exportRuleDTOs export rules mapped by key (sorted)
      */
-    public void setExportRuleDTOs(
-        SortedMap<Long, JsonExportRuleDTO> exportRuleDTOs) {
+    public void setExportRuleDTOs(SortedMap<Long, JsonExportRuleDTO> exportRuleDTOs) {
         this.exportRuleDTOs = exportRuleDTOs;
     }
 

@@ -34,8 +34,13 @@ public interface MetadataExporter {
      *                              and mapping of the export template
      * @return A byte array representation of the given {@link Questionnaire}
      */
-    byte[] export(Questionnaire questionnaire, MessageSource messageSource,
-        ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
-        ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
-        QuestionDao questionDao, ScoreDao scoreDao);
+    byte[] export(
+            Questionnaire questionnaire,
+            MessageSource messageSource,
+            ConfigurationDao configurationDao,
+            ConfigurationGroupDao configurationGroupDao,
+            ExportTemplateDao exportTemplateDao,
+            QuestionnaireDao questionnaireDao,
+            QuestionDao questionDao,
+            ScoreDao scoreDao);
 }

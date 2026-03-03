@@ -46,31 +46,31 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        HL7v22PatientInformationRetriever.class);
     /**
      * Codes from HL7 v2 specification telling that the message sent to a communication server resulted in acceptance
      * and thus valid data sent back, not error or reject
      */
     public static final String MSA_APPLICATION_ACCEPT_CODE = "AA";
-    public static final String MSA_COMMIT_ACCEPT_CODE = "CA";
 
+    public static final String MSA_COMMIT_ACCEPT_CODE = "CA";
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HL7v22PatientInformationRetriever.class);
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
     private final String className = this.getClass().getName();
     private final String hostnameProperty = "HL7v22PatientInformationRetrieverHostname";
     private final String portProperty = "HL7v22PatientInformationRetrieverPort";
-    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
-
 
     public HL7v22PatientInformationRetriever() {
-        LOGGER.info("[SETUP] To configure this PatientDataRetriever, please set "
-                + "HL7 hostname ({}) and port ({}) in the " + "configuration...", hostnameProperty,
-            portProperty);
+        LOGGER.info(
+                "[SETUP] To configure this PatientDataRetriever, please set "
+                        + "HL7 hostname ({}) and port ({}) in the " + "configuration...",
+                hostnameProperty,
+                portProperty);
     }
 
     @Override
     public EncounterDTO retrievePatientData(Clinic clinic, String caseNumber) {
         LOGGER.debug("caseNumber is: {}", caseNumber);
-        if(caseNumber==null){
+        if (caseNumber == null) {
             throw new NullPointerException("caseNumber is null");
         }
         caseNumber = caseNumber.trim();
@@ -122,18 +122,22 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
                 Message response = initiator.sendAndReceive(hl7message);
                 patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
                 this.getAuditEntryDao()
-                    .writeAuditEntry(this.getClass().getSimpleName(), "retrievePatientData(String)",
-                        caseNumber, patientAttributes, AuditEntryActionType.SENT,
-                        "HL7 Communication server as given in " + "configuration");
+                        .writeAuditEntry(
+                                this.getClass().getSimpleName(),
+                                "retrievePatientData(String)",
+                                caseNumber,
+                                patientAttributes,
+                                AuditEntryActionType.SENT,
+                                "HL7 Communication server as given in " + "configuration");
                 LOGGER.debug("Sending HL7 message...[DONE]");
 
                 ADR_A19 hl7response = (ADR_A19) response;
 
-                String acknowledgementCode = hl7response.getMSA().getMsa1_AcknowledgementCode()
-                    .getValue();
+                String acknowledgementCode =
+                        hl7response.getMSA().getMsa1_AcknowledgementCode().getValue();
 
                 if (acknowledgementCode.equalsIgnoreCase(MSA_APPLICATION_ACCEPT_CODE)
-                    || acknowledgementCode.equalsIgnoreCase(MSA_COMMIT_ACCEPT_CODE)) {
+                        || acknowledgementCode.equalsIgnoreCase(MSA_COMMIT_ACCEPT_CODE)) {
                     ADR_A19_QUERY_RESPONSE queryResponse = hl7response.getQUERY_RESPONSE();
 
                     PID pid = queryResponse.getPID();
@@ -148,57 +152,66 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
                         // the encounter's fields
                         try {
                             if (pid.getDateOfBirth() != null
-                                && pid.getDateOfBirth().getTimeOfAnEvent() != null) {
+                                    && pid.getDateOfBirth().getTimeOfAnEvent() != null) {
                                 // [bt] getting the values for the day of birth.
                                 // CAVE:
                                 // Month is from 0 to 11 in GregorianCalendar
-                                int year = pid.getDateOfBirth().getTimeOfAnEvent().getYear();
-                                int month = pid.getDateOfBirth().getTimeOfAnEvent().getMonth() - 1;
-                                int day = pid.getDateOfBirth().getTimeOfAnEvent().getDay();
+                                int year =
+                                        pid.getDateOfBirth().getTimeOfAnEvent().getYear();
+                                int month =
+                                        pid.getDateOfBirth().getTimeOfAnEvent().getMonth() - 1;
+                                int day =
+                                        pid.getDateOfBirth().getTimeOfAnEvent().getDay();
 
-                                GregorianCalendar calendar = new GregorianCalendar(year, month,
-                                    day);
-                                java.sql.Date dayOfBirth = new java.sql.Date(
-                                    calendar.getTimeInMillis());
+                                GregorianCalendar calendar = new GregorianCalendar(year, month, day);
+                                java.sql.Date dayOfBirth = new java.sql.Date(calendar.getTimeInMillis());
 
                                 result.setBirthdate(dayOfBirth);
                                 patientAttributes.add(AuditPatientAttribute.DATE_OF_BIRTH);
                                 LOGGER.debug("Date of Birth was available and" + " set");
                             }
                         } catch (Throwable t) {
-                            LOGGER.error("Although a HL7 response was sent, "
-                                + "setting the day of birth did " + "not work, because of: {}. Use "
-                                + "debug output for stacktrace.", t.getMessage());
+                            LOGGER.error(
+                                    "Although a HL7 response was sent, "
+                                            + "setting the day of birth did " + "not work, because of: {}. Use "
+                                            + "debug output for stacktrace.",
+                                    t.getMessage());
                             LOGGER.debug("Day of birth could no be set because of:" + " {}", t);
                         }
 
                         try {
                             if (pid.getPatientName() != null
-                                && pid.getPatientName().getGivenName() != null
-                                && pid.getPatientName().getGivenName().getValue() != null) {
-                                result.setFirstname(pid.getPatientName().getGivenName().getValue());
+                                    && pid.getPatientName().getGivenName() != null
+                                    && pid.getPatientName().getGivenName().getValue() != null) {
+                                result.setFirstname(
+                                        pid.getPatientName().getGivenName().getValue());
                                 patientAttributes.add(AuditPatientAttribute.FIRST_NAME);
                                 LOGGER.debug("Patient's first name was " + "available and set");
                             }
                         } catch (Throwable t) {
-                            LOGGER.error("Although a HL7 response was sent, "
-                                + "setting the first name did not" + " work, because of: {}. Use "
-                                + "debug output for stacktrace.", t.getMessage());
+                            LOGGER.error(
+                                    "Although a HL7 response was sent, "
+                                            + "setting the first name did not" + " work, because of: {}. Use "
+                                            + "debug output for stacktrace.",
+                                    t.getMessage());
                             LOGGER.debug("First name could no be set because of: {}", t);
                         }
 
                         try {
                             if (pid.getPatientName() != null
-                                && pid.getPatientName().getFamilyName() != null
-                                && pid.getPatientName().getFamilyName().getValue() != null) {
-                                result.setLastname(pid.getPatientName().getFamilyName().getValue());
+                                    && pid.getPatientName().getFamilyName() != null
+                                    && pid.getPatientName().getFamilyName().getValue() != null) {
+                                result.setLastname(
+                                        pid.getPatientName().getFamilyName().getValue());
                                 patientAttributes.add(AuditPatientAttribute.LAST_NAME);
                                 LOGGER.debug("Patient's last name was " + "available and set");
                             }
                         } catch (Throwable t) {
-                            LOGGER.error("Although a HL7 response was sent, "
-                                + "setting the last name did not " + "work, because of: {}. Use "
-                                + "debug output for stacktrace.", t.getMessage());
+                            LOGGER.error(
+                                    "Although a HL7 response was sent, "
+                                            + "setting the last name did not " + "work, because of: {}. Use "
+                                            + "debug output for stacktrace.",
+                                    t.getMessage());
                             LOGGER.debug("Last name could no be set because of: {}", t);
                         }
 
@@ -208,63 +221,72 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
                                     case "M": {
                                         result.setGender(Gender.MALE);
                                         patientAttributes.add(AuditPatientAttribute.GENDER);
-                                        LOGGER.debug(
-                                            "Patient's gender was " + "available and" + " set");
+                                        LOGGER.debug("Patient's gender was " + "available and" + " set");
                                         break;
                                     }
                                     case "F": // [bt] although the word document
-                                        // lists
-                                        // 'W', the communication server
-                                        // sends
-                                        // 'F' (see MoPat1, additionally
-                                        // tested
-                                        // with a real life case at 08th of
-                                        // August, 2013)
+                                    // lists
+                                    // 'W', the communication server
+                                    // sends
+                                    // 'F' (see MoPat1, additionally
+                                    // tested
+                                    // with a real life case at 08th of
+                                    // August, 2013)
                                     {
                                         result.setGender(Gender.FEMALE);
                                         patientAttributes.add(AuditPatientAttribute.GENDER);
-                                        LOGGER.debug(
-                                            "Patient's gender was " + "available and" + " set");
+                                        LOGGER.debug("Patient's gender was " + "available and" + " set");
                                         break;
                                     }
                                 }
                             }
                         } catch (Throwable t) {
                             LOGGER.error(
-                                "Although a HL7 response was sent, " + "setting the gender did not "
-                                    + "work, because of: {}. Use " + "debug output for stacktrace.",
-                                t.getMessage());
+                                    "Although a HL7 response was sent, " + "setting the gender did not "
+                                            + "work, because of: {}. Use " + "debug output for stacktrace.",
+                                    t.getMessage());
                             LOGGER.debug("Gender could no be set because of: {}", t);
                         }
 
                         try {
                             if (pid.getPatientIDInternalID(0) != null
-                                && pid.getPatientIDInternalID(0).getIDNumber() != null
-                                && pid.getPatientIDInternalID(0).getIDNumber().getValue() != null) {
-                                result.setPatientID(Long.valueOf(
-                                    pid.getPatientIDInternalID(0).getIDNumber().getValue()));
+                                    && pid.getPatientIDInternalID(0).getIDNumber() != null
+                                    && pid.getPatientIDInternalID(0)
+                                                    .getIDNumber()
+                                                    .getValue()
+                                            != null) {
+                                result.setPatientID(Long.valueOf(pid.getPatientIDInternalID(0)
+                                        .getIDNumber()
+                                        .getValue()));
                                 patientAttributes.add(AuditPatientAttribute.PATIENT_ID);
                                 LOGGER.debug("Patient's ID was available and " + "set");
                             }
                         } catch (Throwable t) {
-                            LOGGER.error("Although a HL7 response was sent, "
-                                + "setting the patient ID did not" + " work, because of: {}. Use "
-                                + "debug output for stacktrace.", t.getMessage());
+                            LOGGER.error(
+                                    "Although a HL7 response was sent, "
+                                            + "setting the patient ID did not" + " work, because of: {}. Use "
+                                            + "debug output for stacktrace.",
+                                    t.getMessage());
                             LOGGER.debug("Patient ID could no be set because of: {}", t);
                         }
 
-                        this.getAuditEntryDao().writeAuditEntry(this.getClass().getSimpleName(),
-                            "retrievePatientData(String)", caseNumber, patientAttributes,
-                            AuditEntryActionType.RECEIVED,
-                            "HL7 communication server as given in " + "configuration");
+                        this.getAuditEntryDao()
+                                .writeAuditEntry(
+                                        this.getClass().getSimpleName(),
+                                        "retrievePatientData(String)",
+                                        caseNumber,
+                                        patientAttributes,
+                                        AuditEntryActionType.RECEIVED,
+                                        "HL7 communication server as given in " + "configuration");
                     }
                 }
             } catch (Exception e) {
                 Long currentUserId = null;
-                if (SecurityContextHolder.getContext().getAuthentication()
-                    .getPrincipal() instanceof User) {
-                    currentUserId = ((User) SecurityContextHolder.getContext().getAuthentication()
-                        .getPrincipal()).getId();
+                if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof User) {
+                    currentUserId = ((User) SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal())
+                            .getId();
                 }
 
                 String loggingAttributes = null;
@@ -273,27 +295,36 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
                 }
 
                 if (loggingAttributes != null && loggingAttributes.isEmpty()) {
-                    LOGGER.error("User ID {} requested patient data via HL7 for "
-                            + "case number {}. Something went wrong "
-                            + "while retrieving patient data. No "
-                            + "patient data has successfully been "
-                            + "retrieved. Because of the error, no "
-                            + "patient data will be listet for the "
-                            + "given case number. Use debug output " + "for more information",
-                        currentUserId, caseNumber);
+                    LOGGER.error(
+                            "User ID {} requested patient data via HL7 for "
+                                    + "case number {}. Something went wrong "
+                                    + "while retrieving patient data. No "
+                                    + "patient data has successfully been "
+                                    + "retrieved. Because of the error, no "
+                                    + "patient data will be listet for the "
+                                    + "given case number. Use debug output " + "for more information",
+                            currentUserId,
+                            caseNumber);
                 } else {
-                    this.getAuditEntryDao().writeAuditEntry(this.getClass().getSimpleName(),
-                        "retrievePatientData(String)", caseNumber, patientAttributes,
-                        AuditEntryActionType.RECEIVED,
-                        "HL7 communication server as given in " + "configuration");
-                    LOGGER.error("User ID {} requested patient data via HL7 for "
-                            + "case number {}. Something went wrong "
-                            + "while retrieving patient data. " + "Nonetheless, the following data has "
-                            + "successfully been retrieved: {}. "
-                            + "Because of the error, no patient data "
-                            + "will be listet for the given case "
-                            + "number. Use debug output for more " + "information", currentUserId,
-                        caseNumber, loggingAttributes);
+                    this.getAuditEntryDao()
+                            .writeAuditEntry(
+                                    this.getClass().getSimpleName(),
+                                    "retrievePatientData(String)",
+                                    caseNumber,
+                                    patientAttributes,
+                                    AuditEntryActionType.RECEIVED,
+                                    "HL7 communication server as given in " + "configuration");
+                    LOGGER.error(
+                            "User ID {} requested patient data via HL7 for "
+                                    + "case number {}. Something went wrong "
+                                    + "while retrieving patient data. " + "Nonetheless, the following data has "
+                                    + "successfully been retrieved: {}. "
+                                    + "Because of the error, no patient data "
+                                    + "will be listet for the given case "
+                                    + "number. Use debug output for more " + "information",
+                            currentUserId,
+                            caseNumber,
+                            loggingAttributes);
                 }
                 LOGGER.debug("Retrieving patient data failed because of: {}", e);
 
@@ -309,8 +340,10 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
                 }
             }
         } else {
-            LOGGER.error("hostname is {}, port is {}, thus no HL7 communication is"
-                + " set up. Returning null", hostname, port);
+            LOGGER.error(
+                    "hostname is {}, port is {}, thus no HL7 communication is" + " set up. Returning null",
+                    hostname,
+                    port);
         }
         return result;
     }
@@ -331,10 +364,10 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
      * @return The HL7v22PatientRetriever hostname string.
      */
     private String getHL7v22PatientInformationRetrieverHostname(Clinic clinic) {
-        ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
-            .getBean(ConfigurationDao.class);
+        ConfigurationDao configurationDao =
+                ApplicationContextService.getApplicationContext().getBean(ConfigurationDao.class);
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinic.getId(), hostnameProperty, className, usePatientDataLookupGroupName);
+                clinic.getId(), hostnameProperty, className, usePatientDataLookupGroupName);
         return configuration.getValue();
     }
 
@@ -345,10 +378,10 @@ public class HL7v22PatientInformationRetriever extends PatientDataRetriever {
      * @return The HL7v22PatientRetriever port number.
      */
     private Integer getHL7v22PatientInformationRetrieverPort(Clinic clinic) {
-        ConfigurationDao configurationDao = ApplicationContextService.getApplicationContext()
-            .getBean(ConfigurationDao.class);
+        ConfigurationDao configurationDao =
+                ApplicationContextService.getApplicationContext().getBean(ConfigurationDao.class);
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinic.getId(), portProperty, className, usePatientDataLookupGroupName);
+                clinic.getId(), portProperty, className, usePatientDataLookupGroupName);
         return Integer.parseInt(configuration.getValue());
     }
 }

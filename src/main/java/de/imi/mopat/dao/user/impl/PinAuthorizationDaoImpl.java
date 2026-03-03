@@ -11,13 +11,12 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PinAuthorizationDaoImpl extends UserManagementDaoImpl<PinAuthorization> implements PinAuthorizationDao  {
+public class PinAuthorizationDaoImpl extends UserManagementDaoImpl<PinAuthorization> implements PinAuthorizationDao {
 
     @Override
     public boolean isPinAuthActivatedForUser(User user) {
         Query query = moPatUserEntityManager.createQuery(
-            "SELECT count(pa) " + "FROM " + "PinAuthorization " + "pa" + " where pa" + ".user" + " "
-                + "= :user");
+                "SELECT count(pa) " + "FROM " + "PinAuthorization " + "pa" + " where pa" + ".user" + " " + "= :user");
         query.setParameter("user", user);
         Long result = (Long) query.getSingleResult();
         return result > 0;
@@ -26,7 +25,7 @@ public class PinAuthorizationDaoImpl extends UserManagementDaoImpl<PinAuthorizat
     @Override
     public Set<PinAuthorization> getEntriesForUser(User user) {
         TypedQuery<PinAuthorization> query = moPatUserEntityManager.createQuery(
-            "SELECT pa FROM PinAuthorization pa WHERE pa.user = :user", PinAuthorization.class);
+                "SELECT pa FROM PinAuthorization pa WHERE pa.user = :user", PinAuthorization.class);
         query.setParameter("user", user);
         return new HashSet<>(query.getResultList());
     }

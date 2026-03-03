@@ -29,7 +29,7 @@ public interface MoPatDao<T> {
      * @return The element, which was found by its id. If non has been found,
      * <code>null</code>.
      */
-    //@PostAuthorize("hasRole('ROLE_ADMIN') OR hasPermission(returnObject, 'READ')")
+    // @PostAuthorize("hasRole('ROLE_ADMIN') OR hasPermission(returnObject, 'READ')")
     T getElementById(Long id);
 
     /**
@@ -38,7 +38,7 @@ public interface MoPatDao<T> {
      * @param uuid UUID of the searched element.
      * @return The element, which was found by its UUID.
      */
-    //@PostAuthorize("hasRole('ROLE_ADMIN') OR hasPermission(returnObject, 'READ')")
+    // @PostAuthorize("hasRole('ROLE_ADMIN') OR hasPermission(returnObject, 'READ')")
     T getElementByUUID(String uuid);
 
     /**

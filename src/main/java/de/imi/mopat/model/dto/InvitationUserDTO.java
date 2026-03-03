@@ -9,8 +9,7 @@ public class InvitationUserDTO {
     private String lastName = null;
     private String email = null;
 
-    public InvitationUserDTO() {
-    }
+    public InvitationUserDTO() {}
 
     public String getFirstName() {
         return firstName;

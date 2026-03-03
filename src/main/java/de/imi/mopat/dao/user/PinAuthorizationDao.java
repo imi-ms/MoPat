@@ -15,7 +15,6 @@ public interface PinAuthorizationDao extends UserManagementDao<PinAuthorization>
      */
     boolean isPinAuthActivatedForUser(User user);
 
-
     /**
      * Returns all entries for a user from the pin_authorization table
      * @param user for which the entries should be fetched

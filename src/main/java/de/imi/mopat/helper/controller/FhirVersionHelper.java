@@ -71,7 +71,6 @@ public class FhirVersionHelper {
         };
     }
 
-
     /**
      * Checks if the given export template type is a FHIR-related export type.
      *
@@ -85,6 +84,4 @@ public class FhirVersionHelper {
             return false;
         }
     }
-
-
 }

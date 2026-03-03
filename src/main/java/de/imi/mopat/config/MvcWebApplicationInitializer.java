@@ -1,22 +1,26 @@
 package de.imi.mopat.config;
 
-import jakarta.servlet.*;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import java.util.EnumSet;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.util.EnumSet;
 
 /**
  * Main initializer class to load servlet
  */
 @Configuration
-public class MvcWebApplicationInitializer extends
-    AbstractAnnotationConfigDispatcherServletInitializer {
+public class MvcWebApplicationInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     /**
      * Adds root configuration to servlet
@@ -25,7 +29,7 @@ public class MvcWebApplicationInitializer extends
      */
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{AppConfig.class};
+        return new Class[] {AppConfig.class};
     }
 
     /**
@@ -43,10 +47,9 @@ public class MvcWebApplicationInitializer extends
      *
      * @return Base path with all servlets are mapped to.
      */
-
     @Override
     protected String[] getServletMappings() {
-        return new String[]{"/"};
+        return new String[] {"/"};
     }
 
     /**
@@ -62,21 +65,20 @@ public class MvcWebApplicationInitializer extends
         super.onStartup(servletContext);
 
         FilterRegistration.Dynamic charsetFilter;
-        charsetFilter = servletContext.addFilter("charsetFilter",
-            new CharacterEncodingFilter("UTF-8", true));
+        charsetFilter = servletContext.addFilter("charsetFilter", new CharacterEncodingFilter("UTF-8", true));
         charsetFilter.addMappingForUrlPatterns(null, true, "/*");
 
         FilterRegistration.Dynamic springMultipartFilter;
-        springMultipartFilter = servletContext.addFilter("springMultipartFilter",
-            new MultipartFilter());
+        springMultipartFilter = servletContext.addFilter("springMultipartFilter", new MultipartFilter());
         springMultipartFilter.addMappingForUrlPatterns(null, true, "/*");
 
         FilterRegistration.Dynamic springSecurityFilterChain;
-        springSecurityFilterChain = servletContext.addFilter("springSecurityFilterChain",
-            new DelegatingFilterProxy());
+        springSecurityFilterChain = servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy());
         springSecurityFilterChain.addMappingForUrlPatterns(
-            EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE,
-                DispatcherType.ERROR), true, "/*");
+                EnumSet.of(
+                        DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.ERROR),
+                true,
+                "/*");
     }
 
     /**
@@ -100,17 +102,15 @@ public class MvcWebApplicationInitializer extends
      *
      * @param registration Servlet registration.
      */
-
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
         long maxSize = 10L * 1024 * 1024 * 1024;
 
-        MultipartConfigElement multipartConfigElement = new MultipartConfigElement(null, maxSize,
-            maxSize * 2, (int) (maxSize / 2));
+        MultipartConfigElement multipartConfigElement =
+                new MultipartConfigElement(null, maxSize, maxSize * 2, (int) (maxSize / 2));
 
         registration.setMultipartConfig(multipartConfigElement);
     }
-
 
     /**
      * Sets Application filters of the servlet
@@ -119,7 +119,6 @@ public class MvcWebApplicationInitializer extends
      */
     @Override
     protected Filter[] getServletFilters() {
-        return new Filter[]{};
+        return new Filter[] {};
     }
-
 }

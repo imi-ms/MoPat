@@ -17,7 +17,6 @@ public class ConditionDTO {
     private ThresholdComparisonType thresholdType;
     private Double thresholdValue;
 
-
     public Long getId() {
         return id;
     }

@@ -40,13 +40,25 @@ import org.springframework.web.multipart.MultipartFile;
 @Table(name = "export_template")
 public class ExportTemplate implements Serializable {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @OneToMany(
+            mappedBy = "exportTemplate",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private final Set<ExportRule> exportRules = new HashSet<>();
+
+    @ManyToMany(mappedBy = "exportTemplates", cascade = CascadeType.ALL)
+    private final Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
+
+    @OneToMany(mappedBy = "exportTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final Set<EncounterExportTemplate> encounterExportTemplates = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
 
     @Size(max = 255)
     @Column(name = "name")
@@ -72,26 +84,18 @@ public class ExportTemplate implements Serializable {
     @JoinColumn(name = "questionnaire_id", referencedColumnName = "id")
     private Questionnaire questionnaire;
 
-    @OneToMany(mappedBy = "exportTemplate", cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private Set<ExportRule> exportRules = new HashSet<>();
-
-    @ManyToMany(mappedBy = "exportTemplates", cascade = CascadeType.ALL)
-    private Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
-
-    @OneToMany(mappedBy = "exportTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<EncounterExportTemplate> encounterExportTemplates = new HashSet<>();
-
     /**
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests.
      */
-    public ExportTemplate() {
+    public ExportTemplate() {}
 
-    }
-
-    public ExportTemplate(final String name, final ExportTemplateType exportTemplateType,
-        final String filename, final ConfigurationGroup configurationGroup,
-        final Questionnaire questionnaire) {
+    public ExportTemplate(
+            final String name,
+            final ExportTemplateType exportTemplateType,
+            final String filename,
+            final ConfigurationGroup configurationGroup,
+            final Questionnaire questionnaire) {
         this.name = name;
         this.exportTemplateType = exportTemplateType;
         this.filename = filename;
@@ -115,12 +119,14 @@ public class ExportTemplate implements Serializable {
      * @return List of {@link ExportTemplateType ExportTemplateTypes} created for the configured
      * configuration groups.
      */
-    public static List<ExportTemplate> createExportTemplates(final String exportTemplateName,
-        final ExportTemplateType exportTemplateType, final MultipartFile file,
-        final ConfigurationGroupDao configurationGroupDao,
-        final ExportTemplateDao exportTemplateDao) {
-        List<ConfigurationGroup> configurationGroups = configurationGroupDao.getConfigurationGroups(
-            exportTemplateType.getConfigurationMessageCode());
+    public static List<ExportTemplate> createExportTemplates(
+            final String exportTemplateName,
+            final ExportTemplateType exportTemplateType,
+            final MultipartFile file,
+            final ConfigurationGroupDao configurationGroupDao,
+            final ExportTemplateDao exportTemplateDao) {
+        List<ConfigurationGroup> configurationGroups =
+                configurationGroupDao.getConfigurationGroups(exportTemplateType.getConfigurationMessageCode());
         List<ExportTemplate> exportTemplates = new ArrayList<>();
 
         String fileNameWithOutExt = exportTemplateName;
@@ -322,8 +328,8 @@ public class ExportTemplate implements Serializable {
         assert exportRule != null : "The given ExportRule was null";
         exportRules.add(exportRule);
         // make sure the objects know each other
-        if (exportRule.getExportTemplate() == null || !exportRule.getExportTemplate()
-            .equals(this)) {
+        if (exportRule.getExportTemplate() == null
+                || !exportRule.getExportTemplate().equals(this)) {
             exportRule.setExportTemplate(this);
         }
     }
@@ -338,7 +344,8 @@ public class ExportTemplate implements Serializable {
         assert exportRule != null : "The given ExportRule was null";
         exportRules.remove(exportRule);
         // make sure the objects know each other
-        if (exportRule.getExportTemplate() != null && exportRule.getExportTemplate().equals(this)) {
+        if (exportRule.getExportTemplate() != null
+                && exportRule.getExportTemplate().equals(this)) {
             exportRule.removeExportTemplate();
         }
     }
@@ -351,12 +358,11 @@ public class ExportTemplate implements Serializable {
      * @return The set of {@link ExportRuleEncounter} objects which belong to the given encounter
      * field. Can not be <code>null</code>. Might be empty.
      */
-    public Set<ExportRuleEncounter> getExportRulesByEncounterField(
-        final ExportEncounterFieldType encounterField) {
+    public Set<ExportRuleEncounter> getExportRulesByEncounterField(final ExportEncounterFieldType encounterField) {
         Set<ExportRuleEncounter> exportRuleSet = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleEncounter
-                && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
+                    && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
                 exportRuleSet.add(((ExportRuleEncounter) rule));
             }
         }
@@ -371,12 +377,11 @@ public class ExportTemplate implements Serializable {
      * @return A list of export fields which belong to the given {@link ExportEncounterFieldType}
      * object. Can not be <code>null</code>.
      */
-    public Set<String> getExportFieldsByEncounterField(
-        final ExportEncounterFieldType encounterField) {
+    public Set<String> getExportFieldsByEncounterField(final ExportEncounterFieldType encounterField) {
         Set<String> exportFields = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleEncounter
-                && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
+                    && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
                 exportFields.add(rule.getExportField());
             }
         }
@@ -390,11 +395,10 @@ public class ExportTemplate implements Serializable {
      * @return a {@link ExportRuleFormat} object which belongs to the given encounter field. Can be
      * <code>null</code>.
      */
-    public ExportRuleFormat getExportRuleFormatFromEncounterField(
-        final ExportEncounterFieldType encounterField) {
+    public ExportRuleFormat getExportRuleFormatFromEncounterField(final ExportEncounterFieldType encounterField) {
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleEncounter
-                && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
+                    && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
                 return rule.getExportRuleFormat();
             }
         }
@@ -410,12 +414,12 @@ public class ExportTemplate implements Serializable {
      * @return a {@link ExportRuleFormat} object which belongs to the given score field. Can be
      * <code>null</code>.
      */
-    public ExportRuleFormat getExportRuleFormatFromScoreField(final ExportScoreFieldType scoreField,
-        final Long scoreId) {
+    public ExportRuleFormat getExportRuleFormatFromScoreField(
+            final ExportScoreFieldType scoreField, final Long scoreId) {
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
-                    && exportRuleScore.getScoreField() == scoreField) {
+                        && exportRuleScore.getScoreField() == scoreField) {
                     return rule.getExportRuleFormat();
                 }
             }
@@ -432,14 +436,13 @@ public class ExportTemplate implements Serializable {
      * @return A list of export fields which belong to the given {@link ExportScoreFieldType}
      * object. Can not be <code>null</code>.
      */
-    public Set<String> getExportFieldsByScoreField(final ExportScoreFieldType scoreField,
-        final Long scoreId) {
+    public Set<String> getExportFieldsByScoreField(final ExportScoreFieldType scoreField, final Long scoreId) {
         Set<String> exportFields = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
 
             if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
-                    && exportRuleScore.getScoreField() == scoreField) {
+                        && exportRuleScore.getScoreField() == scoreField) {
                     exportFields.add(rule.getExportField());
                 }
             }
@@ -457,14 +460,13 @@ public class ExportTemplate implements Serializable {
      * {@link ExportScoreFieldType} Object. Can not be
      * <code>null</code>. Might be empty.
      */
-    public Set<ExportRuleScore> getExportRulesByScoreField(final ExportScoreFieldType scoreField,
-        final Long scoreId) {
+    public Set<ExportRuleScore> getExportRulesByScoreField(final ExportScoreFieldType scoreField, final Long scoreId) {
         Set<ExportRuleScore> exportRuleSet = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
-                    && exportRuleScore.getScoreField() == scoreField) {
-                    exportRuleSet.add(((ExportRuleScore) rule));
+                        && exportRuleScore.getScoreField() == scoreField) {
+                    exportRuleSet.add(exportRuleScore);
                 }
             }
         }
@@ -482,12 +484,11 @@ public class ExportTemplate implements Serializable {
         return getExportFieldsByAnswer(answer, false);
     }
 
-    public List<String> getExportFieldsByAnswer(final Answer answer,
-        final boolean useFreetextValue) {
+    public List<String> getExportFieldsByAnswer(final Answer answer, final boolean useFreetextValue) {
         List<String> exportFields = new ArrayList<>();
         for (ExportRule rule : this.exportRules) {
-            if (rule instanceof ExportRuleAnswer && ((ExportRuleAnswer) rule).getAnswer()
-                .equals(answer)) {
+            if (rule instanceof ExportRuleAnswer
+                    && ((ExportRuleAnswer) rule).getAnswer().equals(answer)) {
                 if (useFreetextValue == ((ExportRuleAnswer) rule).getUseFreetextValue()) {
                     exportFields.add(rule.getExportField());
                 }
@@ -506,8 +507,8 @@ public class ExportTemplate implements Serializable {
     public List<String> getExportFieldsByQuestion(final Question question) {
         List<String> exportFields = new ArrayList<>();
         for (ExportRule rule : this.exportRules) {
-            if (rule instanceof ExportRuleQuestion && ((ExportRuleQuestion) rule).getQuestion()
-                .equals(question)) {
+            if (rule instanceof ExportRuleQuestion
+                    && ((ExportRuleQuestion) rule).getQuestion().equals(question)) {
                 exportFields.add(rule.getExportField());
             }
         }
@@ -578,8 +579,7 @@ public class ExportTemplate implements Serializable {
      * @param encounterExportTemplates Set of {@link EncounterExportTemplate} objects. Can not be
      *                                 <code>null</code>.
      */
-    public void addEncounterExportTemplates(
-        final Set<EncounterExportTemplate> encounterExportTemplates) {
+    public void addEncounterExportTemplates(final Set<EncounterExportTemplate> encounterExportTemplates) {
         assert encounterExportTemplates != null : "The given set was null";
         for (EncounterExportTemplate encounterExportTemplate : encounterExportTemplates) {
             addEncounterExportTemplate(encounterExportTemplate);
@@ -603,7 +603,7 @@ public class ExportTemplate implements Serializable {
         }
         // take care the objects know each other
         if (encounterExportTemplate.getExportTemplate() != null
-            && !encounterExportTemplate.getExportTemplate().equals(this)) {
+                && !encounterExportTemplate.getExportTemplate().equals(this)) {
             encounterExportTemplate.setExportTemplate(this);
         }
     }

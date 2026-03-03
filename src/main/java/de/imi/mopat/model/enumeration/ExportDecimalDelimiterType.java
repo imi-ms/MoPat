@@ -5,8 +5,8 @@ package de.imi.mopat.model.enumeration;
  * number. Used in {@link de.imi.mopat.model.ExportRuleFormat} objects.
  */
 public enum ExportDecimalDelimiterType {
-
-    DOT('.'), COMMA(',');
+    DOT('.'),
+    COMMA(',');
 
     private final char delimiter;
 

@@ -8,14 +8,13 @@ import de.imi.mopat.model.dto.OneTimeStatisticDTO;
 import de.imi.mopat.model.dto.StatisticDTO;
 import de.imi.mopat.validator.OneTimeStatisticDTOValidator;
 import de.imi.mopat.validator.StatisticDTOValidator;
-
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,16 +33,22 @@ public class StatisticController {
 
     @Autowired
     private StatisticDao statisticDao;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private StatisticDTOValidator statisticDTOValidator;
+
     @Autowired
     private OneTimeStatisticDTOValidator oneTimeStatisticDTOValidator;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private EncounterDao encounterDao;
 
@@ -80,8 +85,9 @@ public class StatisticController {
     @RequestMapping(value = "/statistic/onetimestatistic", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String getOneTimeStatistics(
-        @ModelAttribute("oneTimeStatisticDTO") @Valid final OneTimeStatisticDTO oneTimeStatisticDTO,
-        final BindingResult result, final Model model) {
+            @ModelAttribute("oneTimeStatisticDTO") @Valid final OneTimeStatisticDTO oneTimeStatisticDTO,
+            final BindingResult result,
+            final Model model) {
         oneTimeStatisticDTOValidator.validate(oneTimeStatisticDTO, result);
         model.addAttribute("bundles", bundleDao.getAllElements());
         model.addAttribute("questionnaires", questionnaireDao.getAllElements());
@@ -89,19 +95,21 @@ public class StatisticController {
         if (result.hasErrors()) {
             return "statistic/onetimestatistic";
         }
-        oneTimeStatisticDTO.setEncounterCountByBundleInInterval(
-            encounterDao.getEncounterCountByBundleInInterval(oneTimeStatisticDTO.getBundleId(),
-                oneTimeStatisticDTO.getBundleStartDate(), oneTimeStatisticDTO.getBundleEndDate()));
+        oneTimeStatisticDTO.setEncounterCountByBundleInInterval(encounterDao.getEncounterCountByBundleInInterval(
+                oneTimeStatisticDTO.getBundleId(),
+                oneTimeStatisticDTO.getBundleStartDate(),
+                oneTimeStatisticDTO.getBundleEndDate()));
         oneTimeStatisticDTO.setEncounterCountByCaseNumberInInterval(
-            encounterDao.getEncounterCountByCaseNumberInInterval(oneTimeStatisticDTO.getPatientId(),
-                oneTimeStatisticDTO.getPatientStartDate(),
-                oneTimeStatisticDTO.getPatientEndDate()));
+                encounterDao.getEncounterCountByCaseNumberInInterval(
+                        oneTimeStatisticDTO.getPatientId(),
+                        oneTimeStatisticDTO.getPatientStartDate(),
+                        oneTimeStatisticDTO.getPatientEndDate()));
         oneTimeStatisticDTO.setEncounterCountByCaseNumberByBundleInInterval(
-            encounterDao.getEncounterCountByCaseNumberByBundleInInterval(
-                oneTimeStatisticDTO.getBundlePatientBundleId(),
-                oneTimeStatisticDTO.getBundlePatientPatientId(),
-                oneTimeStatisticDTO.getBundlePatientStartDate(),
-                oneTimeStatisticDTO.getBundlePatientEndDate()));
+                encounterDao.getEncounterCountByCaseNumberByBundleInInterval(
+                        oneTimeStatisticDTO.getBundlePatientBundleId(),
+                        oneTimeStatisticDTO.getBundlePatientPatientId(),
+                        oneTimeStatisticDTO.getBundlePatientStartDate(),
+                        oneTimeStatisticDTO.getBundlePatientEndDate()));
 
         return "statistic/onetimestatistic";
     }
@@ -113,7 +121,6 @@ public class StatisticController {
      * @return The <i>statistic/index</i> website.
      */
     @RequestMapping(value = "/statistic/index", method = RequestMethod.GET)
-
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String getStatistic(final Model model) {
 
@@ -144,8 +151,9 @@ public class StatisticController {
     @RequestMapping(value = "/statistic/index", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String getStatistics(
-        @ModelAttribute("statisticDTO") @Valid final StatisticDTO statisticDTO,
-        final BindingResult result, final Model model) {
+            @ModelAttribute("statisticDTO") @Valid final StatisticDTO statisticDTO,
+            final BindingResult result,
+            final Model model) {
         statisticDTOValidator.validate(statisticDTO, result);
         statisticDTO.setMinDate(statisticDao.getEarliestDate());
         statisticDTO.setMaxDate(statisticDao.getLatestDate());
@@ -164,8 +172,7 @@ public class StatisticController {
             displayedDates.add(enddate);
 
             // Evaluate the amount of days between start- and enddate
-            int days = (int) TimeUnit.DAYS.convert(enddate.getTime() - startdate.getTime(),
-                TimeUnit.MILLISECONDS) + 1;
+            int days = (int) TimeUnit.DAYS.convert(enddate.getTime() - startdate.getTime(), TimeUnit.MILLISECONDS) + 1;
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(startdate);

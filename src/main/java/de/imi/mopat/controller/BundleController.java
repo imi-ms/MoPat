@@ -51,24 +51,34 @@ public class BundleController {
 
     @Autowired
     private AclClassDao aclClassDao;
+
     @Autowired
     private AclObjectIdentityDao aclObjectIdentityDao;
+
     @Autowired
     private AnswerDao answerDao;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private ConditionDao conditionDao;
+
     @Autowired
     private ScoreDao scoreDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private BundleDTOValidator bundleDTOValidator;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private BundleService bundleService;
+
     @Autowired
     private ClinicService clinicService;
 
@@ -83,10 +93,8 @@ public class BundleController {
     public String listBundles(final Model model) {
         List<Bundle> bundles = bundleDao.getAllElements();
         Set<Long> bundleIds = bundleService.getUniqueQuestionnaireIds(bundles);
-        Set<Long> targetBundles = conditionDao.findConditionTargetIds(
-            bundleIds.stream().toList(),
-            "Bundle"
-        );
+        Set<Long> targetBundles =
+                conditionDao.findConditionTargetIds(bundleIds.stream().toList(), "Bundle");
 
         for (Bundle bundle : bundles) {
             bundle.setHasConditions(targetBundles.contains(bundle.getId()));
@@ -106,8 +114,7 @@ public class BundleController {
      */
     @RequestMapping(value = "/bundle/fill", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId,
-        final Model model) {
+    public String fillBundle(@RequestParam(value = "id", required = false) final Long bundleId, final Model model) {
         BundleDTO bundleDTO = bundleService.getBundleDTO(bundleId);
         model.addAttribute("bundleDTO", bundleDTO);
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
@@ -128,9 +135,11 @@ public class BundleController {
     @RequestMapping(value = "/bundle/edit", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     @Transactional("MoPat_User")
-    public String editBundle(@RequestParam final String action,
-        @ModelAttribute("bundleDTO") @Valid final BundleDTO bundleDTO, final BindingResult result,
-        final Model model) {
+    public String editBundle(
+            @RequestParam final String action,
+            @ModelAttribute("bundleDTO") @Valid final BundleDTO bundleDTO,
+            final BindingResult result,
+            final Model model) {
 
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/bundle/list";
@@ -143,7 +152,8 @@ public class BundleController {
         bundleService.prepareBundleForEdit(bundleDTO);
 
         List<QuestionnaireDTO> availableQuestionnaireDTOs = bundleService.getAvailableQuestionnaires(null);
-        bundleService.syncAssignedAndAvailableQuestionnaires(bundleDTO.getBundleQuestionnaireDTOs(), availableQuestionnaireDTOs);
+        bundleService.syncAssignedAndAvailableQuestionnaires(
+                bundleDTO.getBundleQuestionnaireDTOs(), availableQuestionnaireDTOs);
 
         // Validate the bundle object
         bundleDTOValidator.validate(bundleDTO, result);
@@ -171,8 +181,7 @@ public class BundleController {
     @RequestMapping(value = "/bundle/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     @Transactional("MoPat_User")
-    public String removeBundle(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
+    public String removeBundle(@RequestParam(value = "id", required = true) final Long id, final Model model) {
         Bundle bundle = bundleDao.getElementById(id);
 
         if (bundle != null) {
@@ -194,11 +203,11 @@ public class BundleController {
                 // Delete the corresponding conditions
                 for (Condition condition : conditionDao.getConditionsByTarget(bundle)) {
                     if (condition instanceof SelectAnswerCondition
-                        || condition instanceof SliderAnswerThresholdCondition) {
+                            || condition instanceof SliderAnswerThresholdCondition) {
                         // Refresh the trigger so that multiple conditions of
                         // the same trigger will be correctly deleted
-                        ConditionTrigger conditionTrigger = answerDao.getElementById(
-                            condition.getTrigger().getId());
+                        ConditionTrigger conditionTrigger =
+                                answerDao.getElementById(condition.getTrigger().getId());
                         conditionTrigger.removeCondition(condition);
                         answerDao.merge((Answer) conditionTrigger);
                     }
@@ -207,18 +216,24 @@ public class BundleController {
 
                 // Delete the corresponding ACL object for the removed bundle
                 aclObjectIdentityDao.remove(aclObjectIdentityDao.getElementByClassAndObjectId(
-                    aclClassDao.getElementByClass(Bundle.class.getName()), id));
+                        aclClassDao.getElementByClass(Bundle.class.getName()), id));
                 // Delete the bundle
                 bundle.removeAllBundleClinics();
                 bundle.removeAllBundleQuestionnaires();
                 bundleDao.remove(bundle);
-                model.addAttribute("messageSuccess",
-                    messageSource.getMessage("bundle.error.deletePossible",
-                        new Object[]{bundle.getName()}, LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "messageSuccess",
+                        messageSource.getMessage(
+                                "bundle.error.deletePossible",
+                                new Object[] {bundle.getName()},
+                                LocaleContextHolder.getLocale()));
             } else {
-                model.addAttribute("messageFail",
-                    messageSource.getMessage("bundle.error.deleteNotPossible",
-                        new Object[]{bundle.getName()}, LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "messageFail",
+                        messageSource.getMessage(
+                                "bundle.error.deleteNotPossible",
+                                new Object[] {bundle.getName()},
+                                LocaleContextHolder.getLocale()));
             }
         }
         return listBundles(model);
@@ -234,13 +249,11 @@ public class BundleController {
      */
     @RequestMapping(value = "/bundle/togglepublish")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String togglePublish(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
+    public String togglePublish(@RequestParam(value = "id", required = true) final Long id, final Model model) {
         Bundle bundle = bundleDao.getElementById(id);
         // Only change the publishing state,
         // if the bundle has at least one questionnaire
-        if (bundle != null && !bundle.getBundleQuestionnaires().isEmpty()
-            && bundle.isModifiable()) {
+        if (bundle != null && !bundle.getBundleQuestionnaires().isEmpty() && bundle.isModifiable()) {
             bundle.setIsPublished(!bundle.getIsPublished());
             bundleDao.merge(bundle);
         }

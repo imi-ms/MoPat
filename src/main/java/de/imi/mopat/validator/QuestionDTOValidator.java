@@ -25,18 +25,25 @@ public class QuestionDTOValidator implements Validator {
 
     private static final String MIN_NUMBER_ANSWERS = "minNumberAnswers";
     private static final String MAX_NUMBER_ANSWERS = "maxNumberAnswers";
+
     @Autowired
     private SelectAnswerDTOValidator selectAnswerDTOValidator;
+
     @Autowired
     private SliderAnswerDTOValidator sliderAnswerDTOValidator;
+
     @Autowired
     private NumberInputAnswerDTOValidator numberInputAnswerDTOValidator;
+
     @Autowired
     private DateAnswerDTOValidator dateAnswerDTOValidator;
+
     @Autowired
     private ImageAnswerDTOValidator imageAnswerDTOValidator;
+
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -57,20 +64,28 @@ public class QuestionDTOValidator implements Validator {
         QuestionDTO questionDTO = (QuestionDTO) target;
 
         // [sw] Check if any added language contains an empty questionText
-        for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText().entrySet()) {
-            if (entry.getValue() == null || entry.getValue().trim().isEmpty() || Pattern.matches(
-                "<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
+        for (Map.Entry<String, String> entry :
+                questionDTO.getLocalizedQuestionText().entrySet()) {
+            if (entry.getValue() == null
+                    || entry.getValue().trim().isEmpty()
+                    || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                 questionDTO.getLocalizedQuestionText().put(entry.getKey(), "");
                 if (questionDTO.getQuestionType() == QuestionType.INFO_TEXT) {
-                    errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
-                        MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".infoTextIsNull",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "localizedQuestionText[" + entry.getKey() + "]",
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".infoTextIsNull",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 } else {
-                    errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
-                        MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".questionTextIsNull",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "localizedQuestionText[" + entry.getKey() + "]",
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".questionTextIsNull",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             }
         }
@@ -79,32 +94,44 @@ public class QuestionDTOValidator implements Validator {
             case MULTIPLE_CHOICE:
             case DROP_DOWN:
                 if (questionDTO.getCodedValueType() == null) {
-                    errors.rejectValue("codedValueType", MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".codedValueTypeMissing",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "codedValueType",
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".codedValueTypeMissing",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
                 // Check if coded values of answer are unique
                 List<String> existingCodedValues = new ArrayList<>();
                 for (Long i : questionDTO.getAnswers().keySet()) {
                     AnswerDTO answerDTO = questionDTO.getAnswers().get(i);
-                    if (answerDTO.getCodedValue() == null || answerDTO.getCodedValue().isEmpty()) {
-                        errors.rejectValue("answers[" + i + "].codedValue",
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                            messageSource.getMessage("question.error" + ".codedValueEmpty",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                    if (answerDTO.getCodedValue() == null
+                            || answerDTO.getCodedValue().isEmpty()) {
+                        errors.rejectValue(
+                                "answers[" + i + "].codedValue",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage(
+                                        "question.error" + ".codedValueEmpty",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     } else {
                         if (existingCodedValues.contains(answerDTO.getCodedValue())) {
-                            errors.rejectValue("answers[" + i + "].codedValue",
-                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                                messageSource.getMessage("question.error" + ".codedValueDuplicate",
-                                    new Object[]{}, LocaleContextHolder.getLocale()));
+                            errors.rejectValue(
+                                    "answers[" + i + "].codedValue",
+                                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                    messageSource.getMessage(
+                                            "question.error" + ".codedValueDuplicate",
+                                            new Object[] {},
+                                            LocaleContextHolder.getLocale()));
                         }
                         existingCodedValues.add(answerDTO.getCodedValue());
                     }
                 }
             case BODY_PART: {
                 int realNumberOfAnswers = 0;
-                if (questionDTO.getAnswers() != null && !questionDTO.getAnswers().isEmpty()) {
+                if (questionDTO.getAnswers() != null
+                        && !questionDTO.getAnswers().isEmpty()) {
                     for (Long i : questionDTO.getAnswers().keySet()) {
                         AnswerDTO answerDTO = questionDTO.getAnswers().get(i);
                         if (answerDTO.getId() != null && answerDTO.getId() < 0L) {
@@ -117,15 +144,20 @@ public class QuestionDTOValidator implements Validator {
                         // answers.
                         errors.pushNestedPath("answers[" + i + "]");
                         // [bt] sub-validation
-                        selectAnswerDTOValidator.validate(questionDTO.getAnswers().get(i), errors);
+                        selectAnswerDTOValidator.validate(
+                                questionDTO.getAnswers().get(i), errors);
                         // [bt] tell the errors object that validation of the
                         // sub-element/property of this question is over.
                         errors.popNestedPath();
                     }
                 } else {
-                    errors.rejectValue(MIN_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".noAnswerSelected",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            MIN_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".noAnswerSelected",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
 
                 Integer minNumberAnswers = null;
@@ -134,16 +166,24 @@ public class QuestionDTOValidator implements Validator {
                     // [bt] validation of the minimum and maximum number of
                     // answers to be given.
                     if (questionDTO.getMinNumberAnswers() == null) {
-                        errors.rejectValue(MIN_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_NOT_NULL,
-                            messageSource.getMessage("question.error" + ".minNumberAnswersMissing",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                MIN_NUMBER_ANSWERS,
+                                MoPatValidator.ERRORCODE_NOT_NULL,
+                                messageSource.getMessage(
+                                        "question.error" + ".minNumberAnswersMissing",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     } else {
                         minNumberAnswers = questionDTO.getMinNumberAnswers();
                     }
                     if (questionDTO.getMaxNumberAnswers() == null) {
-                        errors.rejectValue(MAX_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_NOT_NULL,
-                            messageSource.getMessage("question.error" + ".maxNumberAnswersMissing",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                MAX_NUMBER_ANSWERS,
+                                MoPatValidator.ERRORCODE_NOT_NULL,
+                                messageSource.getMessage(
+                                        "question.error" + ".maxNumberAnswersMissing",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     } else {
                         maxNumberAnswers = questionDTO.getMaxNumberAnswers();
                     }
@@ -151,13 +191,15 @@ public class QuestionDTOValidator implements Validator {
                     // implemented due to existent annotations in Question class
                     // [bt] validation of maxNumberAnswers <= 1 not
                     // implemented due to existent annotations in Question class
-                    if (minNumberAnswers != null && maxNumberAnswers != null
-                        && minNumberAnswers > maxNumberAnswers) {
-                        errors.rejectValue(MIN_NUMBER_ANSWERS,
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE, messageSource.getMessage(
-                                "question.error" + ".minNumberBiggerThanMaxNumber", new Object[]{},
-                                LocaleContextHolder.getLocale()));
-                        //errors.rejectValue(MAX_NUMBER_ANSWERS,
+                    if (minNumberAnswers != null && maxNumberAnswers != null && minNumberAnswers > maxNumberAnswers) {
+                        errors.rejectValue(
+                                MIN_NUMBER_ANSWERS,
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage(
+                                        "question.error" + ".minNumberBiggerThanMaxNumber",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
+                        // errors.rejectValue(MAX_NUMBER_ANSWERS,
                         // MoPatValidator.ERRORCODE_ERRORMESSAGE,
                         // messageSource.getMessage("question.error
                         // .maxNumberSmallerThanMinNumber", new Object[]{},
@@ -165,16 +207,22 @@ public class QuestionDTOValidator implements Validator {
                     }
 
                     if (minNumberAnswers != null && minNumberAnswers > realNumberOfAnswers) {
-                        errors.rejectValue(MIN_NUMBER_ANSWERS,
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE, messageSource.getMessage(
-                                "question.error" + ".minNumberBiggerThanAmountOfAnswers",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                MIN_NUMBER_ANSWERS,
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage(
+                                        "question.error" + ".minNumberBiggerThanAmountOfAnswers",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     }
                     if (maxNumberAnswers != null && maxNumberAnswers > realNumberOfAnswers) {
-                        errors.rejectValue(MAX_NUMBER_ANSWERS,
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE, messageSource.getMessage(
-                                "question.error" + ".maxNumberBiggerThanAmountOfAnswers",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                MAX_NUMBER_ANSWERS,
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage(
+                                        "question.error" + ".maxNumberBiggerThanAmountOfAnswers",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     }
                 } catch (NumberFormatException ex) {
                     // already handled by javax validation

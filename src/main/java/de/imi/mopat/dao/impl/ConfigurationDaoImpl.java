@@ -5,11 +5,10 @@ import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.ClinicConfigurationGroupMapping;
 import de.imi.mopat.model.Configuration;
-
-import java.io.IOException;
-import java.util.Locale;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
+import java.io.IOException;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,12 +19,12 @@ import org.springframework.stereotype.Component;
 public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements ConfigurationDao {
 
     @Override
-    public Configuration getConfigurationByAttributeAndClass(final String attribute,
-        final String clazz) {
+    public Configuration getConfigurationByAttributeAndClass(final String attribute, final String clazz) {
         try {
             TypedQuery<Configuration> query = moPatEntityManager.createQuery(
-                "SELECT c FROM Configuration c WHERE c.attribute = '" + attribute
-                    + "' AND c.entityClass = '" + clazz + "'", getEntityClass());
+                    "SELECT c FROM Configuration c WHERE c.attribute = '" + attribute + "' AND c.entityClass = '"
+                            + clazz + "'",
+                    getEntityClass());
 
             return query.getSingleResult();
         } catch (NoResultException e) {
@@ -33,16 +32,14 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
         }
     }
 
-
     @Override
-    public Configuration getConfigurationByGroupName(final Long clinicId, final String attribute,
-        final String clazz, final String groupName) {
+    public Configuration getConfigurationByGroupName(
+            final Long clinicId, final String attribute, final String clazz, final String groupName) {
         try {
-            String mappingIdJpql = "SELECT ccm.id FROM ClinicConfigurationMapping ccm " +
-                "JOIN ccm.clinic c " +
-                "JOIN ccm.clinicConfiguration cc " +
-                "WHERE c.id = :clinicId " +
-                "AND cc.mappedConfigurationGroup = :mappedGroupName";
+            String mappingIdJpql = "SELECT ccm.id FROM ClinicConfigurationMapping ccm " + "JOIN ccm.clinic c "
+                    + "JOIN ccm.clinicConfiguration cc "
+                    + "WHERE c.id = :clinicId "
+                    + "AND cc.mappedConfigurationGroup = :mappedGroupName";
 
             TypedQuery<Long> mappingIdQuery = moPatEntityManager.createQuery(mappingIdJpql, Long.class);
             mappingIdQuery.setParameter("clinicId", clinicId);
@@ -50,21 +47,24 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
 
             Long clinicConfigurationMappingId = mappingIdQuery.getSingleResult();
 
-            String groupIdJpql = "SELECT ccgm FROM ClinicConfigurationGroupMapping ccgm " +
-                "WHERE ccgm.clinicConfigurationMapping.id = :mappingId";
+            String groupIdJpql = "SELECT ccgm FROM ClinicConfigurationGroupMapping ccgm "
+                    + "WHERE ccgm.clinicConfigurationMapping.id = :mappingId";
 
-            TypedQuery<ClinicConfigurationGroupMapping> groupIdQuery = moPatEntityManager.createQuery(groupIdJpql, ClinicConfigurationGroupMapping.class);
+            TypedQuery<ClinicConfigurationGroupMapping> groupIdQuery =
+                    moPatEntityManager.createQuery(groupIdJpql, ClinicConfigurationGroupMapping.class);
             groupIdQuery.setParameter("mappingId", clinicConfigurationMappingId);
 
             ClinicConfigurationGroupMapping clinicConfigurationGroupMapping = groupIdQuery.getSingleResult();
-            Long configurationGroupId = clinicConfigurationGroupMapping.getConfigurationGroup().getId();
+            Long configurationGroupId =
+                    clinicConfigurationGroupMapping.getConfigurationGroup().getId();
 
-            String configurationsJpql = "SELECT conf FROM Configuration conf " +
-                "WHERE conf.configurationGroup.id = :groupId " +
-                "AND conf.attribute = :attribute " +
-                "AND conf.entityClass = :clazz";
+            String configurationsJpql =
+                    "SELECT conf FROM Configuration conf " + "WHERE conf.configurationGroup.id = :groupId "
+                            + "AND conf.attribute = :attribute "
+                            + "AND conf.entityClass = :clazz";
 
-            TypedQuery<Configuration> configurationsQuery = moPatEntityManager.createQuery(configurationsJpql, Configuration.class);
+            TypedQuery<Configuration> configurationsQuery =
+                    moPatEntityManager.createQuery(configurationsJpql, Configuration.class);
             configurationsQuery.setParameter("groupId", configurationGroupId);
             configurationsQuery.setParameter("attribute", attribute);
             configurationsQuery.setParameter("clazz", clazz);
@@ -77,22 +77,21 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
 
     @Override
     public String getBaseURL() {
-        Configuration configuration = getConfigurationByAttributeAndClass(Constants.BASE_URL,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration = getConfigurationByAttributeAndClass(Constants.BASE_URL, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getDefaultLanguage() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.DEFAULT_LANGUAGE, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.DEFAULT_LANGUAGE, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public Locale getDefaultLocale() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.DEFAULT_LANGUAGE, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.DEFAULT_LANGUAGE, Constants.CLASS_GLOBAL);
         String defaultLanguage = configuration.getValue();
         String[] localeSplit = defaultLanguage.split("_");
         Locale defaultLanguageLocale = new Locale(localeSplit[0]);
@@ -104,17 +103,16 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
 
     @Override
     public String getObjectStoragePath() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.OBJECT_STORAGE_PATH_PROPERTY, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.OBJECT_STORAGE_PATH_PROPERTY, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getLogo() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-                Constants.LOGO_PROPERTY,
-                Constants.CLASS_GLOBAL);
-        if(configuration.getValue()!=null){
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.LOGO_PROPERTY, Constants.CLASS_GLOBAL);
+        if (configuration.getValue() != null) {
             String realPath = this.getImageUploadPath() + configuration.getValue();
             String fileName = realPath.substring(realPath.lastIndexOf("/"));
             try {
@@ -127,112 +125,108 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
     }
 
     @Override
-    public String getLogoPath(){
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.LOGO_PROPERTY,
-            Constants.CLASS_GLOBAL);
+    public String getLogoPath() {
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.LOGO_PROPERTY, Constants.CLASS_GLOBAL);
 
         return configuration.getValue();
     }
 
     @Override
     public String getSupportEMail() {
-        Configuration configuration = getConfigurationByAttributeAndClass(Constants.SUPPORT_MAIL,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.SUPPORT_MAIL, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getSupportPhone() {
-        Configuration configuration = getConfigurationByAttributeAndClass(Constants.SUPPORT_PHONE,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.SUPPORT_PHONE, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public Long getFinishedEncounterTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+                Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
         return Long.valueOf(configuration.getValue());
     }
 
     @Override
     public Long getIncompleteEncounterTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+                Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
         return Long.valueOf(configuration.getValue());
     }
 
     @Override
     public Long getFinishedEncounterScheduledTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+                Constants.FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
         return Long.valueOf(configuration.getValue());
     }
 
     @Override
     public String getImageUploadPath() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.IMAGE_UPLOAD_PATH,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.IMAGE_UPLOAD_PATH, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getFHIRsystemURI() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.FHIR_SYSTEM_URL,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.FHIR_SYSTEM_URL, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getWebappRootPath() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.WEBBAPP_ROOT_PATH,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.WEBBAPP_ROOT_PATH, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public Boolean isGlobalPinAuthEnabled() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.ENABLE_GLOBAL_PIN_AUTH, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.ENABLE_GLOBAL_PIN_AUTH, Constants.CLASS_GLOBAL);
         return Boolean.valueOf(configuration.getValue());
     }
 
     @Override
     public Long getIncompleteEncounterScheduledTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+                Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
         return Long.valueOf(configuration.getValue());
     }
 
     @Override
     public Long getFinishedEncounterMailaddressTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+                Constants.FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
         return Long.valueOf(configuration.getValue());
     }
 
     @Override
     public String getMetadataExporterODMOID() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.METADATA_EXPORTER_ODM_OID, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.METADATA_EXPORTER_ODM_OID, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getMetadataExporterPDF() {
-        Configuration configuration = getConfigurationByAttributeAndClass(
-            Constants.METADATA_EXPORTER_PDF, Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.METADATA_EXPORTER_PDF, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 
     @Override
     public String getImprintText() {
-        Configuration configuration = getConfigurationByAttributeAndClass(Constants.IMPRINT_TEXT,
-            Constants.CLASS_GLOBAL);
+        Configuration configuration =
+                getConfigurationByAttributeAndClass(Constants.IMPRINT_TEXT, Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
 }

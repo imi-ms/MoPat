@@ -1,17 +1,21 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.helper.controller.*;
+import de.imi.mopat.helper.controller.CounterBean;
+import de.imi.mopat.helper.controller.HtmlUtilities;
+import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.ParameterHelper;
+import de.imi.mopat.helper.controller.ThymeleafDumper;
+import de.imi.mopat.helper.controller.ThymeleafMessageHelper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Adds several attributes to the model that should be accessible on all views
@@ -36,7 +40,7 @@ public class RootController {
 
     @Autowired
     private ServletContext context;
-    
+
     /**
      * Globally set Form limit to more than 256
      * @param binder
@@ -45,7 +49,7 @@ public class RootController {
     public void initBinder(WebDataBinder binder) {
         binder.setAutoGrowCollectionLimit(2058);
     }
-    
+
     /**
      * Adding the parameterHelper to all pages.
      *

@@ -18,8 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class FhirImporterDstu3Adapter extends FhirImporterVersionAdapter {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        FhirImporterDstu3Adapter.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirImporterDstu3Adapter.class);
     private Questionnaire questionnaire;
 
     @Override
@@ -46,8 +45,8 @@ public class FhirImporterDstu3Adapter extends FhirImporterVersionAdapter {
 
     @Override
     public boolean isFhirQuestionnaireTitleEmpty() {
-        return (this.questionnaire.getTitle() == null || this.questionnaire.getTitle().trim()
-            .isEmpty());
+        return (this.questionnaire.getTitle() == null
+                || this.questionnaire.getTitle().trim().isEmpty());
     }
 
     @Override
@@ -85,17 +84,19 @@ public class FhirImporterDstu3Adapter extends FhirImporterVersionAdapter {
 
     @Override
     @Deprecated
-    public boolean validateFileAgainstSchema(MultipartFile fileToValidate, String validationPath,
-        ImportQuestionnaireValidation result, MessageSource messageSource) {
-        return FhirDstu3Helper.validateFileAgainstSchema(fileToValidate, validationPath,
-            Constants.SCHEMA_QUESTIONNAIRE_FILE, result, messageSource);
+    public boolean validateFileAgainstSchema(
+            MultipartFile fileToValidate,
+            String validationPath,
+            ImportQuestionnaireValidation result,
+            MessageSource messageSource) {
+        return FhirDstu3Helper.validateFileAgainstSchema(
+                fileToValidate, validationPath, Constants.SCHEMA_QUESTIONNAIRE_FILE, result, messageSource);
     }
 
     @Override
-    boolean validateFileWithFhirInstanceValidator(String fhirResourceString,
-        ImportQuestionnaireValidation errors, String frontendLocale) {
-        return FhirDstu3Helper.validateFileWithFhirInstanceValidator(fhirResourceString, errors,
-            frontendLocale);
+    boolean validateFileWithFhirInstanceValidator(
+            String fhirResourceString, ImportQuestionnaireValidation errors, String frontendLocale) {
+        return FhirDstu3Helper.validateFileWithFhirInstanceValidator(fhirResourceString, errors, frontendLocale);
     }
 
     @Override
@@ -122,10 +123,10 @@ public class FhirImporterDstu3Adapter extends FhirImporterVersionAdapter {
 
     @Override
     public ImportQuestionnaireResult convertFHIRQuestionnaireToMoPatQuestionnaire(
-        List<ExportTemplate> exportTemplates, MessageSource messageSource) {
+            List<ExportTemplate> exportTemplates, MessageSource messageSource) {
         if (this.questionnaire != null) {
             return FhirDstu3ToMoPatConverter.convertFHIRQuestionnaireToMoPatQuestionnaire(
-                this.questionnaire, exportTemplates, messageSource);
+                    this.questionnaire, exportTemplates, messageSource);
         } else {
             return null;
         }

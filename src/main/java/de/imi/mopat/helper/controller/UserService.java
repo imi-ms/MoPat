@@ -10,6 +10,12 @@ import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +23,10 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Service
 public class UserService {
 
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private UserDao userDao;
@@ -51,9 +49,7 @@ public class UserService {
      * @return List of UserDTO objects representing all users.
      */
     public List<UserDTO> getAllUser() {
-        return userDao.getAllElements().stream()
-            .map(userDTOMapper)
-            .collect(Collectors.toList());
+        return userDao.getAllElements().stream().map(userDTOMapper).collect(Collectors.toList());
     }
 
     /**
@@ -68,14 +64,15 @@ public class UserService {
         }
 
         Set<Long> assignedUserIds = aclEntryDao.getAllElements().stream()
-            .filter(aclEntry -> aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID))
-            .map(aclEntry -> aclEntry.getUser().getId())
-            .collect(Collectors.toSet());
+                .filter(aclEntry ->
+                        aclEntry.getAclObjectIdentity().getObjectIdIdentity().equals(clinicID))
+                .map(aclEntry -> aclEntry.getUser().getId())
+                .collect(Collectors.toSet());
 
         return userDao.getAllElements().stream()
-            .filter(user -> !assignedUserIds.contains(user.getId()))
-            .map(userDTOMapper)
-            .collect(Collectors.toList());
+                .filter(user -> !assignedUserIds.contains(user.getId()))
+                .map(userDTOMapper)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -85,14 +82,13 @@ public class UserService {
      * @return List of UserDTOs representing users that are assigned to the clinic.
      */
     public List<UserDTO> getAssignedUserDTOs(final Long clinicId) {
-        Set<Long> availableUserIds = getAvailableUserDTOs(clinicId).stream()
-            .map(UserDTO::getId)
-            .collect(Collectors.toSet());
+        Set<Long> availableUserIds =
+                getAvailableUserDTOs(clinicId).stream().map(UserDTO::getId).collect(Collectors.toSet());
 
         return userDao.getAllElements().stream()
-            .map(userDTOMapper)
-            .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
-            .collect(Collectors.toList());
+                .map(userDTOMapper)
+                .filter(userDTO -> !availableUserIds.contains(userDTO.getId()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -131,7 +127,7 @@ public class UserService {
     public void updateUserClinicRights(User user, List<Long> clinicIDs) {
         // Previously assigned clinics
         Collection<Clinic> previouslyAssignedClinics = clinicDao.getElementsById(
-            aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
 
         // Newly assigned clinics based on input
         Collection<Clinic> newlyAssignedClinics = new ArrayList<>();
@@ -176,13 +172,13 @@ public class UserService {
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 
         GrantedAuthority highestAuthority = authorities.stream()
-            .max(Comparator.comparingInt(authority ->
-                roleHierarchy.getReachableGrantedAuthorities(List.of(authority)).size()))
-            .orElse(null);
+                .max(Comparator.comparingInt(authority -> roleHierarchy
+                        .getReachableGrantedAuthorities(List.of(authority))
+                        .size()))
+                .orElse(null);
 
         return highestAuthority != null ? UserRole.fromString(highestAuthority.getAuthority()) : null;
     }
-
 
     /**
      * Sorts a list of users in ascending order by their name.
@@ -191,8 +187,6 @@ public class UserService {
      * @return The sorted list of users.
      */
     public List<User> sortUsersByNameAsc(List<User> users) {
-        return users.stream()
-            .sorted(Comparator.comparing(User::getUsername))
-            .collect(Collectors.toList());
+        return users.stream().sorted(Comparator.comparing(User::getUsername)).collect(Collectors.toList());
     }
 }

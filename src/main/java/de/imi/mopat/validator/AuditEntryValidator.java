@@ -18,9 +18,11 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 public class AuditEntryValidator implements Validator {
 
     @Autowired
-    private SpringValidatorAdapter validator;
-    @Autowired
     AuditEntryDao auditEntryDao;
+
+    @Autowired
+    private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -39,12 +41,16 @@ public class AuditEntryValidator implements Validator {
         AuditEntry auditEntry = (AuditEntry) target;
 
         if (auditEntry.getAction() == AuditEntryActionType.RECEIVED
-            || auditEntry.getAction() == AuditEntryActionType.SENT) {
-            if (auditEntry.getSenderReceiver() == null || auditEntry.getSenderReceiver().trim()
-                .isEmpty()) {
-                errors.rejectValue("oldPassword", "errormessage",
-                    messageSource.getMessage("auditEntry.error" + ".noSenderReceiver",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                || auditEntry.getAction() == AuditEntryActionType.SENT) {
+            if (auditEntry.getSenderReceiver() == null
+                    || auditEntry.getSenderReceiver().trim().isEmpty()) {
+                errors.rejectValue(
+                        "oldPassword",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "auditEntry.error" + ".noSenderReceiver",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
     }

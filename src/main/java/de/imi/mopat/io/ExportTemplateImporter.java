@@ -37,6 +37,5 @@ public interface ExportTemplateImporter {
      *                                      processing went wrong.
      * @throws IOException                  If given file couldn't be loaded and processed.
      */
-    List<String> importFile(InputStream inputStream)
-        throws IOException, SAXException, ParserConfigurationException;
+    List<String> importFile(InputStream inputStream) throws IOException, SAXException, ParserConfigurationException;
 }

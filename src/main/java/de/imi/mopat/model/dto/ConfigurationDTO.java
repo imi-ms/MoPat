@@ -25,8 +25,7 @@ public class ConfigurationDTO {
     private ConfigurationGroupDTO configurationGroupDTO;
     private Integer position;
 
-    public ConfigurationDTO() {
-    }
+    public ConfigurationDTO() {}
 
     public Long getId() {
         return id;

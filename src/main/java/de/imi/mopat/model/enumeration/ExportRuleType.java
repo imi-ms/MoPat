@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 
 public enum ExportRuleType {
-
     ANSWER("ExportRuleAnswer"),
     ENCOUNTER("ExportRuleEncounter"),
     QUESTION("ExportRuleQuestion"),
@@ -79,5 +78,4 @@ public enum ExportRuleType {
 
         return null;
     }
-
 }

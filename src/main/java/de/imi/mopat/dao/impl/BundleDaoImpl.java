@@ -17,8 +17,8 @@ public class BundleDaoImpl extends MoPatDaoImpl<Bundle> implements BundleDao {
     @Override
     public boolean isBundleNameUnused(final String name, final Long id) {
         try {
-            Query query = moPatEntityManager.createQuery(
-                "SELECT b FROM " + "Bundle b " + "WHERE b" + ".name='" + name + "'");
+            Query query =
+                    moPatEntityManager.createQuery("SELECT b FROM " + "Bundle b " + "WHERE b" + ".name='" + name + "'");
             Bundle bundle = (Bundle) query.getSingleResult();
             // If there is a result, check if it is the same bundle that
             // should be edit
@@ -30,13 +30,12 @@ public class BundleDaoImpl extends MoPatDaoImpl<Bundle> implements BundleDao {
 
     @Override
     public List<Questionnaire> getAvailableQuestionnairesForBundle(Long bundleId) {
-        return moPatEntityManager.createQuery(
-                "SELECT q FROM Questionnaire q WHERE q NOT IN (" +
-                    "SELECT bq.questionnaire FROM BundleQuestionnaire bq WHERE bq.bundle.id = :bundleId)",
-                Questionnaire.class)
-            .setParameter("bundleId", bundleId)
-            .getResultList();
+        return moPatEntityManager
+                .createQuery(
+                        "SELECT q FROM Questionnaire q WHERE q NOT IN ("
+                                + "SELECT bq.questionnaire FROM BundleQuestionnaire bq WHERE bq.bundle.id = :bundleId)",
+                        Questionnaire.class)
+                .setParameter("bundleId", bundleId)
+                .getResultList();
     }
-
-
 }

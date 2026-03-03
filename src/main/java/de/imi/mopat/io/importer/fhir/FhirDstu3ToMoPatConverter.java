@@ -65,8 +65,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class FhirDstu3ToMoPatConverter {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        FhirDstu3ToMoPatConverter.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirDstu3ToMoPatConverter.class);
     private static Map<String, String> localizedDisplayNames = new HashMap<>();
 
     /**
@@ -80,8 +79,7 @@ public class FhirDstu3ToMoPatConverter {
      * {@link ValidationMessage validationMessages}.
      */
     public static ImportQuestionnaireResult convertFHIRQuestionnaireToMoPatQuestionnaire(
-        Questionnaire fhirQuestionnaire, List<ExportTemplate> exportTemplates,
-        MessageSource messageSource) {
+            Questionnaire fhirQuestionnaire, List<ExportTemplate> exportTemplates, MessageSource messageSource) {
 
         LOGGER.info("Enter convertFHIRQuestionnaireToMoPatQuestionnaire");
 
@@ -89,15 +87,20 @@ public class FhirDstu3ToMoPatConverter {
         de.imi.mopat.model.Questionnaire mopatQuestionnaire = initializeQuestionnaire();
 
         String locale = resolveLocale(fhirQuestionnaire);
-        String displayName = setQuestionnaireTitleAndName(mopatQuestionnaire, fhirQuestionnaire,
-            locale);
+        String displayName = setQuestionnaireTitleAndName(mopatQuestionnaire, fhirQuestionnaire, locale);
 
         setDescriptionText(mopatQuestionnaire, importQuestionnaire, fhirQuestionnaire);
 
         List<Questionnaire.QuestionnaireItemComponent> items = collectAllItems(fhirQuestionnaire);
 
-        processItemsToQuestions(fhirQuestionnaire, mopatQuestionnaire, items, exportTemplates,
-            messageSource, locale, importQuestionnaire);
+        processItemsToQuestions(
+                fhirQuestionnaire,
+                mopatQuestionnaire,
+                items,
+                exportTemplates,
+                messageSource,
+                locale,
+                importQuestionnaire);
 
         convertEnableWhenComponentsToConditions(items, importQuestionnaire);
 
@@ -119,8 +122,8 @@ public class FhirDstu3ToMoPatConverter {
      */
     private static de.imi.mopat.model.Questionnaire initializeQuestionnaire() {
         de.imi.mopat.model.Questionnaire questionnaire = new de.imi.mopat.model.Questionnaire();
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        User currentUser =
+                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         questionnaire.setPublished(false);
         questionnaire.setChangedBy(currentUser.getId());
         questionnaire.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
@@ -159,19 +162,18 @@ public class FhirDstu3ToMoPatConverter {
      * @return the display name determined based on the title or name of the fhirQuestionnaire
      */
     private static String setQuestionnaireTitleAndName(
-        de.imi.mopat.model.Questionnaire mopatQuestionnaire, Questionnaire fhirQuestionnaire,
-        String locale) {
+            de.imi.mopat.model.Questionnaire mopatQuestionnaire, Questionnaire fhirQuestionnaire, String locale) {
 
         String displayName = "default";
 
         if (fhirQuestionnaire.getTitle() != null) {
             mopatQuestionnaire.setName(fhirQuestionnaire.getTitle());
-            localizedDisplayNames = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                fhirQuestionnaire.getTitleElement());
+            localizedDisplayNames =
+                    FhirDstu3Helper.getLanugageMapFromLanguageExtension(fhirQuestionnaire.getTitleElement());
             localizedDisplayNames.put(locale, fhirQuestionnaire.getTitle());
             displayName = fhirQuestionnaire.getTitle();
-        } else if (fhirQuestionnaire.getName() != null && !fhirQuestionnaire.getName().trim()
-            .isEmpty()) {
+        } else if (fhirQuestionnaire.getName() != null
+                && !fhirQuestionnaire.getName().trim().isEmpty()) {
             mopatQuestionnaire.setName(fhirQuestionnaire.getName());
             localizedDisplayNames.put(locale, fhirQuestionnaire.getName());
             displayName = fhirQuestionnaire.getName();
@@ -192,24 +194,26 @@ public class FhirDstu3ToMoPatConverter {
      * @param fhirQuestionnaire   The FHIR {@code Questionnaire} object that provides the
      *                            description or text used for setting the description.
      */
-    private static void setDescriptionText(de.imi.mopat.model.Questionnaire mopatQuestionnaire,
-        ImportQuestionnaireResult importQuestionnaire, Questionnaire fhirQuestionnaire) {
+    private static void setDescriptionText(
+            de.imi.mopat.model.Questionnaire mopatQuestionnaire,
+            ImportQuestionnaireResult importQuestionnaire,
+            Questionnaire fhirQuestionnaire) {
 
         StringBuilder descriptionText = new StringBuilder();
 
-        if (fhirQuestionnaire.getDescription() != null && !fhirQuestionnaire.getDescription().trim()
-            .isEmpty()) {
+        if (fhirQuestionnaire.getDescription() != null
+                && !fhirQuestionnaire.getDescription().trim().isEmpty()) {
 
             descriptionText.append(fhirQuestionnaire.getDescription());
             appendOptionalDescription(fhirQuestionnaire, descriptionText);
 
-        } else if (fhirQuestionnaire.getText() != null && !fhirQuestionnaire.getText()
-            .getDivAsString().trim().isEmpty()) {
+        } else if (fhirQuestionnaire.getText() != null
+                && !fhirQuestionnaire.getText().getDivAsString().trim().isEmpty()) {
 
             descriptionText.append(fhirQuestionnaire.getText().getDivAsString());
             importQuestionnaire.addValidationMessage(
-                "import.fhir.questionnaire.descriptionSetToText",
-                new String[]{fhirQuestionnaire.getText().getDivAsString()});
+                    "import.fhir.questionnaire.descriptionSetToText",
+                    new String[] {fhirQuestionnaire.getText().getDivAsString()});
         } else {
             setFallbackDescription(fhirQuestionnaire, descriptionText, importQuestionnaire);
         }
@@ -227,20 +231,21 @@ public class FhirDstu3ToMoPatConverter {
      * @param descriptionText   The StringBuilder to which the optional description will be
      *                          appended.
      */
-    private static void appendOptionalDescription(Questionnaire fhirQuestionnaire,
-        StringBuilder descriptionText) {
+    private static void appendOptionalDescription(Questionnaire fhirQuestionnaire, StringBuilder descriptionText) {
         if (fhirQuestionnaire.getPurpose() != null) {
             descriptionText.append("\n\n");
             descriptionText.append(fhirQuestionnaire.getPurpose());
         }
 
-        if (fhirQuestionnaire.getUseContext() != null && !fhirQuestionnaire.getUseContext()
-            .isEmpty() && fhirQuestionnaire.getUseContextFirstRep()
-            .getValue() instanceof CodeableConcept) {
+        if (fhirQuestionnaire.getUseContext() != null
+                && !fhirQuestionnaire.getUseContext().isEmpty()
+                && fhirQuestionnaire.getUseContextFirstRep().getValue() instanceof CodeableConcept) {
             descriptionText.append("\n\n");
             try {
-                descriptionText.append(
-                    fhirQuestionnaire.getUseContextFirstRep().getValueCodeableConcept().getText());
+                descriptionText.append(fhirQuestionnaire
+                        .getUseContextFirstRep()
+                        .getValueCodeableConcept()
+                        .getText());
             } catch (FHIRException e) {
                 // Logging or handling can be added if necessary
             }
@@ -259,21 +264,21 @@ public class FhirDstu3ToMoPatConverter {
      *                            appended
      * @param importQuestionnaire the result object where validation messages are recorded
      */
-    private static void setFallbackDescription(Questionnaire fhirQuestionnaire,
-        StringBuilder descriptionText, ImportQuestionnaireResult importQuestionnaire) {
+    private static void setFallbackDescription(
+            Questionnaire fhirQuestionnaire,
+            StringBuilder descriptionText,
+            ImportQuestionnaireResult importQuestionnaire) {
 
-        if (fhirQuestionnaire.getTitle() != null && !fhirQuestionnaire.getTitle().trim()
-            .isEmpty()) {
+        if (fhirQuestionnaire.getTitle() != null
+                && !fhirQuestionnaire.getTitle().trim().isEmpty()) {
             descriptionText.append(fhirQuestionnaire.getTitle());
             importQuestionnaire.addValidationMessage(
-                "import.fhir.questionnaire.descriptionSetToTitle",
-                new String[]{fhirQuestionnaire.getTitle()});
-        } else if (fhirQuestionnaire.getName() != null && !fhirQuestionnaire.getName().trim()
-            .isEmpty()) {
+                    "import.fhir.questionnaire.descriptionSetToTitle", new String[] {fhirQuestionnaire.getTitle()});
+        } else if (fhirQuestionnaire.getName() != null
+                && !fhirQuestionnaire.getName().trim().isEmpty()) {
             descriptionText.append(fhirQuestionnaire.getName());
             importQuestionnaire.addValidationMessage(
-                "import.fhir.questionnaire.descriptionSetToName",
-                new String[]{fhirQuestionnaire.getName()});
+                    "import.fhir.questionnaire.descriptionSetToName", new String[] {fhirQuestionnaire.getName()});
         }
     }
 
@@ -283,8 +288,7 @@ public class FhirDstu3ToMoPatConverter {
      * @param fhirQuestionnaire The FHIR Questionnaire from which to collect items.
      * @return A list of all QuestionnaireItemComponent instances, including nested components.
      */
-    private static List<Questionnaire.QuestionnaireItemComponent> collectAllItems(
-        Questionnaire fhirQuestionnaire) {
+    private static List<Questionnaire.QuestionnaireItemComponent> collectAllItems(Questionnaire fhirQuestionnaire) {
         List<Questionnaire.QuestionnaireItemComponent> items = new ArrayList<>();
         for (Questionnaire.QuestionnaireItemComponent item : fhirQuestionnaire.getItem()) {
             items.add(item);
@@ -307,17 +311,21 @@ public class FhirDstu3ToMoPatConverter {
      * @param locale              the locale used for translating messages
      * @param importQuestionnaire the object where the results of the import operation are stored
      */
-    private static void processItemsToQuestions(Questionnaire fhirQuestionnaire,
-        de.imi.mopat.model.Questionnaire mopatQuestionnaire,
-        List<Questionnaire.QuestionnaireItemComponent> items, List<ExportTemplate> exportTemplates,
-        MessageSource messageSource, String locale, ImportQuestionnaireResult importQuestionnaire) {
+    private static void processItemsToQuestions(
+            Questionnaire fhirQuestionnaire,
+            de.imi.mopat.model.Questionnaire mopatQuestionnaire,
+            List<Questionnaire.QuestionnaireItemComponent> items,
+            List<ExportTemplate> exportTemplates,
+            MessageSource messageSource,
+            String locale,
+            ImportQuestionnaireResult importQuestionnaire) {
 
         ImportQuestionListResult importQuestionListResult = new ImportQuestionListResult();
         Integer position = 0;
 
         for (Questionnaire.QuestionnaireItemComponent item : items) {
-            ImportQuestionResult importQuestionResult = convertItemToQuestion(fhirQuestionnaire,
-                item, locale, exportTemplates, messageSource);
+            ImportQuestionResult importQuestionResult =
+                    convertItemToQuestion(fhirQuestionnaire, item, locale, exportTemplates, messageSource);
 
             importQuestionListResult.addImportQuestionResult(importQuestionResult);
             if (importQuestionResult.getQuestion() != null) {
@@ -339,8 +347,7 @@ public class FhirDstu3ToMoPatConverter {
      *                            questionnaire
      */
     private static void convertEnableWhenComponentsToConditions(
-        List<Questionnaire.QuestionnaireItemComponent> items,
-        ImportQuestionnaireResult importQuestionnaire) {
+            List<Questionnaire.QuestionnaireItemComponent> items, ImportQuestionnaireResult importQuestionnaire) {
 
         for (QuestionnaireItemComponent item : items) {
             for (QuestionnaireItemEnableWhenComponent enableWhen : item.getEnableWhen()) {
@@ -364,7 +371,6 @@ public class FhirDstu3ToMoPatConverter {
         }
     }
 
-
     /**
      * Converts a FHIR item as instance of {@link QuestionnaireItemComponent} to a MoPat
      * {@link Question question} instance.
@@ -382,11 +388,13 @@ public class FhirDstu3ToMoPatConverter {
      * type doesn't fit to MoPat {@link QuestionType} return
      * <code>null</code>.
      */
-    public static ImportQuestionResult convertItemToQuestion(final Questionnaire questionnaire,
-        final Questionnaire.QuestionnaireItemComponent item, final String locale,
-        final List<ExportTemplate> exportTemplates, final MessageSource messageSource) {
-        LOGGER.debug(
-            "convertItemToQuestion(Questionnaire" + ".QuestionnaireItemComponent item, String "
+    public static ImportQuestionResult convertItemToQuestion(
+            final Questionnaire questionnaire,
+            final Questionnaire.QuestionnaireItemComponent item,
+            final String locale,
+            final List<ExportTemplate> exportTemplates,
+            final MessageSource messageSource) {
+        LOGGER.debug("convertItemToQuestion(Questionnaire" + ".QuestionnaireItemComponent item, String "
                 + "locale, List<ExportTemplate> exportTemplates,"
                 + " MessageSource messageSource)");
         ImportQuestionResult importQuestionResult = new ImportQuestionResult();
@@ -403,15 +411,15 @@ public class FhirDstu3ToMoPatConverter {
 
             setLocalizedTextForQuestion(question, item, messageSource, locale);
 
-            doHandleAnswer(question, questionnaire, messageSource, importQuestionResult, item,
-                exportTemplates, locale);
+            doHandleAnswer(question, questionnaire, messageSource, importQuestionResult, item, exportTemplates, locale);
         } else {
-            importQuestionResult.addValidationMessage("import.fhir.item.containsNoAnswersOrText",
-                new String[]{item.getLinkId(), item.getType().getDisplay()});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.item.containsNoAnswersOrText",
+                    new String[] {item.getLinkId(), item.getType().getDisplay()});
         }
         LOGGER.debug("Leave convertItemToQuestion(Questionnaire"
-            + ".QuestionnaireItemComponent item, String "
-            + "locale, List<ExportTemplate> exportTemplates," + " MessageSource messageSource)");
+                + ".QuestionnaireItemComponent item, String "
+                + "locale, List<ExportTemplate> exportTemplates," + " MessageSource messageSource)");
         return importQuestionResult;
     }
 
@@ -427,10 +435,12 @@ public class FhirDstu3ToMoPatConverter {
      * non-empty text, or non-empty code; false otherwise.
      */
     private static boolean hasOptionsOrDisplayOrTextOrCode(QuestionnaireItemComponent item) {
-        return item.hasOption() || item.hasOptions() || (item.getOptionsTarget() != null
-            && !item.getOptionsTarget().isEmpty()) || item.getType().equals(DISPLAY) || (
-            item.getText() != null && !item.getText().isEmpty()) || (item.getCode() != null
-            && !item.getCode().isEmpty());
+        return item.hasOption()
+                || item.hasOptions()
+                || (item.getOptionsTarget() != null && !item.getOptionsTarget().isEmpty())
+                || item.getType().equals(DISPLAY)
+                || (item.getText() != null && !item.getText().isEmpty())
+                || (item.getCode() != null && !item.getCode().isEmpty());
     }
 
     /**
@@ -446,14 +456,13 @@ public class FhirDstu3ToMoPatConverter {
      *                      necessary.
      * @param locale        The target language/locale code to retrieve the localized text.
      */
-    private static void setLocalizedTextForQuestion(Question question,
-        QuestionnaireItemComponent item, MessageSource messageSource, String locale) {
+    private static void setLocalizedTextForQuestion(
+            Question question, QuestionnaireItemComponent item, MessageSource messageSource, String locale) {
         Map<String, String> localizedQuestionText = new HashMap<>();
 
         // Set the questions text and get the translations
         if (item.getText() != null) {
-            localizedQuestionText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                item.getTextElement());
+            localizedQuestionText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(item.getTextElement());
 
             localizedQuestionText.put(locale, item.getText());
 
@@ -462,15 +471,16 @@ public class FhirDstu3ToMoPatConverter {
         } else if (item.getCode() != null && !item.getCode().isEmpty()) {
             Coding code = item.getCodeFirstRep();
             if (code.getDisplay() != null && !code.getDisplay().isEmpty()) {
-                localizedQuestionText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                    code.getDisplayElement());
+                localizedQuestionText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(code.getDisplayElement());
                 localizedQuestionText.put(locale, code.getDisplay());
 
             } else {
-                localizedQuestionText.put(locale,
-                    messageSource.getMessage("import.fhir.element" + ".codeNoDisplay",
-                        new Object[]{code.getCode(), code.getSystem()},
-                        LocaleHelper.getLocaleFromString(locale)));
+                localizedQuestionText.put(
+                        locale,
+                        messageSource.getMessage(
+                                "import.fhir.element" + ".codeNoDisplay",
+                                new Object[] {code.getCode(), code.getSystem()},
+                                LocaleHelper.getLocaleFromString(locale)));
             }
         }
         question.setLocalizedQuestionText(localizedQuestionText);
@@ -487,8 +497,7 @@ public class FhirDstu3ToMoPatConverter {
      *                              the localized question text. This map is checked against the
      *                              existing localized display names.
      */
-    private static void addMissingTextForAvailableLocales(
-        Map<String, String> localizedQuestionText) {
+    private static void addMissingTextForAvailableLocales(Map<String, String> localizedQuestionText) {
         for (String currentLocale : localizedQuestionText.keySet()) {
             Boolean containsLocale = false;
             for (String localizedDisplayName : localizedDisplayNames.keySet()) {
@@ -502,7 +511,6 @@ public class FhirDstu3ToMoPatConverter {
             }
         }
     }
-
 
     /**
      * Handles different types of answers within a questionnaire item and performs the necessary
@@ -518,19 +526,23 @@ public class FhirDstu3ToMoPatConverter {
      * @param exportTemplates      the list of export templates to be used in handling the answer
      * @param locale               the locale in which the questionnaire is processed
      */
-    private static void doHandleAnswer(Question question, Questionnaire questionnaire,
-        MessageSource messageSource, ImportQuestionResult importQuestionResult,
-        QuestionnaireItemComponent item, List<ExportTemplate> exportTemplates, String locale) {
+    private static void doHandleAnswer(
+            Question question,
+            Questionnaire questionnaire,
+            MessageSource messageSource,
+            ImportQuestionResult importQuestionResult,
+            QuestionnaireItemComponent item,
+            List<ExportTemplate> exportTemplates,
+            String locale) {
         switch (item.getType()) {
             case BOOLEAN:
-                doHandleBooleanAnswer(question, messageSource, importQuestionResult, item,
-                    exportTemplates);
+                doHandleBooleanAnswer(question, messageSource, importQuestionResult, item, exportTemplates);
                 addConversionMessage(question, importQuestionResult, item);
                 break;
             case CHOICE:
             case OPENCHOICE:
-                doHandleChoiceAnswer(question, questionnaire, messageSource, importQuestionResult,
-                    item, exportTemplates, locale);
+                doHandleChoiceAnswer(
+                        question, questionnaire, messageSource, importQuestionResult, item, exportTemplates, locale);
                 addConversionMessage(question, importQuestionResult, item);
                 break;
             case DATE:
@@ -548,8 +560,8 @@ public class FhirDstu3ToMoPatConverter {
                 // attachted to it
                 if (item.getItem() == null || item.getItem().isEmpty()) {
                     importQuestionResult.addValidationMessage(
-                        "import.fhir.item.questionGroupNoItems",
-                        new String[]{item.getLinkId(), item.getType().toString()});
+                            "import.fhir.item.questionGroupNoItems",
+                            new String[] {item.getLinkId(), item.getType().toString()});
                 }
                 break;
             case DISPLAY:
@@ -563,12 +575,11 @@ public class FhirDstu3ToMoPatConverter {
                 break;
             default:
                 importQuestionResult.addValidationMessage(
-                    "import.fhir.item.questionTypeNotSupported",
-                    new String[]{item.getType().toString()});
+                        "import.fhir.item.questionTypeNotSupported",
+                        new String[] {item.getType().toString()});
                 break;
         }
     }
-
 
     /**
      * Handles the conversion of a boolean FHIR question item into a MoPat question with specific
@@ -585,39 +596,44 @@ public class FhirDstu3ToMoPatConverter {
      * @param exportTemplates      A list of {@link ExportTemplate} objects where the question's
      *                             answers and export rules will be configured.
      */
-    private static void doHandleBooleanAnswer(Question question, MessageSource messageSource,
-        ImportQuestionResult importQuestionResult, QuestionnaireItemComponent item,
-        List<ExportTemplate> exportTemplates) {
+    private static void doHandleBooleanAnswer(
+            Question question,
+            MessageSource messageSource,
+            ImportQuestionResult importQuestionResult,
+            QuestionnaireItemComponent item,
+            List<ExportTemplate> exportTemplates) {
         // Set the min and max number answer by default to 0 and 1
         question.setMinMaxNumberAnswers(0, 1);
         question.setQuestionType(QuestionType.MULTIPLE_CHOICE);
 
         Map<String, String> localizedAnswerText = new HashMap<>();
         // Set the export field for answer true
-        String trueExportField =
-            item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "_" + Boolean.TRUE;
+        String trueExportField = item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "_" + Boolean.TRUE;
 
         // Get the localized label for the answer yes
         for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
-            localizedAnswerText.put(currentLocale,
-                messageSource.getMessage("survey.question" + ".answer" + ".yes", new Object[]{},
-                    LocaleHelper.getLocaleFromString(currentLocale)));
+            localizedAnswerText.put(
+                    currentLocale,
+                    messageSource.getMessage(
+                            "survey.question" + ".answer" + ".yes",
+                            new Object[] {},
+                            LocaleHelper.getLocaleFromString(currentLocale)));
         }
-        SelectAnswer selectAnswer = new SelectAnswer(question, question.getIsEnabled(),
-            localizedAnswerText, Boolean.FALSE);
+        SelectAnswer selectAnswer =
+                new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText, Boolean.FALSE);
         selectAnswer.setValue(FhirDstu3Helper.getScoreFromExtension(item));
-        importQuestionResult.addValidationMessage("import.fhir.option.result", new String[]{
-            messageSource.getMessage("survey.question.answer.yes", new Object[]{},
-                LocaleContextHolder.getLocale())});
+        importQuestionResult.addValidationMessage("import.fhir.option.result", new String[] {
+            messageSource.getMessage("survey.question.answer.yes", new Object[] {}, LocaleContextHolder.getLocale())
+        });
         if (selectAnswer.getValue() != null) {
-            importQuestionResult.addValidationMessage("import.fhir.option.resultScore",
-                new String[]{selectAnswer.getValue().toString()});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.option.resultScore",
+                    new String[] {selectAnswer.getValue().toString()});
         }
 
         // Create exportRule for the boolean answer yes
         for (ExportTemplate exportTemplate : exportTemplates) {
-            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                trueExportField, selectAnswer);
+            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate, trueExportField, selectAnswer);
             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
             exportRuleAnswer.setExportRuleFormat(exportRuleFormat);
             selectAnswer.addExportRule(exportRuleAnswer);
@@ -625,31 +641,32 @@ public class FhirDstu3ToMoPatConverter {
         }
 
         // Set the export field for the answer false
-        String falseExportField =
-            item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "_" + Boolean.FALSE;
+        String falseExportField = item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "_" + Boolean.FALSE;
 
         localizedAnswerText = new HashMap<>();
         // Get the localized label for the answer no
         for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
-            localizedAnswerText.put(currentLocale,
-                messageSource.getMessage("survey.question" + ".answer.no", new Object[]{},
-                    LocaleHelper.getLocaleFromString(currentLocale)));
+            localizedAnswerText.put(
+                    currentLocale,
+                    messageSource.getMessage(
+                            "survey.question" + ".answer.no",
+                            new Object[] {},
+                            LocaleHelper.getLocaleFromString(currentLocale)));
         }
-        selectAnswer = new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText,
-            Boolean.FALSE);
+        selectAnswer = new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText, Boolean.FALSE);
         selectAnswer.setValue(FhirDstu3Helper.getScoreFromExtension(item));
-        importQuestionResult.addValidationMessage("import.fhir.option.result", new String[]{
-            messageSource.getMessage("survey.question.answer.no", new Object[]{},
-                LocaleContextHolder.getLocale())});
+        importQuestionResult.addValidationMessage("import.fhir.option.result", new String[] {
+            messageSource.getMessage("survey.question.answer.no", new Object[] {}, LocaleContextHolder.getLocale())
+        });
         if (selectAnswer.getValue() != null) {
-            importQuestionResult.addValidationMessage("import.fhir.option.resultScore",
-                new String[]{selectAnswer.getValue().toString()});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.option.resultScore",
+                    new String[] {selectAnswer.getValue().toString()});
         }
 
         // Create exportRule for the boolean answer no
         for (ExportTemplate exportTemplate : exportTemplates) {
-            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                falseExportField, selectAnswer);
+            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate, falseExportField, selectAnswer);
             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
             exportRuleAnswer.setExportRuleFormat(exportRuleFormat);
             selectAnswer.addExportRule(exportRuleAnswer);
@@ -677,12 +694,16 @@ public class FhirDstu3ToMoPatConverter {
      *                             rules for answers.
      * @param locale               The locale string for processing localized content.
      */
-    private static void doHandleChoiceAnswer(Question question, Questionnaire questionnaire,
-        MessageSource messageSource, ImportQuestionResult importQuestionResult,
-        QuestionnaireItemComponent item, List<ExportTemplate> exportTemplates, String locale) {
+    private static void doHandleChoiceAnswer(
+            Question question,
+            Questionnaire questionnaire,
+            MessageSource messageSource,
+            ImportQuestionResult importQuestionResult,
+            QuestionnaireItemComponent item,
+            List<ExportTemplate> exportTemplates,
+            String locale) {
         // Get if exists the min and max number of necessary answers
-        Entry<Double, Double> maxAndMinEntry = FhirDstu3Helper.getMinAndMaxFromExtension(item,
-            true);
+        Entry<Double, Double> maxAndMinEntry = FhirDstu3Helper.getMinAndMaxFromExtension(item, true);
         question.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         if (maxAndMinEntry.getValue() != null) {
             // Set the min number of answers to the given value
@@ -694,8 +715,9 @@ public class FhirDstu3ToMoPatConverter {
             question.setMinNumberAnswers(0);
         }
         // Set the validation message for the min value
-        importQuestionResult.addValidationMessage("import.fhir.item.minNumberAnswers",
-            new String[]{question.getMinNumberAnswers().toString()});
+        importQuestionResult.addValidationMessage(
+                "import.fhir.item.minNumberAnswers",
+                new String[] {question.getMinNumberAnswers().toString()});
         if (maxAndMinEntry.getKey() != null) {
             // Set the max number of answers to the given value
             // in the extension
@@ -706,16 +728,17 @@ public class FhirDstu3ToMoPatConverter {
             question.setMaxNumberAnswers(1);
         }
         // Set the validation message for the max value
-        importQuestionResult.addValidationMessage("import.fhir.item.maxNumberAnswers",
-            new String[]{question.getMaxNumberAnswers().toString()});
+        importQuestionResult.addValidationMessage(
+                "import.fhir.item.maxNumberAnswers",
+                new String[] {question.getMaxNumberAnswers().toString()});
 
         // Convert the options of the multiple choice question
         for (Questionnaire.QuestionnaireItemOptionComponent option : item.getOption()) {
-            convertOptionToAnswer(option, question, importQuestionResult, exportTemplates,
-                messageSource, locale, null);
+            convertOptionToAnswer(option, question, importQuestionResult, exportTemplates, messageSource, locale, null);
         }
-        if (item.getOptions() != null && questionnaire.getContained() != null
-            && !questionnaire.getContained().isEmpty()) {
+        if (item.getOptions() != null
+                && questionnaire.getContained() != null
+                && !questionnaire.getContained().isEmpty()) {
             // If the item contains a reference to a value set
             Reference reference = item.getOptions();
             // Search for the referenced value set in the
@@ -732,13 +755,19 @@ public class FhirDstu3ToMoPatConverter {
             // If the item contains a value set of options
             ValueSet valueSet = item.getOptionsTarget();
             if (valueSet != null) {
-                for (ValueSet.ConceptSetComponent conceptComponent : valueSet.getCompose()
-                    .getInclude()) {
+                for (ValueSet.ConceptSetComponent conceptComponent :
+                        valueSet.getCompose().getInclude()) {
                     for (ValueSet.ConceptReferenceComponent conceptReference : conceptComponent.getConcept()) {
                         // Convert the value sets elements to
                         // mopat answers
-                        convertOptionToAnswer(conceptReference, question, importQuestionResult,
-                            exportTemplates, messageSource, locale, conceptComponent.getSystem());
+                        convertOptionToAnswer(
+                                conceptReference,
+                                question,
+                                importQuestionResult,
+                                exportTemplates,
+                                messageSource,
+                                locale,
+                                conceptComponent.getSystem());
                     }
                 }
             }
@@ -748,36 +777,43 @@ public class FhirDstu3ToMoPatConverter {
         // default answer
         Map<String, String> localizedAnswerText;
 
-        if ((item.getOption() == null || item.getOption().isEmpty()) && (item.getOptions() == null
-            || item.getOptions().isEmpty()) && (item.getOptionsTarget() == null
-            || item.getOptionsTarget().getCompose() == null
-            || item.getOptionsTarget().getCompose().getInclude() == null || item.getOptionsTarget()
-            .getCompose().getInclude().isEmpty())) {
+        if ((item.getOption() == null || item.getOption().isEmpty())
+                && (item.getOptions() == null || item.getOptions().isEmpty())
+                && (item.getOptionsTarget() == null
+                        || item.getOptionsTarget().getCompose() == null
+                        || item.getOptionsTarget().getCompose().getInclude() == null
+                        || item.getOptionsTarget().getCompose().getInclude().isEmpty())) {
 
             localizedAnswerText = new HashMap<>();
-            for (Entry<String, String> entry : question.getLocalizedQuestionText().entrySet()) {
-                localizedAnswerText.put(entry.getKey(),
-                    messageSource.getMessage("import.fhir.item.noOptions", new Object[]{},
-                        LocaleHelper.getLocaleFromString(entry.getKey())));
+            for (Entry<String, String> entry :
+                    question.getLocalizedQuestionText().entrySet()) {
+                localizedAnswerText.put(
+                        entry.getKey(),
+                        messageSource.getMessage(
+                                "import.fhir.item.noOptions",
+                                new Object[] {},
+                                LocaleHelper.getLocaleFromString(entry.getKey())));
             }
             new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText, Boolean.FALSE);
         }
 
         if (item.getType() == QuestionnaireItemType.OPENCHOICE) {
             localizedAnswerText = new HashMap<>();
-            for (Entry<String, String> entry : question.getLocalizedQuestionText().entrySet()) {
-                localizedAnswerText.put(entry.getKey(),
-                    messageSource.getMessage("import.fhir.item.other", new Object[]{},
-                        LocaleHelper.getLocaleFromString(entry.getKey())));
+            for (Entry<String, String> entry :
+                    question.getLocalizedQuestionText().entrySet()) {
+                localizedAnswerText.put(
+                        entry.getKey(),
+                        messageSource.getMessage(
+                                "import.fhir.item.other",
+                                new Object[] {},
+                                LocaleHelper.getLocaleFromString(entry.getKey())));
             }
-            //create isOther and freetext answer
+            // create isOther and freetext answer
             new SelectAnswer(question, true, localizedAnswerText, true);
             FreetextAnswer freetextAnswer = new FreetextAnswer(question, true);
-            String exportField =
-                item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "/other_freetext";
+            String exportField = item.getLinkId().replace(".", "u002E").replace("_", "u005F") + "/other_freetext";
             for (ExportTemplate exportTemplate : exportTemplates) {
-                ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                    exportField, freetextAnswer);
+                ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate, exportField, freetextAnswer);
                 exportRuleAnswer.setExportRuleFormat(new ExportRuleFormat());
                 freetextAnswer.addExportRule(exportRuleAnswer);
             }
@@ -798,9 +834,11 @@ public class FhirDstu3ToMoPatConverter {
      * @param exportTemplates      A list of {@link ExportTemplate} objects used for defining export
      *                             rules for answers.
      */
-    private static void doHandleDateAnswer(Question question,
-        ImportQuestionResult importQuestionResult, QuestionnaireItemComponent item,
-        List<ExportTemplate> exportTemplates) {
+    private static void doHandleDateAnswer(
+            Question question,
+            ImportQuestionResult importQuestionResult,
+            QuestionnaireItemComponent item,
+            List<ExportTemplate> exportTemplates) {
         question.setQuestionType(QuestionType.DATE);
         // Get the min and max value of the date item and set it
         // to the questions start and end date
@@ -817,21 +855,21 @@ public class FhirDstu3ToMoPatConverter {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
         if (startDate != null && !startDate.after(endDate)) {
-            importQuestionResult.addValidationMessage("import.fhir.item.startDateAdded",
-                new String[]{dateFormat.format(startDate)});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.item.startDateAdded", new String[] {dateFormat.format(startDate)});
         }
 
         if (endDate != null && !startDate.after(endDate)) {
-            importQuestionResult.addValidationMessage("import.fhir.item.endDateAdded",
-                new String[]{dateFormat.format(endDate)});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.item.endDateAdded", new String[] {dateFormat.format(endDate)});
         }
 
         Answer answer = new DateAnswer(question, question.getIsEnabled(), startDate, endDate);
 
         // Create the export rule
         for (ExportTemplate exportTemplate : exportTemplates) {
-            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
+            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(
+                    exportTemplate, item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
             exportRuleFormat.setDateFormat(ExportDateFormatType.YYYY_MM_DD);
             exportRuleAnswer.setExportRuleFormat(exportRuleFormat);
@@ -853,9 +891,11 @@ public class FhirDstu3ToMoPatConverter {
      * @param exportTemplates      A list of export templates for configuring how the numerical
      *                             answers should be exported.
      */
-    private static void doHandleNumberAnswer(Question question,
-        ImportQuestionResult importQuestionResult, QuestionnaireItemComponent item,
-        List<ExportTemplate> exportTemplates) {
+    private static void doHandleNumberAnswer(
+            Question question,
+            ImportQuestionResult importQuestionResult,
+            QuestionnaireItemComponent item,
+            List<ExportTemplate> exportTemplates) {
         Entry<Double, Double> maxAndMinEntry;
         Double stepSize = null;
 
@@ -876,8 +916,8 @@ public class FhirDstu3ToMoPatConverter {
             if (minValue >= maxValue) {
                 // Min and max value is invalid if min is greater
                 // than max value
-                importQuestionResult.addValidationMessage("import.fhir.item.minGreaterThanMax",
-                    new String[]{minValue.toString(), maxValue.toString()});
+                importQuestionResult.addValidationMessage(
+                        "import.fhir.item.minGreaterThanMax", new String[] {minValue.toString(), maxValue.toString()});
                 minValue = null;
                 maxValue = null;
                 stepSize = null;
@@ -890,18 +930,14 @@ public class FhirDstu3ToMoPatConverter {
             // If the distance between min and max is less or
             // equal to 10 map the questions of type integer to
             // number checkbox questions
-            if (difference > 0.0D && difference <= 10.0D
-                && item.getType() == QuestionnaireItemType.INTEGER) {
-                SliderAnswer sliderAnswer = new SliderAnswer(question, true, minValue, maxValue,
-                    stepSize, false);
+            if (difference > 0.0D && difference <= 10.0D && item.getType() == QuestionnaireItemType.INTEGER) {
+                SliderAnswer sliderAnswer = new SliderAnswer(question, true, minValue, maxValue, stepSize, false);
                 sliderAnswer.setLocalizedMaximumText(new HashMap<>());
                 sliderAnswer.setLocalizedMinimumText(new HashMap<>());
                 question.setQuestionType(QuestionType.NUMBER_CHECKBOX);
                 answer = sliderAnswer;
-            } else if (difference > 0.0D && difference <= 2.0D
-                && item.getType() == QuestionnaireItemType.DECIMAL) {
-                SliderAnswer sliderAnswer = new SliderAnswer(question, true, minValue, maxValue,
-                    stepSize, false);
+            } else if (difference > 0.0D && difference <= 2.0D && item.getType() == QuestionnaireItemType.DECIMAL) {
+                SliderAnswer sliderAnswer = new SliderAnswer(question, true, minValue, maxValue, stepSize, false);
                 sliderAnswer.setLocalizedMaximumText(new HashMap<>());
                 sliderAnswer.setLocalizedMinimumText(new HashMap<>());
                 // else to slider answer if distance is less or
@@ -909,24 +945,22 @@ public class FhirDstu3ToMoPatConverter {
                 question.setQuestionType(QuestionType.SLIDER);
                 answer = sliderAnswer;
             } else {
-                answer = new NumberInputAnswer(question, question.getIsEnabled(), minValue,
-                    maxValue, stepSize);
+                answer = new NumberInputAnswer(question, question.getIsEnabled(), minValue, maxValue, stepSize);
             }
         } else {
-            answer = new NumberInputAnswer(question, question.getIsEnabled(), minValue, maxValue,
-                stepSize);
+            answer = new NumberInputAnswer(question, question.getIsEnabled(), minValue, maxValue, stepSize);
         }
 
         // Add the validation message
         if (minValue != null && maxValue != null) {
-            importQuestionResult.addValidationMessage("import.fhir.item.minMaxAdded",
-                new String[]{minValue.toString(), maxValue.toString()});
+            importQuestionResult.addValidationMessage(
+                    "import.fhir.item.minMaxAdded", new String[] {minValue.toString(), maxValue.toString()});
         }
 
         // Create the export rule
         for (ExportTemplate exportTemplate : exportTemplates) {
-            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
+            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(
+                    exportTemplate, item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
 
             if (item.getType().equals(QuestionnaireItemType.DECIMAL)) {
@@ -965,14 +999,14 @@ public class FhirDstu3ToMoPatConverter {
      * @param exportTemplates A list of export templates used to create export rules for the
      *                        answer.
      */
-    private static void doHandleTextAnswer(Question question, QuestionnaireItemComponent item,
-        List<ExportTemplate> exportTemplates) {
+    private static void doHandleTextAnswer(
+            Question question, QuestionnaireItemComponent item, List<ExportTemplate> exportTemplates) {
         question.setQuestionType(QuestionType.FREE_TEXT);
         Answer answer = new FreetextAnswer(question, true);
         // Create export rules
         for (ExportTemplate exportTemplate : exportTemplates) {
-            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
+            ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(
+                    exportTemplate, item.getLinkId().replace(".", "u002E").replace("_", "u005F"), answer);
             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
             exportRuleAnswer.setExportRuleFormat(exportRuleFormat);
             answer.addExportRule(exportRuleAnswer);
@@ -989,13 +1023,16 @@ public class FhirDstu3ToMoPatConverter {
      * @param item                 The questionnaire item component used to generate the conversion
      *                             message.
      */
-    private static void addConversionMessage(Question question,
-        ImportQuestionResult importQuestionResult, QuestionnaireItemComponent item) {
+    private static void addConversionMessage(
+            Question question, ImportQuestionResult importQuestionResult, QuestionnaireItemComponent item) {
         // Add the validation message as first message
-        importQuestionResult.getValidationMessages().add(0,
-            new ValidationMessage("import.fhir.item" + ".questionConverted",
-                new String[]{item.getLinkId(), item.getType().getDisplay(),
-                    question.getQuestionType().getTextValue()}));
+        importQuestionResult
+                .getValidationMessages()
+                .add(0, new ValidationMessage("import.fhir.item" + ".questionConverted", new String[] {
+                    item.getLinkId(),
+                    item.getType().getDisplay(),
+                    question.getQuestionType().getTextValue()
+                }));
         importQuestionResult.setQuestion(question);
     }
 
@@ -1012,12 +1049,15 @@ public class FhirDstu3ToMoPatConverter {
      * @param locale               {@link Locale} to localize the questionnaire's content.
      * @param messageSource        Object to hold messages connected with message codes.
      */
-    public static void convertOptionToAnswer(final IBaseBackboneElement option,
-        final Question question, final ImportQuestionResult importQuestionResult,
-        final List<ExportTemplate> exportTemplates, final MessageSource messageSource,
-        final String locale, final String system) {
-        LOGGER.debug(
-            "Enter convertOptionToAnswer(IBaseBackboneElement " + "option, Question question, "
+    public static void convertOptionToAnswer(
+            final IBaseBackboneElement option,
+            final Question question,
+            final ImportQuestionResult importQuestionResult,
+            final List<ExportTemplate> exportTemplates,
+            final MessageSource messageSource,
+            final String locale,
+            final String system) {
+        LOGGER.debug("Enter convertOptionToAnswer(IBaseBackboneElement " + "option, Question question, "
                 + "ImportQuestionResult importQuestionResult, "
                 + "List<ExportTemplate> exportTemplates, "
                 + "MessageSource messageSource, String locale)");
@@ -1031,12 +1071,12 @@ public class FhirDstu3ToMoPatConverter {
                 // get the translated answer label texts
                 if (item.getValue() instanceof Coding) {
                     // The option is of type coding and contains display text
-                    if (item.getValueCoding().getDisplay() != null && !item.getValueCoding()
-                        .getDisplay().isEmpty()) {
+                    if (item.getValueCoding().getDisplay() != null
+                            && !item.getValueCoding().getDisplay().isEmpty()) {
                         // Get the translations and add it to the localized
                         // labels of the mopat answer
                         localizedAnswerText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                            item.getValueCoding().getDisplayElement());
+                                item.getValueCoding().getDisplayElement());
                         localizedAnswerText.put(locale, item.getValueCoding().getDisplay());
 
                     } else {
@@ -1044,72 +1084,102 @@ public class FhirDstu3ToMoPatConverter {
                         // contain any display text, so set it by default for
                         // all languages given by the question text's
                         // translations
-                        for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
+                        for (String currentLocale :
+                                question.getLocalizedQuestionText().keySet()) {
                             String answerText = null;
-                            if (item.getValueCoding().getSystem() == null || item.getValueCoding()
-                                .getSystem().isEmpty()) {
+                            if (item.getValueCoding().getSystem() == null
+                                    || item.getValueCoding().getSystem().isEmpty()) {
                                 answerText = messageSource.getMessage(
-                                    "import.fhir.element" + ".codeNoDisplayNoSystem",
-                                    new Object[]{item.getValueCoding().getCode()},
-                                    LocaleHelper.getLocaleFromString(currentLocale));
+                                        "import.fhir.element" + ".codeNoDisplayNoSystem",
+                                        new Object[] {item.getValueCoding().getCode()},
+                                        LocaleHelper.getLocaleFromString(currentLocale));
                             } else {
                                 answerText = messageSource.getMessage(
-                                    "import.fhir.element.codeNoDisplay",
-                                    new Object[]{item.getValueCoding().getCode(),
-                                        item.getValueCoding().getSystem()},
-                                    LocaleHelper.getLocaleFromString(currentLocale));
+                                        "import.fhir.element.codeNoDisplay",
+                                        new Object[] {
+                                            item.getValueCoding().getCode(),
+                                            item.getValueCoding().getSystem()
+                                        },
+                                        LocaleHelper.getLocaleFromString(currentLocale));
                             }
                             localizedAnswerText.put(currentLocale, answerText);
                         }
                     }
                     // Set the exportField value
-                    value = importQuestionResult.getIdentifier().replace(".", "u002E")
-                        .replace("_", "u005F") + "_" + item.getValueCoding().getCode()
-                        .replace(".", "u002E").replace("_", "u005F");
+                    value = importQuestionResult
+                                    .getIdentifier()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F") + "_"
+                            + item.getValueCoding()
+                                    .getCode()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F");
                 } else if (item.getValue() instanceof StringType) {
                     // Set the translated answer labels
-                    localizedAnswerText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                        item.getValueStringType());
+                    localizedAnswerText =
+                            FhirDstu3Helper.getLanugageMapFromLanguageExtension(item.getValueStringType());
                     localizedAnswerText.put(locale, item.getValueStringType().getValue());
 
                     // Set the exportField value
-                    value = importQuestionResult.getIdentifier().replace(".", "u002E")
-                        .replace("_", "u005F") + "_" + item.getValueStringType().asStringValue()
-                        .replace(".", "u002E").replace("_", "u005F");
+                    value = importQuestionResult
+                                    .getIdentifier()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F") + "_"
+                            + item.getValueStringType()
+                                    .asStringValue()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F");
                 } else if (item.getValue() instanceof DateType) {
                     // The option may contain date as choosable answer, just
                     // parse it to string
-                    value = importQuestionResult.getIdentifier().replace(".", "u002E")
-                        .replace("_", "u005F") + "_" + item.getValueDateType().asStringValue()
-                        .replace(".", "u002E").replace("_", "u005F");
-                    for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
-                        localizedAnswerText.put(currentLocale,
-                            item.getValueDateType().asStringValue());
+                    value = importQuestionResult
+                                    .getIdentifier()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F") + "_"
+                            + item.getValueDateType()
+                                    .asStringValue()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F");
+                    for (String currentLocale :
+                            question.getLocalizedQuestionText().keySet()) {
+                        localizedAnswerText.put(
+                                currentLocale, item.getValueDateType().asStringValue());
                     }
                 } else if (item.getValue() instanceof IntegerType) {
                     // The option may contain integer as choosable answer,
                     // just parse it to string
-                    value = importQuestionResult.getIdentifier().replace(".", "u002E")
-                        .replace("_", "u005F") + "_" + item.getValueIntegerType().asStringValue()
-                        .replace(".", "u002E").replace("_", "u005F");
-                    for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
-                        localizedAnswerText.put(currentLocale,
-                            item.getValueIntegerType().asStringValue());
+                    value = importQuestionResult
+                                    .getIdentifier()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F") + "_"
+                            + item.getValueIntegerType()
+                                    .asStringValue()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F");
+                    for (String currentLocale :
+                            question.getLocalizedQuestionText().keySet()) {
+                        localizedAnswerText.put(
+                                currentLocale, item.getValueIntegerType().asStringValue());
                     }
                 } else if (item.getValue() instanceof TimeType) {
                     // The option may contain time type as choosable answer,
                     // just parse it to string
-                    value = importQuestionResult.getIdentifier().replace(".", "u002E")
-                        .replace("_", "u005F") + "_" + item.getValueTimeType().asStringValue()
-                        .replace(".", "u002E").replace("_", "u005F");
-                    for (String currentLocale : question.getLocalizedQuestionText().keySet()) {
-                        localizedAnswerText.put(currentLocale,
-                            item.getValueTimeType().asStringValue());
+                    value = importQuestionResult
+                                    .getIdentifier()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F") + "_"
+                            + item.getValueTimeType()
+                                    .asStringValue()
+                                    .replace(".", "u002E")
+                                    .replace("_", "u005F");
+                    for (String currentLocale :
+                            question.getLocalizedQuestionText().keySet()) {
+                        localizedAnswerText.put(
+                                currentLocale, item.getValueTimeType().asStringValue());
                     }
                 }
                 // Create the answer
-                SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(),
-                    localizedAnswerText, false);
+                SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText, false);
                 if (item.getValue() instanceof Coding) {
                     answer.setValue(FhirDstu3Helper.getScoreFromExtension(item.getValueCoding()));
                     scoreValue = answer.getValue();
@@ -1117,21 +1187,20 @@ public class FhirDstu3ToMoPatConverter {
                 if (value != null) {
                     // Create the exportRules
                     for (ExportTemplate exportTemplate : exportTemplates) {
-                        ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                            value, answer);
+                        ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate, value, answer);
                         exportRuleAnswer.setExportRuleFormat(new ExportRuleFormat());
                         answer.addExportRule(exportRuleAnswer);
                     }
                 }
             } catch (FHIRException e) {
-                LOGGER.debug("Mapping answer {} to exportRule failed. ValueCoding " + "incorrect.",
-                    item.getValue().toString());
+                LOGGER.debug(
+                        "Mapping answer {} to exportRule failed. ValueCoding " + "incorrect.",
+                        item.getValue().toString());
             }
             // The option is specified by a value set
         } else if (option instanceof ValueSet.ConceptReferenceComponent item) {
             // Get the translated answer texts
-            localizedAnswerText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(
-                item.getDisplayElement());
+            localizedAnswerText = FhirDstu3Helper.getLanugageMapFromLanguageExtension(item.getDisplayElement());
             localizedAnswerText.put(locale, item.getDisplay());
 
             String displayText;
@@ -1140,25 +1209,31 @@ public class FhirDstu3ToMoPatConverter {
             } else {
                 if (system == null || system.isEmpty()) {
                     displayText = messageSource.getMessage(
-                        "import.fhir.element" + ".codeNoDisplayNoSystem",
-                        new Object[]{item.getCode()}, LocaleHelper.getLocaleFromString(locale));
+                            "import.fhir.element" + ".codeNoDisplayNoSystem",
+                            new Object[] {item.getCode()},
+                            LocaleHelper.getLocaleFromString(locale));
                 } else {
-                    displayText = messageSource.getMessage("import.fhir.element" + ".codeNoDisplay",
-                        new Object[]{item.getCode(), system},
-                        LocaleHelper.getLocaleFromString(locale));
+                    displayText = messageSource.getMessage(
+                            "import.fhir.element" + ".codeNoDisplay",
+                            new Object[] {item.getCode(), system},
+                            LocaleHelper.getLocaleFromString(locale));
                 }
             }
 
             // Create the answer
-            SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(),
-                localizedAnswerText, false);
+            SelectAnswer answer = new SelectAnswer(question, question.getIsEnabled(), localizedAnswerText, false);
             answer.setValue(FhirDstu3Helper.getScoreFromExtension(item.getDisplayElement()));
             scoreValue = answer.getValue();
             // Create the exportRules
             for (ExportTemplate exportTemplate : exportTemplates) {
-                ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate,
-                    importQuestionResult.getIdentifier().replace(".", "u002E").replace("_", "u005F")
-                        + "_" + item.getCode().replace(".", "u002E").replace("_", "u005F"), answer);
+                ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(
+                        exportTemplate,
+                        importQuestionResult
+                                        .getIdentifier()
+                                        .replace(".", "u002E")
+                                        .replace("_", "u005F") + "_"
+                                + item.getCode().replace(".", "u002E").replace("_", "u005F"),
+                        answer);
                 exportRuleAnswer.setExportRuleFormat(new ExportRuleFormat());
                 answer.addExportRule(exportRuleAnswer);
             }
@@ -1169,12 +1244,11 @@ public class FhirDstu3ToMoPatConverter {
         if (localizedAnswerText != null && !localizedAnswerText.isEmpty()) {
             for (String currentLocale : localizedAnswerText.keySet()) {
                 String text = localizedAnswerText.get(currentLocale);
-                importQuestionResult.addValidationMessage("import.fhir.option.result",
-                    new String[]{text});
+                importQuestionResult.addValidationMessage("import.fhir.option.result", new String[] {text});
             }
             if (scoreValue != null) {
-                importQuestionResult.addValidationMessage("import.fhir.option.resultScore",
-                    new String[]{scoreValue.toString()});
+                importQuestionResult.addValidationMessage(
+                        "import.fhir.option.resultScore", new String[] {scoreValue.toString()});
             }
         }
     }
@@ -1194,21 +1268,20 @@ public class FhirDstu3ToMoPatConverter {
      *                                  converted questionnaire and validationMessages.
      */
     public static void convertEnableWhenToCondition(
-        final QuestionnaireItemEnableWhenComponent enableWhen,
-        final QuestionnaireItemComponent targetItem,
-        final ImportQuestionnaireResult importQuestionnaireResult,
-        final List<QuestionnaireItemComponent> items) {
+            final QuestionnaireItemEnableWhenComponent enableWhen,
+            final QuestionnaireItemComponent targetItem,
+            final ImportQuestionnaireResult importQuestionnaireResult,
+            final List<QuestionnaireItemComponent> items) {
         LOGGER.debug("Enter convertEnableWhenToCondition" + "(QuestionnaireItemEnableWhenComponent "
-            + "enableWhen, QuestionnaireItemComponent " + "targetItem, ImportQuestionnaireResult "
-            + "importQuestionnaireResult, " + "List<QuestionnaireItemComponent> items)");
-        ImportQuestionListResult importQuestionListResult = importQuestionnaireResult.getQuestionListResults()
-            .get(0);
-        ImportQuestionResult targetQuestionResult = importQuestionListResult.getQuestionResultByIdentifier(
-            targetItem.getLinkId());
-        ImportQuestionResult triggerQuestionResult = importQuestionListResult.getQuestionResultByIdentifier(
-            enableWhen.getQuestion());
-        QuestionnaireItemComponent triggerItem = FhirDstu3Helper.getItemByLinkId(
-            enableWhen.getQuestion(), items);
+                + "enableWhen, QuestionnaireItemComponent " + "targetItem, ImportQuestionnaireResult "
+                + "importQuestionnaireResult, " + "List<QuestionnaireItemComponent> items)");
+        ImportQuestionListResult importQuestionListResult =
+                importQuestionnaireResult.getQuestionListResults().get(0);
+        ImportQuestionResult targetQuestionResult =
+                importQuestionListResult.getQuestionResultByIdentifier(targetItem.getLinkId());
+        ImportQuestionResult triggerQuestionResult =
+                importQuestionListResult.getQuestionResultByIdentifier(enableWhen.getQuestion());
+        QuestionnaireItemComponent triggerItem = FhirDstu3Helper.getItemByLinkId(enableWhen.getQuestion(), items);
 
         // The common case is that the enableWhen element activate the
         // targetQuestion, so it is initial disabled.
@@ -1227,8 +1300,7 @@ public class FhirDstu3ToMoPatConverter {
 
                     for (Answer answer : triggerQuestionResult.getQuestion().getAnswers()) {
                         answer.addCondition(
-                            new SelectAnswerCondition(answer, targetQuestionResult.getQuestion(),
-                                action, null));
+                                new SelectAnswerCondition(answer, targetQuestionResult.getQuestion(), action, null));
                         // Gets the localized answer text by the current
                         // locale, if the locale doesn't exist in the map, it
                         // returns the first value, same for the question at
@@ -1238,15 +1310,24 @@ public class FhirDstu3ToMoPatConverter {
                         // arranged.
                         Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
                         triggerQuestionResult.addValidationMessage(
-                            "import.fhir.condition.selectAnswerCondition", new String[]{
-                                localizedLabel.getOrDefault(
-                                    LocaleContextHolder.getLocale().toString(),
-                                    localizedLabel.values().toArray()[0].toString()),
-                                targetQuestionResult.getQuestion()
-                                    .getLocalizedQuestionText().getOrDefault(
-                                    LocaleContextHolder.getLocale().toString(),
-                                    targetQuestionResult.getQuestion().getLocalizedQuestionText()
-                                        .values().toArray()[0].toString()), action.name()});
+                                "import.fhir.condition.selectAnswerCondition", new String[] {
+                                    localizedLabel.getOrDefault(
+                                            LocaleContextHolder.getLocale().toString(),
+                                            localizedLabel.values().toArray()[0].toString()),
+                                    targetQuestionResult
+                                            .getQuestion()
+                                            .getLocalizedQuestionText()
+                                            .getOrDefault(
+                                                    LocaleContextHolder.getLocale()
+                                                            .toString(),
+                                                    targetQuestionResult
+                                                            .getQuestion()
+                                                            .getLocalizedQuestionText()
+                                                            .values()
+                                                            .toArray()[0]
+                                                            .toString()),
+                                    action.name()
+                                });
                     }
                 } else if (enableWhen.hasAnswer()) {
                     String answerText = null;
@@ -1273,8 +1354,8 @@ public class FhirDstu3ToMoPatConverter {
                             // where answer is the trigger and the
                             // targetQuestionResult the target
                             if (text.equals(answerText)) {
-                                answer.addCondition(new SelectAnswerCondition(answer,
-                                    targetQuestionResult.getQuestion(), action, null));
+                                answer.addCondition(new SelectAnswerCondition(
+                                        answer, targetQuestionResult.getQuestion(), action, null));
                                 // Gets the localized answer text by the
                                 // current locale, if the locale doesn't
                                 // exist in the map, it returns the first
@@ -1284,16 +1365,28 @@ public class FhirDstu3ToMoPatConverter {
                                 // clearly arranged.
                                 Map<String, String> localizedLabel = ((SelectAnswer) answer).getLocalizedLabel();
                                 triggerQuestionResult.addValidationMessage(
-                                    "import.fhir.condition" + ".selectAnswerCondition",
-                                    new String[]{localizedLabel.getOrDefault(
-                                        LocaleContextHolder.getLocale().toString(),
-                                        localizedLabel.values().toArray()[0].toString()),
-                                        targetQuestionResult.getQuestion()
-                                            .getLocalizedQuestionText().getOrDefault(
-                                            LocaleContextHolder.getLocale().toString(),
-                                            targetQuestionResult.getQuestion()
-                                                .getLocalizedQuestionText().values()
-                                                .toArray()[0].toString()), action.name()});
+                                        "import.fhir.condition" + ".selectAnswerCondition", new String[] {
+                                            localizedLabel.getOrDefault(
+                                                    LocaleContextHolder.getLocale()
+                                                            .toString(),
+                                                    localizedLabel
+                                                            .values()
+                                                            .toArray()[0]
+                                                            .toString()),
+                                            targetQuestionResult
+                                                    .getQuestion()
+                                                    .getLocalizedQuestionText()
+                                                    .getOrDefault(
+                                                            LocaleContextHolder.getLocale()
+                                                                    .toString(),
+                                                            targetQuestionResult
+                                                                    .getQuestion()
+                                                                    .getLocalizedQuestionText()
+                                                                    .values()
+                                                                    .toArray()[0]
+                                                                    .toString()),
+                                            action.name()
+                                        });
                                 break;
                             }
                         }
@@ -1324,42 +1417,59 @@ public class FhirDstu3ToMoPatConverter {
                             return;
                         }
                     }
-                    Answer answer = triggerQuestionResult.getQuestion().getAnswers().get(0);
+                    Answer answer =
+                            triggerQuestionResult.getQuestion().getAnswers().get(0);
 
                     // If the value of the triggering answer is not inbetween
                     // the intervall of min, max skip this condition
                     if (answer instanceof NumberInputAnswer numberInputAnswer) {
                         if (numberInputAnswer.getMaxValue() != null
-                            && numberInputAnswer.getMinValue() != null && (
-                            numberInputAnswer.getMaxValue() < value
-                                || numberInputAnswer.getMinValue() > value)) {
+                                && numberInputAnswer.getMinValue() != null
+                                && (numberInputAnswer.getMaxValue() < value
+                                        || numberInputAnswer.getMinValue() > value)) {
                             return;
                         }
                     }
 
                     if (answer instanceof SliderAnswer sliderAnswer) {
-                        if (sliderAnswer.getMaxValue() < value
-                            || sliderAnswer.getMinValue() > value) {
+                        if (sliderAnswer.getMaxValue() < value || sliderAnswer.getMinValue() > value) {
                             return;
                         }
                     }
                     // Create the condition, the thresholdComparisonType is
                     // always "==" because there's no type specified by the
                     // fhir specification
-                    triggerQuestionResult.getQuestion().getAnswers().get(0).addCondition(
-                        new SliderAnswerThresholdCondition(
-                            triggerQuestionResult.getQuestion().getAnswers().get(0),
-                            targetQuestionResult.getQuestion(), action, null,
-                            ThresholdComparisonType.EQUALS, value));
+                    triggerQuestionResult
+                            .getQuestion()
+                            .getAnswers()
+                            .get(0)
+                            .addCondition(new SliderAnswerThresholdCondition(
+                                    triggerQuestionResult
+                                            .getQuestion()
+                                            .getAnswers()
+                                            .get(0),
+                                    targetQuestionResult.getQuestion(),
+                                    action,
+                                    null,
+                                    ThresholdComparisonType.EQUALS,
+                                    value));
                     triggerQuestionResult.addValidationMessage(
-                        "import.fhir.condition" + ".sliderAnswerThresholdCondition", new String[]{
-                            targetQuestionResult.getQuestion()
-                                .getLocalizedQuestionText().getOrDefault(
-                                LocaleContextHolder.getLocale().toString(),
-                                targetQuestionResult.getQuestion().getLocalizedQuestionText()
-                                    .values().toArray()[0].toString()),
-                            ThresholdComparisonType.EQUALS.getTextValue(), value.toString(),
-                            action.name()});
+                            "import.fhir.condition" + ".sliderAnswerThresholdCondition", new String[] {
+                                targetQuestionResult
+                                        .getQuestion()
+                                        .getLocalizedQuestionText()
+                                        .getOrDefault(
+                                                LocaleContextHolder.getLocale().toString(),
+                                                targetQuestionResult
+                                                        .getQuestion()
+                                                        .getLocalizedQuestionText()
+                                                        .values()
+                                                        .toArray()[0]
+                                                        .toString()),
+                                ThresholdComparisonType.EQUALS.getTextValue(),
+                                value.toString(),
+                                action.name()
+                            });
                 }
             default:
                 break;

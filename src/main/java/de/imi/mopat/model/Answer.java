@@ -5,12 +5,6 @@ import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.conditions.ConditionTrigger;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -28,6 +22,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The database table model for table <i>answer</i>. An answer represents an option a patient can
@@ -47,37 +46,45 @@ import jakarta.validation.constraints.NotNull;
 @DiscriminatorColumn(name = "answer_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class Answer implements Serializable, ConditionTrigger, ConditionTarget {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "answer")
+    private final Set<Response> responses = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(
+            mappedBy = "answer",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private final Set<ExportRuleAnswer> exportRules = new HashSet<>();
+    // [bt] as long as not all Answer classes are implementing the
+    // ConditionTrigger interface, the property and methos need to be in the
+    // respective sub-classes
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "mopat_condition_answer",
+            joinColumns = {@JoinColumn(name = "answer_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "condition_id", referencedColumnName = "id")})
+    private final Set<Condition> conditions = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @JsonIgnore
     @NotNull(message = "{answer.question.notNull}")
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "question_id", referencedColumnName = "id")
     @Valid
     private Question question;
-    @JsonIgnore
-    @OneToMany(mappedBy = "answer")
-    private Set<Response> responses = new HashSet<>();
-    @JsonIgnore
-    @OneToMany(mappedBy = "answer", cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private Set<ExportRuleAnswer> exportRules = new HashSet<>();
+
     @NotNull(message = "{selectAnswer.label.notNull}")
     @Column(name = "is_enabled")
     private Boolean isEnabled;
-
-    // [bt] as long as not all Answer classes are implementing the
-    // ConditionTrigger interface, the property and methos need to be in the
-    // respective sub-classes
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(name = "mopat_condition_answer", joinColumns = {
-        @JoinColumn(name = "answer_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "condition_id", referencedColumnName = "id")})
-    private Set<Condition> conditions = new HashSet<>();
 
     protected Answer() { // default constructor (in protected state), should
         // not be accessible to
@@ -219,9 +226,7 @@ public abstract class Answer implements Serializable, ConditionTrigger, Conditio
      */
     public void addResponse(final Response response) {
         assert response != null : "The given Response was null";
-        if (!responses.contains(response)) {
-            responses.add(response);
-        }
+        responses.add(response);
         if (response.getAnswer() == null || !response.getAnswer().equals(this)) {
             response.setAnswer(this);
         }
@@ -278,9 +283,7 @@ public abstract class Answer implements Serializable, ConditionTrigger, Conditio
      */
     public void addExportRule(final ExportRuleAnswer exportRule) {
         assert exportRule != null : "The given ExportRule was null";
-        if (!exportRules.contains(exportRule)) {
-            exportRules.add(exportRule);
-        }
+        exportRules.add(exportRule);
         // take care the objects know each other
         if (exportRule.getAnswer() == null || !exportRule.getAnswer().equals(this)) {
             exportRule.setAnswer(this);
@@ -334,10 +337,9 @@ public abstract class Answer implements Serializable, ConditionTrigger, Conditio
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Answer)) {
+        if (!(obj instanceof Answer other)) {
             return false;
         }
-        Answer other = (Answer) obj;
         return getUUID().equals(other.getUUID());
     }
 
@@ -346,7 +348,7 @@ public abstract class Answer implements Serializable, ConditionTrigger, Conditio
         this.conditions.add(condition);
         // take care the objects know each other
         if (condition.getTrigger() == null || !condition.getTrigger().equals(this)) {
-            condition.setTrigger((ConditionTrigger) this);
+            condition.setTrigger(this);
         }
     }
 

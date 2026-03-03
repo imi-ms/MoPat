@@ -27,12 +27,6 @@ public enum ConfigurationType {
     FILE("FILE"),
     RICH_TEXT("RICH_TEXT");
 
-    private final String textValue;
-
-    ConfigurationType(final String textValue) {
-        this.textValue = textValue;
-    }
-
     private static final Map<String, ConfigurationType> stringToEnum = new HashMap<String, ConfigurationType>();
 
     static // Initialize map from constant name to enum constant
@@ -42,6 +36,16 @@ public enum ConfigurationType {
         }
     }
 
+    private final String textValue;
+
+    ConfigurationType(final String textValue) {
+        this.textValue = textValue;
+    }
+
+    public static ConfigurationType fromString(final String textValue) {
+        return stringToEnum.get(textValue);
+    }
+
     @Override
     public String toString() {
         return textValue;
@@ -49,9 +53,5 @@ public enum ConfigurationType {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static ConfigurationType fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

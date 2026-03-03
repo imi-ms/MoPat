@@ -3,11 +3,6 @@ package de.imi.mopat.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +13,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The database table model for table <i>bundle_questionnaire</i>. Represents the joinTable for
@@ -32,32 +31,41 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
 
     @JsonIgnore
     @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @JsonIgnore
+    @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(
+            name = "bundle_questionnaire_export_template",
+            joinColumns = {
+                @JoinColumn(name = "bundle_id", referencedColumnName = "bundle_id"),
+                @JoinColumn(name = "questionnaire_id", referencedColumnName = "questionnaire_id")
+            },
+            inverseJoinColumns = @JoinColumn(name = "export_template_id", referencedColumnName = "id"))
+    private final Set<ExportTemplate> exportTemplates = new HashSet<>();
+
     @NotNull(message = "{bundleQuestionnaire.position.notNull}")
     @Column(nullable = false)
     private Integer position;
+
     @Id
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "bundle_id", referencedColumnName = "id")
     private Bundle bundle;
+
     @Id
     @ManyToOne
     @JoinColumn(name = "questionnaire_id", referencedColumnName = "id")
     private Questionnaire questionnaire;
-    @JsonIgnore
-    @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinTable(name = "bundle_questionnaire_export_template", joinColumns = {
-        @JoinColumn(name = "bundle_id", referencedColumnName = "bundle_id"),
-        @JoinColumn(name = "questionnaire_id", referencedColumnName = "questionnaire_id")}, inverseJoinColumns = @JoinColumn(name = "export_template_id", referencedColumnName = "id"))
-    private Set<ExportTemplate> exportTemplates = new HashSet<>();
 
     @Column(name = "is_enabled", nullable = false)
     private Boolean isEnabled;
+
     @Column(name = "show_scores", nullable = false)
     private Boolean showScores = false;
 
-    protected BundleQuestionnaire() { //default constructor (in protected
+    protected BundleQuestionnaire() { // default constructor (in protected
         // state), should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
     }
@@ -72,8 +80,8 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
      *                      <code>null</code>.
      * @param showScores    States whether the scores should be shown at the end of a survey or not
      */
-    public BundleQuestionnaire(Bundle bundle, Questionnaire questionnaire, Integer position,
-        Boolean isEnabled, Boolean showScores) {
+    public BundleQuestionnaire(
+            Bundle bundle, Questionnaire questionnaire, Integer position, Boolean isEnabled, Boolean showScores) {
         setPosition(position);
         setBundle(bundle);
         setQuestionnaire(questionnaire);
@@ -104,7 +112,7 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
     public void setBundle(Bundle bundle) {
         assert bundle != null : "The given Bundle was null";
         this.bundle = bundle;
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (!bundle.getBundleQuestionnaires().contains(this)) {
             bundle.addBundleQuestionnaire(this);
         }
@@ -132,7 +140,7 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
     public void setQuestionnaire(final Questionnaire questionnaire) {
         assert questionnaire != null : "The given Questionnaire was null";
         this.questionnaire = questionnaire;
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (!questionnaire.getBundleQuestionnaires().contains(this)) {
             questionnaire.addBundleQuestionnaire(this);
         }
@@ -239,21 +247,6 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
     }
 
     /**
-     * Sets all {@link ExportTemplate} objects which should be exported from the questionnaire of
-     * this bundleQuestionnaire object.
-     *
-     * @param exportTemplates A set of {@link ExportTemplate} objects. Can not be
-     *                        <code>null</code>.
-     */
-    public void setExportTemplates(final Set<ExportTemplate> exportTemplates) {
-        assert exportTemplates != null : "The Set was null";
-        this.removeExportTemplates();
-        for (ExportTemplate exportTemplate : exportTemplates) {
-            this.addExportTemplate(exportTemplate);
-        }
-    }
-
-    /**
      * Removes all {@link ExportTemplate ExportTemplate} objects from the
      * {@link BundleQuestionnaire BundleQuestionnaire} object.
      */
@@ -297,6 +290,21 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
         return Collections.unmodifiableSet(exportTemplates);
     }
 
+    /**
+     * Sets all {@link ExportTemplate} objects which should be exported from the questionnaire of
+     * this bundleQuestionnaire object.
+     *
+     * @param exportTemplates A set of {@link ExportTemplate} objects. Can not be
+     *                        <code>null</code>.
+     */
+    public void setExportTemplates(final Set<ExportTemplate> exportTemplates) {
+        assert exportTemplates != null : "The Set was null";
+        this.removeExportTemplates();
+        for (ExportTemplate exportTemplate : exportTemplates) {
+            this.addExportTemplate(exportTemplate);
+        }
+    }
+
     @Override
     public int hashCode() {
         return getUUID().hashCode();
@@ -310,10 +318,9 @@ public class BundleQuestionnaire implements Serializable, Comparable<BundleQuest
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof BundleQuestionnaire)) {
+        if (!(obj instanceof BundleQuestionnaire other)) {
             return false;
         }
-        BundleQuestionnaire other = (BundleQuestionnaire) obj;
         return getUUID().equals(other.getUUID());
     }
 

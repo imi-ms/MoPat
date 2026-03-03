@@ -34,12 +34,14 @@ public class ExportRulesDTOValidator implements Validator {
 
         if (exportRulesDTO.getExportRuleFormats() != null) {
             for (Long formatId : exportRulesDTO.getExportRuleFormats().keySet()) {
-                ExportRuleFormatDTO formatDTO = exportRulesDTO.getExportRuleFormats().get(formatId);
+                ExportRuleFormatDTO formatDTO =
+                        exportRulesDTO.getExportRuleFormats().get(formatId);
                 // check if decimal places has the correct number format
                 if (formatDTO.getDecimalPlaces() != null) {
                     if (!formatDTO.getDecimalPlaces().matches(Constants.NUMBER_FORMAT)) {
-                        errors.rejectValue("exportRuleFormats[" + formatId + "].decimalPlaces",
-                            "mapping.error.decimalPlacesWrongFormat");
+                        errors.rejectValue(
+                                "exportRuleFormats[" + formatId + "].decimalPlaces",
+                                "mapping.error.decimalPlacesWrongFormat");
                     }
                 }
             }

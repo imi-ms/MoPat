@@ -1,16 +1,16 @@
 package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import de.imi.mopat.helper.controller.NoOpAclCache;
 import de.imi.mopat.auth.CustomAuthenticationFailureHandler;
 import de.imi.mopat.auth.CustomPostAuthenticationChecks;
 import de.imi.mopat.auth.CustomPreAuthenticationChecks;
 import de.imi.mopat.auth.LDAPUserDetailsService;
 import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
 import de.imi.mopat.auth.MoPatUserDetailService;
-import de.imi.mopat.auth.PinAuthorizationFilter;
 import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
+import de.imi.mopat.auth.PinAuthorizationFilter;
 import de.imi.mopat.auth.RoleBasedAuthenticationSuccessHandler;
+import de.imi.mopat.helper.controller.NoOpAclCache;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import org.apache.groovy.util.Maps;
@@ -52,14 +52,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableCaching
 public class ApplicationSecurityConfig {
 
+    private final Environment environment;
+
     @Autowired
     ComboPooledDataSource moPatUserDataSource;
 
     @Autowired
     CacheManager cacheManager;
-
-    private final Environment environment;
-
 
     public ApplicationSecurityConfig(Environment environment) {
         this.environment = environment;
@@ -73,12 +72,12 @@ public class ApplicationSecurityConfig {
      */
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        //auth.userDetailsService(userDetailsService);
-        // DO NOT add userDetailsService and authenticationProvider, since two DaoAuthenticationProvider instances will be created
+        // auth.userDetailsService(userDetailsService);
+        // DO NOT add userDetailsService and authenticationProvider, since two DaoAuthenticationProvider instances will
+        // be created
         auth.authenticationProvider(authenticationProviderBCrypt());
         auth.authenticationProvider(adAuthenticationProvider());
     }
-
 
     /**
      * Sets the RoleHierarchy
@@ -94,7 +93,7 @@ public class ApplicationSecurityConfig {
             ROLE_MODERATOR > ROLE_EDITOR
             ROLE_EDITOR > ROLE_ENCOUNTERMANAGER
             ROLE_ENCOUNTERMANAGER > ROLE_USER
-             """);
+            """);
 
         return roleHierarchy;
     }
@@ -116,8 +115,11 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public SimpleGrantedAuthority[] authorities() {
-        return new SimpleGrantedAuthority[]{new SimpleGrantedAuthority("ROLE_ADMIN"),
-            new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_ADMIN")};
+        return new SimpleGrantedAuthority[] {
+            new SimpleGrantedAuthority("ROLE_ADMIN"),
+            new SimpleGrantedAuthority("ROLE_ADMIN"),
+            new SimpleGrantedAuthority("ROLE_ADMIN")
+        };
     }
 
     /**
@@ -168,8 +170,7 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public BasicLookupStrategy lookupStrategy() throws PropertyVetoException {
-        return new BasicLookupStrategy(moPatUserDataSource, aclCache(), aclAuthorizationStrategy(),
-            auditLogger());
+        return new BasicLookupStrategy(moPatUserDataSource, aclCache(), aclAuthorizationStrategy(), auditLogger());
     }
 
     /**
@@ -202,7 +203,8 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public DefaultMethodSecurityExpressionHandler expressionHandler() throws PropertyVetoException {
-        DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
+        DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler =
+                new DefaultMethodSecurityExpressionHandler();
 
         defaultMethodSecurityExpressionHandler.setPermissionEvaluator(permissionEvaluator());
         defaultMethodSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
@@ -271,9 +273,9 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public MoPatActiveDirectoryLdapAuthenticationProvider adAuthenticationProvider() {
-        MoPatActiveDirectoryLdapAuthenticationProvider moPatActiveDirectoryLdapAuthenticationProvider = new MoPatActiveDirectoryLdapAuthenticationProvider();
-        moPatActiveDirectoryLdapAuthenticationProvider.setUserDetailsContextMapper(
-            LDAPUserDetailsService());
+        MoPatActiveDirectoryLdapAuthenticationProvider moPatActiveDirectoryLdapAuthenticationProvider =
+                new MoPatActiveDirectoryLdapAuthenticationProvider();
+        moPatActiveDirectoryLdapAuthenticationProvider.setUserDetailsContextMapper(LDAPUserDetailsService());
 
         return moPatActiveDirectoryLdapAuthenticationProvider;
     }
@@ -285,21 +287,27 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public RoleBasedAuthenticationSuccessHandler redirectRoleStrategy() {
-        RoleBasedAuthenticationSuccessHandler roleBasedAuthenticationSuccessHandler = new RoleBasedAuthenticationSuccessHandler();
+        RoleBasedAuthenticationSuccessHandler roleBasedAuthenticationSuccessHandler =
+                new RoleBasedAuthenticationSuccessHandler();
 
-        roleBasedAuthenticationSuccessHandler.setRoleUrlMap(
-            Maps.of("ROLE_ADMIN", "/admin/index",
-                "ROLE_MODERATOR", "/admin/index",
-                "ROLE_EDITOR", "/admin/index",
-                "ROLE_ENCOUNTERMANAGER", "/mobile/survey/index",
-                "ROLE_USER", "/mobile/survey/index"));
+        roleBasedAuthenticationSuccessHandler.setRoleUrlMap(Maps.of(
+                "ROLE_ADMIN",
+                "/admin/index",
+                "ROLE_MODERATOR",
+                "/admin/index",
+                "ROLE_EDITOR",
+                "/admin/index",
+                "ROLE_ENCOUNTERMANAGER",
+                "/mobile/survey/index",
+                "ROLE_USER",
+                "/mobile/survey/index"));
         return roleBasedAuthenticationSuccessHandler;
     }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(
-            AuthenticationManagerBuilder.class);
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
         return authenticationManagerBuilder.build();
     }
 
@@ -307,7 +315,6 @@ public class ApplicationSecurityConfig {
     public PinAuthorizationFilter pinAuthenticationFilter() {
         return new PinAuthorizationFilter();
     }
-
 
     /**
      * Basic filter chain for http requests
@@ -324,64 +331,58 @@ public class ApplicationSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Authorize requests
-            .authorizeHttpRequests(authz -> authz
-                // Static resources
-                .requestMatchers("/js/**", "/css/**", "/images/**", "/conf/**", "/favicon.ico").permitAll()
-                // Public endpoints (registration, password reset, surveys, login page)
-                .requestMatchers(
-                    "/mobile/user/password",
-                    "/mobile/user/passwordreset",
-                    "/mobile/user/register",
-                    "/mobile/survey/test",
-                    "/mobile/survey/questionnairetest/**",
-                    "/mobile/survey/encounter",
-                    "/mobile/survey/schedule",
-                    "/mobile/survey/questionnaireScheduled",
-                    "/mobile/survey/scores",
-                    "/mobile/survey/finishQuestionnaire",
-                    "/mobile/survey/pseudonym",
-                    "/error/maintenance",
-                    "/error/internalservererror",
-                    "/error/accessdenied"
-                ).permitAll()
-                // Login page GET
-                .requestMatchers(HttpMethod.GET, "/mobile/user/login").permitAll()
-                // Login processing POST
-                .requestMatchers(HttpMethod.POST, "/mobile/user/login").permitAll()
-                // All other requests require authentication
-                .anyRequest().authenticated()
-            )
+                // Authorize requests
+                .authorizeHttpRequests(authz -> authz
+                        // Static resources
+                        .requestMatchers("/js/**", "/css/**", "/images/**", "/conf/**", "/favicon.ico")
+                        .permitAll()
+                        // Public endpoints (registration, password reset, surveys, login page)
+                        .requestMatchers(
+                                "/mobile/user/password",
+                                "/mobile/user/passwordreset",
+                                "/mobile/user/register",
+                                "/mobile/survey/test",
+                                "/mobile/survey/questionnairetest/**",
+                                "/mobile/survey/encounter",
+                                "/mobile/survey/schedule",
+                                "/mobile/survey/questionnaireScheduled",
+                                "/mobile/survey/scores",
+                                "/mobile/survey/finishQuestionnaire",
+                                "/mobile/survey/pseudonym",
+                                "/error/maintenance",
+                                "/error/internalservererror",
+                                "/error/accessdenied")
+                        .permitAll()
+                        // Login page GET
+                        .requestMatchers(HttpMethod.GET, "/mobile/user/login")
+                        .permitAll()
+                        // Login processing POST
+                        .requestMatchers(HttpMethod.POST, "/mobile/user/login")
+                        .permitAll()
+                        // All other requests require authentication
+                        .anyRequest()
+                        .authenticated())
 
-            // Form login configuration
-            .formLogin(form -> form
-                .loginPage("/mobile/user/login")            // login page GET
-                .loginProcessingUrl("/mobile/user/login")     // login POST
-                .successHandler(redirectRoleStrategy())       // custom success handler
-                .failureHandler(customAuthenticationFailureHandler()) // custom failure handler
-                .permitAll()
-            )
+                // Form login configuration
+                .formLogin(form -> form.loginPage("/mobile/user/login") // login page GET
+                        .loginProcessingUrl("/mobile/user/login") // login POST
+                        .successHandler(redirectRoleStrategy()) // custom success handler
+                        .failureHandler(customAuthenticationFailureHandler()) // custom failure handler
+                        .permitAll())
 
-            // Logout configuration
-            .logout(logout -> logout
-                .logoutUrl("/j_spring_security_logout")
-                .logoutSuccessUrl("/mobile/user/login")
-                .permitAll()
-            )
+                // Logout configuration
+                .logout(logout -> logout.logoutUrl("/j_spring_security_logout")
+                        .logoutSuccessUrl("/mobile/user/login")
+                        .permitAll())
 
-            // Exception handling
-            .exceptionHandling(ex -> ex
-                .accessDeniedPage("/error/accessdenied")
-            )
+                // Exception handling
+                .exceptionHandling(ex -> ex.accessDeniedPage("/error/accessdenied"))
 
-            // Session management
-            .sessionManagement(session -> session
-                .maximumSessions(1)
-                .sessionRegistry(sessionRegistry())
-            )
+                // Session management
+                .sessionManagement(session -> session.maximumSessions(1).sessionRegistry(sessionRegistry()))
 
-            // CSRF
-            .csrf(csrf -> csrf.disable());
+                // CSRF
+                .csrf(csrf -> csrf.disable());
 
         // Add custom filter after authentication
         http.addFilterAfter(pinAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -406,8 +407,9 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter(
-        AuthenticationManager authenticationManager) {
-        UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter = new UsernamePasswordAuthenticationFilter();
+            AuthenticationManager authenticationManager) {
+        UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter =
+                new UsernamePasswordAuthenticationFilter();
         usernamePasswordAuthenticationFilter.setAuthenticationManager(authenticationManager);
         return usernamePasswordAuthenticationFilter;
     }
@@ -419,18 +421,20 @@ public class ApplicationSecurityConfig {
      */
     @Bean
     public CustomAuthenticationFailureHandler customAuthenticationFailureHandler() {
-        CustomAuthenticationFailureHandler customAuthenticationFailureHandler = new CustomAuthenticationFailureHandler();
+        CustomAuthenticationFailureHandler customAuthenticationFailureHandler =
+                new CustomAuthenticationFailureHandler();
         Properties properties = new Properties();
 
-        properties.put("org.springframework.security.authentication.BadCredentialsException",
-            "/mobile/user/login?message=BadCredentialsException");
         properties.put(
-            "org.springframework.security.authentication.InsufficientAuthenticationException",
-            "/mobile/user/login?message=InsufficientAuthenticationException");
-        properties.put("org.springframework.security.authentication.DisabledException",
-            "/mobile/user/login?message=DisabledException");
+                "org.springframework.security.authentication.BadCredentialsException",
+                "/mobile/user/login?message=BadCredentialsException");
+        properties.put(
+                "org.springframework.security.authentication.InsufficientAuthenticationException",
+                "/mobile/user/login?message=InsufficientAuthenticationException");
+        properties.put(
+                "org.springframework.security.authentication.DisabledException",
+                "/mobile/user/login?message=DisabledException");
         customAuthenticationFailureHandler.setExceptionMappings(properties);
         return customAuthenticationFailureHandler;
     }
-
 }

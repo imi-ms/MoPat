@@ -8,9 +8,11 @@ import java.io.IOException;
 public class SliderIconSerializer extends JsonSerializer<SliderIcon> {
 
     @Override
-    public void serialize(SliderIcon sliderIcon,
-        com.fasterxml.jackson.core.JsonGenerator jsonGenerator,
-        SerializerProvider serializerProvider) throws IOException {
+    public void serialize(
+            SliderIcon sliderIcon,
+            com.fasterxml.jackson.core.JsonGenerator jsonGenerator,
+            SerializerProvider serializerProvider)
+            throws IOException {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField("id", String.valueOf(sliderIcon.getId()));
         jsonGenerator.writeStringField("position", String.valueOf(sliderIcon.getPosition()));

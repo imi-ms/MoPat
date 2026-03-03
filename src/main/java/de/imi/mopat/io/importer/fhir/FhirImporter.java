@@ -30,7 +30,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
 /**
  * Service to handle the upload of FHIR Questionnaires
  */
@@ -39,21 +38,26 @@ public class FhirImporter {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FhirImporter.class);
 
+    @Autowired
+    FhirVersionHelper fhirVersionHelper;
 
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ConfigurationGroupDao configurationGroupDao;
+
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
-    @Autowired
-    FhirVersionHelper fhirVersionHelper;
 
     /**
      * Function to handle the file upload of a FHIR questionnaire document. Determines the FHIR
@@ -66,8 +70,8 @@ public class FhirImporter {
      * @return ImportQuestionnaireValidation with the results of the import
      * @throws IOException
      */
-    public ImportQuestionnaireValidation importFhirQuestionnaire(MultipartFile file,
-        final String url, FhirVersion fhirVersion, String frontendLocale) throws IOException {
+    public ImportQuestionnaireValidation importFhirQuestionnaire(
+            MultipartFile file, final String url, FhirVersion fhirVersion, String frontendLocale) throws IOException {
 
         ImportQuestionnaireValidation result = new ImportQuestionnaireValidation();
 
@@ -78,8 +82,7 @@ public class FhirImporter {
 
         FhirImporterVersionAdapter adapter = getAdapterForVersion(fhirVersion);
         if (adapter == null) {
-            throw new ImportFailedException(
-                "Could not load importer for version " + fhirVersion.name());
+            throw new ImportFailedException("Could not load importer for version " + fhirVersion.name());
         }
 
         try {
@@ -96,15 +99,19 @@ public class FhirImporter {
      * Processes the file or URL, validates, and initializes the adapter with the FHIR
      * questionnaire.
      */
-    private void processFileOrUrl(FhirImporterVersionAdapter adapter, MultipartFile file,
-        String url, ImportQuestionnaireValidation result, String frontendLocale)
-        throws IOException {
+    private void processFileOrUrl(
+            FhirImporterVersionAdapter adapter,
+            MultipartFile file,
+            String url,
+            ImportQuestionnaireValidation result,
+            String frontendLocale)
+            throws IOException {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy");
 
         if (file != null && !file.isEmpty() && file.getSize() > 0) {
             adapter.validateFileWithFhirInstanceValidator(
-                new String(file.getBytes(), StandardCharsets.UTF_8), result, frontendLocale);
+                    new String(file.getBytes(), StandardCharsets.UTF_8), result, frontendLocale);
 
             if (result.hasErrors()) {
                 throw new ImportFailedException("File validation failed");
@@ -119,36 +126,39 @@ public class FhirImporter {
     /**
      * Validates and processes the FHIR questionnaire from a URL.
      */
-    private void validateAndProcessUrl(FhirImporterVersionAdapter adapter, String url,
-        ImportQuestionnaireValidation result, SimpleDateFormat dateFormat) {
+    private void validateAndProcessUrl(
+            FhirImporterVersionAdapter adapter,
+            String url,
+            ImportQuestionnaireValidation result,
+            SimpleDateFormat dateFormat) {
 
         if (!url.contains("/")) {
-            result.reject("import.error.invalidUrl", new Object[]{}, "Input URL is not valid");
+            result.reject("import.error.invalidUrl", new Object[] {}, "Input URL is not valid");
             throw new ImportFailedException("Invalid URL");
         }
 
-        String serverBase = url.substring(0,
-            url.substring(0, url.lastIndexOf("/")).lastIndexOf("/"));
+        String serverBase =
+                url.substring(0, url.substring(0, url.lastIndexOf("/")).lastIndexOf("/"));
         IGenericClient client = adapter.getContext().newRestfulGenericClient(serverBase);
-        adapter.setFhirQuestionnaire(
-            client.read().resource(org.hl7.fhir.dstu3.model.Questionnaire.class).withUrl(url)
+        adapter.setFhirQuestionnaire(client.read()
+                .resource(org.hl7.fhir.dstu3.model.Questionnaire.class)
+                .withUrl(url)
                 .execute());
         adapter.setFhirQuestionnaireTitle(
-            adapter.isFhirQuestionnaireTitleEmpty() ? "Default Title " + dateFormat.format(
-                new Date()) : adapter.getFhirQuestionnaireTitle());
+                adapter.isFhirQuestionnaireTitleEmpty()
+                        ? "Default Title " + dateFormat.format(new Date())
+                        : adapter.getFhirQuestionnaireTitle());
     }
-
 
     /**
      * Merges questionnaire and export templates into the database.
      */
-    private void performImport(MultipartFile file, FhirImporterVersionAdapter adapter,
-        ImportQuestionnaireValidation importValidation) {
+    private void performImport(
+            MultipartFile file, FhirImporterVersionAdapter adapter, ImportQuestionnaireValidation importValidation) {
 
         List<ExportTemplate> templates;
         try {
-            templates = transformQuestionnaireAndExportTemplates(file, adapter,
-                importValidation);
+            templates = transformQuestionnaireAndExportTemplates(file, adapter, importValidation);
         } catch (IOException e) {
             LOGGER.error("Could not create export templates", e);
             throw new ImportFailedException("Error during FHIR questionnaire import");
@@ -158,17 +168,15 @@ public class FhirImporter {
         Questionnaire questionnaire = importResult.getQuestionnaire();
 
         if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), null)) {
-            String currentTimestamp = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(
-                Date.from(Instant.now()));
+            String currentTimestamp = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(Date.from(Instant.now()));
 
-            questionnaire.setName(
-                String.format("%s %s", questionnaire.getName(), currentTimestamp));
+            questionnaire.setName(String.format("%s %s", questionnaire.getName(), currentTimestamp));
         }
 
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup group =
+                questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
         questionnaire.setQuestionnaireVersionGroup(group);
         group.addQuestionnaire(questionnaire);
         questionnaireVersionGroupService.add(group);
@@ -185,21 +193,24 @@ public class FhirImporter {
     /**
      * Handles creation of export templates and writing files to disk.
      */
-    private List<ExportTemplate> transformQuestionnaireAndExportTemplates(MultipartFile file,
-        FhirImporterVersionAdapter adapter, ImportQuestionnaireValidation result)
-        throws IOException {
+    private List<ExportTemplate> transformQuestionnaireAndExportTemplates(
+            MultipartFile file, FhirImporterVersionAdapter adapter, ImportQuestionnaireValidation result)
+            throws IOException {
 
         List<ExportTemplate> templates = ExportTemplate.createExportTemplates(
-            "Automatically Generated Exporttemplate", adapter.getExportTemplateType(), file,
-            configurationGroupDao, exportTemplateDao);
+                "Automatically Generated Exporttemplate",
+                adapter.getExportTemplateType(),
+                file,
+                configurationGroupDao,
+                exportTemplateDao);
 
         for (ExportTemplate template : templates) {
             File templateFile = createTemplateFile(template);
             adapter.writeQuestionnaireToFile(templateFile);
         }
 
-        ImportQuestionnaireResult fhirResult = adapter.convertFHIRQuestionnaireToMoPatQuestionnaire(
-            templates, messageSource);
+        ImportQuestionnaireResult fhirResult =
+                adapter.convertFHIRQuestionnaireToMoPatQuestionnaire(templates, messageSource);
 
         result.setImportResult(fhirResult);
 
@@ -211,16 +222,15 @@ public class FhirImporter {
      */
     private void handleImportErrors(ImportQuestionnaireValidation result, Exception e) {
         LOGGER.error("Error during FHIR questionnaire import", e);
-        result.reject("import.fhir.error.message", new Object[]{e.getMessage()},
-            "An error occurred: " + e.getMessage());
+        result.reject(
+                "import.fhir.error.message", new Object[] {e.getMessage()}, "An error occurred: " + e.getMessage());
     }
 
     /**
      * Creates a file for the given ExportTemplate.
      */
     private File createTemplateFile(ExportTemplate template) throws IOException {
-        String path =
-            configurationDao.getObjectStoragePath() + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+        String path = configurationDao.getObjectStoragePath() + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
         File directory = new File(path);
         if (!directory.exists()) {
             directory.mkdirs();
@@ -232,21 +242,21 @@ public class FhirImporter {
         return file;
     }
 
-
-    public void uploadFhirExportTemplate(MultipartFile file, File uploadFile,
-        ExportTemplateType exportTemplateType, Questionnaire questionnaire) throws IOException {
-        //Parse the upload file to get the fhir resource type
-        FhirVersion fhirVersion =
-            fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
+    public void uploadFhirExportTemplate(
+            MultipartFile file, File uploadFile, ExportTemplateType exportTemplateType, Questionnaire questionnaire)
+            throws IOException {
+        // Parse the upload file to get the fhir resource type
+        FhirVersion fhirVersion = fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
         if (fhirVersion != null) {
             FhirImporterVersionAdapter adapter = getAdapterForVersion(fhirVersion);
 
             if (adapter != null) {
                 adapter.setFhirQuestionnaire(adapter.parseResourceFromFile(file.getInputStream()));
                 String fhirUrl = configurationDao.getFHIRsystemURI();
-                String questionnaireUrl = String.format("%s/%s",
-                    fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
-                    questionnaire.getId());
+                String questionnaireUrl = String.format(
+                        "%s/%s",
+                        fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
+                        questionnaire.getId());
                 adapter.setFhirQuestionnaireUrl(questionnaireUrl);
                 adapter.writeQuestionnaireToFile(uploadFile);
             }
@@ -261,16 +271,17 @@ public class FhirImporter {
      * @param fhirVersion the FhirVersion to check against
      * @return true if there is a version without any errors
      */
-    public boolean validateFhirFileAgainstFhirVersion(MultipartFile file,
-        ImportQuestionnaireValidation validationResult, FhirVersion fhirVersion,
-        String frontendLocale) {
+    public boolean validateFhirFileAgainstFhirVersion(
+            MultipartFile file,
+            ImportQuestionnaireValidation validationResult,
+            FhirVersion fhirVersion,
+            String frontendLocale) {
         FhirImporterVersionAdapter adapter = getAdapterForVersion(fhirVersion);
 
         if (adapter != null) {
             try {
                 return adapter.validateFileWithFhirInstanceValidator(
-                    new String(file.getBytes(), StandardCharsets.UTF_8), validationResult,
-                    frontendLocale);
+                        new String(file.getBytes(), StandardCharsets.UTF_8), validationResult, frontendLocale);
             } catch (IOException e) {
                 LOGGER.error("Error during FHIR questionnaire import", e);
                 throw new ImportFailedException("Error during FHIR questionnaire import");
@@ -288,14 +299,14 @@ public class FhirImporter {
      * @param exportTemplateType ExportTemplateType to determine the FHIR Version for
      * @return true if there is a version without any errors
      */
-    public boolean validateFhirFileAgainstFhirVersion(MultipartFile file,
-        ImportQuestionnaireValidation validationResult, ExportTemplateType exportTemplateType,
-        String frontendLocale) {
-        FhirVersion fhirVersion =
-            fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
+    public boolean validateFhirFileAgainstFhirVersion(
+            MultipartFile file,
+            ImportQuestionnaireValidation validationResult,
+            ExportTemplateType exportTemplateType,
+            String frontendLocale) {
+        FhirVersion fhirVersion = fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
         if (fhirVersion != null) {
-            return this.validateFhirFileAgainstFhirVersion(file, validationResult, fhirVersion,
-                frontendLocale);
+            return this.validateFhirFileAgainstFhirVersion(file, validationResult, fhirVersion, frontendLocale);
         } else {
             return false;
         }
@@ -309,10 +320,10 @@ public class FhirImporter {
 
             case R5 -> {
                 return new FhirImporterR5Adapter();
-                //Not implemented yet
+                // Not implemented yet
             }
 
-            //Set R4B as the default Version
+            // Set R4B as the default Version
             default -> {
                 return new FhirImporterR4bAdapter();
             }

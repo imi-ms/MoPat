@@ -1,10 +1,6 @@
 package de.imi.mopat.model.user;
 
 import de.imi.mopat.helper.model.UUIDGenerator;
-
-import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +12,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * The database table model for <i>forgot_password_token</i>. The forgot password token table holds
@@ -25,17 +24,20 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "forgot_password_token")
 public class ForgotPasswordToken implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private Long id;
     @NotNull
     @Column(name = "uuid")
     private final String uuid = UUIDGenerator.createUUID();
+
     @NotNull(message = "{invitation.expirationDate.notNull}")
     @Column(name = "expirationDate")
     @Temporal(TemporalType.DATE)
     private final Date expirationDate;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private Long id;
+
     @JoinColumn(name = "user", referencedColumnName = "id")
     @OneToOne
     private User user;

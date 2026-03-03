@@ -26,16 +26,22 @@ public class QuestionValidator implements Validator {
 
     private static final String MIN_NUMBER_ANSWERS = "minNumberAnswers";
     private static final String MAX_NUMBER_ANSWERS = "maxNumberAnswers";
+
     @Autowired
     private SliderAnswerValidator sliderAnswerValidator;
+
     @Autowired
     private SelectAnswerValidator selectAnswerValidator;
+
     @Autowired
     private NumberInputAnswerValidator numberInputAnswerValidator;
+
     @Autowired
     private ImageAnswerValidator imageAnswerValidator;
+
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -55,20 +61,28 @@ public class QuestionValidator implements Validator {
         // [bt] now it's my time to validate the more complex stuff
         Question question = (Question) target;
         // [sw] Check if any added language contains an empty questionText
-        for (Map.Entry<String, String> entry : question.getLocalizedQuestionText().entrySet()) {
-            if (entry.getValue() == null || entry.getValue().trim().isEmpty() || Pattern.matches(
-                "<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
+        for (Map.Entry<String, String> entry :
+                question.getLocalizedQuestionText().entrySet()) {
+            if (entry.getValue() == null
+                    || entry.getValue().trim().isEmpty()
+                    || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                 question.getLocalizedQuestionText().put(entry.getKey(), "");
                 if (question.getQuestionType() == QuestionType.INFO_TEXT) {
-                    errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
-                        MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".infoTextIsNull",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "localizedQuestionText[" + entry.getKey() + "]",
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".infoTextIsNull",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 } else {
-                    errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
-                        MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".questionTextIsNull",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "localizedQuestionText[" + entry.getKey() + "]",
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".questionTextIsNull",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             }
         }
@@ -79,44 +93,68 @@ public class QuestionValidator implements Validator {
                 // [bt] validation of the minimum and maximum number of
                 // answers to be given.
                 if (question.getMinNumberAnswers() == null) {
-                    errors.rejectValue(MIN_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".minNumberAnswersMissing",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            MIN_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".minNumberAnswersMissing",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
                 if (question.getMaxNumberAnswers() == null) {
-                    errors.rejectValue(MAX_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_NOT_NULL,
-                        messageSource.getMessage("question.error" + ".maxNumberAnswersMissing",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            MAX_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_NOT_NULL,
+                            messageSource.getMessage(
+                                    "question.error" + ".maxNumberAnswersMissing",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
                 // [bt] validation of minNumberAnswers <= 0 not implemented
                 // due to existent annotations in Question class
                 // [bt] validation of maxNumberAnswers <= 1 not implemented
                 // due to existent annotations in Question class
 
-                if (question.getMinNumberAnswers() != null && question.getMaxNumberAnswers() != null
-                    && question.getMinNumberAnswers() > question.getMaxNumberAnswers()) {
-                    errors.rejectValue(MIN_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("question.error" + ".minNumberBiggerThanMaxNumber",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
-                    errors.rejectValue(MAX_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage(
-                            "question.error" + ".maxNumberSmallerThanMinNumber", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                if (question.getMinNumberAnswers() != null
+                        && question.getMaxNumberAnswers() != null
+                        && question.getMinNumberAnswers() > question.getMaxNumberAnswers()) {
+                    errors.rejectValue(
+                            MIN_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "question.error" + ".minNumberBiggerThanMaxNumber",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            MAX_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "question.error" + ".maxNumberSmallerThanMinNumber",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
 
                 if (question.getMinNumberAnswers() != null
-                    && question.getMinNumberAnswers() > question.getAnswers().size()) {
-                    errors.rejectValue(MIN_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage(
-                            "question.error" + ".minNumberBiggerThanAmountOfAnswers",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                        && question.getMinNumberAnswers()
+                                > question.getAnswers().size()) {
+                    errors.rejectValue(
+                            MIN_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "question.error" + ".minNumberBiggerThanAmountOfAnswers",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
                 if (question.getMaxNumberAnswers() != null
-                    && question.getMaxNumberAnswers() > question.getAnswers().size()) {
-                    errors.rejectValue(MAX_NUMBER_ANSWERS, MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage(
-                            "question.error" + ".maxNumberBiggerThanAmountOfAnswers",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                        && question.getMaxNumberAnswers()
+                                > question.getAnswers().size()) {
+                    errors.rejectValue(
+                            MAX_NUMBER_ANSWERS,
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "question.error" + ".maxNumberBiggerThanAmountOfAnswers",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
 
                 for (int i = 0; i < question.getAnswers().size(); i++) {
@@ -149,11 +187,17 @@ public class QuestionValidator implements Validator {
             }
             case DATE: {
                 DateAnswer dateAnswer = (DateAnswer) question.getAnswers().get(0);
-                if (dateAnswer.getStartDate() != null && dateAnswer.getEndDate() != null
-                    && dateAnswer.getStartDate().getTime() > dateAnswer.getEndDate().getTime()) {
-                    errors.rejectValue("answers[0].endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("dateAnswer.validator" + ".endEarlierThanStart",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                if (dateAnswer.getStartDate() != null
+                        && dateAnswer.getEndDate() != null
+                        && dateAnswer.getStartDate().getTime()
+                                > dateAnswer.getEndDate().getTime()) {
+                    errors.rejectValue(
+                            "answers[0].endDate",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "dateAnswer.validator" + ".endEarlierThanStart",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
                 break;
             }

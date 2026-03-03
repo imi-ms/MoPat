@@ -40,7 +40,6 @@ public class JsonExportRuleDTO {
         return id;
     }
 
-
     /**
      * Sets the unique identifier for the object.
      *

@@ -11,12 +11,12 @@ import de.imi.mopat.model.Question;
  */
 public class ImportQuestionResult {
 
-    //In ODM this identifier stands for oID, in FHIR it stands for the item's
+    private final List<ValidationMessage> validationMessages = new ArrayList<>();
+    private final ArrayList<ImportConditionResult> conditions = new ArrayList<>();
+    // In ODM this identifier stands for oID, in FHIR it stands for the item's
     // linkId representing the question
     private String identifier;
     private Question question;
-    private final List<ValidationMessage> validationMessages = new ArrayList<>();
-    private final ArrayList<ImportConditionResult> conditions = new ArrayList<>();
 
     /**
      * Adds a validation message, together with it's arguments (to fill the placeholders) to this
@@ -60,15 +60,6 @@ public class ImportQuestionResult {
     }
 
     /**
-     * Sets the atribute question with the incoming Question.
-     *
-     * @param question The incoming question
-     */
-    public void setQuestion(final Question question) {
-        this.question = question;
-    }
-
-    /**
      * Returns the MoPat question.
      *
      * @return MoPat question
@@ -78,12 +69,12 @@ public class ImportQuestionResult {
     }
 
     /**
-     * Sets the atribute oID with the incoming String.
+     * Sets the atribute question with the incoming Question.
      *
-     * @param identifier The incoming String
+     * @param question The incoming question
      */
-    public void setIdentifier(final String identifier) {
-        this.identifier = identifier;
+    public void setQuestion(final Question question) {
+        this.question = question;
     }
 
     /**
@@ -93,6 +84,15 @@ public class ImportQuestionResult {
      */
     public String getIdentifier() {
         return this.identifier;
+    }
+
+    /**
+     * Sets the atribute oID with the incoming String.
+     *
+     * @param identifier The incoming String
+     */
+    public void setIdentifier(final String identifier) {
+        this.identifier = identifier;
     }
 
     /**
@@ -128,5 +128,4 @@ public class ImportQuestionResult {
     public ArrayList<ImportConditionResult> getConditions() {
         return conditions;
     }
-
 }

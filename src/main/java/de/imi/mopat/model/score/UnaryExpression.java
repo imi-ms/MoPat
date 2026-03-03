@@ -19,17 +19,19 @@ public class UnaryExpression extends Expression {
     @ManyToOne
     @JoinColumn(name = "question", referencedColumnName = "id")
     private Question question;
+
     @Column(name = "value")
     private Double value;
+
     @JoinColumn(name = "score", referencedColumnName = "id")
     @ManyToOne
     private Score score;
+
     @JoinColumn(name = "operator", referencedColumnName = "id")
     @ManyToOne
     private UnaryOperator unaryOperator;
 
-    public UnaryExpression() {
-    }
+    public UnaryExpression() {}
 
     /**
      * Returns the value of the current {@link Expression}.

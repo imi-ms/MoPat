@@ -1,12 +1,19 @@
 package de.imi.mopat.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.BundleClinicDTO;
-import de.imi.mopat.model.dto.ClinicDTO;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,12 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import jakarta.persistence.*;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 /**
  * The database table model for table <i>clinic</i>. The Clinic model represents an actual clinic
@@ -29,12 +30,18 @@ import jakarta.validation.constraints.Size;
 @Table(name = "clinic")
 public class Clinic implements Serializable {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private final Set<BundleClinic> bundleClinics = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @NotNull(message = "{clinic.name.notNull}")
     @Size(min = 3, max = 255, message = "{clinic.name.size}")
     @Column(name = "name", nullable = false)
@@ -44,18 +51,17 @@ public class Clinic implements Serializable {
     @Size(min = 1, message = "{clinic.description.notNull}")
     @Column(name = "description", columnDefinition = "TEXT NOT NULL")
     private String description;
-    @Pattern(regexp = "^$|[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+
+    @Pattern(
+            regexp = "^$|[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     @Column(name = "email")
     private String email;
-    @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Valid
-    private Set<BundleClinic> bundleClinics = new HashSet<>();
 
     @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL)
     private List<ClinicConfigurationMapping> clinicConfigurationMappings;
 
-    public Clinic() { //default constructor (in protected state), should not
+    public Clinic() { // default constructor (in protected state), should not
         // be accessible to anything else but the JPA implementation (here:
         // Hibernate) and the JUnit tests
     }
@@ -132,12 +138,10 @@ public class Clinic implements Serializable {
      */
     public void setDescription(final String description) {
         assert description != null : "The given description was null";
-        assert
-            description.trim().length() <= 255 :
-            "The given description was longer than 255 " + "characters (after trimming)";
-        assert
-            description.trim().length() >= 3 :
-            "The given description has less than 3 characters " + "after (trimming)";
+        assert description.trim().length() <= 255
+                : "The given description was longer than 255 " + "characters (after trimming)";
+        assert description.trim().length() >= 3
+                : "The given description has less than 3 characters " + "after (trimming)";
         this.description = description.trim();
     }
 
@@ -196,7 +200,7 @@ public class Clinic implements Serializable {
         assert bundleClinic != null : "The given BundleClinic object was null";
 
         this.bundleClinics.add(bundleClinic);
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (bundleClinic.getClinic() == null || !bundleClinic.getClinic().equals(this)) {
             // Add this bundle to the BundleClinic
             bundleClinic.setClinic(this);
@@ -245,7 +249,6 @@ public class Clinic implements Serializable {
         this.bundleClinics.clear();
     }
 
-
     public List<ClinicConfigurationMapping> getClinicConfigurationMappings() {
         return clinicConfigurationMappings;
     }
@@ -267,10 +270,9 @@ public class Clinic implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Clinic)) {
+        if (!(obj instanceof Clinic other)) {
             return false;
         }
-        Clinic other = (Clinic) obj;
         return getUUID().equals(other.getUUID());
     }
 }

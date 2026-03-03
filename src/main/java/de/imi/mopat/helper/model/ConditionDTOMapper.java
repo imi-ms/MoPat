@@ -8,11 +8,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConditionDTOMapper implements Function<Condition, ConditionDTO> {
-    
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(ConditionDTOMapper.class);
-    
-    
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ConditionDTOMapper.class);
+
     @Override
     public ConditionDTO apply(Condition condition) {
         ConditionDTO conditionDTO = new ConditionDTO();
@@ -22,14 +20,15 @@ public class ConditionDTOMapper implements Function<Condition, ConditionDTO> {
         conditionDTO.setTargetId(condition.getTarget().getId());
         conditionDTO.setTriggerId(condition.getTrigger().getId());
         if (condition.getTargetAnswerQuestion() != null) {
-            conditionDTO.setTargetAnswerQuestionId(condition.getTargetAnswerQuestion().getId());
+            conditionDTO.setTargetAnswerQuestionId(
+                    condition.getTargetAnswerQuestion().getId());
         }
         if (condition.getBundle() != null) {
             conditionDTO.setBundleId(condition.getBundle().getId());
         } else {
             conditionDTO.setBundleId(null);
         }
-        
+
         if (condition instanceof SliderAnswerThresholdCondition) {
             // If condition is a SliderAnswerThresholdCondition set the
             // appropriate values
@@ -39,5 +38,4 @@ public class ConditionDTOMapper implements Function<Condition, ConditionDTO> {
         }
         return conditionDTO;
     }
-
 }

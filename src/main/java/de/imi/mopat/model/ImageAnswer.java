@@ -1,9 +1,9 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.io.Serializable;
 
 /**
  * An <i>image</i> answer represents an image as an answer from a question.
@@ -42,15 +42,6 @@ public class ImageAnswer extends Answer implements Serializable {
     }
 
     /**
-     * Sets the path where the image of an image question is stored.
-     *
-     * @param imagePath Can be <code>null</code>.
-     */
-    public void setImagePath(final String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    /**
      * Returns the path where the image is stored. Is only important for questions of type
      * {QuestionType#IMAGE}
      *
@@ -58,5 +49,14 @@ public class ImageAnswer extends Answer implements Serializable {
      */
     public String getImagePath() {
         return imagePath;
+    }
+
+    /**
+     * Sets the path where the image of an image question is stored.
+     *
+     * @param imagePath Can be <code>null</code>.
+     */
+    public void setImagePath(final String imagePath) {
+        this.imagePath = imagePath;
     }
 }

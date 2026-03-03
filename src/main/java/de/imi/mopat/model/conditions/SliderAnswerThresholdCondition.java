@@ -39,13 +39,15 @@ public class SliderAnswerThresholdCondition extends Condition implements Seriali
     @Column(name = "threshold")
     private Double threshold;
 
-    public SliderAnswerThresholdCondition() {
+    public SliderAnswerThresholdCondition() {}
 
-    }
-
-    public SliderAnswerThresholdCondition(final ConditionTrigger trigger,
-        final ConditionTarget target, final ConditionActionType action, final Bundle bundle,
-        final ThresholdComparisonType thresholdComparisonType, final Double threshold) {
+    public SliderAnswerThresholdCondition(
+            final ConditionTrigger trigger,
+            final ConditionTarget target,
+            final ConditionActionType action,
+            final Bundle bundle,
+            final ThresholdComparisonType thresholdComparisonType,
+            final Double threshold) {
         super(trigger, target, action, bundle);
         setThresholdComparisonType(thresholdComparisonType);
         setThreshold(threshold);
@@ -100,7 +102,13 @@ public class SliderAnswerThresholdCondition extends Condition implements Seriali
     }
 
     @Override
-    public Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target){
-        return new SliderAnswerThresholdCondition(trigger,target, this.getAction(), this.getBundle(), this.getThresholdComparisonType(), this.getThreshold());
+    public Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target) {
+        return new SliderAnswerThresholdCondition(
+                trigger,
+                target,
+                this.getAction(),
+                this.getBundle(),
+                this.getThresholdComparisonType(),
+                this.getThreshold());
     }
 }

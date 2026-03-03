@@ -18,6 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<PatientDataRetriever> {
 
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ClinicPatientDataRetrieverFactoryBean.class);
+    public final String usePatientDataLookupProperty = "usePatientDataLookup";
+    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
+    public final String patientDataRetrieverClassProperty = "patientDataRetrieverClass";
+    private final String className = this.getClass().getName();
+
     @Autowired
     private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
 
@@ -26,18 +32,7 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
 
     private Long clinicId;
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ClinicPatientDataRetrieverFactoryBean.class);
-
-    private final String className = this.getClass().getName();
-
-    public final String usePatientDataLookupProperty = "usePatientDataLookup";
-    public final String usePatientDataLookupGroupName = "configurationGroup.label.usePatientLookUp";
-    public final String patientDataRetrieverClassProperty = "patientDataRetrieverClass";
-
-    public ClinicPatientDataRetrieverFactoryBean() {
-
-    }
+    public ClinicPatientDataRetrieverFactoryBean() {}
 
     public ClinicPatientDataRetrieverFactoryBean(Long clinicId) {
         this.clinicId = clinicId;
@@ -48,39 +43,47 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
         PatientDataRetriever result = null;
         Boolean activated = clinicConfigurationMappingDao.isUsePatientDataLookupActivated(clinicId);
 
-        LOGGER.info("[SETUP] Checking whether a property ({}) for activation of "
-            + "patient data retrieving is given...[DONE]", usePatientDataLookupProperty);
-        LOGGER.info("[SETUP] activation of PatientDataRetriever configuration "
-            + "found. Activation is set to {}. If this is not "
-            + "expected, beware that only 'true' is detected as " + "activation", activated);
+        LOGGER.info(
+                "[SETUP] Checking whether a property ({}) for activation of "
+                        + "patient data retrieving is given...[DONE]",
+                usePatientDataLookupProperty);
+        LOGGER.info(
+                "[SETUP] activation of PatientDataRetriever configuration "
+                        + "found. Activation is set to {}. If this is not "
+                        + "expected, beware that only 'true' is detected as " + "activation",
+                activated);
 
         if (activated) {
             String patientDataRetrieverImplementationClass = getPatientRetrieverClass(clinicId);
-            LOGGER.info("[SETUP] Checking whether a property ({}) for the patient"
-                + " data retriever is given...", patientDataRetrieverClassProperty);
-            if (patientDataRetrieverImplementationClass == null) {
-                LOGGER.error("[SETUP] no class configuration found. Please provide"
-                    + " a value for {} in the configuration. No "
-                    + "Patient Data Retriever will be used", patientDataRetrieverClassProperty);
-            } else {
-                LOGGER.info("[SETUP] Checking whether a property ({}) for the "
-                        + "patient data retriever is given...[DONE]",
+            LOGGER.info(
+                    "[SETUP] Checking whether a property ({}) for the patient" + " data retriever is given...",
                     patientDataRetrieverClassProperty);
+            if (patientDataRetrieverImplementationClass == null) {
+                LOGGER.error(
+                        "[SETUP] no class configuration found. Please provide"
+                                + " a value for {} in the configuration. No "
+                                + "Patient Data Retriever will be used",
+                        patientDataRetrieverClassProperty);
+            } else {
+                LOGGER.info(
+                        "[SETUP] Checking whether a property ({}) for the "
+                                + "patient data retriever is given...[DONE]",
+                        patientDataRetrieverClassProperty);
                 try {
-                    Class<?> patientDataRetrieverClass = Class.forName(
-                        patientDataRetrieverImplementationClass);
+                    Class<?> patientDataRetrieverClass = Class.forName(patientDataRetrieverImplementationClass);
                     LOGGER.info(
-                        "[SETUP] Implementation of PatientDataRetriever " + "found. Using {}",
-                        patientDataRetrieverClass.getCanonicalName());
-                    Object newPatientDataRetriever = patientDataRetrieverClass.getDeclaredConstructor()
-                        .newInstance();
+                            "[SETUP] Implementation of PatientDataRetriever " + "found. Using {}",
+                            patientDataRetrieverClass.getCanonicalName());
+                    Object newPatientDataRetriever =
+                            patientDataRetrieverClass.getDeclaredConstructor().newInstance();
                     PatientDataRetriever patientDataRetriever = (PatientDataRetriever) newPatientDataRetriever;
                     result = patientDataRetriever;
                 } catch (Exception e) {
-                    LOGGER.info("[SETUP] No implementation found with the name {}"
-                            + ". Please ensure that the " + "PatientDataRetriever implementation is "
-                            + "correctly spelled and available. Use " + "debug output for more info",
-                        patientDataRetrieverImplementationClass);
+                    LOGGER.info(
+                            "[SETUP] No implementation found with the name {}"
+                                    + ". Please ensure that the " + "PatientDataRetriever implementation is "
+                                    + "correctly spelled and available. Use " + "debug output for more info",
+                            patientDataRetrieverImplementationClass);
                     LOGGER.debug("[SETUP] Reason: {}", e);
                 }
             }
@@ -101,7 +104,7 @@ public class ClinicPatientDataRetrieverFactoryBean implements FactoryBean<Patien
 
     private String getPatientRetrieverClass(Long clinicId) {
         Configuration configuration = configurationDao.getConfigurationByGroupName(
-            clinicId, patientDataRetrieverClassProperty, className, usePatientDataLookupGroupName);
+                clinicId, patientDataRetrieverClassProperty, className, usePatientDataLookupGroupName);
         return configuration.getValue();
     }
 

@@ -30,7 +30,6 @@ public class JsonExportRuleFormatDTO {
 
     private ExportDateFormatType dateFormat;
 
-
     /**
      * Retrieves the unique identifier.
      *
@@ -160,5 +159,4 @@ public class JsonExportRuleFormatDTO {
     public void setDateFormat(final ExportDateFormatType dateFormat) {
         this.dateFormat = dateFormat;
     }
-
 }

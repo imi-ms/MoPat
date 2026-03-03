@@ -31,26 +31,37 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetadataExporterPDF implements MetadataExporter {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        MetadataExporterPDF.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataExporterPDF.class);
 
     @Override
-    public byte[] export(final Questionnaire questionnaire, final MessageSource messageSource,
-        final ConfigurationDao configurationDao, final ConfigurationGroupDao configurationGroupDao,
-        final ExportTemplateDao exportTemplateDao, final QuestionnaireDao questionnaireDao,
-        final QuestionDao questionDao, final ScoreDao scoreDao) {
+    public byte[] export(
+            final Questionnaire questionnaire,
+            final MessageSource messageSource,
+            final ConfigurationDao configurationDao,
+            final ConfigurationGroupDao configurationGroupDao,
+            final ExportTemplateDao exportTemplateDao,
+            final QuestionnaireDao questionnaireDao,
+            final QuestionDao questionDao,
+            final ScoreDao scoreDao) {
 
         // Get the ODM metadata representation
         MetadataExporterODM odmExporter = new MetadataExporterODM();
-        byte[] odmByteArray = odmExporter.export(questionnaire, messageSource, configurationDao,
-            configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
+        byte[] odmByteArray = odmExporter.export(
+                questionnaire,
+                messageSource,
+                configurationDao,
+                configurationGroupDao,
+                exportTemplateDao,
+                questionnaireDao,
+                questionDao,
+                scoreDao);
 
         // Send this representation to the ODMToPDF converter and return the
         // received byte array
         HttpEntity entity = MultipartEntityBuilder.create()
-            .addBinaryBody("odmFile", odmByteArray, ContentType.MULTIPART_FORM_DATA, "odmFile")
-            .addBinaryBody("logoFile",
-                new File((configurationDao.getWebappRootPath() + "/images/logo.png"))).build();
+                .addBinaryBody("odmFile", odmByteArray, ContentType.MULTIPART_FORM_DATA, "odmFile")
+                .addBinaryBody("logoFile", new File((configurationDao.getWebappRootPath() + "/images/logo.png")))
+                .build();
 
         String connectionUrl = configurationDao.getMetadataExporterPDF();
         HttpClient httpClient = HttpClientBuilder.create().build();
@@ -61,8 +72,7 @@ public class MetadataExporterPDF implements MetadataExporter {
             InputStream connectionResponse = httpResponse.getEntity().getContent();
             return IOUtils.toByteArray(connectionResponse);
         } catch (IOException exception) {
-            LOGGER.error("Error while connecting to the ODMToPDF server: {}",
-                exception.getLocalizedMessage());
+            LOGGER.error("Error while connecting to the ODMToPDF server: {}", exception.getLocalizedMessage());
         }
 
         return new byte[0];

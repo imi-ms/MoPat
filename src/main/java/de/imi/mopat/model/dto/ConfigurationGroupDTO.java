@@ -17,11 +17,13 @@ public class ConfigurationGroupDTO {
     private boolean deletable;
     private List<ConfigurationDTO> configurationDTOs = new ArrayList<>();
 
-    public ConfigurationGroupDTO() {
-    }
+    public ConfigurationGroupDTO() {}
 
-    public ConfigurationGroupDTO(final Long id, final String labelMessageCode,
-        final boolean repeating, final List<ConfigurationDTO> configurationDTOs) {
+    public ConfigurationGroupDTO(
+            final Long id,
+            final String labelMessageCode,
+            final boolean repeating,
+            final List<ConfigurationDTO> configurationDTOs) {
         this.configurationDTOs = configurationDTOs;
         this.id = id;
         this.labelMessageCode = labelMessageCode;

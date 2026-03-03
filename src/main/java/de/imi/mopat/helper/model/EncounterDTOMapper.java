@@ -54,14 +54,12 @@ public class EncounterDTOMapper implements BiFunction<Boolean, Encounter, Encoun
             String successfullExports = "-";
             if (encounter.getBundle() != null) {
                 encounterDTO.setBundleDTO(bundleDTOMapper.apply(false, encounter.getBundle()));
-                successfullExports =
-                        encounter.getNumberOfAssignedAndSuccessfullyExportedExportTemplates() + "/"
-                                + encounter.getBundle().getNumberOfAssignedExportTemplate();
+                successfullExports = encounter.getNumberOfAssignedAndSuccessfullyExportedExportTemplates() + "/"
+                        + encounter.getBundle().getNumberOfAssignedExportTemplate();
             }
             encounterDTO.setSuccessfullExports(successfullExports);
         }
 
         return encounterDTO;
     }
-
 }

@@ -21,8 +21,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomSessionInvalidator {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        CustomSessionInvalidator.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CustomSessionInvalidator.class);
 
     @Autowired
     PinAuthorizationService pinAuthorizationService;
@@ -73,19 +72,21 @@ public class CustomSessionInvalidator {
             User dbUser = userDao.loadUserByUsername(principalUser.getUsername());
             if (dbUser.getUsePin()) {
                 if (!pinAuthorizationDao.isPinAuthActivatedForUser(dbUser)) {
-                    LOGGER.info("Session has been idle for too long. Pin Auth was activated for user {}, but not active, therefore the flag was set",
-                        dbUser.getUsername());
+                    LOGGER.info(
+                            "Session has been idle for too long. Pin Auth was activated for user {}, but not active,"
+                                    + " therefore the flag was set",
+                            dbUser.getUsername());
                     pinAuthorizationService.resetPinAuthForUser(dbUser);
                 }
             } else {
-                LOGGER.info("Session has been idle for too long. Pin Auth was not activated for user {}, therefore the session was invalidated",
-                    dbUser.getUsername());
-                for (SessionInformation session : sessionRegistry.getAllSessions(principal,
-                    false)) {
+                LOGGER.info(
+                        "Session has been idle for too long. Pin Auth was not activated for user {}, therefore the"
+                                + " session was invalidated",
+                        dbUser.getUsername());
+                for (SessionInformation session : sessionRegistry.getAllSessions(principal, false)) {
                     session.expireNow();
                 }
             }
         }
     }
-
 }

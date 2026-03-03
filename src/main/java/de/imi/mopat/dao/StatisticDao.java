@@ -34,6 +34,4 @@ public interface StatisticDao extends MoPatDao<Statistic> {
      * @return A list of {@link Statistic statistics} for the given dates.
      */
     List<Statistic> getStatisticsByDates(List<Date> dates);
-
-
 }

@@ -23,13 +23,13 @@ public class MoPatUserDetailService implements UserDetailsService {
 
     @Override
     @Transactional("MoPat_User")
-    public UserDetails loadUserByUsername(final String username)
-        throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException, DataAccessException {
         // Get User from UserDao
         User userEntity = moPatUserDao.loadUserByUsername(username);
         // Check if user is empty and throw exception
-        if (userEntity == null || userEntity.getPassword() == null || userEntity.getPassword()
-            .isEmpty()) {
+        if (userEntity == null
+                || userEntity.getPassword() == null
+                || userEntity.getPassword().isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
 

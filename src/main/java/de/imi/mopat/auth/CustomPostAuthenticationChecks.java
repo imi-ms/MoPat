@@ -15,10 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsChecker;
  */
 public class CustomPostAuthenticationChecks implements UserDetailsChecker {
 
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CustomPostAuthenticationChecks.class);
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        CustomPostAuthenticationChecks.class);
 
     @Override
     public void check(final UserDetails user) {
@@ -26,16 +24,15 @@ public class CustomPostAuthenticationChecks implements UserDetailsChecker {
             LOGGER.debug("User account is disabled");
 
             throw new DisabledException(
-                messages.getMessage("AbstractUserDetailsAuthenticationProvider.disabled",
-                    "User is disabled"));
+                    messages.getMessage("AbstractUserDetailsAuthenticationProvider.disabled", "User is disabled"));
         }
 
         if (!user.isCredentialsNonExpired()) {
             LOGGER.debug("User account credentials have expired");
 
             throw new CredentialsExpiredException(messages.getMessage(
-                "AbstractUserDetailsAuthenticationProvider" + ".credentialsExpired",
-                "User credentials have expired"));
+                    "AbstractUserDetailsAuthenticationProvider" + ".credentialsExpired",
+                    "User credentials have expired"));
         }
     }
 }

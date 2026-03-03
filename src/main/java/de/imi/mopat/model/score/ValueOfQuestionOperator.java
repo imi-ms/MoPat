@@ -4,11 +4,10 @@ import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.Response;
 import de.imi.mopat.model.SelectAnswer;
-
-import java.util.Map;
-import java.util.Set;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This operator returns either the value of the {@link Response} from a
@@ -24,8 +23,7 @@ public class ValueOfQuestionOperator extends UnaryOperator {
 
     @Override
     public Double evaluate(final Expression expression, final Encounter encounter) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
 
             if (unaryExpression.getQuestion() == null || unaryExpression.getQuestion().getAnswers()
                 .isEmpty()) {
@@ -67,8 +65,7 @@ public class ValueOfQuestionOperator extends UnaryOperator {
     @Override
     public String getFormula(final Expression expression, final Encounter encounter,
         String defaultLanguage) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
 
             if (unaryExpression.getQuestion() == null) {
                 LOGGER.error("This expression contains not a question or " + "answers.");

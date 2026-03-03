@@ -67,15 +67,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class EncounterExporter {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterExporter.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(EncounterExporter.class);
     public static String TRUE = "TRUE";
     public static String FALSE = "FALSE";
     private Map<Answer, Response> answerResponseMap = null;
+
     @Autowired
     private EncounterDao encounterDao;
+
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -102,10 +104,8 @@ public class EncounterExporter {
         boolean allSucceeded = true;
         boolean exportSucceeded;
         for (ExportTemplate exportTemplate : exportTemplates) {
-            if(isTest)
-                exportSucceeded = exportTest(encounter, exportTemplate);
-            else
-                exportSucceeded = export(encounter, exportTemplate);
+            if (isTest) exportSucceeded = exportTest(encounter, exportTemplate);
+            else exportSucceeded = export(encounter, exportTemplate);
 
             if (!exportSucceeded) {
                 allSucceeded = false;
@@ -139,8 +139,7 @@ public class EncounterExporter {
      * @return <code>true</code> if exporting the given {@link ExportTemplate}
      * object worked, <code>false</code> otherwise.
      */
-    public boolean export(final Encounter encounter, final ExportTemplate exportTemplate,
-        final boolean manual) {
+    public boolean export(final Encounter encounter, final ExportTemplate exportTemplate, final boolean manual) {
         assert encounter != null : "The Encounter was null";
         assert exportTemplate != null : "The ExportTemplate was null";
         // Remove reference from answerResponseMap so it gets filled with data
@@ -152,26 +151,28 @@ public class EncounterExporter {
         try {
             exportStatus = exportEncounter(encounter, exportTemplate);
         } catch (Exception ex) {
-            LOGGER.error(MarkerFactory.getMarker("FATAL"),
-                "fatal error while exporting [exportTemplate={}, " + "Encounter={}]: {}",
-                exportTemplate.getId(), encounter.getId(), ex.toString());
+            LOGGER.error(
+                    MarkerFactory.getMarker("FATAL"),
+                    "fatal error while exporting [exportTemplate={}, " + "Encounter={}]: {}",
+                    exportTemplate.getId(),
+                    encounter.getId(),
+                    ex.toString());
             // add a new failed export entry for the history
-            EncounterExportTemplate encounterExportTemplate = new EncounterExportTemplate(encounter,
-                exportTemplate, ExportStatus.FAILURE);
+            EncounterExportTemplate encounterExportTemplate =
+                    new EncounterExportTemplate(encounter, exportTemplate, ExportStatus.FAILURE);
             encounterExportTemplate.setIsManuallyExported(manual);
             encounter.addEncounterExportTemplate(encounterExportTemplate);
             encounterDao.merge(encounter);
             return false;
         }
         // add a successful export entry for the history
-        EncounterExportTemplate encounterExportTemplate = new EncounterExportTemplate(encounter,
-            exportTemplate, exportStatus);
+        EncounterExportTemplate encounterExportTemplate =
+                new EncounterExportTemplate(encounter, exportTemplate, exportStatus);
         encounterExportTemplate.setIsManuallyExported(manual);
         encounter.addEncounterExportTemplate(encounterExportTemplate);
         encounterDao.merge(encounter);
         return true;
     }
-
 
     /**
      * Exports the {@link ExportTemplate} object of a given {@link Encounter Encounter} object.
@@ -186,11 +187,14 @@ public class EncounterExporter {
         answerResponseMap = null;
 
         try {
-           exportEncounter(encounter, exportTemplate);
+            exportEncounter(encounter, exportTemplate);
         } catch (Exception ex) {
-            LOGGER.error(MarkerFactory.getMarker("FATAL"),
-                "fatal error while exporting test [exportTemplate={}, " + "Encounter={}]: {}",
-                exportTemplate.getId(), encounter.getId(), ex.toString());
+            LOGGER.error(
+                    MarkerFactory.getMarker("FATAL"),
+                    "fatal error while exporting test [exportTemplate={}, " + "Encounter={}]: {}",
+                    exportTemplate.getId(),
+                    encounter.getId(),
+                    ex.toString());
             return false;
         }
         return true;
@@ -205,19 +209,17 @@ public class EncounterExporter {
      *                       <code>null</code>.
      * @return {@link ExportStatus} for the given {@link ExportTemplate}.
      */
-    private ExportStatus exportEncounter(final Encounter encounter, final ExportTemplate exportTemplate) throws Exception{
+    private ExportStatus exportEncounter(final Encounter encounter, final ExportTemplate exportTemplate)
+            throws Exception {
         ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
         // Instantiate a new object based on the type of the export template
         // with the ConfigurationGroupDao and ConfigurationDao from the
         // context
-        EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
-            configurationDao);
+        EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(configurationDao);
         // If no implementation for the exporter exists throw an exception
         if (exporter == null) {
-            LOGGER.error("No Implementation found for {}",
-                exportTemplate.getExportTemplateType());
-            throw new Exception(
-                "No Implementation found for " + exportTemplate.getExportTemplateType());
+            LOGGER.error("No Implementation found for {}", exportTemplate.getExportTemplateType());
+            throw new Exception("No Implementation found for " + exportTemplate.getExportTemplateType());
         }
         // Initialize the exporter
         exporter.load(encounter, exportTemplate);
@@ -240,8 +242,7 @@ public class EncounterExporter {
      *                   formatted.
      * @return The formatted value. The value is an empty string if no value could be aquired.
      */
-    private String getFormattedValue(final Encounter encounter, final ExportRule exportRule)
-        throws Exception {
+    private String getFormattedValue(final Encounter encounter, final ExportRule exportRule) throws Exception {
         // initialize the first time otherwise re-use
         if (answerResponseMap == null) {
             // an answer-response map to easily access the responses based on
@@ -257,16 +258,13 @@ public class EncounterExporter {
             // there exists an response to the answer
             if (answerResponseMap.containsKey(ruleAnswer.getAnswer())) {
                 // get the response value based on the export rule
-                value = this.getAnswerValue(ruleAnswer,
-                    answerResponseMap.get(ruleAnswer.getAnswer()));
+                value = this.getAnswerValue(ruleAnswer, answerResponseMap.get(ruleAnswer.getAnswer()));
                 // no response exists for the answer and is from type
                 // multiple choice
                 // this is a special case because no responses are saved for
                 // not selected answers
-            } else if (ruleAnswer.getAnswer().getQuestion().getQuestionType()
-                == QuestionType.MULTIPLE_CHOICE
-                || ruleAnswer.getAnswer().getQuestion().getQuestionType()
-                == QuestionType.BODY_PART) {
+            } else if (ruleAnswer.getAnswer().getQuestion().getQuestionType() == QuestionType.MULTIPLE_CHOICE
+                    || ruleAnswer.getAnswer().getQuestion().getQuestionType() == QuestionType.BODY_PART) {
                 value = this.getAnswerValue(ruleAnswer, null);
             }
             // rule is of the type question
@@ -303,8 +301,7 @@ public class EncounterExporter {
         switch (questionType) {
             case BODY_PART:
             case MULTIPLE_CHOICE:
-                if (rule.getAnswer() instanceof SelectAnswer
-                    || rule.getAnswer() instanceof BodyPartAnswer) {
+                if (rule.getAnswer() instanceof SelectAnswer || rule.getAnswer() instanceof BodyPartAnswer) {
                     value = (response != null) ? TRUE : FALSE;
                 } else if (rule.getAnswer() instanceof FreetextAnswer) {
                     value = response != null ? response.getCustomtext() : "";
@@ -333,8 +330,9 @@ public class EncounterExporter {
                 value = getImageValue(rule, response);
                 break;
             default:
-                LOGGER.error("no handler for the answer type {} found.",
-                    rule.getAnswer().getQuestion().getQuestionType());
+                LOGGER.error(
+                        "no handler for the answer type {} found.",
+                        rule.getAnswer().getQuestion().getQuestionType());
                 break;
         }
         return value;
@@ -416,8 +414,9 @@ public class EncounterExporter {
                     value = val.getTextValue();
                     break;
                 default:
-                    LOGGER.error("no handler for the encounter field type {} found.",
-                        rule.getEncounterField().getType());
+                    LOGGER.error(
+                            "no handler for the encounter field type {} found.",
+                            rule.getEncounterField().getType());
                     break;
             }
         } catch (ReflectiveOperationException ex) {
@@ -435,8 +434,7 @@ public class EncounterExporter {
      * @return The value of the {@link Score} field. The value is an empty string if no value could
      * be aquired.
      */
-    private String getScoreValue(final ExportRuleScore rule, final Encounter encounter)
-        throws Exception {
+    private String getScoreValue(final ExportRuleScore rule, final Encounter encounter) throws Exception {
         String value = "";
         try {
             // invoke encounter to get the value of the specific encounter field
@@ -446,8 +444,7 @@ public class EncounterExporter {
             // If the method is get formula, simply call this method from the
             // score
             if (methodName.equals("getFormula")) {
-                methodValue = rule.getScore()
-                    .getFormula(encounter, configurationDao.getDefaultLanguage());
+                methodValue = rule.getScore().getFormula(encounter, configurationDao.getDefaultLanguage());
                 // Otherwise call the method via reflexion and pass the
                 // encounter to the score method
             } else {
@@ -460,11 +457,13 @@ public class EncounterExporter {
             // If the value is null, a string is returned that the value can
             // not be calculated
             if (methodValue == null) {
-                LOGGER.debug("Calculation for the score {} and export field {} "
-                        + "failed. Score will be ignored for export.", rule.getScore().getId(),
-                    rule.getExportField());
-                return messageSource.getMessage("encounter.export.scoreNotCalculable",
-                    new Object[]{}, configurationDao.getDefaultLocale());
+                LOGGER.debug(
+                        "Calculation for the score {} and export field {} "
+                                + "failed. Score will be ignored for export.",
+                        rule.getScore().getId(),
+                        rule.getExportField());
+                return messageSource.getMessage(
+                        "encounter.export.scoreNotCalculable", new Object[] {}, configurationDao.getDefaultLocale());
             }
             // get the format of the rule to know how the values should be
             // formatted
@@ -488,8 +487,9 @@ public class EncounterExporter {
                         break;
                     }
                 default:
-                    LOGGER.error("no handler for the encounter field type {} found.",
-                        rule.getScoreField().getType());
+                    LOGGER.error(
+                            "no handler for the encounter field type {} found.",
+                            rule.getScoreField().getType());
                     break;
             }
         } catch (ReflectiveOperationException ex) {
@@ -514,8 +514,8 @@ public class EncounterExporter {
         ImageAnswer answer = (ImageAnswer) rule.getAnswer();
         BufferedImage image;
         try {
-            image = ImageIO.read(new File(
-                configurationDao.getImageUploadPath() + "/question/" + answer.getImagePath()));
+            image = ImageIO.read(
+                    new File(configurationDao.getImageUploadPath() + "/question/" + answer.getImagePath()));
         } catch (IOException e) {
             return "Image not readable";
         }
@@ -536,10 +536,9 @@ public class EncounterExporter {
         g2.dispose();
 
         try {
-            String imagePath =
-                configurationDao.getImageUploadPath() + "/question/" + answer.getImagePath();
-            String fileName = answer.getImagePath()
-                .substring(answer.getImagePath().lastIndexOf("/"));
+            String imagePath = configurationDao.getImageUploadPath() + "/question/" + answer.getImagePath();
+            String fileName =
+                    answer.getImagePath().substring(answer.getImagePath().lastIndexOf("/"));
             return StringUtilities.convertImageToBase64String(imagePath, fileName);
         } catch (IOException e) {
             return "Image not readable";
@@ -555,8 +554,8 @@ public class EncounterExporter {
      */
     private String formatDate(final ExportRuleFormat exportRuleFormat, final Date date) {
         if (exportRuleFormat.getDateFormat() != null) {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-                exportRuleFormat.getDateFormat().getFormat());
+            SimpleDateFormat simpleDateFormat =
+                    new SimpleDateFormat(exportRuleFormat.getDateFormat().getFormat());
             return simpleDateFormat.format(date);
         }
         // TODO what happens if there's no dateFormat??

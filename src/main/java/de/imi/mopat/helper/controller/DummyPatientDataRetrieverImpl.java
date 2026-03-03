@@ -23,24 +23,21 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
  */
 public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        DummyPatientDataRetrieverImpl.class);
     public static final String FIRSTNAME_LOOKUP =
-        "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.firstname";
+            "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.firstname";
     public static final String LASTNAME_LOOKUP =
-        "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.lastname";
+            "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.lastname";
     public static final String BIRTHDATE_LOOKUP =
-        "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.birthdate";
-    public static final String SEX_LOOKUP =
-        "de.imi.mopat.helper.controller" + ".DummyPatientDataRetrieverImpl.sex";
-    public static final String PID_LOOKUP =
-        "de.imi.mopat.helper.controller" + ".DummyPatientDataRetrieverImpl.pid";
+            "de.imi.mopat.helper" + ".controller.DummyPatientDataRetrieverImpl.birthdate";
+    public static final String SEX_LOOKUP = "de.imi.mopat.helper.controller" + ".DummyPatientDataRetrieverImpl.sex";
+    public static final String PID_LOOKUP = "de.imi.mopat.helper.controller" + ".DummyPatientDataRetrieverImpl.pid";
     public static final String FIRSTNAME_BACKUP = "Bruce";
     public static final String LASTNAME_BACKUP = "Wayne";
     public static final String BIRTHDATE_BACKUP = "19-02-1939";
     public static final String SEX_BACKUP = Gender.MALE.getTextValue();
     public static final String PID_BACKUP = "42";
     public static final String BIRTHDATE_PATTERN = "dd-MM-yyyy";
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DummyPatientDataRetrieverImpl.class);
     private String firstname;
     private String lastname;
     private Date birthdate;
@@ -51,22 +48,25 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
         Resource resource = new ClassPathResource("/" + Constants.CONFIGURATION);
         try {
             LOGGER.info(
-                "[SETUP] Accessing properties file to look up dummy " + "patient data in {}...",
-                Constants.CONFIGURATION);
+                    "[SETUP] Accessing properties file to look up dummy " + "patient data in {}...",
+                    Constants.CONFIGURATION);
             Properties props = PropertiesLoaderUtils.loadProperties(resource);
 
             // [bt] configure the firstname
             firstname = props.getProperty(FIRSTNAME_LOOKUP);
             if (firstname == null) {
-                LOGGER.info("[SETUP] no firstname found. Using {} instead. To "
-                        + "configure the firstname, provide a value for" + " {} in the {} file",
-                    FIRSTNAME_BACKUP, FIRSTNAME_LOOKUP, Constants.CONFIGURATION);
+                LOGGER.info(
+                        "[SETUP] no firstname found. Using {} instead. To "
+                                + "configure the firstname, provide a value for" + " {} in the {} file",
+                        FIRSTNAME_BACKUP,
+                        FIRSTNAME_LOOKUP,
+                        Constants.CONFIGURATION);
                 firstname = FIRSTNAME_BACKUP;
             } else {
                 LOGGER.info("[SETUP] firstname configuration found. Using {}.", firstname);
                 if (firstname.equalsIgnoreCase("null")) {
-                    LOGGER.info("[SETUP] a 'null' value has been set for the "
-                        + "firstname. Will retrieve NULL for " + "the patient's first name");
+                    LOGGER.info("[SETUP] a 'null' value has been set for the " + "firstname. Will retrieve NULL for "
+                            + "the patient's first name");
                     firstname = null;
                 }
             }
@@ -74,15 +74,16 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
             // [bt] configure the lastname
             lastname = props.getProperty(LASTNAME_LOOKUP);
             if (lastname == null) {
-                LOGGER.info("[SETUP] no lastname found. Using {} instead. To "
-                        + "configure the lastname, provide a value for " + "{} in the {} file",
-                    new String[]{LASTNAME_BACKUP, LASTNAME_LOOKUP, Constants.CONFIGURATION});
+                LOGGER.info(
+                        "[SETUP] no lastname found. Using {} instead. To "
+                                + "configure the lastname, provide a value for " + "{} in the {} file",
+                        new String[] {LASTNAME_BACKUP, LASTNAME_LOOKUP, Constants.CONFIGURATION});
                 lastname = LASTNAME_BACKUP;
             } else {
                 LOGGER.info("[SETUP] lastname configuration found. Using {}.", lastname);
                 if (lastname.equalsIgnoreCase("null")) {
-                    LOGGER.info("[SETUP] a 'null' value has been set for the "
-                        + "lastname. Will retrieve NULL for the" + " patient's last name");
+                    LOGGER.info("[SETUP] a 'null' value has been set for the " + "lastname. Will retrieve NULL for the"
+                            + " patient's last name");
                     lastname = null;
                 }
             }
@@ -90,30 +91,36 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
             // [bt] configure the birthdate
             String tempBirthdate = props.getProperty(BIRTHDATE_LOOKUP);
             if (tempBirthdate == null) {
-                LOGGER.error("[SETUP] no birthdate found. Using {} instead. To "
-                        + "configure the birthdate, provide a value for" + " {} in the {} file",
-                    new String[]{BIRTHDATE_BACKUP, BIRTHDATE_LOOKUP, Constants.CONFIGURATION});
+                LOGGER.error(
+                        "[SETUP] no birthdate found. Using {} instead. To "
+                                + "configure the birthdate, provide a value for" + " {} in the {} file",
+                        new String[] {BIRTHDATE_BACKUP, BIRTHDATE_LOOKUP, Constants.CONFIGURATION});
                 tempBirthdate = BIRTHDATE_BACKUP;
             } else {
                 LOGGER.info("[SETUP] birthdate configuration found. Using {}", tempBirthdate);
             }
             if (tempBirthdate.equalsIgnoreCase("null")) {
-                LOGGER.info("[SETUP] a 'null' value has been set for the "
-                    + "birthdate. Will retrieve NULL for the " + "patient's date of birth");
+                LOGGER.info("[SETUP] a 'null' value has been set for the " + "birthdate. Will retrieve NULL for the "
+                        + "patient's date of birth");
                 birthdate = null;
             } else {
                 try {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BIRTHDATE_PATTERN);
-                    birthdate = new java.sql.Date(simpleDateFormat.parse(tempBirthdate).getTime());
-                    LOGGER.info("[SETUP] date of birth successfully parsed and "
-                        + "set. Using {} for the patient's date of " + "birth", birthdate);
+                    birthdate = new java.sql.Date(
+                            simpleDateFormat.parse(tempBirthdate).getTime());
+                    LOGGER.info(
+                            "[SETUP] date of birth successfully parsed and "
+                                    + "set. Using {} for the patient's date of " + "birth",
+                            birthdate);
                 } catch (Exception e) {
                     birthdate = null;
-                    LOGGER.error("[SETUP] something went wrong while parsing and "
-                        + "setting the patient's date of birth. "
-                        + "Please provide the patient's date of "
-                        + "birth in the pattern {} .Will retrieve "
-                        + "NULL for the patient's date of birth", BIRTHDATE_PATTERN);
+                    LOGGER.error(
+                            "[SETUP] something went wrong while parsing and "
+                                    + "setting the patient's date of birth. "
+                                    + "Please provide the patient's date of "
+                                    + "birth in the pattern {} .Will retrieve "
+                                    + "NULL for the patient's date of birth",
+                            BIRTHDATE_PATTERN);
                     LOGGER.debug("[SETUP] error: {}", e);
                 }
             }
@@ -121,28 +128,30 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
             // [bt] configure the sex
             String tempGender = props.getProperty(SEX_LOOKUP);
             if (tempGender == null) {
-                LOGGER.error("[SETUP] no sex found. Using {} instead. To configure"
-                        + " the sex, provide a value for {} in the {} " + "file",
-                    new String[]{SEX_BACKUP, SEX_LOOKUP, Constants.CONFIGURATION});
+                LOGGER.error(
+                        "[SETUP] no sex found. Using {} instead. To configure"
+                                + " the sex, provide a value for {} in the {} " + "file",
+                        new String[] {SEX_BACKUP, SEX_LOOKUP, Constants.CONFIGURATION});
                 tempGender = SEX_BACKUP;
             } else {
                 LOGGER.info("[SETUP] sex configuration found. Using {}", tempGender);
             }
             if (tempGender.equalsIgnoreCase("null")) {
                 LOGGER.info("[SETUP] a 'null' value has been set for the sex."
-                    + " Will retrieve NULL for the patient's " + "sex");
+                        + " Will retrieve NULL for the patient's " + "sex");
                 sex = null;
             } else {
                 try {
                     sex = Gender.fromString(tempGender);
-                    LOGGER.info("[SETUP] sex successfully parsed and set. Using "
-                        + "{} for the patient's sex", sex);
+                    LOGGER.info("[SETUP] sex successfully parsed and set. Using " + "{} for the patient's sex", sex);
                 } catch (Exception e) {
                     sex = null;
-                    LOGGER.error("[SETUP] something went wrong while parsing and "
-                        + "setting the patient's sex. Please "
-                        + "provide the patient's sex in the values "
-                        + "{} .Will retrieve NULL for the patient's" + " sex", Gender.values());
+                    LOGGER.error(
+                            "[SETUP] something went wrong while parsing and "
+                                    + "setting the patient's sex. Please "
+                                    + "provide the patient's sex in the values "
+                                    + "{} .Will retrieve NULL for the patient's" + " sex",
+                            Gender.values());
                     LOGGER.debug("[SETUP] error: {}", e);
                 }
             }
@@ -150,36 +159,40 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
             // [bt] configure the pid
             String tempPid = props.getProperty(PID_LOOKUP);
             if (tempPid == null) {
-                LOGGER.info("[SETUP] no patient ID found. Using {} instead. To "
-                        + "configure the PID, provide a value for {} in" + " the {} file",
-                    new String[]{PID_BACKUP, PID_LOOKUP, Constants.CONFIGURATION});
+                LOGGER.info(
+                        "[SETUP] no patient ID found. Using {} instead. To "
+                                + "configure the PID, provide a value for {} in" + " the {} file",
+                        new String[] {PID_BACKUP, PID_LOOKUP, Constants.CONFIGURATION});
                 tempPid = PID_BACKUP;
             } else {
                 LOGGER.info("[SETUP] patient ID configuration found. Using {}.", tempPid);
             }
             if (tempPid.equalsIgnoreCase("null")) {
-                LOGGER.info("[SETUP] a 'null' value has been set for the "
-                    + "patient ID. Will retrieve NULL for the " + "patient's ID");
+                LOGGER.info("[SETUP] a 'null' value has been set for the " + "patient ID. Will retrieve NULL for the "
+                        + "patient's ID");
                 pid = null;
             } else {
                 try {
                     pid = Long.valueOf(tempPid);
-                    LOGGER.info("[SETUP] patient ID successfully parsed and set. "
-                        + "Using {} for the patient's ID", pid);
+                    LOGGER.info(
+                            "[SETUP] patient ID successfully parsed and set. " + "Using {} for the patient's ID", pid);
                 } catch (Exception e) {
                     pid = null;
                     LOGGER.error("[SETUP] something went wrong while parsing "
-                        + "and setting the patient's ID. " + "Please provide the patient's ID as "
-                        + "a number .Will retrieve NULL for " + "the patient's ID");
+                            + "and setting the patient's ID. " + "Please provide the patient's ID as "
+                            + "a number .Will retrieve NULL for " + "the patient's ID");
                     LOGGER.debug("[SETUP] error: {}", e);
                 }
             }
 
-            LOGGER.info("[SETUP] Accessing properties file to look up dummy "
-                + "patient data in {}...[DONE]", Constants.CONFIGURATION);
+            LOGGER.info(
+                    "[SETUP] Accessing properties file to look up dummy " + "patient data in {}...[DONE]",
+                    Constants.CONFIGURATION);
         } catch (IOException e) {
-            LOGGER.error("[SETUP] Was not able to open configuration file {} " + "because of: {}",
-                Constants.CONFIGURATION, e);
+            LOGGER.error(
+                    "[SETUP] Was not able to open configuration file {} " + "because of: {}",
+                    Constants.CONFIGURATION,
+                    e);
         }
     }
 
@@ -211,28 +224,28 @@ public class DummyPatientDataRetrieverImpl extends PatientDataRetriever {
         return firstname;
     }
 
-    public String getLastname() {
-        return lastname;
-    }
-
-    public Date getBirthdate() {
-        return birthdate;
-    }
-
-    public Gender getSex() {
-        return sex;
-    }
-
     public void setFirstname(final String firstname) {
         this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
     }
 
     public void setLastname(final String lastname) {
         this.lastname = lastname;
     }
 
+    public Date getBirthdate() {
+        return birthdate;
+    }
+
     public void setBirthdate(final Date birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public Gender getSex() {
+        return sex;
     }
 
     public void setSex(final Gender sex) {

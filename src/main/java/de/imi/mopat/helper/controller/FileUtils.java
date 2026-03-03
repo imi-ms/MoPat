@@ -15,8 +15,7 @@ import java.nio.file.StandardCopyOption;
 @Component
 public class FileUtils {
 
-    private static final org.slf4j.Logger LOGGER =
-            org.slf4j.LoggerFactory.getLogger(FileUtils.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FileUtils.class);
 
     private final ConfigurationDao configurationDao;
 
@@ -51,7 +50,7 @@ public class FileUtils {
      * @param newExportTemplateId the unique ID of the newly created export template.
      * @return a string representing the new file name for the export template, including the ID.
      */
-    public String generateFileNameForExportTemplate(String originalTemplateFilename, Long newExportTemplateId){
+    public String generateFileNameForExportTemplate(String originalTemplateFilename, Long newExportTemplateId) {
 
         // Get base name and extension
         String baseName = FilenameUtils.getBaseName(originalTemplateFilename);

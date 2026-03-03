@@ -37,15 +37,14 @@ import org.xml.sax.SAXException;
  */
 public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterExporterTemplateHL7v2.class);
+    private static final org.slf4j.Logger LOGGER =
+            org.slf4j.LoggerFactory.getLogger(EncounterExporterTemplateHL7v2.class);
     private static final String TRUE = "TRUE";
     private static final String FALSE = "FALSE";
     private static final String HL7_SUFFIX = "hl7";
     private static final String DOT = ".";
     private static final String UNDERSCORE = "_";
-    private static final SimpleDateFormat HL7XMLFileNameDateFormat = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
+    private static final SimpleDateFormat HL7XMLFileNameDateFormat = new SimpleDateFormat("dd.MM.yyyy_HH.mm.ss");
     private final ConfigurationDao configurationDao;
     private Document document;
     private Encounter encounter;
@@ -62,8 +61,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     }
 
     @Override
-    public void load(final Encounter encounter, final ExportTemplate exportTemplate)
-        throws Exception {
+    public void load(final Encounter encounter, final ExportTemplate exportTemplate) throws Exception {
 
         this.encounter = encounter;
         this.exportTemplate = exportTemplate;
@@ -71,14 +69,16 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         // Include export template path
         String objectStoragePath = configurationDao.getObjectStoragePath();
         if (objectStoragePath == null) {
-            LOGGER.error("[SETUP] No object storage path found. Please provide a "
-                    + "value for {} in the {} file", Constants.OBJECT_STORAGE_PATH_PROPERTY,
-                Constants.CONFIGURATION);
+            LOGGER.error(
+                    "[SETUP] No object storage path found. Please provide a " + "value for {} in the {} file",
+                    Constants.OBJECT_STORAGE_PATH_PROPERTY,
+                    Constants.CONFIGURATION);
         } else {
             LOGGER.info("[SETUP] Object storage path configuration found.");
         }
-        LOGGER.info("[SETUP] Accessing properties file to look up the export " + "path"
-            + " in  {}...[DONE]", Constants.CONFIGURATION);
+        LOGGER.info(
+                "[SETUP] Accessing properties file to look up the export " + "path" + " in  {}...[DONE]",
+                Constants.CONFIGURATION);
 
         String templatePath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
 
@@ -126,8 +126,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         String receivingFacility = null;
         String obrFillerOrderNumber = null;
         // Get export configurations
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
+        for (Configuration configuration :
+                exportTemplate.getConfigurationGroup().getConfigurations()) {
             if (configuration.getAttribute().equals("exportViaCommunicationServer")) {
                 isExportServer = Boolean.parseBoolean(configuration.getValue());
             }
@@ -138,8 +138,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
                 try {
                     port = Integer.valueOf(configuration.getValue());
                 } catch (NumberFormatException e) {
-                    LOGGER.error("The port could not be converted to a number, as it was "
-                        + configuration.getValue(), e);
+                    LOGGER.error(
+                            "The port could not be converted to a number, as it was " + configuration.getValue(), e);
                 }
             }
             if (configuration.getAttribute().equals("exportInDirectory")) {
@@ -178,10 +178,20 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         }
 
         return doHandleExports(
-            isExportInDirectory, exportPathDirectory, isExportServer, hostname,
-            port, useTLS, useClientAuth, clientPKCSPath, clientPKCSPassword, serverCertificatePath,
-            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber
-        );
+                isExportInDirectory,
+                exportPathDirectory,
+                isExportServer,
+                hostname,
+                port,
+                useTLS,
+                useClientAuth,
+                clientPKCSPath,
+                clientPKCSPassword,
+                serverCertificatePath,
+                sendingFacility,
+                receivingApplication,
+                receivingFacility,
+                obrFillerOrderNumber);
     }
 
     /**
@@ -214,37 +224,60 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      *                   communication.
      */
     private ExportStatus doHandleExports(
-        Boolean isExportInDirectory, String exportPathDirectory, Boolean isExportServer,
-        String hostname, Integer port, Boolean useTLS, Boolean useClientAuth,
-        String clientPKCSPath, String clientPKCSPassword, String serverCertificatePath,
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber
-    ) throws Exception {
+            Boolean isExportInDirectory,
+            String exportPathDirectory,
+            Boolean isExportServer,
+            String hostname,
+            Integer port,
+            Boolean useTLS,
+            Boolean useClientAuth,
+            String clientPKCSPath,
+            String clientPKCSPassword,
+            String serverCertificatePath,
+            String sendingFacility,
+            String receivingApplication,
+            String receivingFacility,
+            String obrFillerOrderNumber)
+            throws Exception {
         HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
 
-        //Properties have to be set, at least empty strings
-        if (sendingFacility != null && receivingApplication != null
-            && receivingFacility != null && obrFillerOrderNumber != null) {
+        // Properties have to be set, at least empty strings
+        if (sendingFacility != null
+                && receivingApplication != null
+                && receivingFacility != null
+                && obrFillerOrderNumber != null) {
 
             // Build Template specific message
             String output = buildHL7MessageContent();
             ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(
-                exportTemplate, encounter, sendingFacility, receivingApplication,
-                receivingFacility, obrFillerOrderNumber, output
-            );
-            hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(hl7Message,
-                getNode("Formname").getTextContent());
+                    exportTemplate,
+                    encounter,
+                    sendingFacility,
+                    receivingApplication,
+                    receivingFacility,
+                    obrFillerOrderNumber,
+                    output);
+            hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(
+                    hl7Message, getNode("Formname").getTextContent());
 
-            //Handle Server Export
+            // Handle Server Export
             try {
-                doHandleServerExport(isExportServer, hostname, port, useTLS, useClientAuth,
-                    clientPKCSPath, clientPKCSPassword, serverCertificatePath, hl7Message);
+                doHandleServerExport(
+                        isExportServer,
+                        hostname,
+                        port,
+                        useTLS,
+                        useClientAuth,
+                        clientPKCSPath,
+                        clientPKCSPassword,
+                        serverCertificatePath,
+                        hl7Message);
             } catch (Exception e) {
                 LOGGER.error("Could not send message via server.", e);
                 return ExportStatus.FAILURE;
             }
 
-            //Handle Filebased Export
+            // Handle Filebased Export
             try {
                 doHandleFilebasedExport(isExportInDirectory, exportPathDirectory, hl7Message);
             } catch (Exception e) {
@@ -252,11 +285,11 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
                 return ExportStatus.FAILURE;
             }
 
-            //Return Success if no exception was thrown
+            // Return Success if no exception was thrown
             return ExportStatus.SUCCESS;
         } else {
-            LOGGER.error("Missing configuration for sendingFacility, receivingApplication, " +
-                "receivingFacility or OBRFillerOrderNumber. Could not export message.");
+            LOGGER.error("Missing configuration for sendingFacility, receivingApplication, "
+                    + "receivingFacility or OBRFillerOrderNumber. Could not export message.");
             return ExportStatus.FAILURE;
         }
     }
@@ -293,26 +326,28 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      *                   transmission, keystore creation, or TLS setup.
      */
     private void doHandleServerExport(
-        Boolean isExportServer, String hostname, Integer port, Boolean useTLS,
-        Boolean useClientAuth, String clientPKCSPath, String clientPKCSPassword,
-        String serverCertificatePath, ORU_R01 hl7Message
-    ) throws Exception {
+            Boolean isExportServer,
+            String hostname,
+            Integer port,
+            Boolean useTLS,
+            Boolean useClientAuth,
+            String clientPKCSPath,
+            String clientPKCSPassword,
+            String serverCertificatePath,
+            ORU_R01 hl7Message)
+            throws Exception {
         HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
-        if (Boolean.TRUE.equals(isExportServer) &&
-            hostname != null && !hostname.isEmpty() && port != null
-        ) {
+        if (Boolean.TRUE.equals(isExportServer) && hostname != null && !hostname.isEmpty() && port != null) {
             KeyStore keyStore = null;
             if (Boolean.TRUE.equals(useTLS)) {
                 if (Boolean.TRUE.equals(useClientAuth)) {
-                    keyStore = buildKeyStore(clientPKCSPath, clientPKCSPassword,
-                        serverCertificatePath);
+                    keyStore = buildKeyStore(clientPKCSPath, clientPKCSPassword, serverCertificatePath);
                 } else {
                     keyStore = buildKeyStore(serverCertificatePath);
                 }
             }
 
-            hl7MessageHelper.sendMessageViaComServer(hostname, port, hl7Message, useTLS,
-                keyStore, clientPKCSPassword);
+            hl7MessageHelper.sendMessageViaComServer(hostname, port, hl7Message, useTLS, keyStore, clientPKCSPassword);
         }
     }
 
@@ -330,21 +365,18 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @throws Exception If an error occurs during the export process, such as issues with encoding
      *                   the message or writing to the file system.
      */
-    private void doHandleFilebasedExport(
-        Boolean isExportInDirectory,
-        String exportPathDirectory,
-        ORU_R01 hl7Message
-    ) throws Exception {
+    private void doHandleFilebasedExport(Boolean isExportInDirectory, String exportPathDirectory, ORU_R01 hl7Message)
+            throws Exception {
         if (Boolean.TRUE.equals(isExportInDirectory)) {
             // Make sure the path exists
             File path = new File(exportPathDirectory);
             if (!path.isDirectory()) {
                 path.mkdirs();
             }
-            //Create a sub-directory for the exported files
-            File subDirectory = new File(
-                exportPathDirectory + File.separator + exportTemplate.getQuestionnaire().getName()
-                    .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_")
+            // Create a sub-directory for the exported files
+            File subDirectory = new File(exportPathDirectory + File.separator
+                    + exportTemplate.getQuestionnaire().getName().replaceAll(":", "_") + "/"
+                    + exportTemplate.getName().replaceAll(":", "_")
                     + "/");
             if (!subDirectory.isDirectory()) {
                 subDirectory.mkdirs();
@@ -395,8 +427,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @param serverCertificatePath absolute path to server certificate
      * @return KeyStore with the certificates loaded
      */
-    private KeyStore buildKeyStore(final String clientPKCSPath, final String clientPKCSPassword,
-        final String serverCertificatePath) {
+    private KeyStore buildKeyStore(
+            final String clientPKCSPath, final String clientPKCSPassword, final String serverCertificatePath) {
         try {
             KeyStore keyStore = KeyStore.getInstance("pkcs12");
             keyStore.load(new FileInputStream(clientPKCSPath), clientPKCSPassword.toCharArray());
@@ -418,7 +450,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private KeyStore buildKeyStore(final String serverCertificatePath) {
         try {
             KeyStore keyStore = KeyStore.getInstance("pkcs12");
-            //Init KeyStore
+            // Init KeyStore
             keyStore.load(null, null);
             addCertificateToKeyStore(keyStore, serverCertificatePath, "server");
             return keyStore;
@@ -434,8 +466,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @param keyStore        that the certificate should be added to
      * @param certificatePath absolute path for the certificate
      */
-    private void addCertificateToKeyStore(final KeyStore keyStore, final String certificatePath,
-        final String alias) {
+    private void addCertificateToKeyStore(final KeyStore keyStore, final String certificatePath, final String alias) {
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             FileInputStream is = new FileInputStream(certificatePath);
@@ -471,9 +502,13 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @return The newly created unique HL7 XML Filename.
      */
     private String createHL7FileName() {
-        String result =
-            encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + HL7XMLFileNameDateFormat.format(new Date()) + DOT + HL7_SUFFIX;
+        String result = encounter.getCaseNumber()
+                + UNDERSCORE
+                + exportTemplate.getOriginalFilename()
+                + UNDERSCORE
+                + HL7XMLFileNameDateFormat.format(new Date())
+                + DOT
+                + HL7_SUFFIX;
         return result;
     }
 }

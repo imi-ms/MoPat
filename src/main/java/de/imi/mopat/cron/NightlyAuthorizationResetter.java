@@ -14,8 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class NightlyAuthorizationResetter {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        NightlyAuthorizationResetter.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(NightlyAuthorizationResetter.class);
 
     @Autowired
     PinAuthorizationService pinAuthorizationService;
@@ -41,5 +40,4 @@ public class NightlyAuthorizationResetter {
             }
         }
     }
-
 }

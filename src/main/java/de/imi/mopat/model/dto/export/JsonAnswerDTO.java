@@ -58,13 +58,13 @@ public class JsonAnswerDTO {
     // Numerical value used for scoring; can be null since scoring is
     // not mandatory
     private String codedValue = null;
-    private Double minValue = null;   //Lowest point for slider questions
-    private Double maxValue = null;   // Highest point for slider questions
+    private Double minValue = null; // Lowest point for slider questions
+    private Double maxValue = null; // Highest point for slider questions
     private String stepsize = null; // Used for slider and numberInput questions
     private String imageBase64 = null;
-    //The image is assigned to the created answer after merging, because the
+    // The image is assigned to the created answer after merging, because the
     // path depends on the answer's question id.
-    //So the imagePath property is used to identify the corresponding
+    // So the imagePath property is used to identify the corresponding
     // jsonAnswerDTO to assign it to the merged answer because there is no
     // other property to relate the two objects
     private String imagePath = null;
@@ -85,8 +85,7 @@ public class JsonAnswerDTO {
     private Set<SliderIcon> icons = new HashSet<>();
     private List<JsonConditionDTO> conditions = new ArrayList<>();
 
-    public JsonAnswerDTO() {
-    }
+    public JsonAnswerDTO() {}
 
     public Long getId() {
         return id;
@@ -96,9 +95,13 @@ public class JsonAnswerDTO {
         this.id = id;
     }
 
-    public String getUuid() { return uuid; }
+    public String getUuid() {
+        return uuid;
+    }
 
-    public void setUuid(String uuid) { this.uuid = uuid; }
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public JsonQuestionDTO getJsonQuestionDTO() {
         return jsonQuestionDTO;
@@ -260,24 +263,24 @@ public class JsonAnswerDTO {
         this.bodyPart = bodyPart;
     }
 
-    public void setShowIcons(final Boolean showIcons) {
-        this.showIcons = showIcons;
-    }
-
     public Boolean getShowIcons() {
         return showIcons;
+    }
+
+    public void setShowIcons(final Boolean showIcons) {
+        this.showIcons = showIcons;
     }
 
     public Set<SliderIcon> getIcons() {
         return icons;
     }
 
-    public void addCondition(JsonConditionDTO jsonConditionDTO){
-        this.conditions.add(jsonConditionDTO);
-    }
-
     public void setIcons(final Set<SliderIcon> icons) {
         this.icons = icons;
+    }
+
+    public void addCondition(JsonConditionDTO jsonConditionDTO) {
+        this.conditions.add(jsonConditionDTO);
     }
 
     /**
@@ -293,9 +296,10 @@ public class JsonAnswerDTO {
             case DROP_DOWN:
                 // Differenciate between select and freetext answer (only
                 // select answers have a localized label)
-                if (this.getLocalizedLabel() != null && !this.getLocalizedLabel().isEmpty()) {
-                    SelectAnswer selectAnswer = new SelectAnswer(question, this.getIsEnabled(),
-                        this.getLocalizedLabel(), this.getIsOther());
+                if (this.getLocalizedLabel() != null
+                        && !this.getLocalizedLabel().isEmpty()) {
+                    SelectAnswer selectAnswer = new SelectAnswer(
+                            question, this.getIsEnabled(), this.getLocalizedLabel(), this.getIsOther());
                     selectAnswer.setValue(this.getValue());
                     selectAnswer.setCodedValue(this.getCodedValue());
                     answer = selectAnswer;
@@ -306,15 +310,17 @@ public class JsonAnswerDTO {
             case DATE:
                 try {
                     if (this.getStartDate() != null && this.getEndDate() == null) {
-                        answer = new DateAnswer(question, this.getIsEnabled(),
-                            Constants.DATE_FORMAT.parse(this.getStartDate()), null);
+                        answer = new DateAnswer(
+                                question, this.getIsEnabled(), Constants.DATE_FORMAT.parse(this.getStartDate()), null);
                     } else if (this.getStartDate() == null && this.getEndDate() != null) {
-                        answer = new DateAnswer(question, this.getIsEnabled(), null,
-                            Constants.DATE_FORMAT.parse(this.getStartDate()));
+                        answer = new DateAnswer(
+                                question, this.getIsEnabled(), null, Constants.DATE_FORMAT.parse(this.getStartDate()));
                     } else if (this.getStartDate() != null && this.getEndDate() != null) {
-                        answer = new DateAnswer(question, this.getIsEnabled(),
-                            Constants.DATE_FORMAT.parse(this.getStartDate()),
-                            Constants.DATE_FORMAT.parse(this.getEndDate()));
+                        answer = new DateAnswer(
+                                question,
+                                this.getIsEnabled(),
+                                Constants.DATE_FORMAT.parse(this.getStartDate()),
+                                Constants.DATE_FORMAT.parse(this.getEndDate()));
                     } else {
                         answer = new DateAnswer(question, this.getIsEnabled(), null, null);
                     }
@@ -347,32 +353,39 @@ public class JsonAnswerDTO {
                 if (this.getStepsize() != null) {
                     Double.parseDouble(this.getStepsize());
                 }
-                answer = new NumberInputAnswer(question, this.getIsEnabled(), this.getMinValue(),
-                    this.getMaxValue(), stepsize);
+                answer = new NumberInputAnswer(
+                        question, this.getIsEnabled(), this.getMinValue(), this.getMaxValue(), stepsize);
                 break;
             case SLIDER:
             case NUMBER_CHECKBOX:
-                SliderAnswer sliderAnswer = new SliderAnswer(question, this.getIsEnabled(),
-                    this.getMinValue(), this.getMaxValue(), Double.parseDouble(this.getStepsize()),
-                    this.getVertical());
+                SliderAnswer sliderAnswer = new SliderAnswer(
+                        question,
+                        this.getIsEnabled(),
+                        this.getMinValue(),
+                        this.getMaxValue(),
+                        Double.parseDouble(this.getStepsize()),
+                        this.getVertical());
                 sliderAnswer.setLocalizedMinimumText(this.getLocalizedMinimumText());
                 sliderAnswer.setLocalizedMaximumText(this.getLocalizedMaximumText());
                 sliderAnswer.setShowValueOnButton(this.getShowValueOnButton());
                 sliderAnswer.setShowIcons(this.getShowIcons());
                 Set<SliderIcon> iconSet = new HashSet<>();
                 for (SliderIcon icon : this.getIcons()) {
-                    SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                        sliderAnswer);
+                    SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(), sliderAnswer);
                     iconSet.add(newIcon);
                 }
                 sliderAnswer.setIcons(iconSet);
                 answer = sliderAnswer;
                 break;
             case NUMBER_CHECKBOX_TEXT:
-                SliderFreetextAnswer sliderFreetextAnswer = new SliderFreetextAnswer(question,
-                    this.getIsEnabled(), this.getMinValue(), this.getMaxValue(),
-                    Double.parseDouble(this.getStepsize()), this.getLocalizedFreetextLabel(),
-                    this.getVertical());
+                SliderFreetextAnswer sliderFreetextAnswer = new SliderFreetextAnswer(
+                        question,
+                        this.getIsEnabled(),
+                        this.getMinValue(),
+                        this.getMaxValue(),
+                        Double.parseDouble(this.getStepsize()),
+                        this.getLocalizedFreetextLabel(),
+                        this.getVertical());
                 sliderFreetextAnswer.setLocalizedMinimumText(this.getLocalizedMinimumText());
                 sliderFreetextAnswer.setLocalizedMaximumText(this.getLocalizedMaximumText());
                 answer = sliderFreetextAnswer;

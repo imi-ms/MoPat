@@ -14,24 +14,30 @@ import jakarta.validation.constraints.NotNull;
 public class QuestionDTO {
 
     private Long id = null;
+
     @NotNull(message = "{question.questionText.notNull}")
     private SortedMap<String, String> localizedQuestionText = null;
+
     @NotNull(message = "{question.isRequired.notNull}")
     private Boolean isRequired = null;
+
     @NotNull(message = "{question.enabled.notNull}")
     private Boolean isEnabled = null;
+
     @NotNull(message = "{question.isJustInfo.notNull}")
     private Boolean isJustInfo = null;
+
     @NotNull(message = "{question.questionType.notNull}")
     private QuestionType questionType = null;
-    //@Pattern(regexp="\\d+", message = "{question.minNumberAnswers
+    // @Pattern(regexp="\\d+", message = "{question.minNumberAnswers
     // .wrongPattern}")
     @Min(value = 0, message = "{question.minNumberAnswers.min}")
     private Integer minNumberAnswers = null;
-    //@Pattern(regexp="\\d+", message = "{question.maxNumberAnswers
+    // @Pattern(regexp="\\d+", message = "{question.maxNumberAnswers
     // .wrongPattern}")
     @Min(value = 0, message = "{question.maxNumberAnswers.min}")
     private Integer maxNumberAnswers = null;
+
     private SortedMap<Long, AnswerDTO> answers = null;
     private Long questionnaireId = null;
     private Integer position;
@@ -149,10 +155,6 @@ public class QuestionDTO {
         this.bodyPartImages = bodyPartImages;
     }
 
-    public void setImageType(final String imageType) {
-        this.imageType = imageType;
-    }
-
     public CodedValueType getCodedValueType() {
         return codedValueType;
     }
@@ -169,6 +171,10 @@ public class QuestionDTO {
      */
     public String getImageType() {
         return imageType;
+    }
+
+    public void setImageType(final String imageType) {
+        this.imageType = imageType;
     }
 
     public Boolean isModifiable() {

@@ -27,8 +27,7 @@ public class ExpressionDTO {
     private Long scoreId;
     private String value;
 
-    public ExpressionDTO() {
-    }
+    public ExpressionDTO() {}
 
     public List<ExpressionDTO> getExpressions() {
         return expressions;
@@ -84,8 +83,8 @@ public class ExpressionDTO {
      * @param scoreDao    The {@link ScoreDao}
      * @return The converted {@link Expression}.
      */
-    public Expression toExpression(final OperatorDao operatorDao, final QuestionDao questionDao,
-        final ScoreDao scoreDao) {
+    public Expression toExpression(
+            final OperatorDao operatorDao, final QuestionDao questionDao, final ScoreDao scoreDao) {
         Expression expression = null;
         Operator operator = operatorDao.getElementById(this.getOperatorId());
         List<Expression> expressions;
@@ -104,8 +103,7 @@ public class ExpressionDTO {
                 expressions = new ArrayList<>();
                 ((BinaryExpression) expression).setOperator((BinaryOperator) operator);
                 for (ExpressionDTO childExpressionDTO : this.getExpressions()) {
-                    Expression childExpression = childExpressionDTO.toExpression(operatorDao,
-                        questionDao, scoreDao);
+                    Expression childExpression = childExpressionDTO.toExpression(operatorDao, questionDao, scoreDao);
                     childExpression.setParent(expression);
                     expressions.add(childExpression);
                 }
@@ -120,8 +118,7 @@ public class ExpressionDTO {
                 expressions = new ArrayList<>();
                 ((MultiExpression) expression).setOperator((MultiOperator) operator);
                 for (ExpressionDTO childExpressionDTO : this.getExpressions()) {
-                    Expression childExpression = childExpressionDTO.toExpression(operatorDao,
-                        questionDao, scoreDao);
+                    Expression childExpression = childExpressionDTO.toExpression(operatorDao, questionDao, scoreDao);
                     childExpression.setParent(expression);
                     expressions.add(childExpression);
                 }

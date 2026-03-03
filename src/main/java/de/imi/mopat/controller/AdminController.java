@@ -20,7 +20,6 @@ public class AdminController {
     @Autowired
     private ConfigurationDao configurationDao;
 
-
     @Autowired
     private GitRepositoryMetadataHandler gitRepositoryMetadataHandler;
 
@@ -32,7 +31,7 @@ public class AdminController {
     @GetMapping(value = "/admin/index")
     @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
     public String showAdmin(final Model model) {
-        //Get the default language of the application from the configuration
+        // Get the default language of the application from the configuration
         model.addAttribute("defaultLanguage", configurationDao.getDefaultLocale());
         model.addAttribute("gitRepositoryMetadata", gitRepositoryMetadataHandler.getGitRepositoryMetadata());
         return "admin/index";

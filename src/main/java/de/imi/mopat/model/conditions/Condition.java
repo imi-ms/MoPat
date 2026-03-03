@@ -46,47 +46,48 @@ public abstract class Condition implements Serializable {
     @Column(name = "id")
     @Id
     private Long id;
+
     @JsonIgnore
     @Column(name = "uuid")
     private String uuid = UUIDGenerator.createUUID();
+
     @JsonIgnore
     @VariableOneToOne( // [bt] A ConditionTrigger is just an interface, the
-        // implementing classes are different. Here we're
-        // specifying, that the type of class is stored in the
-        // column 'trigger_class', so that the JPA vendor and
-        // the
-        // DB don't have to store a BLOB but just the type and
-        // id and can make a POJO out of this info
-        discriminatorClasses = {
-            // [bt] if there's a new class at that a Condition can
-            // point (i.e.
-            // the target) to, enhance this configuration by another
-            // @DiscriminatorClass
-            @DiscriminatorClass(discriminator = "Question", value = Question.class),
-            @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class),
-            @DiscriminatorClass(discriminator = "SliderAnswer", value = SliderAnswer.class)
-        },
-        discriminatorColumn = @DiscriminatorColumn(name = "trigger_class")
-    )
+            // implementing classes are different. Here we're
+            // specifying, that the type of class is stored in the
+            // column 'trigger_class', so that the JPA vendor and
+            // the
+            // DB don't have to store a BLOB but just the type and
+            // id and can make a POJO out of this info
+            discriminatorClasses = {
+                // [bt] if there's a new class at that a Condition can
+                // point (i.e.
+                // the target) to, enhance this configuration by another
+                // @DiscriminatorClass
+                @DiscriminatorClass(discriminator = "Question", value = Question.class),
+                @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class),
+                @DiscriminatorClass(discriminator = "SliderAnswer", value = SliderAnswer.class)
+            },
+            discriminatorColumn = @DiscriminatorColumn(name = "trigger_class"))
     @JoinColumn(name = "trigger_id", referencedColumnName = "id")
     private ConditionTrigger trigger;
 
     @VariableOneToOne( // [bt] A ConditionTarget is just an interface, the
-        // implementing classes are different. Here we're
-        // specifying, that the type of class is stored in the
-        // column 'target_class', so that the JPA vendor and the
-        // DB don't have to store a BLOB but just the type and
-        // id and can make a POJO out of this info
-        discriminatorClasses = {
-            // [bt] if there's a new class at that a Condition can
-            // point (i.e.
-            // the target) to, enhance this configuration by another
-            // @DiscriminatorClass
-            @DiscriminatorClass(discriminator = "Question", value = Question.class),
-            @DiscriminatorClass(discriminator = "Questionnaire", value = Questionnaire.class),
-            @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class)},
-        discriminatorColumn = @DiscriminatorColumn(name = "target_class")
-    )
+            // implementing classes are different. Here we're
+            // specifying, that the type of class is stored in the
+            // column 'target_class', so that the JPA vendor and the
+            // DB don't have to store a BLOB but just the type and
+            // id and can make a POJO out of this info
+            discriminatorClasses = {
+                // [bt] if there's a new class at that a Condition can
+                // point (i.e.
+                // the target) to, enhance this configuration by another
+                // @DiscriminatorClass
+                @DiscriminatorClass(discriminator = "Question", value = Question.class),
+                @DiscriminatorClass(discriminator = "Questionnaire", value = Questionnaire.class),
+                @DiscriminatorClass(discriminator = "SelectAnswer", value = SelectAnswer.class)
+            },
+            discriminatorColumn = @DiscriminatorColumn(name = "target_class"))
     @JoinColumn(name = "target_id", referencedColumnName = "id")
     private ConditionTarget target;
 
@@ -107,8 +108,11 @@ public abstract class Condition implements Serializable {
         // anything else but the JPA implementation and the JUnit tests
     }
 
-    public Condition(final ConditionTrigger trigger, final ConditionTarget target,
-        final ConditionActionType action, final Bundle bundle) {
+    public Condition(
+            final ConditionTrigger trigger,
+            final ConditionTarget target,
+            final ConditionActionType action,
+            final Bundle bundle) {
         setTrigger(trigger);
         setTarget(target);
         setAction(action);
@@ -121,6 +125,16 @@ public abstract class Condition implements Serializable {
     }
 
     public abstract Condition cloneCondition(final ConditionTrigger trigger, final ConditionTarget target);
+
+    /**
+     * The trigger that has to be activated/chosen by the user/patient to make MoPat evaluate the
+     * condition.
+     *
+     * @return is never <code>null</code>.
+     */
+    public ConditionTrigger getTrigger() {
+        return trigger;
+    }
 
     /**
      * Takes care that the given {@link ConditionTrigger} refers to this, as well.
@@ -136,16 +150,6 @@ public abstract class Condition implements Serializable {
         if (!trigger.contains(this)) {
             trigger.addCondition(this);
         }
-    }
-
-    /**
-     * The trigger that has to be activated/chosen by the user/patient to make MoPat evaluate the
-     * condition.
-     *
-     * @return is never <code>null</code>.
-     */
-    public ConditionTrigger getTrigger() {
-        return trigger;
     }
 
     /**
@@ -175,6 +179,16 @@ public abstract class Condition implements Serializable {
     }
 
     /**
+     * Takes care that the given {@link ConditionTarget} refers to this, as well.
+     *
+     * @param target must not be <code>null</code>.
+     */
+    public void setTarget(final ConditionTarget target) {
+        assert target != null : "The target was null";
+        this.target = target;
+    }
+
+    /**
      * Since MoPat is working with Java Interfaces, the implementing class of a
      * {@link Condition Condition's} {@link ConditionTarget} is hidden. This is, in general, the way
      * to implement such concepts. However, when (part of) the model is transferred to the client
@@ -186,16 +200,6 @@ public abstract class Condition implements Serializable {
      */
     public String getTargetClass() {
         return target.getClass().getName();
-    }
-
-    /**
-     * Takes care that the given {@link ConditionTarget} refers to this, as well.
-     *
-     * @param target must not be <code>null</code>.
-     */
-    public void setTarget(final ConditionTarget target) {
-        assert target != null : "The target was null";
-        this.target = target;
     }
 
     /**

@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ClinicConfigurationMappingDTOMapper implements
-    Function<ClinicConfigurationMapping, ClinicConfigurationMappingDTO> {
+public class ClinicConfigurationMappingDTOMapper
+        implements Function<ClinicConfigurationMapping, ClinicConfigurationMappingDTO> {
 
     @Autowired
     private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
@@ -41,8 +41,8 @@ public class ClinicConfigurationMappingDTOMapper implements
     @Override
     public ClinicConfigurationMappingDTO apply(ClinicConfigurationMapping clinicConfigurationMapping) {
         ClinicConfigurationMappingDTO clinicConfigurationMappingDTO = new ClinicConfigurationMappingDTO();
-        ClinicConfigurationDTO clinicConfigurationDTO = clinicConfigurationDTOMapper.apply(
-            clinicConfigurationMapping.getClinicConfiguration());
+        ClinicConfigurationDTO clinicConfigurationDTO =
+                clinicConfigurationDTOMapper.apply(clinicConfigurationMapping.getClinicConfiguration());
 
         clinicConfigurationMappingDTO.setId(clinicConfigurationMapping.getId());
         clinicConfigurationMappingDTO.setValue(clinicConfigurationMapping.getValue());
@@ -54,16 +54,17 @@ public class ClinicConfigurationMappingDTOMapper implements
         clinicConfigurationMappingDTO.setDescriptionMessageCode(clinicConfigurationDTO.getDescriptionMessageCode());
         clinicConfigurationMappingDTO.setAttribute(clinicConfigurationDTO.getAttribute());
         clinicConfigurationMappingDTO.setTestMethod(clinicConfigurationDTO.getTestMethod());
-        if (clinicConfigurationDTO.getOptions() != null && !clinicConfigurationDTO.getOptions().isEmpty()) {
+        if (clinicConfigurationDTO.getOptions() != null
+                && !clinicConfigurationDTO.getOptions().isEmpty()) {
             clinicConfigurationMappingDTO.setOptions(clinicConfigurationDTO.getOptions());
         }
         List<ClinicConfigurationGroupMappingDTO> clinicConfigurationGroupMappingDTOS = new ArrayList<>();
         if (clinicConfigurationDTO.getMappedConfigurationGroup() != null) {
             List<ConfigurationGroupDTO> configurationGroupDTOS = new ArrayList<>();
             for (ConfigurationGroup configurationGroup : configurationGroupDao.getConfigurationGroups(
-                clinicConfigurationDTO.getMappedConfigurationGroup())) {
+                    clinicConfigurationDTO.getMappedConfigurationGroup())) {
                 ConfigurationGroupDTO configurationGroupDTO = configurationGroup.toConfigurationGroupDTO();
-                //Go through all adherent configurations
+                // Go through all adherent configurations
                 List<ConfigurationDTO> configurationDTOs = new ArrayList<>();
 
                 for (Configuration configuration1 : configurationGroup.getConfigurations()) {
@@ -71,8 +72,10 @@ public class ClinicConfigurationMappingDTOMapper implements
                         ConfigurationDTO configurationDTO1 = configuration1.toConfigurationDTO();
 
                         if (clinicConfigurationMapping.getClinicConfiguration().getChildren() != null
-                            && !clinicConfigurationMapping.getClinicConfiguration().getChildren()
-                            .isEmpty()) {
+                                && !clinicConfigurationMapping
+                                        .getClinicConfiguration()
+                                        .getChildren()
+                                        .isEmpty()) {
                             configurationService.processChildrenElements(configuration1, configurationDTO1);
                         }
                         configurationDTOs.add(configurationDTO1);
@@ -82,17 +85,20 @@ public class ClinicConfigurationMappingDTOMapper implements
                 configurationGroupDTOS.add(configurationGroupDTO);
             }
             for (ConfigurationGroupDTO configurationGroupDTO : configurationGroupDTOS) {
-                clinicConfigurationGroupMappingDTOS.add(
-                    new ClinicConfigurationGroupMappingDTO(configurationGroupDTO,
-                        clinicConfigurationMappingService.getInfoName(configurationGroupDTO)));
+                clinicConfigurationGroupMappingDTOS.add(new ClinicConfigurationGroupMappingDTO(
+                        configurationGroupDTO, clinicConfigurationMappingService.getInfoName(configurationGroupDTO)));
             }
             clinicConfigurationMappingDTO.setMappedConfigurationGroupDTOS(clinicConfigurationGroupMappingDTOS);
         }
         if (clinicConfigurationMapping.getClinicConfigurationGroupMappings() != null
-            && !clinicConfigurationMapping.getClinicConfigurationGroupMappings().isEmpty()) {
-            //TODO single to multiple groups
-            clinicConfigurationMappingDTO.setMappedConfigurationGroup(
-                clinicConfigurationMapping.getClinicConfigurationGroupMappings().get(0).getConfigurationGroup()
+                && !clinicConfigurationMapping
+                        .getClinicConfigurationGroupMappings()
+                        .isEmpty()) {
+            // TODO single to multiple groups
+            clinicConfigurationMappingDTO.setMappedConfigurationGroup(clinicConfigurationMapping
+                    .getClinicConfigurationGroupMappings()
+                    .get(0)
+                    .getConfigurationGroup()
                     .getName());
         }
         return clinicConfigurationMappingDTO;

@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class ErrorController {
 
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ErrorController.class);
+
     @Autowired
     private ConfigurationDao configurationDao;
-
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ErrorController.class);
 
     /**
      * Controls the HTTP requests for the URL /error/maintenance.
@@ -63,20 +63,19 @@ public class ErrorController {
     @RequestMapping(value = "/error/internalservererror")
     public String internalServerErrorPage(final HttpServletRequest request) {
         Marker fatal = MarkerFactory.getMarker("FATAL");
-        Throwable exception = (Throwable) request.getAttribute(
-            "jakarta.servlet" + ".error.exception");
-        if (exception instanceof HttpSessionRequiredException
-            || exception instanceof IllegalStateException) {
+        Throwable exception = (Throwable) request.getAttribute("jakarta.servlet" + ".error.exception");
+        if (exception instanceof HttpSessionRequiredException || exception instanceof IllegalStateException) {
             LOGGER.error("The session has expired", exception);
             return "error/sessionTimeout";
         } else {
-            LOGGER.error(fatal, "An internal server error on page " + request.getAttribute(
-                    "jakarta.servlet.error.request_uri") + " occured. Please check the server log",
-                (Throwable) request.getAttribute("jakarta.servlet" + ".error" + ".exception"));
+            LOGGER.error(
+                    fatal,
+                    "An internal server error on page " + request.getAttribute("jakarta.servlet.error.request_uri")
+                            + " occured. Please check the server log",
+                    (Throwable) request.getAttribute("jakarta.servlet" + ".error" + ".exception"));
             return "error/internalservererror";
         }
     }
-
 
     /**
      * Controls the HTTP requests for the URL /error/clinicNotFound.Error page that shows,

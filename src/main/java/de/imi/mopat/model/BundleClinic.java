@@ -1,11 +1,6 @@
 package de.imi.mopat.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.BundleClinicDTO;
-import de.imi.mopat.model.dto.ClinicDTO;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * The database table model for table <i>BundleClinic</i>. BundleClinic represents the joinTable for
@@ -24,10 +20,12 @@ import jakarta.validation.constraints.NotNull;
 public class BundleClinic implements Serializable, Comparable<BundleClinic> {
 
     @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+    private final String uuid = UUIDGenerator.createUUID();
+
     @NotNull(message = "{bundleClinic.position.notNull}")
     @Column(nullable = false)
     private Integer position;
+
     @Id
     @ManyToOne
     @JoinColumn(name = "clinic_id", referencedColumnName = "id")
@@ -38,7 +36,7 @@ public class BundleClinic implements Serializable, Comparable<BundleClinic> {
     @JoinColumn(name = "bundle_id", referencedColumnName = "id")
     private Bundle bundle;
 
-    protected BundleClinic() { //default constructor (in protected state),
+    protected BundleClinic() { // default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
     }
@@ -78,7 +76,7 @@ public class BundleClinic implements Serializable, Comparable<BundleClinic> {
     public void setClinic(final Clinic clinic) {
         assert clinic != null : "The given Clinic was null";
         this.clinic = clinic;
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (!clinic.getBundleClinics().contains(this)) {
             clinic.addBundleClinic(this);
         }
@@ -105,7 +103,7 @@ public class BundleClinic implements Serializable, Comparable<BundleClinic> {
     public void setBundle(final Bundle bundle) {
         assert bundle != null : "The given bundle was null";
         this.bundle = bundle;
-        //take care that the object know each other
+        // take care that the object know each other
         if (!bundle.getBundleClinics().contains(this)) {
             bundle.addBundleClinic(this);
         }
@@ -178,10 +176,9 @@ public class BundleClinic implements Serializable, Comparable<BundleClinic> {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof BundleClinic)) {
+        if (!(obj instanceof BundleClinic other)) {
             return false;
         }
-        BundleClinic other = (BundleClinic) obj;
         return getUUID().equals(other.getUUID());
     }
 
@@ -194,5 +191,4 @@ public class BundleClinic implements Serializable, Comparable<BundleClinic> {
     public int compareTo(final BundleClinic o) {
         return getPosition().compareTo(o.getPosition());
     }
-
 }

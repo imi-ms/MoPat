@@ -1,25 +1,13 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.enumeration.QuestionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.enumeration.CodedValueType;
+import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -39,6 +27,17 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 /**
@@ -49,16 +48,39 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
  */
 @Entity
 @Table(name = "question")
-public class Question implements Serializable, Comparable<Question>, ConditionTarget,
-    ConditionTrigger {
+public class Question implements Serializable, Comparable<Question>, ConditionTarget, ConditionTrigger {
+
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+    // [bt] @Valid might be possible, but is chosen not to be taken, because
+    // our complex validators call the JSR-303 validation stuff cascadingly
+    // and with this, @Valid is implicitly covered.
+    @OneToMany(
+            mappedBy = "question",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    @CascadeOnDelete
+    private final List<Answer> answers = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "mopat_condition_question",
+            joinColumns = {@JoinColumn(name = "question_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "condition_id", referencedColumnName = "id")})
+    private final Set<Condition> conditions = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(
+            mappedBy = "question",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private final Set<ExportRuleQuestion> exportRules = new HashSet<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
 
     @ElementCollection
     @MapKeyColumn(name = "language")
@@ -69,42 +91,42 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     @NotNull(message = "{question.isRequired.notNull}")
     @Column(name = "is_required", nullable = false)
     private Boolean isRequired;
+
     @NotNull(message = "{question.isEnabled.notNull}")
     @Column(name = "is_enabled", nullable = false)
     private Boolean isEnabled;
+
     @Column(name = "is_just_info", nullable = false)
     private Boolean isJustInfo;
+
     @NotNull(message = "{question.questionType.notNull}")
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type")
     private QuestionType questionType;
-
     // @NotNull wanted, but not implementable, since Spring creates a new,
     // empty Question for new questions and with this, auto-validation (see
     // QuestionController.editQuestion, param @Valid Question question, would
     // fail
     @Column(name = "position", nullable = false)
     private Integer position;
+
     @Min(value = 0, message = "{question.minNumberAnswers.min}")
     @Column(name = "min_number_answers")
     private Integer minNumberAnswers;
+
     @Min(value = 0, message = "{question.maxNumberAnswers.min}")
     @Column(name = "max_number_answers")
     private Integer maxNumberAnswers;
+
     @Column(name = "coded_value_type")
     @Enumerated(EnumType.STRING)
     private CodedValueType codedValueType;
+
     @Transient
     private Boolean hasConditionsAsTarget;
+
     @Transient
     private Boolean hasScores;
-
-    // [bt] @Valid might be possible, but is chosen not to be taken, because
-    // our complex validators call the JSR-303 validation stuff cascadingly
-    // and with this, @Valid is implicitly covered.
-    @OneToMany(mappedBy = "question", cascade = {CascadeType.ALL}, orphanRemoval = true)
-    @CascadeOnDelete
-    private List<Answer> answers = new ArrayList<>();
     // @NotNull wanted, but not implementable, since Spring creates a new,
     // emtpy Question for new questions and with this, auto-validation (see
     // QuestionController.editQuestion, param @Valid Question question, would
@@ -116,16 +138,6 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     @ManyToOne
     @JoinColumn(name = "questionnaire_id", referencedColumnName = "id")
     private Questionnaire questionnaire;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(name = "mopat_condition_question", joinColumns = {
-        @JoinColumn(name = "question_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "condition_id", referencedColumnName = "id")})
-    private Set<Condition> conditions = new HashSet<>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "question", cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private Set<ExportRuleQuestion> exportRules = new HashSet<>();
 
     public Question() { // default constructor, should not be accessible to
         // anything else but the JPA implementation (here: Hibernate) and the
@@ -144,9 +156,14 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      * @param questionnaire         The {@link Questionnaire} the question belongs to
      * @param isJustInfo
      */
-    public Question(final Map<String, String> localizedQuestionText, final Boolean isRequired,
-                    final Boolean isEnabled, final QuestionType questiontype, final Integer position,
-                    final Questionnaire questionnaire, final Boolean isJustInfo) {
+    public Question(
+            final Map<String, String> localizedQuestionText,
+            final Boolean isRequired,
+            final Boolean isEnabled,
+            final QuestionType questiontype,
+            final Integer position,
+            final Questionnaire questionnaire,
+            final Boolean isJustInfo) {
         setLocalizedQuestionText(localizedQuestionText);
         setIsRequired(isRequired);
         setIsEnabled(isEnabled);
@@ -303,11 +320,8 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public void setMinNumberAnswers(final Integer minNumberAnswers) {
         if (minNumberAnswers != null) {
             assert minNumberAnswers >= 0 : "The given minimum number of answers was negative";
-            if (maxNumberAnswers != null) {
-                assert
-                    minNumberAnswers <= maxNumberAnswers : "The given minimum number of "
-                    + "answers was bigger than the maximum number of " + "answers";
-            }
+            assert maxNumberAnswers == null || minNumberAnswers <= maxNumberAnswers
+                    : "The given minimum number of " + "answers was bigger than the maximum number of " + "answers";
         }
         this.minNumberAnswers = minNumberAnswers;
     }
@@ -333,11 +347,8 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public void setMaxNumberAnswers(final Integer maxNumberAnswers) {
         if (maxNumberAnswers != null) {
             assert maxNumberAnswers >= 0 : "The given maximum number of answers was negative";
-            if (minNumberAnswers != null) {
-                assert
-                    maxNumberAnswers >= minNumberAnswers : "The given maximum number of "
-                    + "answers was smaller than the minimum number of " + "answers";
-            }
+            assert minNumberAnswers == null || maxNumberAnswers >= minNumberAnswers
+                    : "The given maximum number of " + "answers was smaller than the minimum number of " + "answers";
         }
         this.maxNumberAnswers = maxNumberAnswers;
     }
@@ -356,19 +367,11 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      *                         </code>, must be <code> &gt;= minNumberAnswers
      *                         </code>.
      */
-    public void setMinMaxNumberAnswers(final Integer minNumberAnswers,
-        final Integer maxNumberAnswers) {
-        if (minNumberAnswers != null) {
-            assert minNumberAnswers >= 0 : "The given minimum number of answers was negative";
-        }
-        if (maxNumberAnswers != null) {
-            assert maxNumberAnswers >= 0 : "The given maximum number of answers was negative";
-        }
-        if (minNumberAnswers != null && maxNumberAnswers != null) {
-            assert
-                maxNumberAnswers >= minNumberAnswers : "The given maximum number of "
-                + "answers was smaller than the minimum number of answers";
-        }
+    public void setMinMaxNumberAnswers(final Integer minNumberAnswers, final Integer maxNumberAnswers) {
+        assert minNumberAnswers == null || minNumberAnswers >= 0 : "The given minimum number of answers was negative";
+        assert maxNumberAnswers == null || maxNumberAnswers >= 0 : "The given maximum number of answers was negative";
+        assert minNumberAnswers == null || maxNumberAnswers == null || maxNumberAnswers >= minNumberAnswers
+                : "The given maximum number of " + "answers was smaller than the minimum number of answers";
         this.minNumberAnswers = minNumberAnswers;
         this.maxNumberAnswers = maxNumberAnswers;
     }
@@ -415,7 +418,6 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
         for (Answer answer : answers) {
             addAnswer(answer);
         }
-
     }
 
     /**
@@ -513,7 +515,7 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
         assert condition != null : "The Condition given was null";
         this.conditions.add(condition);
         if (condition.getTrigger() == null || !condition.getTrigger().equals(this)) {
-            condition.setTrigger((ConditionTrigger) this);
+            condition.setTrigger(this);
         }
     }
 
@@ -591,11 +593,11 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public boolean hasConditionsAsTrigger() {
         for (Answer answer : this.getAnswers()) {
             if (answer instanceof SelectAnswer) {
-                if (!((SelectAnswer) answer).getConditions().isEmpty()) {
+                if (!answer.getConditions().isEmpty()) {
                     return true;
                 }
             } else if (answer instanceof SliderAnswer) {
-                if (!((SliderAnswer) answer).getConditions().isEmpty()) {
+                if (!answer.getConditions().isEmpty()) {
                     return true;
                 }
             }
@@ -615,7 +617,7 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
     public boolean hasConditionsAsTarget() {
         try {
             return hasConditionsAsTarget;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return false;
         }
     }
@@ -811,9 +813,7 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      */
     public void addExportRule(final ExportRuleQuestion exportRule) {
         assert exportRule != null : "The given ExportRule was null";
-        if (!exportRules.contains(exportRule)) {
-            exportRules.add(exportRule);
-        }
+        exportRules.add(exportRule);
         // take care the objects know each other
         if (exportRule.getQuestion() == null || !exportRule.getQuestion().equals(this)) {
             exportRule.setQuestion(this);
@@ -867,10 +867,9 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Question)) {
+        if (!(obj instanceof Question other)) {
             return false;
         }
-        Question other = (Question) obj;
         return getUUID().equals(other.getUUID());
     }
 
@@ -921,9 +920,14 @@ public class Question implements Serializable, Comparable<Question>, ConditionTa
      * (some missing) references as described above. Is never <code>null</code>.
      */
     public Question cloneWithAnswersAndReferenceToQuestionnaire() {
-        Question newQuestion = new Question(new HashMap<>(getLocalizedQuestionText()),
-            getIsRequired(), getIsEnabled(), getQuestionType(),
-            (getQuestionnaire().getQuestions().size() + 1), getQuestionnaire(), getIsJustInfo());
+        Question newQuestion = new Question(
+                new HashMap<>(getLocalizedQuestionText()),
+                getIsRequired(),
+                getIsEnabled(),
+                getQuestionType(),
+                (getQuestionnaire().getQuestions().size() + 1),
+                getQuestionnaire(),
+                getIsJustInfo());
         newQuestion.setMinMaxNumberAnswers(getMinNumberAnswers(), getMaxNumberAnswers());
         for (Answer answer : getAnswers()) {
             Answer newAnswer = answer.cloneWithoutReferences();

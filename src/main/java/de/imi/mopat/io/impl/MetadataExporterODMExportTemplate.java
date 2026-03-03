@@ -101,33 +101,34 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetadataExporterODMExportTemplate implements MetadataExporter {
 
+    public static final Integer DEFAULT_DOUBLE_EXPORT_DECIMAL_PLACES = 2;
+    private static final org.slf4j.Logger LOGGER =
+            org.slf4j.LoggerFactory.getLogger(MetadataExporterODMExportTemplate.class);
     private BigInteger orderNumber = BigInteger.ONE;
     private String configurationOID;
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        MetadataExporterODMExportTemplate.class);
-    public static final Integer DEFAULT_DOUBLE_EXPORT_DECIMAL_PLACES = 2;
-
     @Override
-    public byte[] export(Questionnaire questionnaire, MessageSource messageSource,
-        ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
-        ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
-        QuestionDao questionDao, ScoreDao scoreDao) {
+    public byte[] export(
+            Questionnaire questionnaire,
+            MessageSource messageSource,
+            ConfigurationDao configurationDao,
+            ConfigurationGroupDao configurationGroupDao,
+            ExportTemplateDao exportTemplateDao,
+            QuestionnaireDao questionnaireDao,
+            QuestionDao questionDao,
+            ScoreDao scoreDao) {
         // Get current timestamp as XMLGregorianCalendar
         GregorianCalendar gregorianCalender = new GregorianCalendar();
         XMLGregorianCalendar nowXMLTimestamp = null;
         try {
-            nowXMLTimestamp = DatatypeFactory.newInstance()
-                .newXMLGregorianCalendar(gregorianCalender);
+            nowXMLTimestamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalender);
         } catch (DatatypeConfigurationException e) {
-            LOGGER.error(
-                "DatatypeConfigurationException while creating an " + "XMLGregorianCalendar.");
+            LOGGER.error("DatatypeConfigurationException while creating an " + "XMLGregorianCalendar.");
         }
 
         // Get the OID from the configuration
         configurationOID = configurationDao.getMetadataExporterODMOID();
-        String fileOID =
-            configurationOID + "." + questionnaire.getId() + "." + System.currentTimeMillis();
+        String fileOID = configurationOID + "." + questionnaire.getId() + "." + System.currentTimeMillis();
 
         // Create the ODM file
         ODM odmExportFile = new ODM();
@@ -186,7 +187,8 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
         formDef.setOID(configurationOID + "." + questionnaire.getId());
         formDef.setName(questionnaire.getName());
         formDef.setRepeating(YesOrNo.NO);
-        ODMcomplexTypeDefinitionTranslatedText formDefDescriptionTranslatedText = new ODMcomplexTypeDefinitionTranslatedText();
+        ODMcomplexTypeDefinitionTranslatedText formDefDescriptionTranslatedText =
+                new ODMcomplexTypeDefinitionTranslatedText();
         formDefDescriptionTranslatedText.setLang("de-DE");
         formDefDescriptionTranslatedText.setValue(questionnaire.getDescription());
         ODMcomplexTypeDefinitionDescription formDefDescription = new ODMcomplexTypeDefinitionDescription();
@@ -213,16 +215,13 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // MultipleChoice or DropDown or has only one maximum answer
                 // else convert to boolean itemDefs
                 if (question.getQuestionType() != QuestionType.MULTIPLE_CHOICE
-                    && question.getQuestionType() != QuestionType.DROP_DOWN
-                    && question.getQuestionType() != QuestionType.BODY_PART
-                    || question.getMaxNumberAnswers() == 1) {
-                    this.convertToQuestionItemDef(question, metaDataVersion, itemGroupDef,
-                        messageSource);
+                                && question.getQuestionType() != QuestionType.DROP_DOWN
+                                && question.getQuestionType() != QuestionType.BODY_PART
+                        || question.getMaxNumberAnswers() == 1) {
+                    this.convertToQuestionItemDef(question, metaDataVersion, itemGroupDef, messageSource);
                 } else {
-                    this.convertToBooleanQuestionItemDefs(question, metaDataVersion, itemGroupDef,
-                        messageSource);
+                    this.convertToBooleanQuestionItemDefs(question, metaDataVersion, itemGroupDef, messageSource);
                 }
-
             }
         }
 
@@ -245,9 +244,16 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
             marshallerObj.marshal(odmExportFile, bos);
             bos.flush();
             bos.close();
-            this.uploadAndMapExportTemplate(bos.toByteArray(), odmExportFile, questionnaire,
-                configurationDao, configurationGroupDao, exportTemplateDao, questionnaireDao,
-                questionDao, scoreDao);
+            this.uploadAndMapExportTemplate(
+                    bos.toByteArray(),
+                    odmExportFile,
+                    questionnaire,
+                    configurationDao,
+                    configurationGroupDao,
+                    exportTemplateDao,
+                    questionnaireDao,
+                    questionDao,
+                    scoreDao);
             return bos.toByteArray();
         } catch (JAXBException e) {
             LOGGER.error("Error while creating an JAXBContext or a Marshaller" + ".");
@@ -270,9 +276,11 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      *                        added.
      * @param messageSource   {@link MessageSource} to get description and help texts.
      */
-    private void convertToQuestionItemDef(Question question,
-        ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-        ODMcomplexTypeDefinitionItemGroupDef itemGroup, MessageSource messageSource) {
+    private void convertToQuestionItemDef(
+            Question question,
+            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            ODMcomplexTypeDefinitionItemGroupDef itemGroup,
+            MessageSource messageSource) {
         ODMcomplexTypeDefinitionItemDef itemDef = new ODMcomplexTypeDefinitionItemDef();
 
         // Set the OID of the question to the internal database ID
@@ -309,21 +317,26 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 description = new ODMcomplexTypeDefinitionDescription();
                 descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                 descriptionText.setLang("en-GB");
-                if (Objects.equals(question.getMinNumberAnswers(),
-                    question.getMaxNumberAnswers())) {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey" + ".questionnaire.ExactAnswer",
-                                new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
+                if (Objects.equals(question.getMinNumberAnswers(), question.getMaxNumberAnswers())) {
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey" + ".questionnaire.ExactAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{min}", question.getMinNumberAnswers().toString()));
                 } else if (question.getMinNumberAnswers() == 0) {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey" + ".questionnaire.MaxAnswer",
-                                new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey" + ".questionnaire.MaxAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{max}", question.getMaxNumberAnswers().toString()));
                 } else {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey" + ".questionnaire.MinMaxAnswer",
-                                new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey" + ".questionnaire.MinMaxAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{min}", question.getMinNumberAnswers().toString())
                             .replace("{max}", question.getMaxNumberAnswers().toString()));
                 }
@@ -356,8 +369,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                         }
                     }
 
-                    itemDefFreetext.setOID(
-                        configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
+                    itemDefFreetext.setOID(configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
                     itemDefFreetext.setName("I." + question.getId() + "." + freetextAnswer.getId());
                     itemDefFreetext.setDescription(itemDef.getDescription());
 
@@ -365,7 +377,8 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     // texts
                     ODMcomplexTypeDefinitionQuestion questionFreetextElement = new ODMcomplexTypeDefinitionQuestion();
                     for (Map.Entry entry : question.getLocalizedQuestionText().entrySet()) {
-                        ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                        ODMcomplexTypeDefinitionTranslatedText translatedText =
+                                new ODMcomplexTypeDefinitionTranslatedText();
                         translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                         // Find the select answer that triggers the freetext
                         // answer
@@ -375,9 +388,10 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                                 selectAnswer = (SelectAnswer) currentAnswer;
                             }
                         }
-                        translatedText.setValue(
-                            entry.getValue().toString() + " " + selectAnswer.getLocalizedLabel()
-                                .get(entry.getKey().toString()));
+                        translatedText.setValue(entry.getValue().toString() + " "
+                                + selectAnswer
+                                        .getLocalizedLabel()
+                                        .get(entry.getKey().toString()));
                         questionFreetextElement.getTranslatedText().add(translatedText);
                     }
                     itemDefFreetext.setQuestion(questionFreetextElement);
@@ -398,23 +412,27 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                     descriptionText.setLang("en-GB");
                     if (dateAnswer.getStartDate() != null && dateAnswer.getEndDate() != null) {
-                        descriptionText.setValue(messageSource.getMessage(
-                                "survey" + ".questionnaire.label.date.startEndDate", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB")).replace("{startDate}",
-                                Constants.DATE_FORMAT.format(dateAnswer.getStartDate()))
-                            .replace("{endDate}",
-                                Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.date.startEndDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{startDate}", Constants.DATE_FORMAT.format(dateAnswer.getStartDate()))
+                                .replace("{endDate}", Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
                     } else if (dateAnswer.getStartDate() != null) {
-                        descriptionText.setValue(messageSource.getMessage(
-                            "survey" + ".questionnaire.label.date.startDate", new Object[0],
-                            LocaleHelper.getLocaleFromString("en_GB")).replace("{startDate}",
-                            Constants.DATE_FORMAT.format(dateAnswer.getStartDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.date.startDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{startDate}", Constants.DATE_FORMAT.format(dateAnswer.getStartDate())));
                     } else {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey" + ".questionnaire.label.date.endDate",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{endDate}",
-                                    Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.date.endDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{endDate}", Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
                     }
                     description.getTranslatedText().add(descriptionText);
                     itemDef.setDescription(description);
@@ -428,8 +446,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     startRangeCheck.setSoftHard(SoftOrHard.SOFT);
 
                     ODMcomplexTypeDefinitionCheckValue startCheckValue = new ODMcomplexTypeDefinitionCheckValue();
-                    startCheckValue.setValue(
-                        Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
+                    startCheckValue.setValue(Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
 
                     startRangeCheck.getCheckValue().add(startCheckValue);
                     itemDef.getRangeCheck().add(startRangeCheck);
@@ -459,7 +476,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
 
                 // Check if only integers are possible as answers
                 if (sliderAnswer.getStepsize() == Math.floor(sliderAnswer.getStepsize())
-                    && sliderAnswer.getMinValue() == Math.floor(sliderAnswer.getMinValue())) {
+                        && sliderAnswer.getMinValue() == Math.floor(sliderAnswer.getMinValue())) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -485,15 +502,14 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 metaDataVersion.getItemDef().add(itemDef);
                 break;
             case NUMBER_INPUT:
-                NumberInputAnswer numberInputAnswer = (NumberInputAnswer) question.getAnswers()
-                    .get(0);
+                NumberInputAnswer numberInputAnswer =
+                        (NumberInputAnswer) question.getAnswers().get(0);
 
                 // Check if only integers are possible
                 if (numberInputAnswer.getStepsize() != null
-                    && numberInputAnswer.getStepsize() == Math.floor(
-                    numberInputAnswer.getStepsize()) && (numberInputAnswer.getMinValue() == null
-                    || numberInputAnswer.getMinValue() == Math.floor(
-                    numberInputAnswer.getMinValue()))) {
+                        && numberInputAnswer.getStepsize() == Math.floor(numberInputAnswer.getStepsize())
+                        && (numberInputAnswer.getMinValue() == null
+                                || numberInputAnswer.getMinValue() == Math.floor(numberInputAnswer.getMinValue()))) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -501,28 +517,36 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
 
                 // Set the description including minimum and maximum values
                 // if available
-                if (numberInputAnswer.getMinValue() != null
-                    || numberInputAnswer.getMaxValue() != null) {
+                if (numberInputAnswer.getMinValue() != null || numberInputAnswer.getMaxValue() != null) {
                     description = new ODMcomplexTypeDefinitionDescription();
                     descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                     descriptionText.setLang("en-GB");
-                    if (numberInputAnswer.getMinValue() != null
-                        && numberInputAnswer.getMaxValue() != null) {
-                        descriptionText.setValue(messageSource.getMessage(
-                                "survey" + ".questionnaire.label.numberInput.minMax", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
-                            .replace("{min}", numberInputAnswer.getMinValue().toString())
-                            .replace("{max}", numberInputAnswer.getMaxValue().toString()));
+                    if (numberInputAnswer.getMinValue() != null && numberInputAnswer.getMaxValue() != null) {
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.numberInput.minMax",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{min}", numberInputAnswer.getMinValue().toString())
+                                .replace(
+                                        "{max}", numberInputAnswer.getMaxValue().toString()));
                     } else if (numberInputAnswer.getMinValue() != null) {
-                        descriptionText.setValue(messageSource.getMessage(
-                                "survey" + ".questionnaire.label.numberInput.min", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
-                            .replace("{min}", numberInputAnswer.getMinValue().toString()));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.numberInput.min",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{min}", numberInputAnswer.getMinValue().toString()));
                     } else {
-                        descriptionText.setValue(messageSource.getMessage(
-                                "survey" + ".questionnaire.label.numberInput.max", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
-                            .replace("{max}", numberInputAnswer.getMaxValue().toString()));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey" + ".questionnaire.label.numberInput.max",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{max}", numberInputAnswer.getMaxValue().toString()));
                     }
                     description.getTranslatedText().add(descriptionText);
                     itemDef.setDescription(description);
@@ -553,16 +577,14 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 metaDataVersion.getItemDef().add(itemDef);
                 break;
             case NUMBER_CHECKBOX_TEXT:
-                SliderFreetextAnswer sliderFreetextAnswer = (SliderFreetextAnswer) question.getAnswers()
-                    .get(0);
+                SliderFreetextAnswer sliderFreetextAnswer =
+                        (SliderFreetextAnswer) question.getAnswers().get(0);
 
                 itemDef.setOID(configurationOID + "." + question.getId() + ".1");
 
                 // Check if only integers are possible
-                if (sliderFreetextAnswer.getStepsize() == Math.floor(
-                    sliderFreetextAnswer.getStepsize())
-                    && sliderFreetextAnswer.getMinValue() == Math.floor(
-                    sliderFreetextAnswer.getMinValue())) {
+                if (sliderFreetextAnswer.getStepsize() == Math.floor(sliderFreetextAnswer.getStepsize())
+                        && sliderFreetextAnswer.getMinValue() == Math.floor(sliderFreetextAnswer.getMinValue())) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -613,9 +635,11 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      *                        added.
      * @param messageSource   {@link MessageSource} to get description and help texts.
      */
-    private void convertToBooleanQuestionItemDefs(Question question,
-        ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-        ODMcomplexTypeDefinitionItemGroupDef itemGroup, MessageSource messageSource) {
+    private void convertToBooleanQuestionItemDefs(
+            Question question,
+            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            ODMcomplexTypeDefinitionItemGroupDef itemGroup,
+            MessageSource messageSource) {
         // Iterate over each answer of the question
         for (Answer answer : question.getAnswers()) {
             ODMcomplexTypeDefinitionItemDef itemDef = new ODMcomplexTypeDefinitionItemDef();
@@ -631,11 +655,13 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // Set all translated question texts
                 ODMcomplexTypeDefinitionQuestion questionElement = new ODMcomplexTypeDefinitionQuestion();
                 for (Map.Entry entry : question.getLocalizedQuestionText().entrySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                     translatedText.setValue(entry.getValue().toString() + " "
-                        + ((SelectAnswer) answer).getLocalizedLabel()
-                        .get(entry.getKey().toString()));
+                            + ((SelectAnswer) answer)
+                                    .getLocalizedLabel()
+                                    .get(entry.getKey().toString()));
                     questionElement.getTranslatedText().add(translatedText);
                 }
                 itemDef.setQuestion(questionElement);
@@ -648,20 +674,21 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // Set all translated question texts with freetext answer texts
                 ODMcomplexTypeDefinitionQuestion questionFreetextElement = new ODMcomplexTypeDefinitionQuestion();
                 for (Map.Entry entry : question.getLocalizedQuestionText().entrySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                     // Find the isOther answer
                     SelectAnswer selectAnswer = null;
                     for (Answer currentAnswer : question.getAnswers()) {
-                        if (currentAnswer instanceof SelectAnswer
-                            && ((SelectAnswer) currentAnswer).getIsOther()) {
+                        if (currentAnswer instanceof SelectAnswer && ((SelectAnswer) currentAnswer).getIsOther()) {
                             selectAnswer = (SelectAnswer) currentAnswer;
                             break;
                         }
                     }
-                    translatedText.setValue(
-                        entry.getValue().toString() + " " + selectAnswer.getLocalizedLabel()
-                            .get(entry.getKey().toString()));
+                    translatedText.setValue(entry.getValue().toString() + " "
+                            + selectAnswer
+                                    .getLocalizedLabel()
+                                    .get(entry.getKey().toString()));
                     questionFreetextElement.getTranslatedText().add(translatedText);
                 }
                 itemDef.setQuestion(questionFreetextElement);
@@ -673,13 +700,15 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // Set all translated question texts
                 ODMcomplexTypeDefinitionQuestion questionElement = new ODMcomplexTypeDefinitionQuestion();
                 for (Map.Entry entry : question.getLocalizedQuestionText().entrySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
-                    translatedText.setValue(
-                        entry.getValue().toString() + " " + messageSource.getMessage(
-                            ((BodyPartAnswer) answer).getBodyPart().getMessageCode(),
-                            new String[]{},
-                            LocaleHelper.getLocaleFromString(entry.getKey().toString())));
+                    translatedText.setValue(entry.getValue().toString() + " "
+                            + messageSource.getMessage(
+                                    ((BodyPartAnswer) answer).getBodyPart().getMessageCode(),
+                                    new String[] {},
+                                    LocaleHelper.getLocaleFromString(
+                                            entry.getKey().toString())));
                     questionElement.getTranslatedText().add(translatedText);
                 }
                 itemDef.setQuestion(questionElement);
@@ -703,9 +732,10 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
         }
     }
 
-    private void convertToScoreItemDef(Score score,
-        ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-        ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
+    private void convertToScoreItemDef(
+            Score score,
+            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
         ODMcomplexTypeDefinitionItemDef itemDefValue = new ODMcomplexTypeDefinitionItemDef();
         // Set the OID of the itemDef to the internal database ID
         itemDefValue.setOID(configurationOID + "." + score.getId() + ".1");
@@ -734,8 +764,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      * @param itemGroup The {@link ODMcomplexTypeDefinitionItemGroupDef ItemGroup }, to which the
      *                  new {@link ODMcomplexTypeDefinitionItemRef ItemRef} should be added.
      */
-    private void convertToQuestionItemRef(Question question,
-        ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
+    private void convertToQuestionItemRef(Question question, ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
         // Create a new itemRef and set its data
         ODMcomplexTypeDefinitionItemRef itemRef = new ODMcomplexTypeDefinitionItemRef();
         itemRef.setOrderNumber(orderNumber);
@@ -753,10 +782,9 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
         // is marked as other that a second itemRef for the freetext is needed
         boolean isOtherExists = false;
         if (question.getQuestionType() == QuestionType.MULTIPLE_CHOICE
-            || question.getQuestionType() == QuestionType.DROP_DOWN) {
+                || question.getQuestionType() == QuestionType.DROP_DOWN) {
             for (Answer answer : question.getAnswers()) {
-                if (answer instanceof SelectAnswer
-                    && ((SelectAnswer) answer).getIsOther()) {
+                if (answer instanceof SelectAnswer && ((SelectAnswer) answer).getIsOther()) {
                     isOtherExists = true;
                     break;
                 }
@@ -794,8 +822,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     break;
                 }
             }
-            itemRefFreetext.setItemOID(
-                configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
+            itemRefFreetext.setItemOID(configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
             itemGroup.getItemRef().add(itemRefFreetext);
 
             orderNumber = orderNumber.add(BigInteger.ONE);
@@ -811,8 +838,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      * @param itemGroup The {@link ODMcomplexTypeDefinitionItemGroupDef ItemGroup }, to which the
      *                  new {@link ODMcomplexTypeDefinitionItemRef ItemRef} should be added.
      */
-    private void convertToScoreItemRef(Score score,
-        ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
+    private void convertToScoreItemRef(Score score, ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
         // Create a new itemRef and set its data
         ODMcomplexTypeDefinitionItemRef itemRefValue = new ODMcomplexTypeDefinitionItemRef();
         itemRefValue.setOrderNumber(orderNumber);
@@ -842,8 +868,11 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      *                        created {@link ODMcomplexTypeDefinitionCodeList CodeList}
      * @return the Id of the freetext answer, -1 if there is none
      */
-    private void convertToCodeList(Question question, String codeListOID,
-        ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion, MessageSource messageSource) {
+    private void convertToCodeList(
+            Question question,
+            String codeListOID,
+            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            MessageSource messageSource) {
         // Create a codeList and set its data
         ODMcomplexTypeDefinitionCodeList codeList = new ODMcomplexTypeDefinitionCodeList();
         codeList.setOID(codeListOID);
@@ -864,8 +893,9 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // Check the value of the answer and set it
                 // Make sure the coded value is unique in this question, if
                 // it is already used, take the next free integer
-                if (selectAnswer.getCodedValue() == null || selectAnswer.getCodedValue().isEmpty()
-                    || existingCodedValues.contains(selectAnswer.getCodedValue())) {
+                if (selectAnswer.getCodedValue() == null
+                        || selectAnswer.getCodedValue().isEmpty()
+                        || existingCodedValues.contains(selectAnswer.getCodedValue())) {
                     while (existingCodedValues.contains(codedValueCounter.toString())) {
                         codedValueCounter++;
                     }
@@ -880,7 +910,8 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 codeListItem.setDecode(new ODMcomplexTypeDefinitionDecode());
                 // Add the answer in every available language
                 for (Map.Entry entry : selectAnswer.getLocalizedLabel().entrySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                     translatedText.setValue(entry.getValue().toString());
                     codeListItem.getDecode().getTranslatedText().add(translatedText);
@@ -889,13 +920,15 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 bodyPartAnswer = (BodyPartAnswer) answer;
                 codeListItem.setCodedValue(bodyPartAnswer.getBodyPart().getMessageCode());
                 codeListItem.setDecode(new ODMcomplexTypeDefinitionDecode());
-                //Add the body part answer in every available language
+                // Add the body part answer in every available language
                 for (String locale : question.getLocalizedQuestionText().keySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(locale.replaceAll("_", "-"));
-                    translatedText.setValue(
-                        messageSource.getMessage(bodyPartAnswer.getBodyPart().getMessageCode(),
-                            new String[]{}, LocaleHelper.getLocaleFromString(locale)));
+                    translatedText.setValue(messageSource.getMessage(
+                            bodyPartAnswer.getBodyPart().getMessageCode(),
+                            new String[] {},
+                            LocaleHelper.getLocaleFromString(locale)));
                     codeListItem.getDecode().getTranslatedText().add(translatedText);
                 }
             }
@@ -926,7 +959,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 if (selectAnswer.getValue() == null) {
                     return DataType.STRING;
                 } else if (selectAnswer.getValue() != Math.floor(selectAnswer.getValue())
-                    || Double.isInfinite(selectAnswer.getValue())) {
+                        || Double.isInfinite(selectAnswer.getValue())) {
                     return DataType.FLOAT;
                 }
             } else if (answer instanceof BodyPartAnswer) {
@@ -973,32 +1006,34 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
      * @param questionnaireDao        The {@link QuestionnaireDao}
      * @param questionDao             The {@link QuestionDao}
      */
-    private void uploadAndMapExportTemplate(byte[] exportTemplateByteArray, ODM odmFile,
-        Questionnaire questionnaire, ConfigurationDao configurationDao,
-        ConfigurationGroupDao configurationGroupDao, ExportTemplateDao exportTemplateDao,
-        QuestionnaireDao questionnaireDao, QuestionDao questionDao, ScoreDao scoreDao) {
+    private void uploadAndMapExportTemplate(
+            byte[] exportTemplateByteArray,
+            ODM odmFile,
+            Questionnaire questionnaire,
+            ConfigurationDao configurationDao,
+            ConfigurationGroupDao configurationGroupDao,
+            ExportTemplateDao exportTemplateDao,
+            QuestionnaireDao questionnaireDao,
+            QuestionDao questionDao,
+            ScoreDao scoreDao) {
         List<ExportTemplate> exportTemplates = new ArrayList<>();
         List<Long> exportTemplateIds = new ArrayList<>();
         // Get the appropriate configuration groups for this export type
         ExportTemplateType exportTemplateType = ExportTemplateType.ODM;
-        List<ConfigurationGroup> configurationGroups = configurationGroupDao.getConfigurationGroups(
-            exportTemplateType.getConfigurationMessageCode());
+        List<ConfigurationGroup> configurationGroups =
+                configurationGroupDao.getConfigurationGroups(exportTemplateType.getConfigurationMessageCode());
         // Create an export template for every configuration group
         for (ConfigurationGroup configurationGroup : configurationGroups) {
-            ExportTemplate template = new ExportTemplate("name", exportTemplateType, "filename",
-                configurationGroup, questionnaire);
+            ExportTemplate template =
+                    new ExportTemplate("name", exportTemplateType, "filename", configurationGroup, questionnaire);
             // Merge here to be able to get an id for the xml filename
             exportTemplateDao.merge(template);
-            template.setName(
-                template.getId() + " " + questionnaire.getName() + " generated Export Template");
-            template.setFilename(template.getId() + "_" + questionnaire.getName()
-                + "_generated_Export_Template.xml");
+            template.setName(template.getId() + " " + questionnaire.getName() + " generated Export Template");
+            template.setFilename(template.getId() + "_" + questionnaire.getName() + "_generated_Export_Template.xml");
             template.setOriginalFilename(
-                template.getId() + "_" + questionnaire.getName() + "_generated_Export_Template"
-                    + ".xml");
+                    template.getId() + "_" + questionnaire.getName() + "_generated_Export_Template" + ".xml");
             try {
-                String uploadFilename =
-                    template.getId() + "_" + questionnaire.getName() + "_generated_Export_Template";
+                String uploadFilename = template.getId() + "_" + questionnaire.getName() + "_generated_Export_Template";
                 String objectStoragePath = configurationDao.getObjectStoragePath();
                 // Save uploaded file and update xml filename in template
                 String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
@@ -1006,8 +1041,7 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 if (!uploadDir.isDirectory()) {
                     uploadDir.mkdirs();
                 }
-                FileUtils.writeByteArrayToFile(new File(contextPath, uploadFilename + ".xml"),
-                    exportTemplateByteArray);
+                FileUtils.writeByteArrayToFile(new File(contextPath, uploadFilename + ".xml"), exportTemplateByteArray);
 
                 questionnaire.addExportTemplate(template);
                 exportTemplateDao.merge(template);
@@ -1022,10 +1056,14 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
         questionnaireDao.merge(questionnaire);
 
         // Create the exportRules
-        List<ODMcomplexTypeDefinitionItemDef> itemDefs = odmFile.getStudy().get(0)
-            .getMetaDataVersion().get(0).getItemDef();
-        ODMcomplexTypeDefinitionItemGroupDef itemGroupDef = odmFile.getStudy().get(0)
-            .getMetaDataVersion().get(0).getItemGroupDef().get(0);
+        List<ODMcomplexTypeDefinitionItemDef> itemDefs =
+                odmFile.getStudy().get(0).getMetaDataVersion().get(0).getItemDef();
+        ODMcomplexTypeDefinitionItemGroupDef itemGroupDef = odmFile.getStudy()
+                .get(0)
+                .getMetaDataVersion()
+                .get(0)
+                .getItemGroupDef()
+                .get(0);
         int codedValueNotAvailableCounter = 1;
         for (ODMcomplexTypeDefinitionItemDef currentItemDef : itemDefs) {
             // Update the export templates
@@ -1037,17 +1075,22 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                 // from the itemDef name
                 Long currentQuestionId;
                 try {
-                    currentQuestionId = Long.parseLong(currentItemDef.getName()
-                        .substring(currentItemDef.getName().indexOf(".") + 1));
+                    currentQuestionId = Long.parseLong(currentItemDef
+                            .getName()
+                            .substring(currentItemDef.getName().indexOf(".") + 1));
                 } catch (NumberFormatException e) {
                     try {
-                        currentQuestionId = Long.parseLong(currentItemDef.getName()
-                            .substring(currentItemDef.getName().indexOf(".") + 1,
-                                currentItemDef.getName().lastIndexOf(".")));
+                        currentQuestionId = Long.parseLong(currentItemDef
+                                .getName()
+                                .substring(
+                                        currentItemDef.getName().indexOf(".") + 1,
+                                        currentItemDef.getName().lastIndexOf(".")));
                     } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
-                        currentQuestionId = Long.parseLong(currentItemDef.getName()
-                            .substring(currentItemDef.getName().indexOf(".") + 1,
-                                currentItemDef.getName().lastIndexOf("_")));
+                        currentQuestionId = Long.parseLong(currentItemDef
+                                .getName()
+                                .substring(
+                                        currentItemDef.getName().indexOf(".") + 1,
+                                        currentItemDef.getName().lastIndexOf("_")));
                     }
                 }
                 question = questionDao.getElementById(currentQuestionId);
@@ -1072,17 +1115,23 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                                 for (ExportTemplate exportTemplate : exportTemplates) {
                                     // Get or create the ExportRuleFormat for
                                     // the new ExportRule
-                                    ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                        exportTemplate);
+                                    ExportRuleFormat exportRuleFormat =
+                                            question.getExportRuleFormatFromAnswers(exportTemplate);
                                     if (exportRuleFormat == null) {
                                         exportRuleFormat = new ExportRuleFormat();
                                     }
                                     ExportRuleAnswer exportRuleAnswerFreetext = new ExportRuleAnswer(
-                                        exportTemplate, itemGroupDef.getOID().replace(".", "u002E")
-                                        .replace("_", "u005F") + "_" + currentItemDef.getOID()
-                                        .replace(".", "u002E").replace("_", "u005F"), answer);
-                                    exportRuleAnswerFreetext.setExportRuleFormat(
-                                        new ExportRuleFormat());
+                                            exportTemplate,
+                                            itemGroupDef
+                                                            .getOID()
+                                                            .replace(".", "u002E")
+                                                            .replace("_", "u005F") + "_"
+                                                    + currentItemDef
+                                                            .getOID()
+                                                            .replace(".", "u002E")
+                                                            .replace("_", "u005F"),
+                                            answer);
+                                    exportRuleAnswerFreetext.setExportRuleFormat(new ExportRuleFormat());
                                     exportRuleAnswerFreetext.setUseFreetextValue(true);
                                     exportRuleAnswerFreetext.setExportRuleFormat(exportRuleFormat);
                                     answer.addExportRule(exportRuleAnswerFreetext);
@@ -1102,17 +1151,22 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         // Get or create the ExportRuleFormat
                                         // for the new ExportRule
-                                        ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                            exportTemplate);
+                                        ExportRuleFormat exportRuleFormat =
+                                                question.getExportRuleFormatFromAnswers(exportTemplate);
                                         if (exportRuleFormat == null) {
                                             exportRuleFormat = new ExportRuleFormat();
                                         }
                                         ExportRuleAnswer exportRuleAnswerText = new ExportRuleAnswer(
-                                            exportTemplate,
-                                            itemGroupDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F") + "_"
-                                                + currentItemDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F"), answer);
+                                                exportTemplate,
+                                                itemGroupDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F") + "_"
+                                                        + currentItemDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F"),
+                                                answer);
                                         exportRuleAnswerText.setExportRuleFormat(exportRuleFormat);
                                         answer.addExportRule(exportRuleAnswerText);
                                         exportTemplateDao.merge(exportTemplate);
@@ -1121,24 +1175,30 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                             }
                             break;
                         case INTEGER:
-                            //Get the associated answer and include the
+                            // Get the associated answer and include the
                             // export rules
                             answer = question.getAnswers().get(0);
                             for (ExportTemplate exportTemplate : exportTemplates) {
                                 // Get or create the ExportRuleFormat for the
                                 // new ExportRule
-                                ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                    exportTemplate);
+                                ExportRuleFormat exportRuleFormat =
+                                        question.getExportRuleFormatFromAnswers(exportTemplate);
                                 if (exportRuleFormat == null) {
                                     exportRuleFormat = new ExportRuleFormat();
                                     exportRuleFormat.setNumberType(ExportNumberType.INTEGER);
-                                    exportRuleFormat.setRoundingStrategy(
-                                        ExportRoundingStrategyType.STANDARD);
+                                    exportRuleFormat.setRoundingStrategy(ExportRoundingStrategyType.STANDARD);
                                 }
                                 ExportRuleAnswer exportRuleAnswerInteger = new ExportRuleAnswer(
-                                    exportTemplate, itemGroupDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F") + "_" + currentItemDef.getOID()
-                                    .replace(".", "u002E").replace("_", "u005F"), answer);
+                                        exportTemplate,
+                                        itemGroupDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F") + "_"
+                                                + currentItemDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F"),
+                                        answer);
                                 exportRuleAnswerInteger.setExportRuleFormat(exportRuleFormat);
                                 answer.addExportRule(exportRuleAnswerInteger);
                                 exportTemplateDao.merge(exportTemplate);
@@ -1146,83 +1206,101 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                             break;
                         case FLOAT:
                         case DOUBLE:
-                            //Get the associated answer and include the
+                            // Get the associated answer and include the
                             // export rules
                             answer = question.getAnswers().get(0);
                             for (ExportTemplate exportTemplate : exportTemplates) {
                                 // Get or create the ExportRuleFormat for the
                                 // new ExportRule
-                                ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                    exportTemplate);
+                                ExportRuleFormat exportRuleFormat =
+                                        question.getExportRuleFormatFromAnswers(exportTemplate);
                                 if (exportRuleFormat == null) {
                                     exportRuleFormat = new ExportRuleFormat();
                                     exportRuleFormat.setNumberType(ExportNumberType.FLOAT);
-                                    exportRuleFormat.setRoundingStrategy(
-                                        ExportRoundingStrategyType.STANDARD);
-                                    exportRuleFormat.setDecimalDelimiter(
-                                        ExportDecimalDelimiterType.DOT);
-                                    exportRuleFormat.setDecimalPlaces(
-                                        DEFAULT_DOUBLE_EXPORT_DECIMAL_PLACES);
+                                    exportRuleFormat.setRoundingStrategy(ExportRoundingStrategyType.STANDARD);
+                                    exportRuleFormat.setDecimalDelimiter(ExportDecimalDelimiterType.DOT);
+                                    exportRuleFormat.setDecimalPlaces(DEFAULT_DOUBLE_EXPORT_DECIMAL_PLACES);
                                 }
                                 ExportRuleAnswer exportRuleAnswerFloatDouble = new ExportRuleAnswer(
-                                    exportTemplate, itemGroupDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F") + "_" + currentItemDef.getOID()
-                                    .replace(".", "u002E").replace("_", "u005F"), answer);
+                                        exportTemplate,
+                                        itemGroupDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F") + "_"
+                                                + currentItemDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F"),
+                                        answer);
                                 exportRuleAnswerFloatDouble.setExportRuleFormat(exportRuleFormat);
                                 answer.addExportRule(exportRuleAnswerFloatDouble);
                                 exportTemplateDao.merge(exportTemplate);
                             }
                             break;
                         case DATE:
-                            //Get the associated answer and include the
+                            // Get the associated answer and include the
                             // export rules
                             answer = question.getAnswers().get(0);
                             for (ExportTemplate exportTemplate : exportTemplates) {
                                 // Get or create the ExportRuleFormat for the
                                 // new ExportRule
-                                ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                    exportTemplate);
+                                ExportRuleFormat exportRuleFormat =
+                                        question.getExportRuleFormatFromAnswers(exportTemplate);
                                 if (exportRuleFormat == null) {
                                     exportRuleFormat = new ExportRuleFormat();
                                     exportRuleFormat.setDateFormat(ExportDateFormatType.YYYY_MM_DD);
                                 }
                                 ExportRuleAnswer exportRuleAnswerDate = new ExportRuleAnswer(
-                                    exportTemplate, itemGroupDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F") + "_" + currentItemDef.getOID()
-                                    .replace(".", "u002E").replace("_", "u005F"), answer);
+                                        exportTemplate,
+                                        itemGroupDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F") + "_"
+                                                + currentItemDef
+                                                        .getOID()
+                                                        .replace(".", "u002E")
+                                                        .replace("_", "u005F"),
+                                        answer);
                                 exportRuleAnswerDate.setExportRuleFormat(exportRuleFormat);
                                 answer.addExportRule(exportRuleAnswerDate);
                                 exportTemplateDao.merge(exportTemplate);
                             }
                             break;
                         case BOOLEAN:
-                            //Get the associated answer and include the
+                            // Get the associated answer and include the
                             // export rules
-                            int currentAnswerId = Integer.parseInt(currentItemDef.getName()
-                                .substring(currentItemDef.getName().lastIndexOf(".") + 1));
+                            int currentAnswerId = Integer.parseInt(currentItemDef
+                                    .getName()
+                                    .substring(currentItemDef.getName().lastIndexOf(".") + 1));
                             for (Answer testAnswer : question.getAnswers()) {
                                 if (testAnswer.getId() == currentAnswerId) {
                                     answer = testAnswer;
                                 }
                             }
                             if (answer != null) {
-                                //Get the associated answer and include the
+                                // Get the associated answer and include the
                                 // export rules
                                 for (ExportTemplate exportTemplate : exportTemplates) {
                                     // Get or create the ExportRuleFormat for
                                     // the new ExportRule
-                                    ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                        exportTemplate);
+                                    ExportRuleFormat exportRuleFormat =
+                                            question.getExportRuleFormatFromAnswers(exportTemplate);
                                     if (exportRuleFormat == null) {
                                         exportRuleFormat = new ExportRuleFormat();
                                     }
                                     ExportRuleAnswer exportRuleAnswerBooleanTrue = new ExportRuleAnswer(
-                                        exportTemplate, itemGroupDef.getOID().replace(".", "u002E")
-                                        .replace("_", "u005F") + "_" + currentItemDef.getOID()
-                                        .replace(".", "u002E").replace("_", "u005F") + "_true",
-                                        answer);
-                                    exportRuleAnswerBooleanTrue.setExportRuleFormat(
-                                        exportRuleFormat);
+                                            exportTemplate,
+                                            itemGroupDef
+                                                            .getOID()
+                                                            .replace(".", "u002E")
+                                                            .replace("_", "u005F") + "_"
+                                                    + currentItemDef
+                                                            .getOID()
+                                                            .replace(".", "u002E")
+                                                            .replace("_", "u005F")
+                                                    + "_true",
+                                            answer);
+                                    exportRuleAnswerBooleanTrue.setExportRuleFormat(exportRuleFormat);
                                     answer.addExportRule(exportRuleAnswerBooleanTrue);
                                     exportTemplateDao.merge(exportTemplate);
                                 }
@@ -1242,68 +1320,78 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                                     // Get the coded value of the current answer
                                     String codedValue = null;
                                     if (currentSelectAnswer.getCodedValue() == null
-                                        || currentSelectAnswer.getCodedValue().isEmpty()
-                                        || existingCodedValues.contains(
-                                        currentSelectAnswer.getCodedValue())) {
-                                        while (existingCodedValues.contains(
-                                            codedValueCounter.toString())) {
+                                            || currentSelectAnswer
+                                                    .getCodedValue()
+                                                    .isEmpty()
+                                            || existingCodedValues.contains(currentSelectAnswer.getCodedValue())) {
+                                        while (existingCodedValues.contains(codedValueCounter.toString())) {
                                             codedValueCounter++;
                                         }
-                                        codedValue = codedValueCounter.toString()
-                                            .replace(".", "u002E");
+                                        codedValue =
+                                                codedValueCounter.toString().replace(".", "u002E");
                                         existingCodedValues.add(codedValueCounter.toString());
                                         codedValueCounter++;
                                     } else {
-                                        codedValue = currentSelectAnswer.getCodedValue()
-                                            .replace(".", "u002E");
-                                        existingCodedValues.add(
-                                            currentSelectAnswer.getCodedValue());
+                                        codedValue = currentSelectAnswer
+                                                .getCodedValue()
+                                                .replace(".", "u002E");
+                                        existingCodedValues.add(currentSelectAnswer.getCodedValue());
                                     }
 
                                     // Include the export rules
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         // Get or create the ExportRuleFormat
                                         // for the new ExportRule
-                                        ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                            exportTemplate);
+                                        ExportRuleFormat exportRuleFormat =
+                                                question.getExportRuleFormatFromAnswers(exportTemplate);
                                         if (exportRuleFormat == null) {
                                             exportRuleFormat = new ExportRuleFormat();
                                         }
                                         ExportRuleAnswer exportRuleAnswerMultipleChoice = new ExportRuleAnswer(
-                                            exportTemplate,
-                                            itemGroupDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F") + "_"
-                                                + currentItemDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F") + "_" + codedValue,
-                                            currentAnswer);
-                                        exportRuleAnswerMultipleChoice.setExportRuleFormat(
-                                            exportRuleFormat);
+                                                exportTemplate,
+                                                itemGroupDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F") + "_"
+                                                        + currentItemDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F")
+                                                        + "_" + codedValue,
+                                                currentAnswer);
+                                        exportRuleAnswerMultipleChoice.setExportRuleFormat(exportRuleFormat);
                                         currentAnswer.addExportRule(exportRuleAnswerMultipleChoice);
                                         exportTemplateDao.merge(exportTemplate);
                                     }
                                 } else if (currentAnswer instanceof BodyPartAnswer currentBodyPartAnswer) {
                                     // Get the coded value of the current answer
-                                    String codedValue = currentBodyPartAnswer.getBodyPart()
-                                        .getMessageCode().replace(".", "u002E");
+                                    String codedValue = currentBodyPartAnswer
+                                            .getBodyPart()
+                                            .getMessageCode()
+                                            .replace(".", "u002E");
 
                                     // Include the export rules
                                     for (ExportTemplate exportTemplate : exportTemplates) {
                                         // Get or create the ExportRuleFormat
                                         // for the new ExportRule
-                                        ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromAnswers(
-                                            exportTemplate);
+                                        ExportRuleFormat exportRuleFormat =
+                                                question.getExportRuleFormatFromAnswers(exportTemplate);
                                         if (exportRuleFormat == null) {
                                             exportRuleFormat = new ExportRuleFormat();
                                         }
                                         ExportRuleAnswer exportRuleAnswerMultipleChoice = new ExportRuleAnswer(
-                                            exportTemplate,
-                                            itemGroupDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F") + "_"
-                                                + currentItemDef.getOID().replace(".", "u002E")
-                                                .replace("_", "u005F") + "_" + codedValue,
-                                            currentAnswer);
-                                        exportRuleAnswerMultipleChoice.setExportRuleFormat(
-                                            exportRuleFormat);
+                                                exportTemplate,
+                                                itemGroupDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F") + "_"
+                                                        + currentItemDef
+                                                                .getOID()
+                                                                .replace(".", "u002E")
+                                                                .replace("_", "u005F")
+                                                        + "_" + codedValue,
+                                                currentAnswer);
+                                        exportRuleAnswerMultipleChoice.setExportRuleFormat(exportRuleFormat);
                                         currentAnswer.addExportRule(exportRuleAnswerMultipleChoice);
                                         exportTemplateDao.merge(exportTemplate);
                                     }
@@ -1315,10 +1403,17 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
             } else {
                 // Get the internal database id of the associated score from
                 // the itemDef's OID
-                Long currentScoreId = Long.parseLong(currentItemDef.getOID().substring(
-                    currentItemDef.getOID().substring(currentItemDef.getName().indexOf(".") + 1,
-                        currentItemDef.getOID().lastIndexOf(".")).lastIndexOf(".") + 1,
-                    currentItemDef.getOID().lastIndexOf(".")));
+                Long currentScoreId = Long.parseLong(currentItemDef
+                        .getOID()
+                        .substring(
+                                currentItemDef
+                                                .getOID()
+                                                .substring(
+                                                        currentItemDef.getName().indexOf(".") + 1,
+                                                        currentItemDef.getOID().lastIndexOf("."))
+                                                .lastIndexOf(".")
+                                        + 1,
+                                currentItemDef.getOID().lastIndexOf(".")));
                 Score currentScore = scoreDao.getElementById(currentScoreId);
 
                 DataType dataType = currentItemDef.getDataType();
@@ -1326,11 +1421,15 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     case STRING:
                         for (ExportTemplate exportTemplate : exportTemplates) {
                             ExportRuleScore exportRuleScoreFormula = new ExportRuleScore(
-                                exportTemplate,
-                                itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
-                                    + "_" + currentItemDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F"), currentScore,
-                                ExportScoreFieldType.FORMULA);
+                                    exportTemplate,
+                                    itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
+                                            + "_"
+                                            + currentItemDef
+                                                    .getOID()
+                                                    .replace(".", "u002E")
+                                                    .replace("_", "u005F"),
+                                    currentScore,
+                                    ExportScoreFieldType.FORMULA);
                             exportRuleScoreFormula.setExportRuleFormat(new ExportRuleFormat());
                             currentScore.addExportRule(exportRuleScoreFormula);
                             exportTemplateDao.merge(exportTemplate);
@@ -1340,16 +1439,19 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                         for (ExportTemplate exportTemplate : exportTemplates) {
                             ExportRuleFormat exportRuleFormat = new ExportRuleFormat();
                             exportRuleFormat.setNumberType(ExportNumberType.FLOAT);
-                            exportRuleFormat.setRoundingStrategy(
-                                ExportRoundingStrategyType.STANDARD);
+                            exportRuleFormat.setRoundingStrategy(ExportRoundingStrategyType.STANDARD);
                             exportRuleFormat.setDecimalDelimiter(ExportDecimalDelimiterType.DOT);
                             exportRuleFormat.setDecimalPlaces(DEFAULT_DOUBLE_EXPORT_DECIMAL_PLACES);
                             ExportRuleScore exportRuleScoreValue = new ExportRuleScore(
-                                exportTemplate,
-                                itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
-                                    + "_" + currentItemDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F"), currentScore,
-                                ExportScoreFieldType.VALUE);
+                                    exportTemplate,
+                                    itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
+                                            + "_"
+                                            + currentItemDef
+                                                    .getOID()
+                                                    .replace(".", "u002E")
+                                                    .replace("_", "u005F"),
+                                    currentScore,
+                                    ExportScoreFieldType.VALUE);
                             exportRuleScoreValue.setExportRuleFormat(exportRuleFormat);
                             currentScore.addExportRule(exportRuleScoreValue);
                             exportTemplateDao.merge(exportTemplate);
@@ -1358,11 +1460,15 @@ public class MetadataExporterODMExportTemplate implements MetadataExporter {
                     case BOOLEAN:
                         for (ExportTemplate exportTemplate : exportTemplates) {
                             ExportRuleScore exportRuleScoreValue = new ExportRuleScore(
-                                exportTemplate,
-                                itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
-                                    + "_" + currentItemDef.getOID().replace(".", "u002E")
-                                    .replace("_", "u005F"), currentScore,
-                                ExportScoreFieldType.VALUE);
+                                    exportTemplate,
+                                    itemGroupDef.getOID().replace(".", "u002E").replace("_", "u005F")
+                                            + "_"
+                                            + currentItemDef
+                                                    .getOID()
+                                                    .replace(".", "u002E")
+                                                    .replace("_", "u005F"),
+                                    currentScore,
+                                    ExportScoreFieldType.VALUE);
                             exportRuleScoreValue.setExportRuleFormat(new ExportRuleFormat());
                             currentScore.addExportRule(exportRuleScoreValue);
                             exportTemplateDao.merge(exportTemplate);

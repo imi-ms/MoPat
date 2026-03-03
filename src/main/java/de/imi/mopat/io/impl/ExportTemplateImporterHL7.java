@@ -65,7 +65,7 @@ public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
      */
     @Override
     public List<String> importFile(InputStream inputStream)
-        throws IOException, SAXException, ParserConfigurationException {
+            throws IOException, SAXException, ParserConfigurationException {
         List<String> xmlDoc = new ArrayList<String>();
         try {
             // This code is adapted from http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/

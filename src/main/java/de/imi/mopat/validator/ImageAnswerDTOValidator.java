@@ -17,6 +17,7 @@ public class ImageAnswerDTOValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -37,28 +38,44 @@ public class ImageAnswerDTOValidator implements Validator {
         // question was new created, check if the given file is not empty
         if (answerDTO.getImagePath() == null) {
             if (answerDTO.getImageFile() == null || answerDTO.getImageFile().isEmpty()) {
-                errors.rejectValue("imageFile", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("imageAnswer.validator" + ".noFilePath",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "imageFile",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "imageAnswer.validator" + ".noFilePath",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
         // If a new file was uploaded check if it is not empty, not too big
         // and the type is supported
         if (answerDTO.getImageFile().getSize() != 0) {
             if (answerDTO.getImageFile().isEmpty()) {
-                errors.rejectValue("imageFile", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("imageAnswer.validator" + ".noFilePath",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "imageFile",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "imageAnswer.validator" + ".noFilePath",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             } else if (!answerDTO.getImageFile().getContentType().equals("image/jpeg")
-                && !answerDTO.getImageFile().getContentType().equals("image/jpg")
-                && !answerDTO.getImageFile().getContentType().equals("image/png")) {
-                errors.rejectValue("imageFile", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("imageAnswer.validator" + ".noImageFile",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    && !answerDTO.getImageFile().getContentType().equals("image/jpg")
+                    && !answerDTO.getImageFile().getContentType().equals("image/png")) {
+                errors.rejectValue(
+                        "imageFile",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "imageAnswer.validator" + ".noImageFile",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             } else if (answerDTO.getImageFile().getSize() > 2097152) {
-                errors.rejectValue("imageFile", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("imageAnswer.validator" + ".fileTooBig",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "imageFile",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "imageAnswer.validator" + ".fileTooBig",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
     }

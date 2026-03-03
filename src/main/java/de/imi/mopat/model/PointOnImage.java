@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.dto.PointOnImageDTO;
 import de.imi.mopat.model.enumeration.MoPatColor;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * Realizes a PointOnImage of an {@link ImageAnswer ImageAnswer's} {@link Response response}.
@@ -22,30 +21,35 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "point_on_image")
 public class PointOnImage implements Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @NotNull
     @Column(name = "position")
     private int position;
+
     @NotNull
     @Column(name = "x_coordinate")
     private Float xCoordinate;
+
     @NotNull
     @Column(name = "y_coordinate")
     private Float yCoordinate;
+
     @NotNull
     @Column(name = "color")
     private MoPatColor color;
+
     @JoinColumn(name = "response_id", referencedColumnName = "id")
     private Response response;
 
-    public PointOnImage() {
-    }
+    public PointOnImage() {}
 
     /**
      * Realizes a PointOnImage of an {@link ImageAnswer ImageAnswer's} {@link Response response}.
@@ -90,44 +94,6 @@ public class PointOnImage implements Serializable {
     }
 
     /**
-     * Returns the x-Coordinate in percent relative to the width of the associated image of this
-     * {@link PointOnImage}
-     *
-     * @return the x-Coordinate in percent relative to the width of the associated image
-     */
-    public Float getxCoordinate() {
-        return xCoordinate;
-    }
-
-    /**
-     * Returns the y-Coordinate in percent relative to the height of the associated image of this
-     * {@link PointOnImage}
-     *
-     * @return the y-Coordinate in percent relative to the height of the associated image
-     */
-    public Float getyCoordinate() {
-        return yCoordinate;
-    }
-
-    /**
-     * Returns the color of this {@link PointOnImage}
-     *
-     * @return the color of the marked X
-     */
-    public MoPatColor getColor() {
-        return color;
-    }
-
-    /**
-     * Returns the associated {@link Response} of this {@link PointOnImage}
-     *
-     * @return the associated {@link Response}
-     */
-    public Response getResponse() {
-        return response;
-    }
-
-    /**
      * Sets the position in the array of this {@link PointOnImage}
      *
      * @param position Position in the array
@@ -135,6 +101,16 @@ public class PointOnImage implements Serializable {
     public void setPosition(final int position) {
         assert position > 0 : "The given postion was <= 0";
         this.position = position;
+    }
+
+    /**
+     * Returns the x-Coordinate in percent relative to the width of the associated image of this
+     * {@link PointOnImage}
+     *
+     * @return the x-Coordinate in percent relative to the width of the associated image
+     */
+    public Float getxCoordinate() {
+        return xCoordinate;
     }
 
     /**
@@ -148,6 +124,16 @@ public class PointOnImage implements Serializable {
     }
 
     /**
+     * Returns the y-Coordinate in percent relative to the height of the associated image of this
+     * {@link PointOnImage}
+     *
+     * @return the y-Coordinate in percent relative to the height of the associated image
+     */
+    public Float getyCoordinate() {
+        return yCoordinate;
+    }
+
+    /**
      * Sets the y-Coordinate in percent relative to the height of the associated image of this
      * {@link PointOnImage}
      *
@@ -158,12 +144,30 @@ public class PointOnImage implements Serializable {
     }
 
     /**
+     * Returns the color of this {@link PointOnImage}
+     *
+     * @return the color of the marked X
+     */
+    public MoPatColor getColor() {
+        return color;
+    }
+
+    /**
      * Sets the color of this {@link PointOnImage}
      *
      * @param color color of the marked X
      */
     public void setColor(final MoPatColor color) {
         this.color = color;
+    }
+
+    /**
+     * Returns the associated {@link Response} of this {@link PointOnImage}
+     *
+     * @return the associated {@link Response}
+     */
+    public Response getResponse() {
+        return response;
     }
 
     /**
@@ -198,10 +202,9 @@ public class PointOnImage implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof PointOnImage)) {
+        if (!(obj instanceof PointOnImage other)) {
             return false;
         }
-        PointOnImage other = (PointOnImage) obj;
         return getUUID().equals(other.getUUID());
     }
 }

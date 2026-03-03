@@ -18,15 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class QuestionService {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-            QuestionService.class);
-    
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionService.class);
+
     @Autowired
     private AnswerDao answerDao;
-    
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
-    
+
     @Autowired
     private BundleDao bundleDao;
 
@@ -47,8 +46,7 @@ public class QuestionService {
      *                                  question targets of cloned conditions.
      */
     public Set<Condition> cloneConditions(
-        Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap,
-        Map<Question, Question> questionMap) {
+            Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap, Map<Question, Question> questionMap) {
         Set<Condition> newConditions = new HashSet<>();
         for (Question originalQuestion : questionMap.keySet()) {
             for (Answer answer : originalQuestion.getAnswers()) {
@@ -56,16 +54,16 @@ public class QuestionService {
                 for (Condition condition : conditions) {
                     Condition newCondition = null;
                     if (condition.getTrigger().getClass() == answer.getClass()
-                        && condition.getTarget().getClass() == originalQuestion.getClass()) {
+                            && condition.getTarget().getClass() == originalQuestion.getClass()) {
                         newCondition = condition.cloneCondition(
-                            oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
-                            questionMap.get((Question) condition.getTarget()));
+                                oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
+                                questionMap.get((Question) condition.getTarget()));
                     } else if (condition.getTrigger().getClass() == answer.getClass()
-                        && condition.getTarget().getClass() == answer.getClass()) {
+                            && condition.getTarget().getClass() == answer.getClass()) {
                         Question taq = condition.getTargetAnswerQuestion();
                         newCondition = condition.cloneCondition(
-                            oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
-                            oldQuestionToNewAnswerMap.get(taq).get((Answer) condition.getTarget()));
+                                oldQuestionToNewAnswerMap.get(originalQuestion).get(answer),
+                                oldQuestionToNewAnswerMap.get(taq).get((Answer) condition.getTarget()));
                     }
                     if (newCondition != null) {
                         newConditions.add(newCondition);
@@ -78,66 +76,58 @@ public class QuestionService {
     }
 
     Questionnaire duplicateQuestionsToNewQuestionnaire(
-        Set<Question> originalQuestions,
-        Questionnaire newQuestionnaire
-    ) {
+            Set<Question> originalQuestions, Questionnaire newQuestionnaire) {
         Set<Question> copiedQuestions = new HashSet<>();
-        
+
         for (Question originalQuestion : originalQuestions) {
             Question newQuestion = new Question(
-                new HashMap<>(originalQuestion.getLocalizedQuestionText()),
-                originalQuestion.getIsRequired(), originalQuestion.getIsEnabled(),
-                originalQuestion.getQuestionType(), originalQuestion.getPosition(),
-                newQuestionnaire,originalQuestion.getIsJustInfo()
-            );
-            
+                    new HashMap<>(originalQuestion.getLocalizedQuestionText()),
+                    originalQuestion.getIsRequired(),
+                    originalQuestion.getIsEnabled(),
+                    originalQuestion.getQuestionType(),
+                    originalQuestion.getPosition(),
+                    newQuestionnaire,
+                    originalQuestion.getIsJustInfo());
+
             newQuestion.setMinMaxNumberAnswers(
-                originalQuestion.getMinNumberAnswers(),
-                originalQuestion.getMaxNumberAnswers()
-            
-            );
-            
+                    originalQuestion.getMinNumberAnswers(), originalQuestion.getMaxNumberAnswers());
+
             for (Answer answer : originalQuestion.getAnswers()) {
                 newQuestion.addAnswer(answer.cloneWithoutReferences());
             }
-            
+
             newQuestion.setQuestionnaire(newQuestionnaire);
             copiedQuestions.add(newQuestion);
         }
         newQuestionnaire.setQuestions(copiedQuestions);
         questionnaireDao.merge(newQuestionnaire);
-        //Refetch questionnaire to get ids from db
+        // Refetch questionnaire to get ids from db
         return questionnaireDao.getElementById(newQuestionnaire.getId());
     }
-    
-    MapHolder getMappingForDuplicatedQuestions(
-        Questionnaire originalQuestionnnaire,
-        Questionnaire newQuestionnaire
-    ) {
+
+    MapHolder getMappingForDuplicatedQuestions(Questionnaire originalQuestionnnaire, Questionnaire newQuestionnaire) {
         Map<Question, Question> questionMap = new HashMap<>();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = new HashMap<>();
-        
-        
+
         for (int i = 0; i < originalQuestionnnaire.getQuestions().size(); i++) {
-            
+
             Question originalQuestion = new ArrayList<>(originalQuestionnnaire.getQuestions()).get(i);
             Question newQuestion = new ArrayList<>(newQuestionnaire.getQuestions()).get(i);
-            
+
             if (originalQuestion != null && newQuestion != null) {
                 questionMap.put(originalQuestion, newQuestion);
-                
+
                 Map<Answer, Answer> answerMap = new HashMap<>();
-                
+
                 for (int j = 0; j < originalQuestion.getAnswers().size(); j++) {
                     Answer originalAnswer = originalQuestion.getAnswers().get(j);
                     Answer newAnswer = newQuestion.getAnswers().get(j);
                     answerMap.put(originalAnswer, newAnswer);
                 }
-                
+
                 oldQuestionToNewAnswerMap.put(originalQuestion, answerMap);
             }
         }
         return new MapHolder(questionMap, oldQuestionToNewAnswerMap);
     }
-    
 }

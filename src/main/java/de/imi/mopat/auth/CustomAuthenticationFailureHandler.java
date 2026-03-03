@@ -1,15 +1,14 @@
 package de.imi.mopat.auth;
 
 import de.imi.mopat.helper.controller.ApplicationMailer;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -26,26 +25,29 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /**
  *
  */
-public class CustomAuthenticationFailureHandler extends
-    ExceptionMappingAuthenticationFailureHandler {
+public class CustomAuthenticationFailureHandler extends ExceptionMappingAuthenticationFailureHandler {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        CustomAuthenticationFailureHandler.class);
     public static final String LAST_USERNAME_KEY = "LAST_USERNAME";
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CustomAuthenticationFailureHandler.class);
 
     @Autowired
     private UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter;
+
     @Autowired
     private ApplicationContext appContext;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ApplicationMailer applicationMailer;
 
     @Override
-    public void onAuthenticationFailure(final HttpServletRequest request,
-        final HttpServletResponse response, final AuthenticationException exception)
-        throws IOException, ServletException {
+    public void onAuthenticationFailure(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final AuthenticationException exception)
+            throws IOException, ServletException {
         boolean ldapAuthenticationSuccess = false;
 
         // Get credentials
@@ -58,15 +60,15 @@ public class CustomAuthenticationFailureHandler extends
             super.onAuthenticationFailure(request, response, exception);
             return;
         }
-        MoPatActiveDirectoryLdapAuthenticationProvider adAuthenticationProvider = appContext.getBean(
-            "adAuthenticationProvider", MoPatActiveDirectoryLdapAuthenticationProvider.class);
+        MoPatActiveDirectoryLdapAuthenticationProvider adAuthenticationProvider =
+                appContext.getBean("adAuthenticationProvider", MoPatActiveDirectoryLdapAuthenticationProvider.class);
         Boolean activatedLdap = adAuthenticationProvider.isActiveDirectoryLDAPAuthenticationActivated();
 
         if (activatedLdap) {
             // Try authentication via active directory
             try {
-                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    lastUserName, lastPassword);
+                UsernamePasswordAuthenticationToken token =
+                        new UsernamePasswordAuthenticationToken(lastUserName, lastPassword);
                 adAuthenticationProvider.authenticate(token);
                 ldapAuthenticationSuccess = true;
             } catch (BadCredentialsException thrownException) {
@@ -87,26 +89,28 @@ public class CustomAuthenticationFailureHandler extends
                 String baseUrl = null;
                 if (contextPath == null || contextPath.isEmpty()) {
                     baseUrl = (String) request.getRequestURL()
-                        .subSequence(0, request.getRequestURL().lastIndexOf("/"));
+                            .subSequence(0, request.getRequestURL().lastIndexOf("/"));
                 } else {
                     baseUrl = request.getRequestURL()
-                        .subSequence(0, request.getRequestURL().lastIndexOf(contextPath))
-                        + contextPath;
+                                    .subSequence(0, request.getRequestURL().lastIndexOf(contextPath))
+                            + contextPath;
                 }
                 String subject = messageSource.getMessage(
-                    "mail.authenticationWithoutAuthorization.subject", new Object[]{},
-                    domainDefaultLanguageLocale);
+                        "mail.authenticationWithoutAuthorization.subject",
+                        new Object[] {},
+                        domainDefaultLanguageLocale);
                 String content = messageSource.getMessage(
-                    "mail.authenticationWithoutAuthorization.content",
-                    new Object[]{domain, baseUrl, footerEmail, footerPhone},
-                    domainDefaultLanguageLocale);
+                        "mail.authenticationWithoutAuthorization.content",
+                        new Object[] {domain, baseUrl, footerEmail, footerPhone},
+                        domainDefaultLanguageLocale);
                 String footer = messageSource.getMessage(
-                    "mail.authenticationWithoutAuthorization.footer",
-                    new Object[]{footerEmail, footerPhone}, domainDefaultLanguageLocale);
+                        "mail.authenticationWithoutAuthorization.footer",
+                        new Object[] {footerEmail, footerPhone},
+                        domainDefaultLanguageLocale);
                 HashSet<String> recipientsBCC = null;
                 try {
-                    applicationMailer.sendMail(lastUserName + "@" + domain, recipientsBCC, subject,
-                        content + footer, null);
+                    applicationMailer.sendMail(
+                            lastUserName + "@" + domain, recipientsBCC, subject, content + footer, null);
                 } catch (MailException e) {
                     LOGGER.debug("It wasn't possible to send email: " + e.getMessage());
                 }

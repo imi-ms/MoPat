@@ -6,14 +6,18 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.SliderFreetextAnswer;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
-import org.springframework.validation.BindingResult;
-
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.springframework.validation.BindingResult;
 
 public class NumberCheckBoxTextStrategy implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
         SliderFreetextAnswer sliderFreetextAnswer;
         // Numbercheckbox with freetext is always horizontal
@@ -33,39 +37,36 @@ public class NumberCheckBoxTextStrategy implements CreateOrUpdateAnswerStrategy 
             sliderFreetextAnswer.setIsEnabled(isEnabled);
         } else {
             // Update answer
-            sliderFreetextAnswer = new SliderFreetextAnswer(question, isEnabled, minValue,
-                    maxValue, stepsize, answerDTO.getLocalizedFreetextLabel(), vertical);
+            sliderFreetextAnswer = new SliderFreetextAnswer(
+                    question, isEnabled, minValue, maxValue, stepsize, answerDTO.getLocalizedFreetextLabel(), vertical);
         }
         // Set or update minimum and maximum text
         if (answerDTO.getLocalizedMinimumText() != null) {
-            for (Map.Entry<String, String> entry : answerDTO.getLocalizedMinimumText()
-                    .entrySet()) {
-                if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                        entry.getValue())) {
+            for (Map.Entry<String, String> entry :
+                    answerDTO.getLocalizedMinimumText().entrySet()) {
+                if (entry.getValue() == null
+                        || entry.getValue().trim().isEmpty()
+                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                     answerDTO.getLocalizedMinimumText().put(entry.getKey(), "");
                 }
             }
-            sliderFreetextAnswer.setLocalizedMinimumText(
-                    answerDTO.getLocalizedMinimumText());
+            sliderFreetextAnswer.setLocalizedMinimumText(answerDTO.getLocalizedMinimumText());
         } else {
             sliderFreetextAnswer.setLocalizedMinimumText(null);
         }
         if (answerDTO.getLocalizedMaximumText() != null) {
-            for (Map.Entry<String, String> entry : answerDTO.getLocalizedMaximumText()
-                    .entrySet()) {
-                if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                        entry.getValue())) {
+            for (Map.Entry<String, String> entry :
+                    answerDTO.getLocalizedMaximumText().entrySet()) {
+                if (entry.getValue() == null
+                        || entry.getValue().trim().isEmpty()
+                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                     answerDTO.getLocalizedMaximumText().put(entry.getKey(), "");
                 }
             }
-            sliderFreetextAnswer.setLocalizedMaximumText(
-                    answerDTO.getLocalizedMaximumText());
+            sliderFreetextAnswer.setLocalizedMaximumText(answerDTO.getLocalizedMaximumText());
         } else {
             sliderFreetextAnswer.setLocalizedMaximumText(null);
         }
-        sliderFreetextAnswer.setLocalizedFreetextLabel(
-                answerDTO.getLocalizedFreetextLabel());
+        sliderFreetextAnswer.setLocalizedFreetextLabel(answerDTO.getLocalizedFreetextLabel());
     }
 }

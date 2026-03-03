@@ -13,15 +13,20 @@ import jakarta.validation.constraints.Size;
 public class ClinicDTO {
 
     private Long id = null;
+
     @NotNull(message = "{clinic.name.notNull}")
     @Size(min = 3, max = 255, message = "{clinic.name.size}")
     private String name;
+
     @NotNull(message = "{clinic.description.notNull}")
     @Size(min = 1, message = "{clinic.description.notNull}")
     private String description;
-    @Pattern(regexp = "^$|[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+
+    @Pattern(
+            regexp = "^$|[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     private String email;
+
     private List<BundleClinicDTO> bundleClinicDTOs;
     private List<UserDTO> assignedUserDTOs;
     private List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS;
@@ -46,16 +51,16 @@ public class ClinicDTO {
         return description;
     }
 
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
     public List<UserDTO> getAssignedUserDTOs() {
         return assignedUserDTOs;
     }
 
     public void setAssignedUserDTOs(final List<UserDTO> assignedUsers) {
         this.assignedUserDTOs = assignedUsers;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
     }
 
     public List<BundleClinicDTO> getBundleClinicDTOs() {
@@ -71,10 +76,9 @@ public class ClinicDTO {
     }
 
     public void setClinicConfigurationMappingDTOS(
-        final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
+            final List<ClinicConfigurationMappingDTO> clinicConfigurationMappingDTOS) {
         this.clinicConfigurationMappingDTOS = clinicConfigurationMappingDTOS;
     }
-
 
     public String getEmail() {
         return email;

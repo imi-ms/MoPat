@@ -21,6 +21,7 @@ public class SelectAnswerValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -40,13 +41,17 @@ public class SelectAnswerValidator implements Validator {
         SelectAnswer selectAnswer = (SelectAnswer) target;
         // [sw] Check if any added language contains an empty localized label
         for (Map.Entry<String, String> entry : selectAnswer.getLocalizedLabel().entrySet()) {
-            if (entry.getValue() == null || entry.getValue().trim().isEmpty() || entry.getValue()
-                .matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>")) {
+            if (entry.getValue() == null
+                    || entry.getValue().trim().isEmpty()
+                    || entry.getValue().matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>")) {
                 selectAnswer.getLocalizedLabel().put(entry.getKey(), "");
-                errors.rejectValue("localizedLabel[" + entry.getKey() + "]",
-                    MoPatValidator.ERRORCODE_NOT_NULL,
-                    messageSource.getMessage("selectAnswer.validator" + ".labelNotNull",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "localizedLabel[" + entry.getKey() + "]",
+                        MoPatValidator.ERRORCODE_NOT_NULL,
+                        messageSource.getMessage(
+                                "selectAnswer.validator" + ".labelNotNull",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
     }

@@ -89,36 +89,50 @@ import org.xml.sax.SAXException;
 @Controller
 public class ExportMappingController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ExportMappingController.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExportMappingController.class);
+
     @Autowired
     private AnswerDao answerDao;
+
     @Autowired
     private QuestionDao questionDao;
+
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private ConfigurationGroupDao configurationGroupDao;
+
     @Autowired
     private EncounterDao encounterDao;
+
     @Autowired
     private ExportRuleDao exportRuleDao;
+
     @Autowired
     private ExportRuleFormatDao exportRuleFormatDao;
+
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private ScoreDao scoreDao;
+
     @Autowired
     private ExportRulesDTOValidator exportRulesDTOValidator;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private StringUtilities stringUtilityHelper;
+
     @Autowired
     private FhirImporter fhirImporter;
+
     @Autowired
     private FhirVersionHelper fhirVersionHelper;
 
@@ -168,11 +182,10 @@ public class ExportMappingController {
      */
     @GetMapping(value = "/mapping/list")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String showMapping(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
+    public String showMapping(@RequestParam(value = "id", required = true) final Long id, final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
         if (questionnaire == null) {
-            //clear the models attributes that are set in the @ModelAttribute
+            // clear the models attributes that are set in the @ModelAttribute
             // methods
             model.addAttribute("exportTemplateTypeList", null);
             return "redirect:/questionnaire/list";
@@ -193,8 +206,7 @@ public class ExportMappingController {
      */
     @GetMapping(value = "/mapping/uploadtemplate")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String showUploadForm(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
+    public String showUploadForm(@RequestParam(value = "id", required = true) final Long id, final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
         model.addAttribute("export", new ExportTemplate());
         model.addAttribute("questionnaire", questionnaire);
@@ -218,24 +230,28 @@ public class ExportMappingController {
     @PostMapping(value = "/mapping/uploadtemplate")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String handleUpload(
-        @RequestParam(value = "questionnaire_id", required = true) final Long questionnaireId,
-        @RequestParam(value = "name", required = true) final String name,
-        @RequestParam(value = "file", required = true) final MultipartFile file,
-        @RequestParam(value = "type", required = true) final String type,
-        @ModelAttribute("export") final ExportTemplate export, final BindingResult result,
-        final HttpServletRequest request, final Model model) {
+            @RequestParam(value = "questionnaire_id", required = true) final Long questionnaireId,
+            @RequestParam(value = "name", required = true) final String name,
+            @RequestParam(value = "file", required = true) final MultipartFile file,
+            @RequestParam(value = "type", required = true) final String type,
+            @ModelAttribute("export") final ExportTemplate export,
+            final BindingResult result,
+            final HttpServletRequest request,
+            final Model model) {
 
         String locale = LocaleContextHolder.getLocale().toString();
 
         if (name == null || name.isEmpty()) {
-            result.reject("name",
-                messageSource.getMessage("mapping.error.uploadtemplateName", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            result.reject(
+                    "name",
+                    messageSource.getMessage(
+                            "mapping.error.uploadtemplateName", new Object[] {}, LocaleContextHolder.getLocale()));
         }
         if (file == null || file.getSize() == 0) {
-            result.reject("file",
-                messageSource.getMessage("mapping.error.uploadtemplateFile", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            result.reject(
+                    "file",
+                    messageSource.getMessage(
+                            "mapping.error.uploadtemplateFile", new Object[] {}, LocaleContextHolder.getLocale()));
         }
         // If basic validation fails, show the error messages
         if (result.hasErrors()) {
@@ -249,14 +265,12 @@ public class ExportMappingController {
             String webappPath = request.getSession().getServletContext().getRealPath("") + "/";
             ImportQuestionnaireValidation validationResult = new ImportQuestionnaireValidation();
 
-            FhirVersion matchingVersion =
-                fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
+            FhirVersion matchingVersion = fhirVersionHelper.mapExportTemplateTypeToFhirVersion(exportTemplateType);
 
-            fhirImporter.validateFhirFileAgainstFhirVersion(file, validationResult,
-                matchingVersion, locale);
+            fhirImporter.validateFhirFileAgainstFhirVersion(file, validationResult, matchingVersion, locale);
 
             if (validationResult.hasErrors()) {
-                for (ImportQuestionnaireError error: validationResult.getValidationErrors()) {
+                for (ImportQuestionnaireError error : validationResult.getValidationErrors()) {
                     if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
                         result.reject(error.getErrorCode(), error.getErrorArguments(), error.getDefaultErrorMessage());
                     } else {
@@ -269,18 +283,22 @@ public class ExportMappingController {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 Map<String, String> jsonAttributes = mapper.convertValue(
-                    mapper.readTree(file.getInputStream()).get(0),
-                    new TypeReference<Map<String, String>>() {
-                    });
+                        mapper.readTree(file.getInputStream()).get(0), new TypeReference<Map<String, String>>() {});
                 if (!jsonAttributes.containsKey("record_id")) {
-                    result.reject("file", messageSource.getMessage(
-                        "mapping.error" + ".uploadtemplateREDCapFileMissingRecordId",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    result.reject(
+                            "file",
+                            messageSource.getMessage(
+                                    "mapping.error" + ".uploadtemplateREDCapFileMissingRecordId",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             } catch (IOException | NoSuchMessageException exception) {
-                result.reject("file",
-                    messageSource.getMessage("mapping.error.uploadtemplateREDCapFileError",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                result.reject(
+                        "file",
+                        messageSource.getMessage(
+                                "mapping.error.uploadtemplateREDCapFileError",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
 
@@ -290,17 +308,17 @@ public class ExportMappingController {
 
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
 
-        List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(name,
-            exportTemplateType, file, configurationGroupDao, exportTemplateDao);
-        //Create second list to avoid ConcurrentModificationException
+        List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(
+                name, exportTemplateType, file, configurationGroupDao, exportTemplateDao);
+        // Create second list to avoid ConcurrentModificationException
         List<ExportTemplate> templates = new ArrayList<>();
         templates.addAll(exportTemplates);
         for (ExportTemplate template : templates) {
             try {
                 // Replace umlauts and whitespace
-                String uploadFilename =
-                    template.getId() + "_" + template.getFilename() + file.getOriginalFilename()
-                        .substring(file.getOriginalFilename().lastIndexOf("."));
+                String uploadFilename = template.getId() + "_" + template.getFilename()
+                        + file.getOriginalFilename()
+                                .substring(file.getOriginalFilename().lastIndexOf("."));
                 template.setFilename(uploadFilename);
                 String objectStoragePath = configurationDao.getObjectStoragePath();
                 // Save uploaded file and update xml filename in template
@@ -311,8 +329,8 @@ public class ExportMappingController {
                 }
                 File uploadFile = new File(contextPath, uploadFilename);
                 uploadFile.createNewFile();
-                
-                //Do the upload for FHIR resource.
+
+                // Do the upload for FHIR resource.
                 if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
                     try {
                         fhirImporter.uploadFhirExportTemplate(file, uploadFile, exportTemplateType, questionnaire);
@@ -326,14 +344,15 @@ public class ExportMappingController {
                             exportTemplateDao.remove(exportTemplate);
                         }
                         exportTemplateDao.remove(template);
-                        result.reject("exportTemplate.import.fhir.error",
-                            new Object[]{e.getLocalizedMessage()},
-                            "Error while uploading export template: " + e.getMessage());
+                        result.reject(
+                                "exportTemplate.import.fhir.error",
+                                new Object[] {e.getLocalizedMessage()},
+                                "Error while uploading export template: " + e.getMessage());
                         return showUploadForm(questionnaireId, model);
                     }
                 } else {
-                    FileUtils.writeByteArrayToFile(new File(contextPath, uploadFilename),
-                        IOUtils.toByteArray(file.getInputStream()));
+                    FileUtils.writeByteArrayToFile(
+                            new File(contextPath, uploadFilename), IOUtils.toByteArray(file.getInputStream()));
                 }
                 template.setQuestionnaire(questionnaire);
                 questionnaire.addExportTemplate(template);
@@ -372,15 +391,21 @@ public class ExportMappingController {
      */
     @RequestMapping(value = "/mapping/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String removeExportTemplate(@RequestParam(value = "id", required = true) final Long id,
-        final HttpServletRequest request, final Model model) {
+    public String removeExportTemplate(
+            @RequestParam(value = "id", required = true) final Long id,
+            final HttpServletRequest request,
+            final Model model) {
         ExportTemplate exportTemplate = exportTemplateDao.getElementById(id);
         Questionnaire questionnaire = exportTemplate.getQuestionnaire();
         // an export template can not be deleted if used in a bundle
         if (exportTemplate.getBundleQuestionnaires() != null
-            && !exportTemplate.getBundleQuestionnaires().isEmpty()) {
-            model.addAttribute("error", messageSource.getMessage("mapping.error.assignedtobundle",
-                new Object[]{exportTemplate.getName()}, LocaleContextHolder.getLocale()));
+                && !exportTemplate.getBundleQuestionnaires().isEmpty()) {
+            model.addAttribute(
+                    "error",
+                    messageSource.getMessage(
+                            "mapping.error.assignedtobundle",
+                            new Object[] {exportTemplate.getName()},
+                            LocaleContextHolder.getLocale()));
         } else {
             String objectStoragePath = configurationDao.getObjectStoragePath();
             // delete file from disk
@@ -415,8 +440,10 @@ public class ExportMappingController {
      */
     @GetMapping(value = "/mapping/map")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String assignTemplate(@RequestParam(value = "id", required = true) final Long id,
-        final HttpServletRequest request, final Model model) {
+    public String assignTemplate(
+            @RequestParam(value = "id", required = true) final Long id,
+            final HttpServletRequest request,
+            final Model model) {
         final ExportTemplate exportTemplate = exportTemplateDao.getElementById(id);
         Questionnaire questionnaire = exportTemplate.getQuestionnaire();
         // The exportTemplate contains an outdated questionnaire for whatever
@@ -465,15 +492,13 @@ public class ExportMappingController {
             ExportTemplateImporter importer = exportTemplateType.createNewImporterInstance();
             // if no implementation for the importer exists throw error
             if (importer == null) {
-                LOGGER.error("No Implementation found for {}",
-                    exportTemplate.getExportTemplateType());
+                LOGGER.error("No Implementation found for {}", exportTemplate.getExportTemplateType());
                 throw new ReflectiveOperationException(
-                    "No Implementation " + "found for " + exportTemplate.getExportTemplateType());
+                        "No Implementation " + "found for " + exportTemplate.getExportTemplateType());
             }
 
             model.addAttribute("doc", importer.importFile(inputStream));
-        } catch (ReflectiveOperationException | IOException | SAXException |
-                 ParserConfigurationException e) {
+        } catch (ReflectiveOperationException | IOException | SAXException | ParserConfigurationException e) {
             model.addAttribute("error", e);
         }
         return "mapping/map";
@@ -492,10 +517,12 @@ public class ExportMappingController {
     @PostMapping(value = "/mapping/map")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String submitAssignment(
-        @ModelAttribute("exportRules") final ExportRulesDTO exportRulesDTO,
-        @RequestParam(value = "autoSave", required = false, defaultValue = "false") boolean autoSave,
-        final BindingResult result, final HttpServletRequest request, final Model model,
-        final HttpServletResponse response) {
+            @ModelAttribute("exportRules") final ExportRulesDTO exportRulesDTO,
+            @RequestParam(value = "autoSave", required = false, defaultValue = "false") boolean autoSave,
+            final BindingResult result,
+            final HttpServletRequest request,
+            final Model model,
+            final HttpServletResponse response) {
 
         // Validation: Only if the exportRuleDTO is not null. If it is null
         // there
@@ -512,10 +539,9 @@ public class ExportMappingController {
 
         updateExportMapping(exportRulesDTO);
 
-        ExportTemplate exportTemplate = exportTemplateDao.getElementById(
-            exportRulesDTO.getExportTemplateId());
+        ExportTemplate exportTemplate = exportTemplateDao.getElementById(exportRulesDTO.getExportTemplateId());
 
-        if(autoSave){
+        if (autoSave) {
             response.setStatus(HttpServletResponse.SC_OK);
             return null;
         }
@@ -523,33 +549,30 @@ public class ExportMappingController {
         return "redirect:/mapping/list?id=" + exportTemplate.getQuestionnaire().getId();
     }
 
-    public void updateExportMapping(ExportRulesDTO exportRulesDTO){
+    public void updateExportMapping(ExportRulesDTO exportRulesDTO) {
         for (ExportRuleDTO exportRuleDTO : exportRulesDTO.getExportRules()) {
-            ExportTemplate exportTemplate = exportTemplateDao.getElementById(
-                exportRulesDTO.getExportTemplateId());
+            ExportTemplate exportTemplate = exportTemplateDao.getElementById(exportRulesDTO.getExportTemplateId());
 
             // the export rule belongs to an answer
             if (exportRuleDTO.getAnswerId() != null) {
                 // get the corresponding format dto for later use
                 ExportRuleFormatDTO formatDTO = new ExportRuleFormatDTO();
-                //if no there are no questions in questionnaire,
+                // if no there are no questions in questionnaire,
                 // getExportRuleFormat points at null
                 if (exportRulesDTO.getExportRuleFormats() != null) {
-                    formatDTO = exportRulesDTO.getExportRuleFormats()
-                        .get(exportRuleDTO.getTempExportFormatId());
+                    formatDTO = exportRulesDTO.getExportRuleFormats().get(exportRuleDTO.getTempExportFormatId());
                 }
                 Answer answer = answerDao.getElementById(exportRuleDTO.getAnswerId());
                 // get all existing export rules for the given export
                 // template and answer object
-                Set<ExportRule> exportRules = Sets.intersection(exportTemplate.getExportRules(),
-                    answer.getExportRules());
+                Set<ExportRule> exportRules =
+                        Sets.intersection(exportTemplate.getExportRules(), answer.getExportRules());
                 // create a map between the export field and export rule
                 Map<String, ExportRule> fieldRuleMap = new HashMap<>();
                 for (ExportRule exportRule : exportRules) {
                     if (answer instanceof SliderFreetextAnswer) {
                         // special case for appended freetext to slider answers
-                        if (exportRuleDTO.getUseFreetextValue() != null
-                            && exportRuleDTO.getUseFreetextValue()) {
+                        if (exportRuleDTO.getUseFreetextValue() != null && exportRuleDTO.getUseFreetextValue()) {
                             if (((ExportRuleAnswer) exportRule).getUseFreetextValue()) {
                                 fieldRuleMap.put(exportRule.getExportField(), exportRule);
                             }
@@ -588,8 +611,8 @@ public class ExportMappingController {
                 }
                 // get all already existing export fields for this export
                 // template and answer
-                List<String> exportFields = exportTemplate.getExportFieldsByAnswer(answer,
-                    exportRuleDTO.getUseFreetextValue());
+                List<String> exportFields =
+                        exportTemplate.getExportFieldsByAnswer(answer, exportRuleDTO.getUseFreetextValue());
                 for (String exportField : newExportFields) {
                     // we always have to get an updated answer representation
                     // to get all recently added export rules and formats
@@ -598,13 +621,12 @@ public class ExportMappingController {
                     // format
                     // so if another answer from the question has an export rule
                     // assign the same format to the new export rule
-                    ExportRuleFormat exportRuleFormat = answer.getQuestion()
-                        .getExportRuleFormatFromAnswers(exportTemplate);
+                    ExportRuleFormat exportRuleFormat =
+                            answer.getQuestion().getExportRuleFormatFromAnswers(exportTemplate);
                     if (fieldRuleMap.containsKey(exportField)) {
                         // an exportRule already exists
                         // update the rule, format and move on
-                        ExportRuleAnswer exportRule = (ExportRuleAnswer) fieldRuleMap.get(
-                            exportField);
+                        ExportRuleAnswer exportRule = (ExportRuleAnswer) fieldRuleMap.get(exportField);
                         exportRule.setExportField(exportField);
                         exportRule.setUseFreetextValue(exportRuleDTO.getUseFreetextValue());
                         exportRuleFormat = exportRule.getExportRuleFormat();
@@ -612,8 +634,7 @@ public class ExportMappingController {
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
@@ -631,13 +652,12 @@ public class ExportMappingController {
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
-                        ExportRule exportRule = new ExportRuleAnswer(exportTemplate, exportField,
-                            answer, exportRuleDTO.getUseFreetextValue());
+                        ExportRule exportRule = new ExportRuleAnswer(
+                                exportTemplate, exportField, answer, exportRuleDTO.getUseFreetextValue());
                         // Persist the new rule to be able to attach the
                         // already existing format
                         exportRuleDao.merge(exportRule);
@@ -666,14 +686,13 @@ public class ExportMappingController {
                 // if there are no questions in questionnaire,
                 // getExportRuleFormat points at null
                 if (exportRulesDTO.getExportRuleFormats() != null) {
-                    formatDTO = exportRulesDTO.getExportRuleFormats()
-                        .get(exportRuleDTO.getTempExportFormatId());
+                    formatDTO = exportRulesDTO.getExportRuleFormats().get(exportRuleDTO.getTempExportFormatId());
                 }
                 Question question = questionDao.getElementById(exportRuleDTO.getQuestionId());
                 // get all existing export rules for the given export
                 // template and question object
-                Set<ExportRule> exportRules = Sets.intersection(exportTemplate.getExportRules(),
-                    question.getExportRules());
+                Set<ExportRule> exportRules =
+                        Sets.intersection(exportTemplate.getExportRules(), question.getExportRules());
                 // create a map between the export field and export rule
                 Map<String, ExportRule> fieldRuleMap = new HashMap<>();
                 for (ExportRule exportRule : exportRules) {
@@ -713,21 +732,18 @@ public class ExportMappingController {
                     // so if another question from the question has an export
                     // rule
                     // assign the same format to the new export rule
-                    ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromQuestion(
-                        exportTemplate);
+                    ExportRuleFormat exportRuleFormat = question.getExportRuleFormatFromQuestion(exportTemplate);
                     if (fieldRuleMap.containsKey(exportField)) {
                         // an exportRule already exists
                         // update the rule, format and move on
-                        ExportRuleQuestion exportRule = (ExportRuleQuestion) fieldRuleMap.get(
-                            exportField);
+                        ExportRuleQuestion exportRule = (ExportRuleQuestion) fieldRuleMap.get(exportField);
                         exportRule.setExportField(exportField);
                         exportRuleFormat = exportRule.getExportRuleFormat();
                         // set the new format settings based on the users input
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
@@ -745,13 +761,11 @@ public class ExportMappingController {
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
-                        ExportRule exportRule = new ExportRuleQuestion(exportTemplate, exportField,
-                            question);
+                        ExportRule exportRule = new ExportRuleQuestion(exportTemplate, exportField, question);
                         // Persist the new rule to be able to attach the
                         // already existing format
                         exportRuleDao.merge(exportRule);
@@ -777,8 +791,8 @@ public class ExportMappingController {
             } else if (exportRuleDTO.getEncounterField() != null) {
                 // get all existing export rules for the given export
                 // template and encounter field
-                Set<ExportRuleEncounter> exportRules = exportTemplate.getExportRulesByEncounterField(
-                    exportRuleDTO.getEncounterField());
+                Set<ExportRuleEncounter> exportRules =
+                        exportTemplate.getExportRulesByEncounterField(exportRuleDTO.getEncounterField());
                 // create a map between the export field and export rule
                 Map<String, ExportRuleEncounter> fieldRuleMap = new HashMap<>();
                 for (ExportRuleEncounter exportRule : exportRules) {
@@ -796,22 +810,21 @@ public class ExportMappingController {
                     }
                     continue;
                 }
-                Set<String> exportFields = exportTemplate.getExportFieldsByEncounterField(
-                    exportRuleDTO.getEncounterField());
+                Set<String> exportFields =
+                        exportTemplate.getExportFieldsByEncounterField(exportRuleDTO.getEncounterField());
                 for (String exportField : newExportFields) {
                     // we always have to get an updated export template
                     // representation
                     // to get all recently added export rules and the formats
                     exportTemplate = exportTemplateDao.getElementById(exportTemplate.getId());
-                    ExportRuleFormat exportRuleFormat = exportTemplate.getExportRuleFormatFromEncounterField(
-                        exportRuleDTO.getEncounterField());
+                    ExportRuleFormat exportRuleFormat =
+                            exportTemplate.getExportRuleFormatFromEncounterField(exportRuleDTO.getEncounterField());
                     if (fieldRuleMap.containsKey(exportField)) {
                         // an exportRule already exists
                         // update the rule, format and move on
                         ExportRule exportRule = fieldRuleMap.get(exportField);
                         exportRule.setExportField(exportField);
-                        exportRule.getExportRuleFormat()
-                            .setDateFormat(exportRuleDTO.getEncounterDateFormat());
+                        exportRule.getExportRuleFormat().setDateFormat(exportRuleDTO.getEncounterDateFormat());
                         exportRuleDao.merge(exportRule);
                         exportTemplateDao.merge(exportTemplate);
                         exportFields.remove(exportField);
@@ -823,8 +836,8 @@ public class ExportMappingController {
                         if (exportRuleFormat == null) {
                             exportRuleFormat = new ExportRuleFormat();
                         }
-                        ExportRule exportRule = new ExportRuleEncounter(exportTemplate, exportField,
-                            exportRuleDTO.getEncounterField());
+                        ExportRule exportRule =
+                                new ExportRuleEncounter(exportTemplate, exportField, exportRuleDTO.getEncounterField());
                         // Persist the new rule to be able to attach the
                         // already existing format
                         exportRuleDao.merge(exportRule);
@@ -849,15 +862,14 @@ public class ExportMappingController {
                 // get the corresponding format dto for later use
                 ExportRuleFormatDTO formatDTO = new ExportRuleFormatDTO();
                 if (exportRulesDTO.getExportRuleScoreFormats() != null) {
-                    formatDTO = exportRulesDTO.getExportRuleScoreFormats()
-                        .get(exportRuleDTO.getTempExportFormatId());
+                    formatDTO = exportRulesDTO.getExportRuleScoreFormats().get(exportRuleDTO.getTempExportFormatId());
                 }
 
                 Score score = scoreDao.getElementById(exportRuleDTO.getScoreId());
                 // get all existing export rules for the given score,
                 // export template and questionnaire field
-                Set<ExportRuleScore> exportRules = exportTemplate.getExportRulesByScoreField(
-                    exportRuleDTO.getScoreField(), score.getId());
+                Set<ExportRuleScore> exportRules =
+                        exportTemplate.getExportRulesByScoreField(exportRuleDTO.getScoreField(), score.getId());
                 // create a map between the export field and export rule
                 Map<String, ExportRuleScore> fieldRuleMap = new HashMap<>();
                 for (ExportRuleScore exportRule : exportRules) {
@@ -878,15 +890,15 @@ public class ExportMappingController {
                     continue;
                 }
 
-                Set<String> exportFields = exportTemplate.getExportFieldsByScoreField(
-                    exportRuleDTO.getScoreField(), score.getId());
+                Set<String> exportFields =
+                        exportTemplate.getExportFieldsByScoreField(exportRuleDTO.getScoreField(), score.getId());
                 for (String exportField : newExportFields) {
                     // we always have to get an updated export template
                     // representation
                     // to get all recently added export rules and the formats
                     exportTemplate = exportTemplateDao.getElementById(exportTemplate.getId());
                     ExportRuleFormat exportRuleFormat = exportTemplate.getExportRuleFormatFromScoreField(
-                        exportRuleDTO.getScoreField(), score.getId());
+                            exportRuleDTO.getScoreField(), score.getId());
                     if (fieldRuleMap.containsKey(exportField)) {
                         // an exportRule already exists
                         // update the rule, format and move on
@@ -897,8 +909,7 @@ public class ExportMappingController {
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
@@ -917,14 +928,13 @@ public class ExportMappingController {
                         exportRuleFormat.setDateFormat(formatDTO.getDateFormat());
                         exportRuleFormat.setDecimalDelimiter(formatDTO.getDecimalDelimiter());
                         if (formatDTO.getDecimalPlaces() != null) {
-                            exportRuleFormat.setDecimalPlaces(
-                                Integer.parseInt(formatDTO.getDecimalPlaces()));
+                            exportRuleFormat.setDecimalPlaces(Integer.parseInt(formatDTO.getDecimalPlaces()));
                         }
                         exportRuleFormat.setNumberType(formatDTO.getNumberType());
                         exportRuleFormat.setRoundingStrategy(formatDTO.getRoundingStrategy());
 
-                        ExportRule exportRule = new ExportRuleScore(exportTemplate, exportField,
-                            score, exportRuleDTO.getScoreField());
+                        ExportRule exportRule =
+                                new ExportRuleScore(exportTemplate, exportField, score, exportRuleDTO.getScoreField());
                         // Persist the new rule to be able to attach the
                         // already existing format
                         exportRuleDao.merge(exportRule);
@@ -947,9 +957,7 @@ public class ExportMappingController {
                     scoreDao.merge(score);
                     exportTemplateDao.merge(exportTemplate);
                 }
-
             }
         }
-
     }
 }

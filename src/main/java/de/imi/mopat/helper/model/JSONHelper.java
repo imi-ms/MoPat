@@ -54,8 +54,10 @@ public class JSONHelper {
      * @param questionnaire        source questionnaire
      * @param configurationDao     used to resolve storage paths for optional assets (e.g., logo)
      */
-    public void initializeJsonQuestionnaireDTO(JsonQuestionnaireDTO jsonQuestionnaireDTO,
-        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
+    public void initializeJsonQuestionnaireDTO(
+            JsonQuestionnaireDTO jsonQuestionnaireDTO,
+            final Questionnaire questionnaire,
+            ConfigurationDao configurationDao) {
         jsonQuestionnaireDTO.setId(questionnaire.getId());
         jsonQuestionnaireDTO.setName(questionnaire.getName());
         jsonQuestionnaireDTO.setDescription(questionnaire.getDescription());
@@ -63,17 +65,15 @@ public class JSONHelper {
         jsonQuestionnaireDTO.setLocalizedFinalText(questionnaire.getLocalizedFinalText());
         jsonQuestionnaireDTO.setLocalizedDisplayName(questionnaire.getLocalizedDisplayName());
 
-        if (questionnaire.getLogo()
-            != null) {
+        if (questionnaire.getLogo() != null) {
             try {
                 jsonQuestionnaireDTO.setLogoBase64(StringUtilities.convertImageToBase64String(
-                    (configurationDao.getImageUploadPath()
-                        + "/questionnaire/"
-                        + questionnaire.getId()
-                        + "/"
-                        + questionnaire.getLogo()
-                    ),
-                    questionnaire.getLogo()));
+                        (configurationDao.getImageUploadPath()
+                                + "/questionnaire/"
+                                + questionnaire.getId()
+                                + "/"
+                                + questionnaire.getLogo()),
+                        questionnaire.getLogo()));
             } catch (Exception e) {
             }
         }
@@ -87,9 +87,7 @@ public class JSONHelper {
 
         for (Score score : questionnaire.getScores()) {
             JsonScoreDTO jsonScoreDTO = new JsonScoreDTO(score);
-            jsonQuestionnaireDTO.setScoreDTO(
-                score.getId(),
-                jsonScoreDTO);
+            jsonQuestionnaireDTO.setScoreDTO(score.getId(), jsonScoreDTO);
         }
     }
 
@@ -101,8 +99,8 @@ public class JSONHelper {
      * @param question         source question
      * @param configurationDao used for resolving optional answer assets (e.g., images)
      */
-    public void initializeJsonQuestionDTO(JsonQuestionDTO jsonQuestionDTO, final Question question,
-        ConfigurationDao configurationDao) {
+    public void initializeJsonQuestionDTO(
+            JsonQuestionDTO jsonQuestionDTO, final Question question, ConfigurationDao configurationDao) {
         jsonQuestionDTO.setId(question.getId());
         jsonQuestionDTO.setLocalizedQuestionText(question.getLocalizedQuestionText());
         jsonQuestionDTO.setIsRequired(question.getIsRequired());
@@ -122,7 +120,6 @@ public class JSONHelper {
         }
     }
 
-
     /**
      * Initializes the given {@link JsonAnswerDTO} from the provided {@link Answer}. Copies common
      * fields, exports applicable conditions, and fills type-specific properties (e.g.,
@@ -133,21 +130,17 @@ public class JSONHelper {
      * @param configurationDao used to resolve storage paths for optional assets (e.g., images)
      * @return the populated {@link JsonAnswerDTO}
      */
-    public JsonAnswerDTO initializeJsonAnswerDTO(JsonAnswerDTO jsonAnswerDTO, Answer answer,
-        ConfigurationDao configurationDao) {
+    public JsonAnswerDTO initializeJsonAnswerDTO(
+            JsonAnswerDTO jsonAnswerDTO, Answer answer, ConfigurationDao configurationDao) {
         jsonAnswerDTO.setId(answer.getId());
         jsonAnswerDTO.setIsEnabled(answer.getIsEnabled());
 
         for (Condition condition : answer.getConditions()) {
-            if (!condition.getTargetClass()
-                .equals("de.imi.mopat.model.Questionnaire")) {
-                JsonConditionDTO jsonConditionDTO =
-                    new JsonConditionDTO(condition);
+            if (!condition.getTargetClass().equals("de.imi.mopat.model.Questionnaire")) {
+                JsonConditionDTO jsonConditionDTO = new JsonConditionDTO(condition);
                 jsonAnswerDTO.addCondition(jsonConditionDTO);
-                jsonConditionDTO.setTriggerId(condition.getTrigger()
-                    .getId());
-                jsonConditionDTO.setTargetId(condition.getTarget()
-                    .getId());
+                jsonConditionDTO.setTriggerId(condition.getTrigger().getId());
+                jsonConditionDTO.setTargetId(condition.getTarget().getId());
             }
         }
 
@@ -160,58 +153,48 @@ public class JSONHelper {
         if (answer instanceof SliderAnswer sliderAnswer) {
             jsonAnswerDTO.setMinValue(sliderAnswer.getMinValue());
             jsonAnswerDTO.setMaxValue(sliderAnswer.getMaxValue());
-            jsonAnswerDTO.setStepsize(sliderAnswer.getStepsize()
-                .toString());
+            jsonAnswerDTO.setStepsize(sliderAnswer.getStepsize().toString());
             jsonAnswerDTO.setLocalizedMinimumText(sliderAnswer.getLocalizedMinimumText());
             jsonAnswerDTO.setLocalizedMaximumText(sliderAnswer.getLocalizedMaximumText());
             jsonAnswerDTO.setVertical(sliderAnswer.getVertical());
             jsonAnswerDTO.setShowValueOnButton(sliderAnswer.getShowValueOnButton());
             jsonAnswerDTO.setShowIcons(sliderAnswer.getShowIcons());
             jsonAnswerDTO.setIcons(sliderAnswer.getIcons());
-
         }
         if (answer instanceof NumberInputAnswer numberInputAnswer) {
             jsonAnswerDTO.setMinValue(numberInputAnswer.getMinValue());
             jsonAnswerDTO.setMaxValue(numberInputAnswer.getMaxValue());
-            if (numberInputAnswer.getStepsize()
-                != null) {
-                jsonAnswerDTO.setStepsize(numberInputAnswer.getStepsize()
-                    .toString());
+            if (numberInputAnswer.getStepsize() != null) {
+                jsonAnswerDTO.setStepsize(numberInputAnswer.getStepsize().toString());
             }
         }
         if (answer instanceof DateAnswer dateAnswer) {
-            if (dateAnswer.getStartDate()
-                != null) {
+            if (dateAnswer.getStartDate() != null) {
                 jsonAnswerDTO.setStartDate(Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
             }
-            if (dateAnswer.getEndDate()
-                != null) {
+            if (dateAnswer.getEndDate() != null) {
                 jsonAnswerDTO.setEndDate(Constants.DATE_FORMAT.format(dateAnswer.getEndDate()));
             }
         }
         if (answer instanceof SliderFreetextAnswer sliderFreetextAnswer) {
-            jsonAnswerDTO.setLocalizedFreetextLabel(
-                sliderFreetextAnswer.getLocalizedFreetextLabel());
+            jsonAnswerDTO.setLocalizedFreetextLabel(sliderFreetextAnswer.getLocalizedFreetextLabel());
             jsonAnswerDTO.setLocalizedMaximumText(sliderFreetextAnswer.getLocalizedMaximumText());
             jsonAnswerDTO.setLocalizedMinimumText(sliderFreetextAnswer.getLocalizedMinimumText());
             jsonAnswerDTO.setMaxValue(sliderFreetextAnswer.getMaxValue());
             jsonAnswerDTO.setMinValue(sliderFreetextAnswer.getMinValue());
-            jsonAnswerDTO.setStepsize(sliderFreetextAnswer.getStepsize()
-                .toString());
+            jsonAnswerDTO.setStepsize(sliderFreetextAnswer.getStepsize().toString());
         }
         if (answer instanceof ImageAnswer imageAnswer) {
             jsonAnswerDTO.setImagePath(imageAnswer.getImagePath());
             // Try to load the image from the disk as a BufferedImage and get
             // the Base64 representation
             try {
-                String imagePath = (configurationDao.getImageUploadPath() + "/question/"
-                    + jsonAnswerDTO.getImagePath());
-                String fileName = jsonAnswerDTO.getImagePath()
-                    .substring(imageAnswer.getImagePath()
-                        .lastIndexOf("/"));
-                jsonAnswerDTO.setImageBase64(StringUtilities.convertImageToBase64String(
-                    imagePath,
-                    fileName));
+                String imagePath =
+                        (configurationDao.getImageUploadPath() + "/question/" + jsonAnswerDTO.getImagePath());
+                String fileName = jsonAnswerDTO
+                        .getImagePath()
+                        .substring(imageAnswer.getImagePath().lastIndexOf("/"));
+                jsonAnswerDTO.setImageBase64(StringUtilities.convertImageToBase64String(imagePath, fileName));
             } catch (IOException e) {
             }
         }
@@ -231,8 +214,9 @@ public class JSONHelper {
      *                                     Base64 embedding
      */
     public void initializeJsonExportTemplateDTO(
-        JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO,
-        final Questionnaire questionnaire, ConfigurationDao configurationDao) {
+            JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO,
+            final Questionnaire questionnaire,
+            ConfigurationDao configurationDao) {
 
         for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
 
@@ -244,7 +228,7 @@ public class JSONHelper {
             jsonExportTemplateDTO.setOriginalFilename(exportTemplate.getOriginalFilename());
             jsonExportTemplateDTO.setExportTemplateType(exportTemplate.getExportTemplateType());
             jsonExportTemplateDTO.setConfigurationGroupLabelCode(
-                exportTemplate.getConfigurationGroup().getLabelMessageCode());
+                    exportTemplate.getConfigurationGroup().getLabelMessageCode());
 
             try {
                 // construct the context path based on the object storage path
@@ -255,8 +239,7 @@ public class JSONHelper {
                 File file = new File(contextPath, exportTemplate.getFilename());
                 FileInputStream inputStream = new FileInputStream(file);
 
-                jsonExportTemplateDTO.setFileByteArrayEncoded(
-                    Base64.encodeBase64(IOUtils.toByteArray(inputStream)));
+                jsonExportTemplateDTO.setFileByteArrayEncoded(Base64.encodeBase64(IOUtils.toByteArray(inputStream)));
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -283,14 +266,14 @@ public class JSONHelper {
                     jsonExportRuleDTO.setScoreId(exportRuleScore.getScore().getId());
                     jsonExportRuleDTO.setScoreField(exportRuleScore.getScoreField());
                 } else if (exportRule instanceof ExportRuleQuestion exportRuleQuestion) {
-                    jsonExportRuleDTO.setQuestionId(exportRuleQuestion.getQuestion().getId());
+                    jsonExportRuleDTO.setQuestionId(
+                            exportRuleQuestion.getQuestion().getId());
                 }
 
                 jsonExportTemplateDTO.addExportRuleDTOs(exportRule.getId(), jsonExportRuleDTO);
             }
 
-            jsonCompleteQuestionnaireDTO.addExportDTOs(exportTemplate.getId(),
-                jsonExportTemplateDTO);
+            jsonCompleteQuestionnaireDTO.addExportDTOs(exportTemplate.getId(), jsonExportTemplateDTO);
         }
     }
 
@@ -306,12 +289,12 @@ public class JSONHelper {
         jsonExportRuleFormatDTO.setUuid(exportRule.getExportRuleFormat().getUuid());
         jsonExportRuleFormatDTO.setDateFormat(exportRule.getExportRuleFormat().getDateFormat());
         jsonExportRuleFormatDTO.setDecimalDelimiter(
-            exportRule.getExportRuleFormat().getDecimalDelimiter());
+                exportRule.getExportRuleFormat().getDecimalDelimiter());
         jsonExportRuleFormatDTO.setDecimalPlaces(
-            exportRule.getExportRuleFormat().getDecimalPlaces());
+                exportRule.getExportRuleFormat().getDecimalPlaces());
         jsonExportRuleFormatDTO.setNumberType(exportRule.getExportRuleFormat().getNumberType());
         jsonExportRuleFormatDTO.setRoundingStrategy(
-            exportRule.getExportRuleFormat().getRoundingStrategy());
+                exportRule.getExportRuleFormat().getRoundingStrategy());
         return jsonExportRuleFormatDTO;
     }
 }

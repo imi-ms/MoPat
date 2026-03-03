@@ -3,13 +3,22 @@ package de.imi.mopat.config;
 import de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.apache.commons.lang.LocaleUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
@@ -25,7 +34,11 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
@@ -34,32 +47,37 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * The main configuration class defining the view.
  * <p>
  * Includes other configuration classes, e.g. Security Config. Takes over functionality of old spring-servlet.xml.
  */
-
 @Configuration
 @EnableWebMvc
 @EnableAsync
 @EnableScheduling
-@ComponentScan(basePackages = {"de.imi.mopat.auth", "de.imi.mopat.config",
-    "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
-    "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl", "de.imi.mopat.io.importer",
-    "de.imi.mopat.io.importer.fhir", "de.imi.mopat.io.importer.odm", "de.imi.mopat.model", "de.imi.mopat.validator"})
-
-@PropertySources({
-    @PropertySource("classpath:mopat.properties"),
-    @PropertySource("classpath:git.properties")
-})
+@ComponentScan(
+        basePackages = {
+            "de.imi.mopat.auth",
+            "de.imi.mopat.config",
+            "de.imi.mopat.controller",
+            "de.imi.mopat.cron",
+            "de.imi.mopat.dao",
+            "de.imi.mopat.helper.model",
+            "de.imi.mopat.helper.controller",
+            "de.imi.mopat.io",
+            "de.imi.mopat.io.impl",
+            "de.imi.mopat.io.importer",
+            "de.imi.mopat.io.importer.fhir",
+            "de.imi.mopat.io.importer.odm",
+            "de.imi.mopat.model",
+            "de.imi.mopat.validator"
+        })
+@PropertySources({@PropertySource("classpath:mopat.properties"), @PropertySource("classpath:git.properties")})
 @PropertySource(value = "file:${de.imi.mopat.config.path}/${de.imi.mopat.config.name}", ignoreResourceNotFound = true)
-@EnableJpaRepositories(basePackages = {"de.imi.mopat.dao"}, entityManagerFactoryRef = "MoPat")
+@EnableJpaRepositories(
+        basePackages = {"de.imi.mopat.dao"},
+        entityManagerFactoryRef = "MoPat")
 @EnableTransactionManagement
 public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, EnvironmentAware {
 
@@ -105,9 +123,11 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     @Bean
     public ReloadableResourceBundleMessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames("classpath:message/messages",
-            "classpath:message/language/languageCodes", "classpath:message/language/countryCodes",
-            "classpath:message/validation/validationMessages");
+        messageSource.setBasenames(
+                "classpath:message/messages",
+                "classpath:message/language/languageCodes",
+                "classpath:message/language/countryCodes",
+                "classpath:message/validation/validationMessages");
         messageSource.setFallbackToSystemLocale(false);
         messageSource.setDefaultLocale(Locale.ENGLISH);
         messageSource.setDefaultEncoding("UTF-8");
@@ -172,22 +192,15 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/css/**")
-            .addResourceLocations("/css/")
-            .setCachePeriod(604800);
-        registry.addResourceHandler("/js/**")
-            .addResourceLocations("/js/")
-            .setCachePeriod(604800);
+        registry.addResourceHandler("/css/**").addResourceLocations("/css/").setCachePeriod(604800);
+        registry.addResourceHandler("/js/**").addResourceLocations("/js/").setCachePeriod(604800);
         registry.addResourceHandler("/images/**")
-            .addResourceLocations("/images/")
-            .setCachePeriod(604800);
+                .addResourceLocations("/images/")
+                .setCachePeriod(604800);
         registry.addResourceHandler("/configuration/**")
-            .addResourceLocations("/configuration/")
-            .setCachePeriod(0);
-        registry.addResourceHandler("/conf/**")
-            .addResourceLocations("/conf/")
-            .setCachePeriod(604800);
-
+                .addResourceLocations("/configuration/")
+                .setCachePeriod(0);
+        registry.addResourceHandler("/conf/**").addResourceLocations("/conf/").setCachePeriod(604800);
     }
 
     /**
@@ -276,8 +289,7 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
 
         templateEngine.setTemplateResolver(templateResolver());
-        templateEngine.setAdditionalDialects(
-            Set.of(new LayoutDialect(), new SpringSecurityDialect()));
+        templateEngine.setAdditionalDialects(Set.of(new LayoutDialect(), new SpringSecurityDialect()));
         templateEngine.setEnableSpringELCompiler(true);
         return templateEngine;
     }
@@ -314,7 +326,7 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
      */
     @Bean
     public ContentNegotiatingViewResolver contentNegotiatingViewResolver(
-        ContentNegotiationManager contentNegotiationManager) {
+            ContentNegotiationManager contentNegotiationManager) {
         ContentNegotiatingViewResolver contentNegotiatingViewResolver = new ContentNegotiatingViewResolver();
 
         contentNegotiatingViewResolver.setContentNegotiationManager(contentNegotiationManager);
@@ -328,15 +340,19 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
      * @param configurer ContentNegotiationConfigurer
      */
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(false).favorParameter(true).parameterName("mediaType")
-            .ignoreAcceptHeader(true).useJaf(false).useRegisteredExtensionsOnly(false)
-            .defaultContentType(MediaType.APPLICATION_JSON)
-            .mediaTypes(Map.of("json", MediaType.APPLICATION_JSON));
+        configurer
+                .favorPathExtension(false)
+                .favorParameter(true)
+                .parameterName("mediaType")
+                .ignoreAcceptHeader(true)
+                .useJaf(false)
+                .useRegisteredExtensionsOnly(false)
+                .defaultContentType(MediaType.APPLICATION_JSON)
+                .mediaTypes(Map.of("json", MediaType.APPLICATION_JSON));
     }
 
     @Override
     public void setEnvironment(final Environment environment) {
         this.environment = environment;
     }
-
 }

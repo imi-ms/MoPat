@@ -18,6 +18,7 @@ public class QuestionnaireVersionGroupDTO {
     public String getGroupName() {
         return groupName;
     }
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -29,5 +30,4 @@ public class QuestionnaireVersionGroupDTO {
     public void setQuestionnaireDTOS(List<QuestionnaireDTO> questionnaireDTOS) {
         this.questionnaireDTOS = questionnaireDTOS;
     }
-
 }

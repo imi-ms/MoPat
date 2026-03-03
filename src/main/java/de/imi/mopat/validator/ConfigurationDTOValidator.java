@@ -40,16 +40,16 @@ public class ConfigurationDTOValidator implements Validator {
                 String value = configurationDTO.getValue();
 
                 if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
-                    message = messageSource.getMessage("configuration.validate" + ".boolean",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".boolean", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case DOUBLE:
                 try {
                     Double.valueOf(configurationDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".double",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".double", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case IMAGE:
@@ -58,23 +58,24 @@ public class ConfigurationDTOValidator implements Validator {
                 try {
                     Integer.valueOf(configurationDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".integer",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".integer", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case LONG:
                 try {
                     Long.valueOf(configurationDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".long",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".long", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case LOCAL_PATH:
                 File dir = new File(configurationDTO.getValue());
-                if ((!dir.canRead() || !dir.canWrite()) || configurationDTO.getValue().isEmpty()) {
-                    message = messageSource.getMessage("configuration.validate" + ".localPath",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                if ((!dir.canRead() || !dir.canWrite())
+                        || configurationDTO.getValue().isEmpty()) {
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".localPath", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case PASSWORD:
@@ -82,8 +83,8 @@ public class ConfigurationDTOValidator implements Validator {
             case PATTERN:
                 String pattern = configurationDTO.getPattern();
                 if (!configurationDTO.getValue().matches(pattern)) {
-                    message = messageSource.getMessage("configuration.validate" + ".pattern",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".pattern", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case STRING:
@@ -95,8 +96,8 @@ public class ConfigurationDTOValidator implements Validator {
                 if (richTextValue != null && !richTextValue.isEmpty()) {
 
                     if (!richTextValue.equals(stripXSS(richTextValue))) {
-                        message = messageSource.getMessage("configuration.validate.xss",
-                            new Object[]{}, LocaleContextHolder.getLocale());
+                        message = messageSource.getMessage(
+                                "configuration.validate.xss", new Object[] {}, LocaleContextHolder.getLocale());
                     }
                 }
                 break;
@@ -105,9 +106,14 @@ public class ConfigurationDTOValidator implements Validator {
         }
 
         if (message != null) {
-            message = message.replace("{field}",
-                "'" + messageSource.getMessage(configurationDTO.getLabelMessageCode(),
-                    new Object[]{}, LocaleContextHolder.getLocale()) + "'");
+            message = message.replace(
+                    "{field}",
+                    "'"
+                            + messageSource.getMessage(
+                                    configurationDTO.getLabelMessageCode(),
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale())
+                            + "'");
             errors.rejectValue("value", "errormessage", message);
         }
     }
@@ -119,7 +125,6 @@ public class ConfigurationDTOValidator implements Validator {
             value = value.replaceAll("(?i)javascript&#x3A;", "");
             value = value.replaceAll("(?i)on\\w+\\s*&#x3D;", "");
             return value;
-
         }
         return null;
     }

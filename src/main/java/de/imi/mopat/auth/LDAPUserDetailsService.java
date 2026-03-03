@@ -2,9 +2,7 @@ package de.imi.mopat.auth;
 
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.user.User;
-
 import java.util.Collection;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -26,8 +24,8 @@ public class LDAPUserDetailsService implements UserDetailsContextMapper {
     private UserDao moPatUserDao;
 
     @Override
-    public UserDetails mapUserFromContext(final DirContextOperations dco, final String username,
-        final Collection<? extends GrantedAuthority> clctn) {
+    public UserDetails mapUserFromContext(
+            final DirContextOperations dco, final String username, final Collection<? extends GrantedAuthority> clctn) {
         if (dco == null) {
             throw new BadCredentialsException("LDAP Authentication " + "deactivated");
         }
@@ -35,8 +33,7 @@ public class LDAPUserDetailsService implements UserDetailsContextMapper {
         User userEntity = moPatUserDao.loadUserByUsername(username);
         // Check if user is empty and throw exception
         if (userEntity == null || !userEntity.isLdap()) {
-            throw new InsufficientAuthenticationException(
-                "User not found in " + "locale " + "database");
+            throw new InsufficientAuthenticationException("User not found in " + "locale " + "database");
         } else if (!userEntity.isEnabled()) {
             throw new DisabledException("User is disabled");
         }

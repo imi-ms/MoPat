@@ -18,14 +18,10 @@ public class NoOpAclCache extends NoOpCache implements AclCache {
     }
 
     @Override
-    public void evictFromCache(Serializable pk) {
-
-    }
+    public void evictFromCache(Serializable pk) {}
 
     @Override
-    public void evictFromCache(ObjectIdentity objectIdentity) {
-
-    }
+    public void evictFromCache(ObjectIdentity objectIdentity) {}
 
     @Override
     public MutableAcl getFromCache(ObjectIdentity objectIdentity) {
@@ -38,12 +34,8 @@ public class NoOpAclCache extends NoOpCache implements AclCache {
     }
 
     @Override
-    public void putInCache(MutableAcl acl) {
-
-    }
+    public void putInCache(MutableAcl acl) {}
 
     @Override
-    public void clearCache() {
-
-    }
+    public void clearCache() {}
 }

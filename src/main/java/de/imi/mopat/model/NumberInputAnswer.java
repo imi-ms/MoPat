@@ -1,11 +1,10 @@
 package de.imi.mopat.model;
 
 import de.imi.mopat.model.conditions.ConditionTrigger;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.io.Serializable;
 
 /**
  * A <i>numberInput</i> answer represents a number as an answer from a question.
@@ -15,9 +14,11 @@ import jakarta.persistence.Entity;
 public class NumberInputAnswer extends Answer implements ConditionTrigger, Serializable {
 
     @Column(name = "min_value")
-    private Double minValue;    //Lowest point for slider questions
+    private Double minValue; // Lowest point for slider questions
+
     @Column(name = "max_value")
-    private Double maxValue;    // Highest point for slider questions
+    private Double maxValue; // Highest point for slider questions
+
     @Column(name = "stepsize")
     private Double stepsize; // Used for slider questions
 
@@ -36,8 +37,12 @@ public class NumberInputAnswer extends Answer implements ConditionTrigger, Seria
      * @param max       states the highest point of the range
      * @param stepsize  states the difference between two marks
      */
-    public NumberInputAnswer(final Question question, final Boolean isEnabled, final Double min,
-        final Double max, final Double stepsize) {
+    public NumberInputAnswer(
+            final Question question,
+            final Boolean isEnabled,
+            final Double min,
+            final Double max,
+            final Double stepsize) {
         super(question, isEnabled);
         setMinMax(min, max);
         setStepsize(stepsize);
@@ -64,11 +69,8 @@ public class NumberInputAnswer extends Answer implements ConditionTrigger, Seria
      *            <code>null</code>. Has to be lower than the maximum.
      */
     public void setMinValue(final Double min) {
-        if (min != null && maxValue != null) {
-            assert
-                min < maxValue :
-                "The given min value was not lower than the " + "existing max value";
-        }
+        assert min == null || maxValue == null || min < maxValue
+                : "The given min value was not lower than the " + "existing max value";
 
         this.minValue = min;
     }
@@ -86,11 +88,8 @@ public class NumberInputAnswer extends Answer implements ConditionTrigger, Seria
      *            <code>null</code>. Has to be greater than the minimum.
      */
     public void setMaxValue(final Double max) {
-        if (max != null && minValue != null) {
-            assert
-                max > minValue :
-                "The given max value was not greater than " + "the existing min value";
-        }
+        assert max == null || minValue == null || max > minValue
+                : "The given max value was not greater than " + "the existing min value";
 
         this.maxValue = max;
     }
@@ -102,9 +101,7 @@ public class NumberInputAnswer extends Answer implements ConditionTrigger, Seria
      *            <code>min</code>.
      */
     public void setMinMax(final Double min, final Double max) {
-        if (min != null && max != null) {
-            assert min < max : "The given min value was not < max";
-        }
+        assert min == null || max == null || min < max : "The given min value was not < max";
         this.minValue = min;
         this.maxValue = max;
     }
@@ -126,9 +123,7 @@ public class NumberInputAnswer extends Answer implements ConditionTrigger, Seria
      *                 <code>null</code>. Must not be <code>&lt;= 0</code>.
      */
     public void setStepsize(final Double stepsize) {
-        if (stepsize != null) {
-            assert stepsize > 0.0 : "The given step size is <= 0.0";
-        }
+        assert stepsize == null || stepsize > 0.0 : "The given step size is <= 0.0";
         this.stepsize = stepsize;
     }
 }

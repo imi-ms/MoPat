@@ -56,8 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class QuestionnaireService {
 
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(QuestionnaireService.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireService.class);
 
     @Autowired
     private LogoValidator logoValidator;
@@ -114,10 +113,8 @@ public class QuestionnaireService {
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing localized texts to be processed.
      */
     public void processLocalizedText(QuestionnaireDTO questionnaireDTO) {
-        questionnaireDTO.setLocalizedWelcomeText(
-            processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
-        questionnaireDTO.setLocalizedFinalText(
-            processLocalizedMap(questionnaireDTO.getLocalizedFinalText()));
+        questionnaireDTO.setLocalizedWelcomeText(processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
+        questionnaireDTO.setLocalizedFinalText(processLocalizedMap(questionnaireDTO.getLocalizedFinalText()));
     }
 
     /**
@@ -127,8 +124,8 @@ public class QuestionnaireService {
      */
     public List<QuestionnaireDTO> getAllQuestionnaireDTOs() {
         return questionnaireDao.getAllElements().stream()
-            .map(questionnaireDTOMapper)
-            .collect(Collectors.toList());
+                .map(questionnaireDTOMapper)
+                .collect(Collectors.toList());
     }
 
     public List<Questionnaire> getAllQuestionnaires() {
@@ -186,7 +183,7 @@ public class QuestionnaireService {
             return Optional.empty();
         }
         return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
-            .map(questionnaireDTOMapper);
+                .map(questionnaireDTOMapper);
     }
 
     /**
@@ -203,7 +200,8 @@ public class QuestionnaireService {
             return questionnaire.isModifiable();
         }
 
-        // Moderators and Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle has executed encounters
+        // Moderators and Editors can edit if questionnaire is not part of any bundle that is enabled or if the bundle
+        // has executed encounters
         if (authService.hasExactRole(UserRole.ROLE_MODERATOR) || authService.hasExactRole(UserRole.ROLE_EDITOR)) {
             return questionnaire.isModifiable() && !isQuestionnairePartOfEnabledBundle(questionnaire);
         }
@@ -257,17 +255,12 @@ public class QuestionnaireService {
      */
     private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
         return localizedTextMap.entrySet().stream()
-            .peek(entry -> {
-                if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
-                    entry.setValue("");
-                }
-            })
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                (e1, e2) -> e1,
-                TreeMap::new
-            ));
+                .peek(entry -> {
+                    if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
+                        entry.setValue("");
+                    }
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, TreeMap::new));
     }
 
     /**
@@ -307,15 +300,11 @@ public class QuestionnaireService {
      */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
-            questionnaireDTO.getName(),
-            questionnaireDTO.getDescription(),
-            userId,
-            Boolean.TRUE
-        );
+                questionnaireDTO.getName(), questionnaireDTO.getDescription(), userId, Boolean.TRUE);
         questionnaireDao.merge(newQuestionnaire);
 
-        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
-            newQuestionnaire.getName());
+        QuestionnaireVersionGroup questionnaireVersionGroup =
+                questionnaireVersionGroupService.createQuestionnaireGroup(newQuestionnaire.getName());
         questionnaireVersionGroupService.addQuestionnaireToGroup(questionnaireVersionGroup, newQuestionnaire);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
@@ -333,8 +322,8 @@ public class QuestionnaireService {
      * @param userId           The ID of the user performing the action.
      * @return The updated {@link Questionnaire}.
      */
-    private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo,
-        Long userId) {
+    private Questionnaire updateExistingQuestionnaire(
+            QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
         existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
@@ -360,17 +349,13 @@ public class QuestionnaireService {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
-            newName,
-            questionnaireDTO.getDescription(),
-            userId,
-            Boolean.TRUE
-        );
+                newName, questionnaireDTO.getDescription(), userId, Boolean.TRUE);
         questionnaireDao.merge(newQuestionnaire);
 
-        newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(),
-            newQuestionnaire);
-        MapHolder questionCopyMaps = questionService.getMappingForDuplicatedQuestions(existingQuestionnaire,
-            newQuestionnaire);
+        newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(
+                existingQuestionnaire.getQuestions(), newQuestionnaire);
+        MapHolder questionCopyMaps =
+                questionService.getMappingForDuplicatedQuestions(existingQuestionnaire, newQuestionnaire);
         Map<Question, Question> questionMap = questionCopyMaps.questionMap();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
 
@@ -391,13 +376,12 @@ public class QuestionnaireService {
 
         questionnaireDao.merge(newQuestionnaire);
 
-        //Apparently Conditions are already persisted with the previous merge command
-        //for(Condition condition : clonedConditions)
+        // Apparently Conditions are already persisted with the previous merge command
+        // for(Condition condition : clonedConditions)
         //    conditionService.mergeCondition(conditionDTOMapper.apply(condition));
 
         return newQuestionnaire;
     }
-
 
     /**
      * Sets the version for the new {@link Questionnaire} based on the existing {@link Questionnaire}. If the existing
@@ -414,7 +398,7 @@ public class QuestionnaireService {
         // Ensure the new questionnaire is persisted
         if (newQuestionnaire.getId() == null) {
             throw new IllegalStateException(
-                "The new questionnaire must be persisted before saving versioning information.");
+                    "The new questionnaire must be persisted before saving versioning information.");
         }
 
         // Ensure the existing questionnaire is not null and is persisted
@@ -423,8 +407,8 @@ public class QuestionnaireService {
         }
 
         int version;
-        Optional<QuestionnaireVersionGroup> groupForQuestionnaire = questionnaireVersionGroupService.findGroupForQuestionnaire(
-            existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> groupForQuestionnaire =
+                questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
 
         if (groupForQuestionnaire.isPresent()) {
             int maxVersionInGroup = questionnaireVersionGroupService.findMaxVersionInGroup(groupForQuestionnaire.get());
@@ -436,7 +420,6 @@ public class QuestionnaireService {
         newQuestionnaire.setVersion(version);
     }
 
-
     /**
      * Copies scores from the original questionnaire to the new questionnaire. This method should handle the copying in
      * memory and return a set of copied scores.
@@ -446,8 +429,8 @@ public class QuestionnaireService {
      * @param questionMap      A map of original questions to copied questions.
      * @return A set of copied scores.
      */
-    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire,
-        Map<Question, Question> questionMap) {
+    private Set<Score> copyScores(
+            Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
         Set<Score> copiedScores = new HashSet<>();
         Map<Score, Score> scoreMap = new HashMap<>();
 
@@ -478,14 +461,14 @@ public class QuestionnaireService {
      * @param newQuestionnaire the {@link Questionnaire} to associate with the copied export templates.
      * @return a {@link Set} of {@link ExportTemplate} that contains the cloned copies of the provided export templates.
      */
-    public Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates,
-        Questionnaire newQuestionnaire) {
+    public Set<ExportTemplate> copyExportTemplates(
+            Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire) {
         Set<ExportTemplate> copiedExportTemplates = new HashSet<>();
         for (ExportTemplate templateToCopy : exportTemplates) {
             ExportTemplate copiedTemplate = createExportTemplate(templateToCopy, newQuestionnaire);
-            exportTemplateDao.merge(copiedTemplate);  // Persist to DB to get the ID
-            String newFileName = fileUtils.generateFileNameForExportTemplate(templateToCopy.getFilename(),
-                copiedTemplate.getId());
+            exportTemplateDao.merge(copiedTemplate); // Persist to DB to get the ID
+            String newFileName =
+                    fileUtils.generateFileNameForExportTemplate(templateToCopy.getFilename(), copiedTemplate.getId());
             copiedTemplate.setFilename(newFileName);
             try {
                 // Copy the file
@@ -566,7 +549,7 @@ public class QuestionnaireService {
     public void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         try {
             String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/"
-                + questionnaire.getId().toString();
+                    + questionnaire.getId().toString();
 
             if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
                 deleteExistingLogo(questionnaire, imagePath);
@@ -603,8 +586,10 @@ public class QuestionnaireService {
             BufferedImage resizedImage = GraphicsUtilities.resizeImage(uploadImage, 300);
             ImageIO.write(resizedImage, logoExtension, uploadFile);
         } catch (IOException ex) {
-            LOGGER.error("Error uploading the picture for the questionnaire with id {}: {}", questionnaire.getId(),
-                ex.getLocalizedMessage());
+            LOGGER.error(
+                    "Error uploading the picture for the questionnaire with id {}: {}",
+                    questionnaire.getId(),
+                    ex.getLocalizedMessage());
         }
     }
 
@@ -661,8 +646,8 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        Optional<QuestionnaireVersionGroup> group = questionnaireVersionGroupService.findGroupForQuestionnaire(
-            existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> group =
+                questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
         if (group.isPresent()) {
             return questionnaireVersionGroupService.findMaxVersionInGroup(group.get()) + 1;
         } else {
@@ -693,7 +678,7 @@ public class QuestionnaireService {
      */
     private String getLocalizedMessage(String messageKey) {
         String defaultMessage = "The questionnaire cannot be edited. You can duplicate it instead.";
-        return messageSource.getMessage(messageKey, new Object[]{}, defaultMessage, LocaleContextHolder.getLocale());
+        return messageSource.getMessage(messageKey, new Object[] {}, defaultMessage, LocaleContextHolder.getLocale());
     }
 
     /**
@@ -704,8 +689,8 @@ public class QuestionnaireService {
      * @param scoreMap           The map of original to copied {@link Score} objects.
      * @return The copied {@link Expression}.
      */
-    private Expression copyExpression(Expression originalExpression, Map<Question, Question> questionMap,
-        Map<Score, Score> scoreMap) {
+    private Expression copyExpression(
+            Expression originalExpression, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         if (originalExpression instanceof UnaryExpression unary) {
             return copyUnaryExpression(unary, questionMap, scoreMap);
         } else if (originalExpression instanceof BinaryExpression binary) {
@@ -725,8 +710,8 @@ public class QuestionnaireService {
      * @param scoreMap      The map of original to copied {@link Score} objects.
      * @return The copied {@link UnaryExpression}.
      */
-    private UnaryExpression copyUnaryExpression(UnaryExpression originalUnary, Map<Question, Question> questionMap,
-        Map<Score, Score> scoreMap) {
+    private UnaryExpression copyUnaryExpression(
+            UnaryExpression originalUnary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         UnaryExpression copyUnary = new UnaryExpression();
         copyUnary.setOperator((UnaryOperator) originalUnary.getOperator());
         if (originalUnary.getQuestion() != null) {
@@ -747,8 +732,8 @@ public class QuestionnaireService {
      * @param scoreMap       The map of original to copied {@link Score} objects.
      * @return The copied {@link BinaryExpression}.
      */
-    private BinaryExpression copyBinaryExpression(BinaryExpression originalBinary, Map<Question, Question> questionMap,
-        Map<Score, Score> scoreMap) {
+    private BinaryExpression copyBinaryExpression(
+            BinaryExpression originalBinary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         BinaryExpression copyBinary = new BinaryExpression();
         copyBinary.setOperator((BinaryOperator) originalBinary.getOperator());
         List<Expression> copiedChildren = new ArrayList<>();
@@ -769,8 +754,8 @@ public class QuestionnaireService {
      * @param scoreMap      The map of original to copied {@link Score} objects.
      * @return The copied {@link MultiExpression}.
      */
-    private MultiExpression copyMultiExpression(MultiExpression originalMulti, Map<Question, Question> questionMap,
-        Map<Score, Score> scoreMap) {
+    private MultiExpression copyMultiExpression(
+            MultiExpression originalMulti, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
         MultiExpression copyMulti = new MultiExpression();
         copyMulti.setOperator((MultiOperator) originalMulti.getOperator());
         List<Expression> copiedChildren = new ArrayList<>();
@@ -841,7 +826,6 @@ public class QuestionnaireService {
         return questionnaires;
     }
 
-
     /**
      * Returns the list of questionnaires sorted by their name property (ascending).
      *
@@ -852,5 +836,4 @@ public class QuestionnaireService {
         questionnaires.sort(Comparator.comparing(Questionnaire::getName));
         return questionnaires;
     }
-
 }

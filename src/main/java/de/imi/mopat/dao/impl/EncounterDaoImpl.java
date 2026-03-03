@@ -1,24 +1,23 @@
 package de.imi.mopat.dao.impl;
 
+import de.imi.mopat.dao.AuditEntryDao;
+import de.imi.mopat.dao.EncounterDao;
+import de.imi.mopat.model.Encounter;
+import de.imi.mopat.model.enumeration.AuditEntryActionType;
+import de.imi.mopat.model.enumeration.AuditPatientAttribute;
+import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import de.imi.mopat.dao.AuditEntryDao;
-import de.imi.mopat.dao.EncounterDao;
-import de.imi.mopat.model.enumeration.AuditEntryActionType;
-import de.imi.mopat.model.enumeration.AuditPatientAttribute;
-import de.imi.mopat.model.Encounter;
-
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import jakarta.persistence.PersistenceException;
 
 /**
  *
@@ -36,8 +35,9 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
         List<Encounter> resultList;
         try {
             TypedQuery<Encounter> query = moPatEntityManager.createQuery(
-                "SELECT e FROM Encounter e WHERE e.caseNumber = " + ":casenumber "
-                    + "and e.endTime is null ORDER BY " + "e.startTime DESC", getEntityClass());
+                    "SELECT e FROM Encounter e WHERE e.caseNumber = " + ":casenumber "
+                            + "and e.endTime is null ORDER BY " + "e.startTime DESC",
+                    getEntityClass());
             query.setParameter("casenumber", caseNumber);
             resultList = query.getResultList();
 
@@ -56,8 +56,8 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
         List<Encounter> resultList;
 
         TypedQuery<Encounter> query = moPatEntityManager.createQuery(
-            "SELECT e FROM Encounter e WHERE e.endTime IS NOT NULL AND e" + ".endTime < :timestamp",
-            Encounter.class);
+                "SELECT e FROM Encounter e WHERE e.endTime IS NOT NULL AND e" + ".endTime < :timestamp",
+                Encounter.class);
         query.setParameter("timestamp", timestamp);
         resultList = query.getResultList();
         if (!resultList.isEmpty()) {
@@ -68,9 +68,12 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
             for (Encounter encounter : resultList) {
                 caseNumbers.add(encounter.getCaseNumber());
             }
-            auditEntryDao.writeAuditEntries(this.getClass().getSimpleName(),
-                "getFinishedEncounterOlderThan(Date)", caseNumbers, patientAttributes,
-                AuditEntryActionType.READ);
+            auditEntryDao.writeAuditEntries(
+                    this.getClass().getSimpleName(),
+                    "getFinishedEncounterOlderThan(Date)",
+                    caseNumbers,
+                    patientAttributes,
+                    AuditEntryActionType.READ);
         }
         result = Collections.unmodifiableList(resultList);
 
@@ -78,15 +81,13 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     }
 
     @Override
-    public Collection<? extends Encounter> getIncompleteEncountersOlderThan(
-        final Timestamp timestamp) {
+    public Collection<? extends Encounter> getIncompleteEncountersOlderThan(final Timestamp timestamp) {
         assert timestamp != null : "The given timestamp was null";
         List<Encounter> result;
         List<Encounter> resultList;
 
         TypedQuery<Encounter> query = moPatEntityManager.createQuery(
-            "SELECT e FROM Encounter e WHERE e.endTime IS NULL AND e" + ".startTime < :timestamp",
-            Encounter.class);
+                "SELECT e FROM Encounter e WHERE e.endTime IS NULL AND e" + ".startTime < :timestamp", Encounter.class);
         query.setParameter("timestamp", timestamp);
         resultList = query.getResultList();
         if (!resultList.isEmpty()) {
@@ -97,9 +98,12 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
             for (Encounter encounter : resultList) {
                 caseNumbers.add(encounter.getCaseNumber());
             }
-            auditEntryDao.writeAuditEntries(this.getClass().getSimpleName(),
-                "getIncompleteEncountersOlderThan(Date)", caseNumbers, patientAttributes,
-                AuditEntryActionType.READ);
+            auditEntryDao.writeAuditEntries(
+                    this.getClass().getSimpleName(),
+                    "getIncompleteEncountersOlderThan(Date)",
+                    caseNumbers,
+                    patientAttributes,
+                    AuditEntryActionType.READ);
         }
         result = Collections.unmodifiableList(resultList);
 
@@ -108,8 +112,8 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
 
     @Override
     public Long getCountIncompleteEncounter() {
-        TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "SELECT count(e) FROM Encounter e WHERE e.endTime IS NULL", Long.class);
+        TypedQuery<Long> query =
+                moPatEntityManager.createQuery("SELECT count(e) FROM Encounter e WHERE e.endTime IS NULL", Long.class);
         long count = query.getSingleResult();
         return count;
     }
@@ -117,8 +121,8 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     @Override
     public Long getCountCompleteEncountersOlderThan(final Timestamp timestamp) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "SELECT count(e) FROM Encounter e WHERE  e.endTime IS NOT "
-                + "NULL AND e.endTime < :timestamp", Long.class);
+                "SELECT count(e) FROM Encounter e WHERE  e.endTime IS NOT " + "NULL AND e.endTime < :timestamp",
+                Long.class);
         query.setParameter("timestamp", timestamp);
         Long count = query.getSingleResult();
         return count;
@@ -127,8 +131,8 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     @Override
     public Long getCountIncompleteEncountersOlderThan(final Timestamp timestamp) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "SELECT count(e) FROM Encounter e WHERE e.endTime IS NULL " + "AND"
-                + " e.startTime < :timestamp", Long.class);
+                "SELECT count(e) FROM Encounter e WHERE e.endTime IS NULL " + "AND" + " e.startTime < :timestamp",
+                Long.class);
         query.setParameter("timestamp", timestamp);
         Long count = query.getSingleResult();
         return count;
@@ -137,17 +141,15 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     @Override
     public List<String> getAllCaseNumbers() {
         TypedQuery<String> query = moPatEntityManager.createQuery(
-            "SELECT distinct e.caseNumber FROM Encounter e order by e" + ".caseNumber",
-            String.class);
+                "SELECT distinct e.caseNumber FROM Encounter e order by e" + ".caseNumber", String.class);
 
         return query.getResultList();
     }
 
     @Override
-    public List<Encounter> getEncountersByClinicId(Long clinicId){
+    public List<Encounter> getEncountersByClinicId(Long clinicId) {
         TypedQuery<Encounter> query = moPatEntityManager.createQuery(
-            "SELECT e FROM Encounter e WHERE e.clinic.id=" + clinicId,
-            Encounter.class);
+                "SELECT e FROM Encounter e WHERE e.clinic.id=" + clinicId, Encounter.class);
 
         return query.getResultList();
     }
@@ -155,22 +157,21 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     @Override
     public Boolean checkEncountersExistsByClinicId(Long clinicId) {
 
-        TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "SELECT 1 FROM Encounter e WHERE e.clinic.id=" + clinicId,
-            Long.class).setMaxResults(1);
+        TypedQuery<Long> query = moPatEntityManager
+                .createQuery("SELECT 1 FROM Encounter e WHERE e.clinic.id=" + clinicId, Long.class)
+                .setMaxResults(1);
 
         return !query.getResultList().isEmpty();
-
     }
 
     @Override
-    public Long getEncounterCountByBundleInInterval(final Long bundleId, final Date startDate,
-        Date endDate) {
+    public Long getEncounterCountByBundleInInterval(final Long bundleId, final Date startDate, Date endDate) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "select count(e) from Encounter e, Bundle b where e.bundle" + ".id"
-                + " = b.id and b.id = :bundleId and ((e.endTime" + " between"
-                + " :startDate and :endDate ) or (e" + ".endTime is null and"
-                + " e.startTime between " + ":startDate and :endDate) )", Long.class);
+                "select count(e) from Encounter e, Bundle b where e.bundle" + ".id"
+                        + " = b.id and b.id = :bundleId and ((e.endTime" + " between"
+                        + " :startDate and :endDate ) or (e" + ".endTime is null and"
+                        + " e.startTime between " + ":startDate and :endDate) )",
+                Long.class);
         query.setParameter("bundleId", bundleId);
         query.setParameter("startDate", startDate);
         Calendar calendar = Calendar.getInstance();
@@ -182,13 +183,13 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     }
 
     @Override
-    public Long getEncounterCountByCaseNumberInInterval(final String caseNumber,
-        final Date startDate, Date endDate) {
+    public Long getEncounterCountByCaseNumberInInterval(final String caseNumber, final Date startDate, Date endDate) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "select count(e) from Encounter e where e.caseNumber = "
-                + ":caseNumber and ((e.endTime between :startDate and "
-                + ":endDate ) or (e.endTime is null and e.startTime "
-                + "between :startDate and :endDate) )", Long.class);
+                "select count(e) from Encounter e where e.caseNumber = "
+                        + ":caseNumber and ((e.endTime between :startDate and "
+                        + ":endDate ) or (e.endTime is null and e.startTime "
+                        + "between :startDate and :endDate) )",
+                Long.class);
 
         query.setParameter("caseNumber", caseNumber);
         query.setParameter("startDate", startDate);
@@ -201,14 +202,14 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
     }
 
     @Override
-    public Long getEncounterCountByCaseNumberByBundleInInterval(final Long bundleId,
-        final String caseNumber, final Date startDate, Date endDate) {
+    public Long getEncounterCountByCaseNumberByBundleInInterval(
+            final Long bundleId, final String caseNumber, final Date startDate, Date endDate) {
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "select count(e) from Encounter e where e.bundle.id = "
-                + ":bundleId and e.caseNumber = :caseNumber and ((e"
-                + ".endTime between :startDate and :endDate ) or (e"
-                + ".endTime is null and e.startTime between :startDate " + "and :endDate) )",
-            Long.class);
+                "select count(e) from Encounter e where e.bundle.id = "
+                        + ":bundleId and e.caseNumber = :caseNumber and ((e"
+                        + ".endTime between :startDate and :endDate ) or (e"
+                        + ".endTime is null and e.startTime between :startDate " + "and :endDate) )",
+                Long.class);
         query.setParameter("bundleId", bundleId);
         query.setParameter("caseNumber", caseNumber);
         query.setParameter("startDate", startDate);

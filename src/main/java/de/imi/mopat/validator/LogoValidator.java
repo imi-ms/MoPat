@@ -44,7 +44,8 @@ public class LogoValidator {
      * @return The file extension as a string.
      */
     private String getLogoExtension(MultipartFile logo) {
-        return Objects.requireNonNull(FilenameUtils.getExtension(logo.getOriginalFilename())).toLowerCase();
+        return Objects.requireNonNull(FilenameUtils.getExtension(logo.getOriginalFilename()))
+                .toLowerCase();
     }
 
     /**
@@ -63,8 +64,10 @@ public class LogoValidator {
      * @param result The {@link BindingResult} to record validation errors.
      */
     private void rejectUnsupportedImageType(BindingResult result) {
-        result.rejectValue("logo", "error.wrongImageType",
-                messageSource.getMessage("bundle.error.wrongImageType", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+        result.rejectValue(
+                "logo",
+                "error.wrongImageType",
+                messageSource.getMessage(
+                        "bundle.error.wrongImageType", new Object[] {}, LocaleContextHolder.getLocale()));
     }
 }

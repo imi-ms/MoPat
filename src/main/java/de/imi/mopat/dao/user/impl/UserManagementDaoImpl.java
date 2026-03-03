@@ -23,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
  * Implements specific methods suitable for daos with user specified operations.
  */
 @Component
-public abstract class UserManagementDaoImpl<T> implements
-    de.imi.mopat.dao.user.UserManagementDao<T> {
+public abstract class UserManagementDaoImpl<T> implements de.imi.mopat.dao.user.UserManagementDao<T> {
     // Provides the EntityManager, which manages the persistence layer
+
+    // Holds the generic entity class T
+    private final Class<T> entityClass;
 
     @PersistenceContext(unitName = "MoPat_User")
     protected EntityManager moPatUserEntityManager;
-    // Holds the generic entity class T
-    private final Class<T> entityClass;
 
     /**
      * Constructor, which gets the generic class T.
@@ -74,8 +74,8 @@ public abstract class UserManagementDaoImpl<T> implements
     public T getElementById(final Long id) {
         try {
             TypedQuery<T> query = moPatUserEntityManager.createQuery(
-                "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.id=" + (id),
-                getEntityClass());
+                    "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.id=" + (id),
+                    getEntityClass());
             T element = query.getSingleResult();
             return element;
         } catch (NoResultException e) {
@@ -88,8 +88,8 @@ public abstract class UserManagementDaoImpl<T> implements
     public T getElementByUUID(final String uuid) {
         try {
             TypedQuery<T> query = moPatUserEntityManager.createQuery(
-                "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.uuid='"
-                    + (uuid) + "'", getEntityClass());
+                    "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.uuid='" + (uuid) + "'",
+                    getEntityClass());
             T element = query.getSingleResult();
             return element;
         } catch (NoResultException e) {
@@ -103,7 +103,7 @@ public abstract class UserManagementDaoImpl<T> implements
         Collection<T> elements = new ArrayList<T>();
         if (!ids.isEmpty()) {
             Query query = moPatUserEntityManager.createQuery(
-                "SELECT e FROM " + getEntityClass().getSimpleName() + " e WHERE e.id IN :ids");
+                    "SELECT e FROM " + getEntityClass().getSimpleName() + " e WHERE e.id IN :ids");
             query.setParameter("ids", ids);
             elements = query.getResultList();
         }
@@ -114,7 +114,7 @@ public abstract class UserManagementDaoImpl<T> implements
     @Transactional("MoPat_User")
     public List<T> getAllElements() {
         TypedQuery<T> query = moPatUserEntityManager.createQuery(
-            "SELECT e FROM " + getEntityClass().getSimpleName() + " e", getEntityClass());
+                "SELECT e FROM " + getEntityClass().getSimpleName() + " e", getEntityClass());
 
         List<T> elements = query.getResultList();
         return elements;
@@ -124,36 +124,32 @@ public abstract class UserManagementDaoImpl<T> implements
     @Transactional("MoPat_User")
     public Long getCount() {
         TypedQuery<Long> query = moPatUserEntityManager.createQuery(
-            "SELECT count(u) FROM " + getEntityClass().getSimpleName() + " u", Long.class);
+                "SELECT count(u) FROM " + getEntityClass().getSimpleName() + " u", Long.class);
         Long count = query.getSingleResult();
         return count;
     }
 
     @Override
     @Transactional("MoPat_User")
-    public void grantRight(final T element, final User user, final PermissionType right,
-        final Boolean inheritance) {
+    public void grantRight(final T element, final User user, final PermissionType right, final Boolean inheritance) {
         // In general nothing to do here
     }
 
     @Override
     @Transactional("MoPat_User")
-    public void grantInheritedRight(final T element, final User currentUser,
-        final PermissionType right) {
+    public void grantInheritedRight(final T element, final User currentUser, final PermissionType right) {
         // In general nothing to do here
     }
 
     @Override
     @Transactional("MoPat_User")
-    public void revokeRight(final T element, final User user, final PermissionType right,
-        final Boolean inheritance) {
+    public void revokeRight(final T element, final User user, final PermissionType right, final Boolean inheritance) {
         // In general nothing to do here
     }
 
     @Override
     @Transactional("MoPat_User")
-    public void revokeInheritedRight(final T element, final User currentUser,
-        final PermissionType right) {
+    public void revokeInheritedRight(final T element, final User currentUser, final PermissionType right) {
         // In general nothing to do here
     }
 }

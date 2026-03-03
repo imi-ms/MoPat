@@ -36,27 +36,31 @@ public class EncounterDTO {
     private Timestamp lastReminderDate;
     private String successfullExports;
     private EncounterScheduledDTO encounterScheduledDTO;
-    //BodyPart images used in survey as base64 string
+    // BodyPart images used in survey as base64 string
     private String frontImage;
     private String backImage;
 
     @JsonIgnore
     private Long patientID; // patient number, exclusively for export
+
     @JsonIgnore
     @NotNull(message = "{encounter.caseNumber.notNull}")
     @NotEmpty(message = "{encounter.caseNumber.notEmpty}")
     private String caseNumber;
+
     @JsonIgnore
     private String firstname;
+
     @JsonIgnore
     private String lastname;
+
     @JsonIgnore
     private Date birthdate;
+
     @JsonIgnore
     private Gender gender;
 
-    public EncounterDTO() {
-    }
+    public EncounterDTO() {}
 
     public EncounterDTO(final Boolean isTest, final String caseNumber) {
         this.isTest = isTest;
@@ -218,7 +222,6 @@ public class EncounterDTO {
         } else {
             this.isAtHome = false;
         }
-
     }
 
     public Timestamp getLastReminderDate() {

@@ -17,18 +17,8 @@ public class ExportRulesDTO {
         return exportRuleScoreFormats;
     }
 
-    public void setExportRuleScoreFormats(
-        final Map<Long, ExportRuleFormatDTO> exportRuleScoreFormats) {
+    public void setExportRuleScoreFormats(final Map<Long, ExportRuleFormatDTO> exportRuleScoreFormats) {
         this.exportRuleScoreFormats = exportRuleScoreFormats;
-    }
-
-    /**
-     * Sets a list of {@link ExportRuleDTO ExportRuleDTO} objects.
-     *
-     * @param exportRules list of {@link ExportRuleDTO ExportRuleDTO} objects
-     */
-    public void setExportRules(final List<ExportRuleDTO> exportRules) {
-        this.exportRules = exportRules;
     }
 
     /**
@@ -38,6 +28,15 @@ public class ExportRulesDTO {
      */
     public List<ExportRuleDTO> getExportRules() {
         return this.exportRules;
+    }
+
+    /**
+     * Sets a list of {@link ExportRuleDTO ExportRuleDTO} objects.
+     *
+     * @param exportRules list of {@link ExportRuleDTO ExportRuleDTO} objects
+     */
+    public void setExportRules(final List<ExportRuleDTO> exportRules) {
+        this.exportRules = exportRules;
     }
 
     /**

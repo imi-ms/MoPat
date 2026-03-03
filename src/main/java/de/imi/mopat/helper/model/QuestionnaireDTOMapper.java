@@ -20,8 +20,7 @@ import java.util.function.Function;
 @Component
 public class QuestionnaireDTOMapper implements Function<Questionnaire, QuestionnaireDTO> {
 
-    private static final org.slf4j.Logger LOGGER =
-            org.slf4j.LoggerFactory.getLogger(QuestionnaireDTOMapper.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireDTOMapper.class);
 
     @Autowired
     private ConfigurationDao configurationDao;
@@ -44,13 +43,14 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
             QuestionnaireVersionGroupDTO groupDTO = new QuestionnaireVersionGroupDTO();
             groupDTO.setGroupId(questionnaire.getQuestionnaireVersionGroup().getId());
             groupDTO.setGroupName(questionnaire.getQuestionnaireVersionGroup().getName());
-            Set<Questionnaire> questionnaires = questionnaire.getQuestionnaireVersionGroup().getQuestionnaires();
+            Set<Questionnaire> questionnaires =
+                    questionnaire.getQuestionnaireVersionGroup().getQuestionnaires();
             List<QuestionnaireDTO> groupQuestionnaireDTOs = new ArrayList<>();
-            
-            for(Questionnaire nestedQuestionnaire : questionnaires) {
+
+            for (Questionnaire nestedQuestionnaire : questionnaires) {
                 groupQuestionnaireDTOs.add(applyWithGroup(nestedQuestionnaire, false));
             }
-            
+
             groupDTO.setQuestionnaireDTOS(groupQuestionnaireDTOs);
             questionnaireDTO.setQuestionnaireGroupDTO(groupDTO);
         }
@@ -62,11 +62,15 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         String logoBase64 = null;
         if (questionnaire.getLogo() != null) {
             String fileName = questionnaire.getLogo();
-            String realPath = configurationDao.getImageUploadPath() + "/questionnaire/" + questionnaire.getId() + "/" + fileName;
+            String realPath =
+                    configurationDao.getImageUploadPath() + "/questionnaire/" + questionnaire.getId() + "/" + fileName;
             try {
                 logoBase64 = StringUtilities.convertImageToBase64String(realPath, fileName);
             } catch (IOException e) {
-                LOGGER.error("Error converting logo image to base64 for questionnaire with id {}: {}", questionnaire.getId(), e.getMessage());
+                LOGGER.error(
+                        "Error converting logo image to base64 for questionnaire with id {}: {}",
+                        questionnaire.getId(),
+                        e.getMessage());
             }
         }
 
@@ -74,32 +78,27 @@ public class QuestionnaireDTOMapper implements Function<Questionnaire, Questionn
         questionnaireDTO.setName(questionnaire.getName());
         questionnaireDTO.setDescription(questionnaire.getDescription());
         questionnaireDTO.setVersion(questionnaire.getVersion());
-        
+
         Map<String, String> localizedWelcomeMap = questionnaire.getLocalizedWelcomeText();
         if (localizedWelcomeMap != null) {
             questionnaireDTO.setLocalizedWelcomeText(new TreeMap<>(localizedWelcomeMap));
         }
-        
+
         Map<String, String> localizedFinalMap = questionnaire.getLocalizedFinalText();
         if (localizedFinalMap != null) {
             questionnaireDTO.setLocalizedFinalText(new TreeMap<>(localizedFinalMap));
         }
-        
+
         Map<String, String> localizedDisplayMap = questionnaire.getLocalizedDisplayName();
         if (localizedDisplayMap != null) {
             questionnaireDTO.setLocalizedDisplayName(new TreeMap<>(localizedDisplayMap));
         }
-        
-        
+
         questionnaireDTO.setLogo(questionnaire.getLogo());
         questionnaireDTO.setLogoBase64(logoBase64);
         questionnaireDTO.setExportTemplates(questionnaire.getExportTemplates());
         questionnaireDTO.setQuestionDTOs(
-                questionnaire.getQuestions()
-                        .stream()
-                        .map(questionDTOMapper)
-                        .toList()
-        );
+                questionnaire.getQuestions().stream().map(questionDTOMapper).toList());
         return questionnaireDTO;
     }
 }

@@ -7,6 +7,4 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public interface ExportRuleDao extends MoPatDao<ExportRule> {
-
-}
+public interface ExportRuleDao extends MoPatDao<ExportRule> {}

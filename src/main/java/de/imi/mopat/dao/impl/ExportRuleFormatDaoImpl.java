@@ -8,7 +8,4 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class ExportRuleFormatDaoImpl extends MoPatDaoImpl<ExportRuleFormat> implements
-    ExportRuleFormatDao {
-
-}
+public class ExportRuleFormatDaoImpl extends MoPatDaoImpl<ExportRuleFormat> implements ExportRuleFormatDao {}

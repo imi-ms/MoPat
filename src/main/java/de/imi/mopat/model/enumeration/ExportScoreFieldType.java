@@ -13,8 +13,8 @@ import org.apache.commons.lang.StringUtils;
  * in the export process.
  */
 public enum ExportScoreFieldType {
-
-    VALUE("evaluate", "java.lang.Object"), FORMULA("getFormula", "java.lang.String");
+    VALUE("evaluate", "java.lang.Object"),
+    FORMULA("getFormula", "java.lang.String");
 
     private static final Map<String, ExportScoreFieldType> map = new HashMap<>(2);
 
@@ -72,7 +72,6 @@ public enum ExportScoreFieldType {
     public String getMethodName() {
         return methodName;
     }
-
 
     /**
      * Jackson serialization method for this enum.

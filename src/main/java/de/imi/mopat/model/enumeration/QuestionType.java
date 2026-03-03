@@ -9,7 +9,6 @@ import java.util.Map;
  * Definition of question types supported within MoPat 2.0
  */
 public enum QuestionType {
-
     MULTIPLE_CHOICE("MULTIPLE_CHOICE", new MultipleChoiceOrDropdownStrategy()),
     SLIDER("SLIDER", new SliderOrNumCheckBoxStrategy()),
     NUMBER_CHECKBOX("NUMBER_CHECKBOX", new SliderOrNumCheckBoxStrategy()),
@@ -22,7 +21,6 @@ public enum QuestionType {
     IMAGE("IMAGE", new ImageStrat()),
     BODY_PART("BODY_PART", new BodyPartStrategy()),
     BARCODE("BARCODE", new FreeTextOrBarcodeStrat());
-    private final String textValue;
     private static final Map<String, QuestionType> stringToEnum = new HashMap<String, QuestionType>();
 
     static // Initialize map from constant name to enum constant
@@ -32,11 +30,16 @@ public enum QuestionType {
         }
     }
 
+    private final String textValue;
     private final CreateOrUpdateAnswerStrategy strategy;
 
     QuestionType(final String textValue, final CreateOrUpdateAnswerStrategy strategy) {
         this.textValue = textValue;
         this.strategy = strategy;
+    }
+
+    public static QuestionType fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     public CreateOrUpdateAnswerStrategy getStrategy() {
@@ -50,9 +53,5 @@ public enum QuestionType {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static QuestionType fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

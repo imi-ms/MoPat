@@ -11,6 +11,4 @@ import de.imi.mopat.model.user.Invitation;
  * Implements specific methods for the objects of type {@link Invitation}.
  */
 @Repository
-public class InvitationDaoImpl extends UserManagementDaoImpl<Invitation> implements InvitationDao {
-
-}
+public class InvitationDaoImpl extends UserManagementDaoImpl<Invitation> implements InvitationDao {}

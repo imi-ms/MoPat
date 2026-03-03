@@ -8,7 +8,6 @@ import java.util.Map;
  */
 public enum ExportStatus {
     SUCCESS("SUCCESS"), CONFLICT("CONFLICT"), FAILURE("FAILURE");
-    private final String textValue;
     private static final Map<String, ExportStatus> stringToEnum = new HashMap<String, ExportStatus>();
 
     static // Initialize map from constant name to enum constant
@@ -18,8 +17,14 @@ public enum ExportStatus {
         }
     }
 
+    private final String textValue;
+
     ExportStatus(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static ExportStatus fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -29,9 +34,5 @@ public enum ExportStatus {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static ExportStatus fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

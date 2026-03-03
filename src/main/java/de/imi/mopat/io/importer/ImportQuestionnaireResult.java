@@ -12,9 +12,9 @@ import de.imi.mopat.model.Questionnaire;
  */
 public class ImportQuestionnaireResult {
 
-    private Questionnaire questionnaire;
     private final List<ValidationMessage> validationMessages = new ArrayList<ValidationMessage>();
     private final List<ImportQuestionListResult> importQuestionListResults = new ArrayList<ImportQuestionListResult>();
+    private Questionnaire questionnaire;
 
     /**
      * TODO.

@@ -1,11 +1,10 @@
 package de.imi.mopat.model.score;
 
 import de.imi.mopat.model.Encounter;
-
-import java.util.Iterator;
-import java.util.List;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This {@link Operator} returns either the value of the first {@link Expression} divided by the
@@ -43,8 +42,7 @@ public class Divide extends BinaryOperatorNumeric {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             List<Expression> divideExpressions = binaryExpression.getExpressions();
@@ -54,11 +52,10 @@ public class Divide extends BinaryOperatorNumeric {
             }
             Iterator<Expression> iterator = divideExpressions.iterator();
             return "(" + iterator.next().getFormula(encounter, defaultLanguage) + " / "
-                + iterator.next().getFormula(encounter, defaultLanguage) + ")";
+                    + iterator.next().getFormula(encounter, defaultLanguage) + ")";
         } else {
             LOGGER.error("Wrong type of Expression. Must be a binary " + "expression.");
             return null;
         }
-
     }
 }

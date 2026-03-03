@@ -3,18 +3,16 @@ package de.imi.mopat.dao.impl;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
-
+import jakarta.persistence.TypedQuery;
 import java.util.Calendar;
 import java.util.Date;
-import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Component;
 
 /**
  *
  */
 @Component
-public class ExportTemplateDaoImpl extends MoPatDaoImpl<ExportTemplate> implements
-    ExportTemplateDao {
+public class ExportTemplateDaoImpl extends MoPatDaoImpl<ExportTemplate> implements ExportTemplateDao {
 
     /**
      * The method must be carried out after 0:00 pm so the figures are calculated for the previous
@@ -36,10 +34,11 @@ public class ExportTemplateDaoImpl extends MoPatDaoImpl<ExportTemplate> implemen
         calendar.set(Calendar.SECOND, 59);
         Date endDate = calendar.getTime();
         TypedQuery<Long> query = moPatEntityManager.createQuery(
-            "SELECT count(e.id) FROM EncounterExportTemplate e, "
-                + "ExportTemplate t where t.exportTemplateType = :type "
-                + "and e.exportTemplate.id = t.id  and e.exportTime "
-                + "between :startDate and :endDate", Long.class);
+                "SELECT count(e.id) FROM EncounterExportTemplate e, "
+                        + "ExportTemplate t where t.exportTemplateType = :type "
+                        + "and e.exportTemplate.id = t.id  and e.exportTime "
+                        + "between :startDate and :endDate",
+                Long.class);
 
         query.setParameter("type", type);
         query.setParameter("startDate", startDate);
@@ -48,5 +47,4 @@ public class ExportTemplateDaoImpl extends MoPatDaoImpl<ExportTemplate> implemen
 
         return count;
     }
-
 }

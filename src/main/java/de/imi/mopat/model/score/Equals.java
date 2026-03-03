@@ -16,8 +16,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Equals")
 public class Equals extends BinaryOperatorBoolean {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ValueOfQuestionOperator.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ValueOfQuestionOperator.class);
 
     @Override
     public Boolean evaluate(final Expression expression, final Encounter encounter) {
@@ -46,8 +45,7 @@ public class Equals extends BinaryOperatorBoolean {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             List<Expression> equalsExpressions = binaryExpression.getExpressions();
@@ -60,7 +58,7 @@ public class Equals extends BinaryOperatorBoolean {
             Iterator<Expression> iterator = equalsExpressions.iterator();
 
             return "(" + iterator.next().getFormula(encounter, defaultLanguage) + " == "
-                + iterator.next().getFormula(encounter, defaultLanguage) + ")";
+                    + iterator.next().getFormula(encounter, defaultLanguage) + ")";
         } else {
             LOGGER.error("Wrong type of Expression. Must be an binary " + "expression.");
             return null;

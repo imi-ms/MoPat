@@ -7,11 +7,19 @@ import java.util.Map;
  * Definition of ClinicConfigurationsPatientRetriever types that are available for a clinic.
  */
 public enum ClinicConfigurationsPatientRetriever {
-
     usePatientDataLookup("usePatientDataLookup"),
     registerPatientData("registerPatientData"),
     usePseudonymizationService("usePseudonymizationService");
 
+    private static final Map<String, ClinicConfigurationsPatientRetriever> stringToEnum =
+            new HashMap<String, ClinicConfigurationsPatientRetriever>();
+
+    static // Initialize map from constant name to enum constant
+    {
+        for (ClinicConfigurationsPatientRetriever cValue : values()) {
+            stringToEnum.put(cValue.toString(), cValue);
+        }
+    }
 
     private final String textValue;
 
@@ -19,13 +27,8 @@ public enum ClinicConfigurationsPatientRetriever {
         this.textValue = textValue;
     }
 
-    private static final Map<String, ClinicConfigurationsPatientRetriever> stringToEnum = new HashMap<String, ClinicConfigurationsPatientRetriever>();
-
-    static // Initialize map from constant name to enum constant
-    {
-        for (ClinicConfigurationsPatientRetriever cValue : values()) {
-            stringToEnum.put(cValue.toString(), cValue);
-        }
+    public static ClinicConfigurationsPatientRetriever fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -35,9 +38,5 @@ public enum ClinicConfigurationsPatientRetriever {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static ClinicConfigurationsPatientRetriever fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

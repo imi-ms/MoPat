@@ -1,6 +1,5 @@
 package de.imi.mopat.model;
 
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,10 +24,13 @@ public class SliderIcon {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @Column(name = "position")
     private Integer position = null;
+
     @Column(name = "icon")
     private String icon = null;
+
     @NotNull(message = "{response.answer.notNull}")
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
@@ -103,7 +105,7 @@ public class SliderIcon {
             if (!answer.getIcons().contains(this)) {
                 answer.addIcon(this);
             }
-        } else { //Otherwise create a new set and add it
+        } else { // Otherwise create a new set and add it
             Set<SliderIcon> sliderIcons = new HashSet<>();
             sliderIcons.add(this);
             answer.setIcons(sliderIcons);

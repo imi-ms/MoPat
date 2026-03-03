@@ -4,12 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.dto.ConfigurationDTO;
 import de.imi.mopat.model.dto.ConfigurationGroupDTO;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 /**
@@ -49,12 +48,14 @@ public class ConfigurationGroup implements Serializable {
     @Column(name = "repeating")
     private boolean repeating;
 
-    @OneToMany(mappedBy = "configurationGroup", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "configurationGroup",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     @CascadeOnDelete
     private List<Configuration> configurations = new ArrayList<>();
 
-    public ConfigurationGroup() {
-    }
+    public ConfigurationGroup() {}
 
     /**
      * Transforms the configuration object to {@link ConfigurationDTO configurationDTO} object
@@ -127,21 +128,21 @@ public class ConfigurationGroup implements Serializable {
     }
 
     /**
-     * Sets the LabelMessageCode of the current ConfigurationGroup object.
-     *
-     * @param labelMessageCode The labelMessageCode to be set.
-     */
-    public void setLabelMessageCode(final String labelMessageCode) {
-        this.labelMessageCode = labelMessageCode;
-    }
-
-    /**
      * Returns the LabelMessageCode of the current ConfigurationGroup object.
      *
      * @return The labelMessageCode of the current ConfigurationGroup object.
      */
     public String getLabelMessageCode() {
         return labelMessageCode;
+    }
+
+    /**
+     * Sets the LabelMessageCode of the current ConfigurationGroup object.
+     *
+     * @param labelMessageCode The labelMessageCode to be set.
+     */
+    public void setLabelMessageCode(final String labelMessageCode) {
+        this.labelMessageCode = labelMessageCode;
     }
 
     /**
@@ -200,10 +201,9 @@ public class ConfigurationGroup implements Serializable {
         if (object == null) {
             return false;
         }
-        if (!(object instanceof ConfigurationGroup)) {
+        if (!(object instanceof ConfigurationGroup other)) {
             return false;
         }
-        ConfigurationGroup other = (ConfigurationGroup) object;
         return other.getUuid().equals(this.uuid);
     }
 }

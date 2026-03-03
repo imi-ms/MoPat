@@ -1,9 +1,14 @@
 package de.imi.mopat.model.user;
 
-import java.io.Serializable;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * The database table model for <i>acl_class</i>. The Access Control List (ACL) framework allows to
@@ -20,13 +25,13 @@ public class AclClass implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @NotNull(message = "{aclClass.className.notNull}")
     @Size(min = 21, max = 255, message = "{aclClass.className.Size}")
     @Column(name = "class", nullable = false)
     private String className;
 
-    public AclClass() {
-    }
+    public AclClass() {}
 
     /**
      * Uses the setters to set attributes.See setters for constraints.
@@ -74,11 +79,9 @@ public class AclClass implements Serializable {
      */
     private void setClassName(final String aclClass) {
         assert aclClass != null : "The given parameter was null";
-        assert
-            aclClass.trim().length() >= 20 :
-            "The given paramter has < 21 characters (after " + "trimming)";
-        assert aclClass.trim().startsWith("de.imi.mopat.model.") :
-            "The given class" + " name was not from de.imi.mopat.model.";
+        assert aclClass.trim().length() >= 20 : "The given paramter has < 21 characters (after " + "trimming)";
+        assert aclClass.trim().startsWith("de.imi.mopat.model.")
+                : "The given class" + " name was not from de.imi.mopat.model.";
         this.className = aclClass.trim();
     }
 

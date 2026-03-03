@@ -27,8 +27,7 @@ public class ClinicConfigurationMappingDTO {
     private String mappedConfigurationGroup;
     private List<ClinicConfigurationGroupMappingDTO> mappedConfigurationGroupDTOS;
 
-    public ClinicConfigurationMappingDTO() {
-    }
+    public ClinicConfigurationMappingDTO() {}
 
     public Long getId() {
         return id;
@@ -162,10 +161,7 @@ public class ClinicConfigurationMappingDTO {
         return mappedConfigurationGroupDTOS;
     }
 
-    public void setMappedConfigurationGroupDTOS(
-        List<ClinicConfigurationGroupMappingDTO> mappedConfigurationGroupDTOS) {
+    public void setMappedConfigurationGroupDTOS(List<ClinicConfigurationGroupMappingDTO> mappedConfigurationGroupDTOS) {
         this.mappedConfigurationGroupDTOS = mappedConfigurationGroupDTOS;
     }
-
-
 }

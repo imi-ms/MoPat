@@ -21,6 +21,7 @@ public class NumberInputAnswerValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -45,10 +46,13 @@ public class NumberInputAnswerValidator implements Validator {
             // [sw] stepsize must not be <= 0
             if (numberInputAnswer.getStepsize() != null) {
                 if (numberInputAnswer.getStepsize() <= 0) {
-                    errors.rejectValue("stepsize", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage(
-                            "numberInputAnswer" + ".validator" + ".stepsizeLowerEqualZero",
-                            new Object[]{}, LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "stepsize",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "numberInputAnswer" + ".validator" + ".stepsizeLowerEqualZero",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             }
 
@@ -60,31 +64,40 @@ public class NumberInputAnswerValidator implements Validator {
 
             if (minValue >= maxValue) { // [bt] validate that the min value is
                 // lower than the max value
-                errors.rejectValue("minValue", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("numberInputAnswer.validator" + ".minBiggerThanMax",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "minValue",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "numberInputAnswer.validator" + ".minBiggerThanMax",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             } else {
                 if (numberInputAnswer.getStepsize() != null) {
                     if (numberInputAnswer.getStepsize() > 0) {
-                        BigDecimal differenceMaxMin = BigDecimal.valueOf(
-                            Math.abs(maxValue - minValue));
-                        if (BigDecimal.valueOf(numberInputAnswer.getStepsize())
-                            .compareTo(differenceMaxMin)
-                            > 0) { // [bt] validate that the step is not
+                        BigDecimal differenceMaxMin = BigDecimal.valueOf(Math.abs(maxValue - minValue));
+                        if (BigDecimal.valueOf(numberInputAnswer.getStepsize()).compareTo(differenceMaxMin)
+                                > 0) { // [bt] validate that the step is not
                             // bigger than the difference between min value
                             // and max value
-                            errors.rejectValue("stepsize", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                                messageSource.getMessage("numberInputAnswer.validator"
-                                        + ".stepsizeBiggerThanDifferenceMaxMin", new Object[]{},
-                                    LocaleContextHolder.getLocale()));
+                            errors.rejectValue(
+                                    "stepsize",
+                                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                    messageSource.getMessage(
+                                            "numberInputAnswer.validator" + ".stepsizeBiggerThanDifferenceMaxMin",
+                                            new Object[] {},
+                                            LocaleContextHolder.getLocale()));
                         }
-                        if (differenceMaxMin.remainder(
-                                BigDecimal.valueOf(numberInputAnswer.getStepsize()))
-                            .compareTo(new BigDecimal(0)) != 0) {
-                            errors.rejectValue("stepsize", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                                messageSource.getMessage("numberInputAnswer.validator"
-                                        + ".differenceMaxMinNotDivisibleByStepsize", new Object[]{},
-                                    LocaleContextHolder.getLocale()));
+                        if (differenceMaxMin
+                                        .remainder(BigDecimal.valueOf(numberInputAnswer.getStepsize()))
+                                        .compareTo(new BigDecimal(0))
+                                != 0) {
+                            errors.rejectValue(
+                                    "stepsize",
+                                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                    messageSource.getMessage(
+                                            "numberInputAnswer.validator" + ".differenceMaxMinNotDivisibleByStepsize",
+                                            new Object[] {},
+                                            LocaleContextHolder.getLocale()));
                         }
                     }
                 }

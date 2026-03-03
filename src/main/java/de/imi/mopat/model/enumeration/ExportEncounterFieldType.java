@@ -13,10 +13,10 @@ import org.apache.commons.lang.StringUtils;
  * value in the export process.
  */
 public enum ExportEncounterFieldType {
-
-    PATIENT_ID("getPatientID", "java.lang.Long"), CASE_NUMBER("getCaseNumber",
-        "java.lang.String"), START_TIME("getStartTime", "java.sql.Timestamp"), LANGUAGE(
-        "getBundleLanguage", "java.lang.String");
+    PATIENT_ID("getPatientID", "java.lang.Long"),
+    CASE_NUMBER("getCaseNumber", "java.lang.String"),
+    START_TIME("getStartTime", "java.sql.Timestamp"),
+    LANGUAGE("getBundleLanguage", "java.lang.String");
 
     private static final Map<String, ExportEncounterFieldType> map = new HashMap<>(4);
 

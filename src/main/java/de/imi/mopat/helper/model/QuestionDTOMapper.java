@@ -21,7 +21,7 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
     private static final int FRONT = 0;
     private static final int BACK = 1;
     private static final int FRONT_BACK = 2;
-    
+
     @Autowired
     private AnswerDTOMapper answerDTOMapper;
 
@@ -41,8 +41,7 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
             answerDTOs.put((long) answerDTOs.size(), answerDTO);
 
             if (answer instanceof BodyPartAnswer bodyPartAnswer
-                    && !images.contains(bodyPartAnswer.getBodyPart().getImagePath())
-            ) {
+                    && !images.contains(bodyPartAnswer.getBodyPart().getImagePath())) {
                 images.add(bodyPartAnswer.getBodyPart().getImagePath());
             }
         });

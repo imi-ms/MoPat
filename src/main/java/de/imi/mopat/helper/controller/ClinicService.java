@@ -17,13 +17,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class ClinicService {
 
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(ClinicService.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ClinicService.class);
 
     @Autowired
     ClinicDTOMapper clinicDTOMapper;
+
     @Autowired
     private ClinicDao clinicDao;
+
     @Autowired
     private AclEntryDao aclEntryDao;
 
@@ -32,35 +33,35 @@ public class ClinicService {
 
     public List<ClinicDTO> getAllClinicsWithoutBundle() {
         return clinicDao.getAllElements().stream()
-            .map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic))
-            .toList();
+                .map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic))
+                .toList();
     }
-    
+
     public ClinicDTO getClinicDTOById(Long id) {
-        return clinicDTOMapper.apply(
-            clinicDao.getElementById(id)
-        );
+        return clinicDTOMapper.apply(clinicDao.getElementById(id));
     }
-    
+
     public List<Clinic> getAssignedClinics(User user) {
         return new ArrayList<>(clinicDao.getElementsById(
-            aclEntryDao.getObjectIdsForClassUserAndRight(
-                Clinic.class, user, PermissionType.READ
-            )
-        ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ)));
     }
-    
+
     public List<ClinicDTO> transformClinicsToDTOs(Boolean fullVersion, List<Clinic> clinics) {
-        if(fullVersion){
+        if (fullVersion) {
             return clinics.stream().map(clinic -> clinicDTOMapper.apply(clinic)).toList();
         }
-        return clinics.stream().map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic)).toList();
+        return clinics.stream()
+                .map(clinic -> clinicDTOMapper.mapWithoutBundle(clinic))
+                .toList();
     }
-    
+
     public Clinic getClinicByIdFromList(List<Clinic> clinics, Long id) {
         try {
-            return clinics.stream().filter(clinic -> clinic.getId().equals(id)).findFirst().get();
-        } catch(NoSuchElementException e) {
+            return clinics.stream()
+                    .filter(clinic -> clinic.getId().equals(id))
+                    .findFirst()
+                    .get();
+        } catch (NoSuchElementException e) {
             return null;
         }
     }

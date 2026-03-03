@@ -9,13 +9,12 @@ import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.score.Expression;
 import de.imi.mopat.model.score.Score;
-
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +27,14 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
 
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
 
     @Override
     public boolean hasScore(final Question question) {
         Query query = moPatEntityManager.createQuery(
-            "SELECT count(e) FROM " + "UnaryExpression e " + "WHERE e.question.id "
-                + "= :questionId");
+                "SELECT count(e) FROM " + "UnaryExpression e " + "WHERE e.question.id " + "= :questionId");
         query.setParameter("questionId", question.getId());
         Long result = (Long) query.getSingleResult();
         return result > 0;
@@ -44,8 +43,7 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
     @Override
     public boolean hasScore(final Questionnaire questionnaire) {
         Query query = moPatEntityManager.createQuery(
-            "SELECT count(e) FROM " + "Score e WHERE " + "e" + ".questionnaire.id " + "= "
-                + ":questionnaireId");
+                "SELECT count(e) FROM " + "Score e WHERE " + "e" + ".questionnaire.id " + "= " + ":questionnaireId");
         query.setParameter("questionnaireId", questionnaire.getId());
         Long result = (Long) query.getSingleResult();
         return result > 0;
@@ -54,8 +52,8 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
     @Override
     public Set<Long> findQuestionnairesWithScores(List<Long> questionnaireIds) {
         Query query = moPatEntityManager.createQuery(
-            "SELECT DISTINCT e.questionnaire.id FROM Score e WHERE e.questionnaire.id IN :questionnaireIds",
-            Long.class);
+                "SELECT DISTINCT e.questionnaire.id FROM Score e WHERE e.questionnaire.id IN :questionnaireIds",
+                Long.class);
         query.setParameter("questionnaireIds", questionnaireIds);
         List<Long> result = query.getResultList();
         return new HashSet<>(result);
@@ -66,8 +64,7 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
         List<Score> scoreList = new ArrayList<>();
         try {
             TypedQuery expressionQuery = moPatEntityManager.createQuery(
-                "SELECT e FROM UnaryExpression e WHERE e.question.id = " + ":questionId",
-                Expression.class);
+                    "SELECT e FROM UnaryExpression e WHERE e.question.id = " + ":questionId", Expression.class);
             expressionQuery.setParameter("questionId", question.getId());
             List<Expression> resultExpressionList = expressionQuery.getResultList();
             Set<Long> rootExpressionIds = new HashSet<>();
@@ -82,8 +79,7 @@ public class ScoreDaoImpl extends MoPatDaoImpl<Score> implements ScoreDao {
             if (!rootExpressionIds.isEmpty()) {
                 // Get all scores associated with these root expressions
                 TypedQuery<Score> scoreQuery = moPatEntityManager.createQuery(
-                    "SELECT s FROM Score s WHERE s.expression.id IN " + ":expressionIds",
-                    Score.class);
+                        "SELECT s FROM Score s WHERE s.expression.id IN " + ":expressionIds", Score.class);
                 scoreQuery.setParameter("expressionIds", rootExpressionIds);
                 scoreList = scoreQuery.getResultList();
             }

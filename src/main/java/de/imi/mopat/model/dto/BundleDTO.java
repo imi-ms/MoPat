@@ -37,16 +37,22 @@ public class BundleDTO {
     // corresponding database entitiy class
     @NotNull(message = "{questionnaire.finalText.notNull}")
     private SortedMap<String, String> localizedFinalText = null;
+
     @JsonIgnore
     private Long changedBy = null;
+
     @JsonIgnore
     private Boolean isPublished = null;
+
     private Boolean showProgressPerBundle;
     private Boolean deactivateProgressAndNameDuringSurvey;
+
     @JsonIgnore
     private Boolean isModifiable = true;
+
     @JsonIgnore
     private List<String> availableLanguages = null;
+
     private List<BundleQuestionnaireDTO> bundleQuestionnaireDTOs = new ArrayList<>();
 
     /**
@@ -130,17 +136,16 @@ public class BundleDTO {
      * @param deactivateProgressAndNameDuringSurvey the deactivateProgressAndNameDuringSurvey to
      *                                              set
      */
-    public void setdeactivateProgressAndNameDuringSurvey(
-        final Boolean deactivateProgressAndNameDuringSurvey) {
+    public void setdeactivateProgressAndNameDuringSurvey(final Boolean deactivateProgressAndNameDuringSurvey) {
         this.deactivateProgressAndNameDuringSurvey = deactivateProgressAndNameDuringSurvey;
-    }
-
-    public void setAvailableLanguages(final List<String> availableLanguages) {
-        this.availableLanguages = availableLanguages;
     }
 
     public List<String> getAvailableLanguages() {
         return availableLanguages;
+    }
+
+    public void setAvailableLanguages(final List<String> availableLanguages) {
+        this.availableLanguages = availableLanguages;
     }
 
     /**
@@ -153,8 +158,7 @@ public class BundleDTO {
     /**
      * @param bundleQuestionnaires the bundleQuestionnaires to set
      */
-    public void setBundleQuestionnaireDTOs(
-        final List<BundleQuestionnaireDTO> bundleQuestionnaires) {
+    public void setBundleQuestionnaireDTOs(final List<BundleQuestionnaireDTO> bundleQuestionnaires) {
         this.bundleQuestionnaireDTOs = bundleQuestionnaires;
     }
 

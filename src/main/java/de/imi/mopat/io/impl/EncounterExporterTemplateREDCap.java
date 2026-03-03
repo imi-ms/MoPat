@@ -33,19 +33,16 @@ import org.apache.http.message.BasicNameValuePair;
  */
 public class EncounterExporterTemplateREDCap implements EncounterExporterTemplate {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterExporterTemplateREDCap.class);
+    private static final org.slf4j.Logger LOGGER =
+            org.slf4j.LoggerFactory.getLogger(EncounterExporterTemplateREDCap.class);
     private static final String FILE_SUFFIX = "json";
     private static final String DOT = ".";
     private static final String UNDERSCORE = "_";
-    private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
-
-    private Encounter encounter;
-    private ExportTemplate exportTemplate;
+    private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat("dd.MM.yyyy_HH.mm.ss");
     private final ConfigurationDao configurationDao;
     private final ObjectMapper mapper;
-
+    private Encounter encounter;
+    private ExportTemplate exportTemplate;
     private Map<String, String> exportJSON;
 
     /**
@@ -60,8 +57,7 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
     }
 
     @Override
-    public void load(final Encounter encounter, final ExportTemplate exportTemplate)
-        throws Exception {
+    public void load(final Encounter encounter, final ExportTemplate exportTemplate) throws Exception {
         assert encounter != null : "The Encounter was null";
         assert exportTemplate != null : "The ExportTemplate was null";
         this.encounter = encounter;
@@ -69,23 +65,23 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
 
         String objectStoragePath = configurationDao.getObjectStoragePath();
         if (objectStoragePath == null) {
-            LOGGER.error("[SETUP] No object storage path found. Please provide a "
-                    + "value for {} in the {} file", Constants.OBJECT_STORAGE_PATH_PROPERTY,
-                Constants.CONFIGURATION);
+            LOGGER.error(
+                    "[SETUP] No object storage path found. Please provide a " + "value for {} in the {} file",
+                    Constants.OBJECT_STORAGE_PATH_PROPERTY,
+                    Constants.CONFIGURATION);
         } else {
             LOGGER.info("[SETUP] Object storage path configuration found.");
         }
         LOGGER.info(
-            "[SETUP] Accessing properties file to look up the export path" + " in  {}...[DONE]",
-            Constants.CONFIGURATION);
+                "[SETUP] Accessing properties file to look up the export path" + " in  {}...[DONE]",
+                Constants.CONFIGURATION);
 
         String templatePath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
         String filename = exportTemplate.getFilename();
         File file = new File(templatePath, filename);
 
-        exportJSON = mapper.convertValue(mapper.readTree(new FileInputStream(file)).get(0),
-            new TypeReference<Map<String, String>>() {
-            });
+        exportJSON = mapper.convertValue(
+                mapper.readTree(new FileInputStream(file)).get(0), new TypeReference<Map<String, String>>() {});
 
         if (exportJSON == null) {
             LOGGER.error("[SETUP] Could not convert template file to REDCap " + "JSON object");
@@ -96,8 +92,8 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
         // Get export configurations
         String exportUrl = null;
         String apiToken = null;
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
+        for (Configuration configuration :
+                exportTemplate.getConfigurationGroup().getConfigurations()) {
             if (configuration.getAttribute().equals("exportUrl")) {
                 exportUrl = configuration.getValue();
             }
@@ -112,8 +108,9 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
                 exportJSON.put(key, encounter.getCaseNumber());
             } else if (key.endsWith("_complete")) {
                 exportJSON.put(key, "1");
-            } else if (key.equals("redcap_repeat_instrument") || key.equals("redcap_event_name")
-                || key.equals("redcap_data_access_group")) {
+            } else if (key.equals("redcap_repeat_instrument")
+                    || key.equals("redcap_event_name")
+                    || key.equals("redcap_data_access_group")) {
             } else if (key.equals("redcap_repeat_instance")) {
                 if (exportUrl != null && apiToken != null) {
                     exportJSON.put(key, "new");
@@ -148,8 +145,8 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
         String apiToken = null;
 
         // Get export configurations
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
+        for (Configuration configuration :
+                exportTemplate.getConfigurationGroup().getConfigurations()) {
             if (configuration.getAttribute().equals("exportInDirectory")) {
                 exportInDirectory = Boolean.parseBoolean(configuration.getValue());
             }
@@ -192,9 +189,10 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
             path.mkdirs();
         }
 
-        //Create a sub-directory for the exported files
-        String filepath = exportPath + File.separator + exportTemplate.getQuestionnaire().getName()
-            .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_") + "/";
+        // Create a sub-directory for the exported files
+        String filepath = exportPath + File.separator
+                + exportTemplate.getQuestionnaire().getName().replaceAll(":", "_") + "/"
+                + exportTemplate.getName().replaceAll(":", "_") + "/";
         File subDirectory = new File(filepath);
         if (!subDirectory.isDirectory()) {
             subDirectory.mkdirs();
@@ -213,8 +211,7 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
      * @return ExportStatus can be SUCCESSFUL, CONFLICT or FAILURE
      * @throws java.lang.Exception if a problem occurs
      */
-    public ExportStatus exportToHTTP(final String stringURL, final String apiToken)
-        throws Exception {
+    public ExportStatus exportToHTTP(final String stringURL, final String apiToken) throws Exception {
         // Set the export parameter
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("token", apiToken));
@@ -223,8 +220,7 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
         params.add(new BasicNameValuePair("type", "flat"));
         params.add(new BasicNameValuePair("overwriteBehavior", "normal"));
         params.add(new BasicNameValuePair("forceAutoNumber", "false"));
-        params.add(
-            new BasicNameValuePair("data", "[" + mapper.writeValueAsString(exportJSON) + "]"));
+        params.add(new BasicNameValuePair("data", "[" + mapper.writeValueAsString(exportJSON) + "]"));
         params.add(new BasicNameValuePair("returnContent", "count"));
         params.add(new BasicNameValuePair("returnFormat", "json"));
 
@@ -252,9 +248,13 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
      * @return The newly created unique REDCap JSON filename.
      */
     private String createFileName() {
-        String result =
-            encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + FILENAMEDATEFORMAT.format(new Date()) + DOT + FILE_SUFFIX;
+        String result = encounter.getCaseNumber()
+                + UNDERSCORE
+                + exportTemplate.getOriginalFilename()
+                + UNDERSCORE
+                + FILENAMEDATEFORMAT.format(new Date())
+                + DOT
+                + FILE_SUFFIX;
         return result;
     }
 }

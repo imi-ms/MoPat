@@ -11,15 +11,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ApplicationContextService {
 
-    @Autowired
-    private ApplicationContext applicationContextHelper;
-
     private static ApplicationContext applicationContext;
 
-    @PostConstruct
-    public void init() {
-        applicationContext = applicationContextHelper;
-    }
+    @Autowired
+    private ApplicationContext applicationContextHelper;
 
     /**
      * Get the application context at runtime.
@@ -28,5 +23,10 @@ public class ApplicationContextService {
      */
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
+    }
+
+    @PostConstruct
+    public void init() {
+        applicationContext = applicationContextHelper;
     }
 }

@@ -9,10 +9,16 @@ import org.springframework.validation.BindingResult;
 
 public class FreeTextOrBarcodeStrat implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         if (!question.getAnswers().isEmpty()) {
             // Update freetext answer
-            FreetextAnswer freetextAnswer = (FreetextAnswer) question.getAnswers().get(0);
+            FreetextAnswer freetextAnswer =
+                    (FreetextAnswer) question.getAnswers().get(0);
             freetextAnswer.setQuestion(question);
             freetextAnswer.setIsEnabled(true);
         } else {

@@ -27,12 +27,12 @@ public class ClinicConfigurationGroupMapping implements Serializable {
     @JoinColumn(name = "configuration_group_id", referencedColumnName = "id")
     private ConfigurationGroup configurationGroup = null;
 
-    public ClinicConfigurationGroupMapping() {
-    }
+    public ClinicConfigurationGroupMapping() {}
 
-    public ClinicConfigurationGroupMapping(final ClinicConfigurationMapping clinicConfigurationMapping, final ConfigurationGroup configurationGroup) {
-        this.configurationGroup=configurationGroup;
-        this.clinicConfigurationMapping=clinicConfigurationMapping;
+    public ClinicConfigurationGroupMapping(
+            final ClinicConfigurationMapping clinicConfigurationMapping, final ConfigurationGroup configurationGroup) {
+        this.configurationGroup = configurationGroup;
+        this.clinicConfigurationMapping = clinicConfigurationMapping;
     }
 
     /**

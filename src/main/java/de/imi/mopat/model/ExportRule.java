@@ -30,17 +30,21 @@ import java.io.Serializable;
 @DiscriminatorColumn(name = "export_rule_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class ExportRule implements Serializable {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @Column(name = "export_field")
     private String exportField;
+
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "export_template_id", referencedColumnName = "id")
     private ExportTemplate exportTemplate;
+
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "export_rule_format_id", referencedColumnName = "id")
     private ExportRuleFormat exportRuleFormat;
@@ -49,8 +53,7 @@ public abstract class ExportRule implements Serializable {
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests
      */
-    protected ExportRule() {
-    }
+    protected ExportRule() {}
 
     /**
      * Constructor. See {@link ExportRule#setExportTemplate(de.imi.mopat.model.ExportTemplate) } and
@@ -197,10 +200,9 @@ public abstract class ExportRule implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof ExportRule)) {
+        if (!(obj instanceof ExportRule other)) {
             return false;
         }
-        ExportRule other = (ExportRule) obj;
         return getUuid().equals(other.getUuid());
     }
 }

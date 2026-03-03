@@ -22,18 +22,20 @@ public class ExportTemplateImporterREDCap implements ExportTemplateImporter {
 
     @Override
     public List<String> importFile(final InputStream inputStream)
-        throws IOException, SAXException, ParserConfigurationException {
+            throws IOException, SAXException, ParserConfigurationException {
         List<String> aggregatedExportFields = new ArrayList<>();
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> jsonAttributes = mapper.convertValue(
-            mapper.readTree(inputStream).get(0), new TypeReference<Map<String, String>>() {
-            });
+        Map<String, String> jsonAttributes =
+                mapper.convertValue(mapper.readTree(inputStream).get(0), new TypeReference<Map<String, String>>() {});
 
         for (String key : jsonAttributes.keySet()) {
-            if (key.equals("redcap_event_name") || key.equals("redcap_data_access_group")
-                || key.equals("redcap_repeat_instrument") || key.equals("redcap_repeat_instance")
-                || key.endsWith("_complete") || key.equals("record_id")) {
+            if (key.equals("redcap_event_name")
+                    || key.equals("redcap_data_access_group")
+                    || key.equals("redcap_repeat_instrument")
+                    || key.equals("redcap_repeat_instance")
+                    || key.endsWith("_complete")
+                    || key.equals("record_id")) {
                 continue;
             }
             aggregatedExportFields.add(key);

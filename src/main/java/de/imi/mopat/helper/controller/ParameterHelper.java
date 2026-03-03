@@ -12,7 +12,7 @@ public class ParameterHelper {
     private final List<String> ignore;
 
     public ParameterHelper() {
-        //Add all parameters that should never be kept in the URL
+        // Add all parameters that should never be kept in the URL
         this.ignore = new ArrayList<>();
     }
 
@@ -24,22 +24,22 @@ public class ParameterHelper {
      */
     public Map<String, List<String>> processQueryString(String queryString) {
         queryString = decode(queryString);
-        //Check if Query exists
+        // Check if Query exists
         if (queryString != null) {
             String[] params = queryString.split("&");
 
             Map<String, List<String>> queryMap = new LinkedHashMap<>();
             for (String param : params) {
-                //Split into key and value
+                // Split into key and value
                 String[] splitted = param.split("=");
-                //Ignore all keys that are in ignore list
+                // Ignore all keys that are in ignore list
                 if (!this.ignore.contains(splitted[0])) {
 
                     try {
-                        //If value exists
+                        // If value exists
                         addParameter(queryMap, splitted[0], splitted[1]);
                     } catch (Exception ex) {
-                        //Empty Value creates error
+                        // Empty Value creates error
                         addParameter(queryMap, splitted[0], "");
                     }
                 }
@@ -57,8 +57,8 @@ public class ParameterHelper {
      * @param value         of param
      * @return new Parameter Map
      */
-    public Map<String, List<String>> replaceParam(final Map<String, List<String>> currentParams,
-        final String param, final String value) {
+    public Map<String, List<String>> replaceParam(
+            final Map<String, List<String>> currentParams, final String param, final String value) {
         List<String> valueList = new ArrayList<>();
         valueList.add(stripXSS(value));
         currentParams.put(param, valueList);
@@ -74,8 +74,8 @@ public class ParameterHelper {
      * @param value      of param
      * @return new Parameter Map
      */
-    public Map<String, List<String>> addParameter(final Map<String, List<String>> mapToAddTo,
-        final String param, final String value) {
+    public Map<String, List<String>> addParameter(
+            final Map<String, List<String>> mapToAddTo, final String param, final String value) {
         if (mapToAddTo.containsKey(param)) {
             mapToAddTo.get(param).add(stripXSS(value));
         } else {
@@ -96,7 +96,7 @@ public class ParameterHelper {
      * @return Map with parameter or value removed
      */
     public Map<String, List<String>> removeParameter(
-        final Map<String, List<String>> mapToRemoveFrom, final String param, final String value) {
+            final Map<String, List<String>> mapToRemoveFrom, final String param, final String value) {
         if (mapToRemoveFrom.containsKey(param)) {
             if (mapToRemoveFrom.get(param).contains(value)) {
                 List<String> entries = mapToRemoveFrom.get(param);
@@ -107,7 +107,6 @@ public class ParameterHelper {
                     mapToRemoveFrom.remove(param);
                 }
             }
-
         }
         return mapToRemoveFrom;
     }
@@ -138,7 +137,6 @@ public class ParameterHelper {
             }
         }
         return result.substring(0, result.lastIndexOf("&"));
-
     }
 
     /**
@@ -168,7 +166,6 @@ public class ParameterHelper {
             }
         }
         return result.substring(0, result.lastIndexOf("&"));
-
     }
 
     /**
@@ -218,9 +215,7 @@ public class ParameterHelper {
             value = value.replace("<", "");
             value = value.replace(">", "");
             return value;
-
         }
         return null;
     }
-
 }

@@ -12,14 +12,18 @@ public class StatisticDTO implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date minDate;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date maxDate;
+
     @NotNull(message = "{statistic.startdate.notNullt}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date startDate;
+
     @NotNull(message = "{statistic.enddate.notNull}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
+
     private int count;
     private List<Statistic> statistics = new ArrayList<>();
 
@@ -31,8 +35,7 @@ public class StatisticDTO implements Serializable {
         this.count = 2;
     }
 
-    public StatisticDTO() {
-    }
+    public StatisticDTO() {}
 
     public Date getMinDate() {
         return minDate;

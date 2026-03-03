@@ -18,7 +18,7 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
 
     @Autowired
     private BundleDTOMapper bundleDTOMapper;
-    
+
     @Autowired
     private EncounterDTOMapper encounterDTOMapper;
 
@@ -59,6 +59,4 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
 
         return encounterScheduledDTO;
     }
-
-
 }

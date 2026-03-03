@@ -4,19 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.controller.ApplicationMailer;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.EncounterDTO;
-import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +22,11 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 
@@ -46,53 +40,67 @@ public class EncounterScheduled implements Serializable {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationMailer.class);
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @JsonIgnore
     @Column(name = "case_number")
     private String caseNumber;
-    @Pattern(regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+
+    @Pattern(
+            regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     @Column(name = "email")
     private String email;
+
     @Column(name = "reply_mail")
     private String replyMail;
+
     @JsonIgnore
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "bundle_id", referencedColumnName = "id")
     private Bundle bundle;
+
     @Temporal(TemporalType.DATE)
     @NotNull(message = "{encounter.startTime.notNull}")
     @Column(name = "start_date", nullable = false)
     private Date startDate;
+
     @Temporal(TemporalType.DATE)
     @Column(name = "end_date", nullable = true)
     private Date endDate;
+
     @Column(name = "repeat_period", nullable = true)
     private Integer repeatPeriod;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "encounterscheduled_serial_type")
     private EncounterScheduledSerialType encounterScheduledSerialType;
+
     @Column(name = "locale")
     private String locale;
+
     @Column(name = "personal_text", columnDefinition = "TEXT")
     private String personalText;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "mail_status")
     private EncounterScheduledMailStatus mailStatus = EncounterScheduledMailStatus.ACTIVE;
+
     @OneToMany(mappedBy = "EncounterScheduled", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Encounter> encounters = new HashSet<>();
+
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "clinic_id", referencedColumnName = "id")
     private Clinic clinic;
 
-    public EncounterScheduled() {
-    }
+    public EncounterScheduled() {}
 
     /**
      * Uses the setters to initialize the object. See setters for constraints.
@@ -108,10 +116,18 @@ public class EncounterScheduled implements Serializable {
      * @param personalText                 personalText for the scheduled encounter.
      * @param replyMail                    The replay mail of the scheduled encounter. series.
      */
-    public EncounterScheduled(final String caseNumber, final Bundle bundle, final Clinic clinic, final Date startDate,
-        final EncounterScheduledSerialType encounterScheduledSerialType, final Date endDate,
-        final Integer repeatPeriod, final String email, final String locale,
-        final String personalText, final String replyMail) {
+    public EncounterScheduled(
+            final String caseNumber,
+            final Bundle bundle,
+            final Clinic clinic,
+            final Date startDate,
+            final EncounterScheduledSerialType encounterScheduledSerialType,
+            final Date endDate,
+            final Integer repeatPeriod,
+            final String email,
+            final String locale,
+            final String personalText,
+            final String replyMail) {
         setCaseNumber(caseNumber);
         setBundle(bundle);
         setStartDate(startDate);
@@ -195,8 +211,7 @@ public class EncounterScheduled implements Serializable {
      */
     public void setCaseNumber(final String caseNumber) {
         assert caseNumber != null : "The given case number is null";
-        assert !caseNumber.trim().isEmpty() :
-            "The given case number is empty (after" + " trimming)";
+        assert !caseNumber.trim().isEmpty() : "The given case number is empty (after" + " trimming)";
         this.caseNumber = caseNumber.trim();
     }
 
@@ -324,8 +339,7 @@ public class EncounterScheduled implements Serializable {
      *                                     {@link EncounterScheduledSerialType} of this
      *                                     EncounterScheduled object.
      */
-    public void setEncounterScheduledSerialType(
-        final EncounterScheduledSerialType encounterScheduledSerialType) {
+    public void setEncounterScheduledSerialType(final EncounterScheduledSerialType encounterScheduledSerialType) {
         this.encounterScheduledSerialType = encounterScheduledSerialType;
     }
 
@@ -339,23 +353,6 @@ public class EncounterScheduled implements Serializable {
     }
 
     /**
-     * Add an {@link Encounter} to this EncounterScheduled object.
-     *
-     * @param encounter Must not be <code>null</code>.
-     */
-    public void addEncounter(final Encounter encounter) {
-        assert encounter != null : "The given Response was null";
-        if (!this.encounters.contains(encounter)) {
-            this.encounters.add(encounter);
-        }
-
-        if (encounter.getEncounterScheduled() == null || !encounter.getEncounterScheduled()
-            .equals(this)) {
-            encounter.setEncounterScheduled(this);
-        }
-    }
-
-    /**
      * Sets a list of {@link Encounter encounters} to this EncounterScheduled object.
      *
      * @param encounters the new set of {@link Encounter encounters} for this EncounterScheduled
@@ -363,6 +360,21 @@ public class EncounterScheduled implements Serializable {
      */
     public void setEncounters(final Set<Encounter> encounters) {
         this.encounters = encounters;
+    }
+
+    /**
+     * Add an {@link Encounter} to this EncounterScheduled object.
+     *
+     * @param encounter Must not be <code>null</code>.
+     */
+    public void addEncounter(final Encounter encounter) {
+        assert encounter != null : "The given Response was null";
+        this.encounters.add(encounter);
+
+        if (encounter.getEncounterScheduled() == null
+                || !encounter.getEncounterScheduled().equals(this)) {
+            encounter.setEncounterScheduled(this);
+        }
     }
 
     /**
@@ -434,13 +446,11 @@ public class EncounterScheduled implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof EncounterScheduled)) {
+        if (!(obj instanceof EncounterScheduled other)) {
             return false;
         }
-        EncounterScheduled other = (EncounterScheduled) obj;
         return getUUID().equals(other.getUUID());
     }
-
 
     /**
      * Sends a mail which askes the patient to reactivate the reminder mails for thisfor
@@ -451,30 +461,29 @@ public class EncounterScheduled implements Serializable {
      * @param baseUrl           String to get the root URL of the server.
      * @return True if the mail has been sent, false otherwise.
      */
-    public Boolean sendReactivationMail(final ApplicationMailer applicationMailer,
-        final MessageSource messageSource, final String baseUrl) {
-        if ((this.endDate == null || this.endDate.after(new Date())) && this.mailStatus.equals(
-            EncounterScheduledMailStatus.DEACTIVATED_PATIENT)) {
+    public Boolean sendReactivationMail(
+            final ApplicationMailer applicationMailer, final MessageSource messageSource, final String baseUrl) {
+        if ((this.endDate == null || this.endDate.after(new Date()))
+                && this.mailStatus.equals(EncounterScheduledMailStatus.DEACTIVATED_PATIENT)) {
             Locale locale = LocaleHelper.getLocaleFromString(this.locale);
 
             String footerEmail = applicationMailer.getMailFooterEMail();
             String footerPhone = applicationMailer.getMailFooterPhone();
 
             // Create links for the mail content
-            String reactivationLink =
-                baseUrl + "/encounter/activateMailStatusByPatient?hash=" + this.uuid;
+            String reactivationLink = baseUrl + "/encounter/activateMailStatusByPatient?hash=" + this.uuid;
 
             // Create mail content
-            String content = messageSource.getMessage("mail.encounterScheduled" + ".reactivation",
-                new Object[]{reactivationLink, reactivationLink}, locale);
-            String footer = messageSource.getMessage("mail.encounter.footer",
-                new Object[]{footerEmail, footerPhone}, locale);
-            String subject = messageSource.getMessage("mail.encounter.subject", new Object[]{},
-                locale);
+            String content = messageSource.getMessage(
+                    "mail.encounterScheduled" + ".reactivation",
+                    new Object[] {reactivationLink, reactivationLink},
+                    locale);
+            String footer =
+                    messageSource.getMessage("mail.encounter.footer", new Object[] {footerEmail, footerPhone}, locale);
+            String subject = messageSource.getMessage("mail.encounter.subject", new Object[] {}, locale);
 
             try {
-                applicationMailer.sendMail(this.email, null, subject, content + footer,
-                    this.replyMail);
+                applicationMailer.sendMail(this.email, null, subject, content + footer, this.replyMail);
             } catch (Exception e) {
                 LOGGER.debug("Die E-Mail konnte nicht gesendet werden.");
                 return false;

@@ -1,8 +1,5 @@
 package de.imi.mopat.cron;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConfigurationDao;
@@ -14,11 +11,12 @@ import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.Statistic;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
-
 import java.sql.Timestamp;
 import java.util.Date;
-
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 /**
  * This class generates the statistics on a daily basis. Thus, a {@link Statistic} entry is
@@ -31,18 +29,25 @@ public class StatisticFiller {
 
     @Autowired
     private ClinicDao clinicDao;
+
     @Autowired
     private StatisticDao statisticDao;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private EncounterDao encounterDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private ConfigurationDao configurationDao;
 
@@ -66,17 +71,16 @@ public class StatisticFiller {
         boolean deleteFinishedEncounters = true;
         Long finishedEncounterTimeWindowInMillis = configurationDao.getFinishedEncounterTimeWindow();
         if (finishedEncounterTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (30 days) instead",
-                Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
+            LOGGER.info(
+                    "Could not find a value for the property {}; will take " + "the default (30 days) instead",
+                    Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
             finishedEncounterTimeWindowInMillis = (30L * 24L * 60L * 60L * 1000L);
         } else if (finishedEncounterTimeWindowInMillis == -1) {
             deleteFinishedEncounters = false;
         }
         if (deleteFinishedEncounters) {
-            statistic.setCompleteEncounterDeletedCount(
-                encounterDao.getCountCompleteEncountersOlderThan(new Timestamp(
-                    System.currentTimeMillis() - finishedEncounterTimeWindowInMillis)));
+            statistic.setCompleteEncounterDeletedCount(encounterDao.getCountCompleteEncountersOlderThan(
+                    new Timestamp(System.currentTimeMillis() - finishedEncounterTimeWindowInMillis)));
         } else {
             statistic.setCompleteEncounterDeletedCount(0L);
         }
@@ -84,17 +88,16 @@ public class StatisticFiller {
         boolean deleteIncompleteEncounters = true;
         Long incompleteEncounterTimeWindowInMillis = configurationDao.getIncompleteEncounterTimeWindow();
         if (incompleteEncounterTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (180 days) instead",
-                Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
+            LOGGER.info(
+                    "Could not find a value for the property {}; will take " + "the default (180 days) instead",
+                    Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
             incompleteEncounterTimeWindowInMillis = (180L * 24L * 60L * 60L * 1000L);
         } else if (incompleteEncounterTimeWindowInMillis == -1) {
             deleteIncompleteEncounters = false;
         }
         if (deleteIncompleteEncounters) {
-            statistic.setIncompleteEncounterDeletedCount(
-                encounterDao.getCountIncompleteEncountersOlderThan(new Timestamp(
-                    System.currentTimeMillis() - incompleteEncounterTimeWindowInMillis)));
+            statistic.setIncompleteEncounterDeletedCount(encounterDao.getCountIncompleteEncountersOlderThan(
+                    new Timestamp(System.currentTimeMillis() - incompleteEncounterTimeWindowInMillis)));
         } else {
             statistic.setIncompleteEncounterDeletedCount(0L);
         }

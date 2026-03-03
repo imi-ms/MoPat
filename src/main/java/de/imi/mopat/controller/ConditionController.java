@@ -48,26 +48,38 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class ConditionController {
 
-    private static final ArrayList<QuestionType> CONDITIONABLE_QUESTIONTYPES = new ArrayList<QuestionType>(
-        Arrays.asList(QuestionType.MULTIPLE_CHOICE, QuestionType.DROP_DOWN, QuestionType.SLIDER,
-            QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_INPUT));
+    private static final ArrayList<QuestionType> CONDITIONABLE_QUESTIONTYPES =
+            new ArrayList<QuestionType>(Arrays.asList(
+                    QuestionType.MULTIPLE_CHOICE,
+                    QuestionType.DROP_DOWN,
+                    QuestionType.SLIDER,
+                    QuestionType.NUMBER_CHECKBOX,
+                    QuestionType.NUMBER_INPUT));
 
     @Autowired
     private AnswerDao answerDao;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private ConditionDao conditionDao;
+
     @Autowired
     private QuestionDao questionDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private ConditionListDTOValidator conditionListDTOValidator;
+
     @Autowired
     private BundleDTOMapper bundleDTOMapper;
+
     @Autowired
     private ConditionDTOMapper conditionDTOMapper;
+
     @Autowired
     private ConditionService conditionService;
 
@@ -84,8 +96,9 @@ public class ConditionController {
     @GetMapping(value = "/condition/listQuestionConditions")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showConditionsForQuestion(
-        @RequestParam(value = "questionId", required = true) final Long questionId,
-        final Model model, final RedirectAttributes redirectAttributes) {
+            @RequestParam(value = "questionId", required = true) final Long questionId,
+            final Model model,
+            final RedirectAttributes redirectAttributes) {
         Question question = questionDao.getElementById(questionId);
         if (CONDITIONABLE_QUESTIONTYPES.contains(question.getQuestionType())) {
             model.addAttribute("question", question);
@@ -112,12 +125,13 @@ public class ConditionController {
     @GetMapping(value = "/condition/edit")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showEditConditionForm(
-        @RequestParam(value = "conditionId", required = false) final Long conditionId,
-        @RequestParam(value = "questionId", required = true) final Long questionId,
-        @RequestParam(value = "answerId", required = false) final Long answerId,
-        @RequestParam(value = "thresholdValue", required = false) final Double thresholdValue,
-        @RequestParam(value = "thresholdComparisonType", required = false) final String thresholdComparisonType,
-        @RequestParam(value = "action", required = false) final String action, final Model model) {
+            @RequestParam(value = "conditionId", required = false) final Long conditionId,
+            @RequestParam(value = "questionId", required = true) final Long questionId,
+            @RequestParam(value = "answerId", required = false) final Long answerId,
+            @RequestParam(value = "thresholdValue", required = false) final Double thresholdValue,
+            @RequestParam(value = "thresholdComparisonType", required = false) final String thresholdComparisonType,
+            @RequestParam(value = "action", required = false) final String action,
+            final Model model) {
 
         Question question = questionDao.getElementById(questionId);
         Questionnaire questionnaire = question.getQuestionnaire();
@@ -127,11 +141,10 @@ public class ConditionController {
         ConditionListDTO conditionListDTO = new ConditionListDTO();
 
         if (action != null && action.equalsIgnoreCase("backToQuestionnaire")
-            || !CONDITIONABLE_QUESTIONTYPES.contains(question.getQuestionType())) {
+                || !CONDITIONABLE_QUESTIONTYPES.contains(question.getQuestionType())) {
             return "redirect:/question/list?id=" + question.getQuestionnaire().getId();
         } else if (conditionId != null && conditionId > 0L) {
-            conditions = conditionDao.getConditionsByTriggerCondition(
-                conditionDao.getElementById(conditionId));
+            conditions = conditionDao.getConditionsByTriggerCondition(conditionDao.getElementById(conditionId));
         } else {
             Answer answer;
             // If there is no answerId, select the first answer of the question
@@ -143,35 +156,34 @@ public class ConditionController {
             // Get the right conditions
             if (answer instanceof SelectAnswer) {
                 conditions = conditionDao.getConditionsByTriggerAnswer(answer, null, null);
-            } else if (answerId != null && thresholdValue != null
-                && thresholdComparisonType != null) {
-                conditions = conditionDao.getConditionsByTriggerAnswer(answer, thresholdValue,
-                    ThresholdComparisonType.valueOf(thresholdComparisonType));
+            } else if (answerId != null && thresholdValue != null && thresholdComparisonType != null) {
+                conditions = conditionDao.getConditionsByTriggerAnswer(
+                        answer, thresholdValue, ThresholdComparisonType.valueOf(thresholdComparisonType));
             } else {
-                conditions = conditionDao.getConditionsByTriggerAnswer(answer, 0d,
-                    ThresholdComparisonType.SMALLER_THAN);
+                conditions =
+                        conditionDao.getConditionsByTriggerAnswer(answer, 0d, ThresholdComparisonType.SMALLER_THAN);
             }
         }
 
         // Attach the available BudleDTOs and QuestionnaireDTOs to the
         // ConditionListDTO
-        //All BundleDTOs that contain the question's questionnaire
+        // All BundleDTOs that contain the question's questionnaire
         List<BundleDTO> availableBundleDTOs = new ArrayList<>();
-        //All BundleQuestionnaireDTOs that contain the question's
+        // All BundleQuestionnaireDTOs that contain the question's
         // questionnaire to make sure that those ones are listed unique
         List<BundleQuestionnaireDTO> availableBundleQuestionnaireDTOs = new ArrayList<>();
 
         /*
-         Get all bundles that contain a bundleQuestionnaire whose
-         questionnaire is targetable by the condition.
-         Add targetable bundleDTOs and bundleQuestionnaireDTOs seperatly
-         to the conditionDTO to access the corresponding objects easily in
-         the view.
-         This way it is possible to list the two different collections more
-         easily.
-         Otherwise showing and accessing the items at the view would be more
-         complex.
-         */
+        Get all bundles that contain a bundleQuestionnaire whose
+        questionnaire is targetable by the condition.
+        Add targetable bundleDTOs and bundleQuestionnaireDTOs seperatly
+        to the conditionDTO to access the corresponding objects easily in
+        the view.
+        This way it is possible to list the two different collections more
+        easily.
+        Otherwise showing and accessing the items at the view would be more
+        complex.
+        */
         for (BundleQuestionnaire currentBundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
             BundleDTO bundleDTO = bundleDTOMapper.apply(true, currentBundleQuestionnaire.getBundle());
 
@@ -179,8 +191,7 @@ public class ConditionController {
             // If there is one questionnaire in this bundle after the current
             // questionnaire
             for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleDTO.getBundleQuestionnaireDTOs()) {
-                if (currentBundleQuestionnaire.getPosition()
-                    < bundleQuestionnaireDTO.getPosition()) {
+                if (currentBundleQuestionnaire.getPosition() < bundleQuestionnaireDTO.getPosition()) {
                     availableBundleQuestionnaireDTOs.add(bundleQuestionnaireDTO);
                     hasAssignedBundleQuestionnaire = true;
                 }
@@ -201,21 +212,21 @@ public class ConditionController {
                 conditionDTOs.add(conditionDTO);
             }
         } else {
-            //Create conditionDTO
+            // Create conditionDTO
             ConditionDTO conditionDTO = new ConditionDTO();
             if (answerId != null) {
                 conditionDTO.setTriggerId(answerId);
             }
             if (question.getQuestionType() == QuestionType.SLIDER
-                || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX
-                || question.getQuestionType() == QuestionType.NUMBER_INPUT) {
+                    || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX
+                    || question.getQuestionType() == QuestionType.NUMBER_INPUT) {
                 Answer answer;
                 if (answerId != null) {
                     answer = answerDao.getElementById(answerId);
-                    conditionDTO.setThresholdType(
-                        ThresholdComparisonType.valueOf(thresholdComparisonType));
+                    conditionDTO.setThresholdType(ThresholdComparisonType.valueOf(thresholdComparisonType));
                 } else {
-                    answer = answerDao.getElementById(question.getAnswers().get(0).getId());
+                    answer = answerDao.getElementById(
+                            question.getAnswers().get(0).getId());
                     conditionDTO.setThresholdType(ThresholdComparisonType.SMALLER_THAN);
                 }
                 Double minValue = 0d;
@@ -266,10 +277,12 @@ public class ConditionController {
      */
     @PostMapping(value = "/condition/edit")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String editCondition(@RequestParam final String postAction,
-        @RequestParam(value = "questionId", required = true) final Long questionId,
-        @ModelAttribute(value = "conditionListDTO") final ConditionListDTO conditionListDTO,
-        final BindingResult result, final Model model) {
+    public String editCondition(
+            @RequestParam final String postAction,
+            @RequestParam(value = "questionId", required = true) final Long questionId,
+            @ModelAttribute(value = "conditionListDTO") final ConditionListDTO conditionListDTO,
+            final BindingResult result,
+            final Model model) {
         if (postAction.equalsIgnoreCase("cancel")) {
             // Clear the model before redirect, to avoid unnecessary
             // attributes in the url.
@@ -277,7 +290,7 @@ public class ConditionController {
             return "redirect:/condition/listQuestionConditions?questionId=" + questionId;
         }
 
-        //Validate the conditions
+        // Validate the conditions
         conditionListDTOValidator.validate(conditionListDTO, result);
         if (result.hasErrors()) {
             Locale locale = LocaleContextHolder.getLocale();
@@ -291,13 +304,13 @@ public class ConditionController {
 
         // Remove all conditions with the same trigger condition
         if (conditionListDTO.getConditionDTOs().get(0).getId() != null) {
-            List<Condition> existingConditions = conditionDao.getConditionsByTriggerCondition(
-                conditionDao.getElementById(conditionListDTO.getConditionDTOs().get(0).getId()));
+            List<Condition> existingConditions =
+                    conditionDao.getConditionsByTriggerCondition(conditionDao.getElementById(
+                            conditionListDTO.getConditionDTOs().get(0).getId()));
             for (Condition condition : existingConditions) {
                 ConditionTrigger conditionTrigger = condition.getTrigger();
                 conditionTrigger.removeCondition(condition);
-                if (condition instanceof SelectAnswerCondition
-                    || condition instanceof SliderAnswerThresholdCondition) {
+                if (condition instanceof SelectAnswerCondition || condition instanceof SliderAnswerThresholdCondition) {
                     answerDao.merge((Answer) conditionTrigger);
                 }
             }
@@ -323,17 +336,16 @@ public class ConditionController {
     @RequestMapping(value = "/condition/remove", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String removeCondition(
-        @RequestParam(value = "id", required = false) final Long conditionId,
-        @RequestParam(value = "questionId", required = false) final Long questionId,
-        final Model model) {
+            @RequestParam(value = "id", required = false) final Long conditionId,
+            @RequestParam(value = "questionId", required = false) final Long questionId,
+            final Model model) {
         // Remove an existing condition
         if (conditionId != null && conditionId > 0) {
             Condition condition = conditionDao.getElementById(conditionId);
             if (condition != null) {
                 ConditionTrigger conditionTrigger = condition.getTrigger();
                 conditionTrigger.removeCondition(condition);
-                if (condition instanceof SelectAnswerCondition
-                    || condition instanceof SliderAnswerThresholdCondition) {
+                if (condition instanceof SelectAnswerCondition || condition instanceof SliderAnswerThresholdCondition) {
                     answerDao.merge((Answer) conditionTrigger);
                 }
             }

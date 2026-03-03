@@ -9,6 +9,7 @@ public class BundleClinicDTO {
 
     @NotNull(message = "{bundleClinic.position.notNull}")
     private Integer position;
+
     private ClinicDTO clinicDTO;
     private BundleDTO bundleDTO;
 

@@ -1,11 +1,10 @@
 package de.imi.mopat.model.score;
 
 import de.imi.mopat.model.Encounter;
-
-import java.util.Iterator;
-import java.util.List;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class returns either the result of the operation A != B between the first {@link Expression}
@@ -16,8 +15,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Different")
 public class Different extends BinaryOperatorBoolean {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ValueOfQuestionOperator.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ValueOfQuestionOperator.class);
 
     @Override
     public Boolean evaluate(final Expression expression, final Encounter encounter) {
@@ -46,8 +44,7 @@ public class Different extends BinaryOperatorBoolean {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             List<Expression> notequalExpressions = binaryExpression.getExpressions();
@@ -58,7 +55,7 @@ public class Different extends BinaryOperatorBoolean {
             Iterator<Expression> iterator = notequalExpressions.iterator();
 
             return "(" + iterator.next().getFormula(encounter, defaultLanguage) + " != "
-                + iterator.next().getFormula(encounter, defaultLanguage) + ")";
+                    + iterator.next().getFormula(encounter, defaultLanguage) + ")";
         } else {
             LOGGER.error("Wrong type of Expression. Must be an binary " + "expression.");
             return null;

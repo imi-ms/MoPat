@@ -35,7 +35,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-
 @Component
 public class MoPatQuestionnaireImporter {
 
@@ -65,33 +64,38 @@ public class MoPatQuestionnaireImporter {
         return createQuestionnaire(jsonQuestionnaireDTO, questions, answers, scores);
     }
 
-    protected Questionnaire createQuestionnaire(JsonQuestionnaireDTO jsonQuestionnaireDTO,
-        Map<Long, Question> questions, Map<Long, Answer> answers, Map<Long, Score> scores){
+    protected Questionnaire createQuestionnaire(
+            JsonQuestionnaireDTO jsonQuestionnaireDTO,
+            Map<Long, Question> questions,
+            Map<Long, Answer> answers,
+            Map<Long, Score> scores) {
         Questionnaire questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User currentUser =
+                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         questionnaire.setChangedBy(currentUser.getId());
         // Collect all questions and answers in a map to access those
         // ones who are target and trigger of a condition easily
-
 
         // Convert all jsonQuestionDTOs and all jsonAnswerDTOs to
         // their database model counterparts and collect them in a
         // map for conversion of conditions
         for (Long questionId : jsonQuestionnaireDTO.getQuestionDTOs().keySet()) {
-            JsonQuestionDTO jsonQuestionDTO = jsonQuestionnaireDTO.getQuestionDTOs().get(questionId);
+            JsonQuestionDTO jsonQuestionDTO =
+                    jsonQuestionnaireDTO.getQuestionDTOs().get(questionId);
             Question question = jsonQuestionDTO.convertToQuestion();
             questions.put(questionId, question);
             // If the question is of type multiple choice or drop
             // down we have to make sure that the freetext answer is
             // added as the last answer
             if (question.getQuestionType() == QuestionType.MULTIPLE_CHOICE
-                || question.getQuestionType() == QuestionType.DROP_DOWN) {
+                    || question.getQuestionType() == QuestionType.DROP_DOWN) {
                 Long freetextAnswerId = null;
                 for (Long answerId : jsonQuestionDTO.getAnswers().keySet()) {
                     JsonAnswerDTO jsonAnswerDTO = jsonQuestionDTO.getAnswers().get(answerId);
                     // If the current answer has at least one
                     // localized label it is a select answer
-                    if (jsonAnswerDTO.getLocalizedLabel() != null && !jsonAnswerDTO.getLocalizedLabel().isEmpty()) {
+                    if (jsonAnswerDTO.getLocalizedLabel() != null
+                            && !jsonAnswerDTO.getLocalizedLabel().isEmpty()) {
                         // Add this direclty to the list of answers
                         answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
                     } else {
@@ -114,7 +118,6 @@ public class MoPatQuestionnaireImporter {
                     answers.put(answerId, jsonAnswerDTO.convertToAnswer(question));
                 }
             }
-
         }
 
         questionnaire.addQuestions(questions.values());
@@ -122,7 +125,8 @@ public class MoPatQuestionnaireImporter {
         Map<JsonAnswerDTO, JsonQuestionDTO> imageAnswerQuestions = new HashMap<>();
         // Convert all jsonConditionDTOs to their database model
         // counterparts
-        for (JsonQuestionDTO jsonQuestionDTO : jsonQuestionnaireDTO.getQuestionDTOs().values()) {
+        for (JsonQuestionDTO jsonQuestionDTO :
+                jsonQuestionnaireDTO.getQuestionDTOs().values()) {
             for (JsonAnswerDTO jsonAnswerDTO : jsonQuestionDTO.getAnswers().values()) {
                 if (jsonQuestionDTO.getQuestionType() == QuestionType.IMAGE) {
                     imageAnswerQuestions.put(jsonAnswerDTO, jsonQuestionDTO);
@@ -137,12 +141,12 @@ public class MoPatQuestionnaireImporter {
                     if (jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model" + ".Question")) {
                         condition.setTarget(questions.get(jsonConditionDTO.getTargetId()));
                     } else if (jsonConditionDTO.getTargetClass().equals("de.imi.mopat" + ".model" + ".SelectAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.ImageAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.SliderAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.SliderFreetextAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.DateAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.FreetextAnswer")
-                        || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.NumberInputAnswer")) {
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.ImageAnswer")
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.SliderAnswer")
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.SliderFreetextAnswer")
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.DateAnswer")
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.FreetextAnswer")
+                            || jsonConditionDTO.getTargetClass().equals("de.imi.mopat.model.NumberInputAnswer")) {
                         condition.setTarget(answers.get(jsonConditionDTO.getTargetId()));
                         condition.setTargetAnswerQuestion(questions.get(jsonConditionDTO.getTargetAnswerQuestionId()));
                     }
@@ -181,13 +185,13 @@ public class MoPatQuestionnaireImporter {
 
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup questionnaireVersionGroup =
+                questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
         questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
         questionnaireVersionGroup.addQuestionnaire(questionnaire);
         questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
-        //Loop through all persisted questions to get the
+        // Loop through all persisted questions to get the
         // imageAnswers and save the images
         for (Question question : questionnaire.getQuestions()) {
             if (question.getQuestionType() == QuestionType.IMAGE) {
@@ -196,17 +200,17 @@ public class MoPatQuestionnaireImporter {
                     if (answer.getImagePath().equals(answerDTO.getImagePath())) {
                         try {
                             String imageBase64 = answerDTO.getImageBase64();
-                            String imagePath = (configurationDao.getImageUploadPath() + "/questionnaire/"
-                                + questionnaire.getId());
-                            String fileName =
-                                "question" + question.getId() + "." + StringUtilities.getMimeTypeFromBase64String(
-                                    imageBase64);
+                            String imagePath =
+                                    (configurationDao.getImageUploadPath() + "/questionnaire/" + questionnaire.getId());
+                            String fileName = "question" + question.getId() + "."
+                                    + StringUtilities.getMimeTypeFromBase64String(imageBase64);
                             answer.setImagePath(questionnaire.getId() + "/" + fileName);
-                            StringUtilities.convertAndWriteBase64StringToImage(answerDTO.getImageBase64(), imagePath,
-                                fileName);
+                            StringUtilities.convertAndWriteBase64StringToImage(
+                                    answerDTO.getImageBase64(), imagePath, fileName);
                         } catch (Exception e) {
-                            LOGGER.info("Converting image failed. " + "Following " + "error " + "occurred: {}",
-                                e.getMessage());
+                            LOGGER.info(
+                                    "Converting image failed. " + "Following " + "error " + "occurred: {}",
+                                    e.getMessage());
                         }
                     }
                 }
@@ -217,11 +221,11 @@ public class MoPatQuestionnaireImporter {
             try {
                 String logoBase64 = jsonQuestionnaireDTO.getLogoBase64();
                 String imagePath = (configurationDao.getImageUploadPath() + "/questionnaire/" + questionnaire.getId());
-                String fileName = Constants.LOGO_PROPERTY + "." + logoBase64.substring("data:image/".length(),
-                    logoBase64.lastIndexOf(";base64,"));
+                String fileName = Constants.LOGO_PROPERTY + "."
+                        + logoBase64.substring("data:image/".length(), logoBase64.lastIndexOf(";base64,"));
                 questionnaire.setLogo(fileName);
-                StringUtilities.convertAndWriteBase64StringToImage(jsonQuestionnaireDTO.getLogoBase64(), imagePath,
-                    fileName);
+                StringUtilities.convertAndWriteBase64StringToImage(
+                        jsonQuestionnaireDTO.getLogoBase64(), imagePath, fileName);
             } catch (IOException e) {
                 LOGGER.info("Converting logo failed. Following error " + "occurred: {}", e.getMessage());
             }
@@ -230,5 +234,4 @@ public class MoPatQuestionnaireImporter {
         questionnaireDao.merge(questionnaire);
         return questionnaire;
     }
-
 }

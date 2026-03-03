@@ -16,9 +16,7 @@ public class SliderIconDTO {
         this.id = id;
     }
 
-    public SliderIconDTO() {
-
-    }
+    public SliderIconDTO() {}
 
     public Long getId() {
         return id;

@@ -8,6 +8,4 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class ExpressionDaoImpl extends MoPatDaoImpl<Expression> implements ExpressionDao {
-
-}
+public class ExpressionDaoImpl extends MoPatDaoImpl<Expression> implements ExpressionDao {}

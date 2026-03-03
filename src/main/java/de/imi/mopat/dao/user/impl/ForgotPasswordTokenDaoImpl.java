@@ -15,16 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
  * Implements specific methods for the objects of type {@link ForgotPasswordToken}.
  */
 @Repository
-public class ForgotPasswordTokenDaoImpl extends
-    UserManagementDaoImpl<ForgotPasswordToken> implements ForgotPasswordTokenDao {
+public class ForgotPasswordTokenDaoImpl extends UserManagementDaoImpl<ForgotPasswordToken>
+        implements ForgotPasswordTokenDao {
 
     @Override
     @Transactional("MoPat_User")
     public ForgotPasswordToken getElementByUser(final User user) {
         try {
             TypedQuery<ForgotPasswordToken> query = moPatUserEntityManager.createQuery(
-                "SELECT f FROM ForgotPasswordToken f WHERE f.user=:user",
-                ForgotPasswordToken.class);
+                    "SELECT f FROM ForgotPasswordToken f WHERE f.user=:user", ForgotPasswordToken.class);
             query.setParameter("user", user);
             ForgotPasswordToken element = query.getSingleResult();
             return element;

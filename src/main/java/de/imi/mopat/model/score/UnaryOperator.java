@@ -6,6 +6,4 @@ import jakarta.persistence.Entity;
  * This operator requires only one {@link Expression} for calculation.
  */
 @Entity
-public abstract class UnaryOperator extends Operator {
-
-}
+public abstract class UnaryOperator extends Operator {}

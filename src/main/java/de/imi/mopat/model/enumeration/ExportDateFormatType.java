@@ -15,8 +15,8 @@ import org.apache.commons.lang.StringUtils;
  * {@link de.imi.mopat.model.ExportRuleFormat} objects.
  */
 public enum ExportDateFormatType {
-
-    YYYY_MM_DD("yyyy-MM-dd"), DD_MM_YY("dd.MM.yy");
+    YYYY_MM_DD("yyyy-MM-dd"),
+    DD_MM_YY("dd.MM.yy");
 
     private static final Map<String, ExportDateFormatType> map = new HashMap<>(2);
 

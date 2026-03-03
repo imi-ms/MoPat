@@ -4,6 +4,8 @@ import de.imi.mopat.dao.user.PinAuthorizationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.model.user.PinAuthorization;
 import de.imi.mopat.model.user.User;
+import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +13,6 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.util.Set;
-import java.util.List;
-
 
 @Service
 public class PinAuthorizationService {
@@ -36,7 +35,9 @@ public class PinAuthorizationService {
      */
     public boolean isPinLoginApplicable() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String)) {
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String)) {
             User user = userDao.loadUserByUsername(authentication.getName());
             if (user.getUsePin()) {
                 return pinAuthorizationDao.isPinAuthActivatedForUser(user);
@@ -51,7 +52,9 @@ public class PinAuthorizationService {
      */
     public void removePinAuthForCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String)) {
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String)) {
             User user = userDao.loadUserByUsername(authentication.getName());
             if (user.getUsePin()) {
                 Set<PinAuthorization> pinAuthorizationSet = pinAuthorizationDao.getEntriesForUser(user);
@@ -98,7 +101,6 @@ public class PinAuthorizationService {
         } catch (AuthenticationCredentialsNotFoundException e) {
             LOGGER.info("No authentication credentials found while clearing sessions.");
         }
-
     }
 
     /**
@@ -115,7 +117,7 @@ public class PinAuthorizationService {
 
             if (pinAuthorization.getRemainingTries() <= 0) {
                 pinAuthorizationDao.remove(pinAuthorization);
-                //Invalidate the session, just to be safe
+                // Invalidate the session, just to be safe
                 SecurityContextHolder.getContext().setAuthentication(null);
             } else {
                 pinAuthorizationDao.merge(pinAuthorization);

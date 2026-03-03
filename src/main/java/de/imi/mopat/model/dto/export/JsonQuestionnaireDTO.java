@@ -25,9 +25,7 @@ import java.util.TreeMap;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonTypeName("questionnaire")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = JsonCompleteQuestionnaireDTO.class, name = "questionnaireComplete")
-})
+@JsonSubTypes({@JsonSubTypes.Type(value = JsonCompleteQuestionnaireDTO.class, name = "questionnaireComplete")})
 public class JsonQuestionnaireDTO {
 
     private Long id;
@@ -40,8 +38,7 @@ public class JsonQuestionnaireDTO {
     private Map<Long, JsonScoreDTO> scoreDTOs = new HashMap<>();
     private String logoBase64 = null;
 
-    public JsonQuestionnaireDTO() {
-    }
+    public JsonQuestionnaireDTO() {}
 
     public Long getId() {
         return id;
@@ -115,16 +112,14 @@ public class JsonQuestionnaireDTO {
         this.logoBase64 = logoBase64;
     }
 
-    public void setQuestionDTO(long id, JsonQuestionDTO jsonQuestionDTO){
-        this.questionDTOs.put(
-            id,
-            jsonQuestionDTO);
+    public void setQuestionDTO(long id, JsonQuestionDTO jsonQuestionDTO) {
+        this.questionDTOs.put(id, jsonQuestionDTO);
     }
-    public void setScoreDTO(long id, JsonScoreDTO jsonScoreDTO){
-        this.scoreDTOs.put(
-            id,
-            jsonScoreDTO);
+
+    public void setScoreDTO(long id, JsonScoreDTO jsonScoreDTO) {
+        this.scoreDTOs.put(id, jsonScoreDTO);
     }
+
     public Questionnaire convertToQuestionnaire() {
         Questionnaire questionnaire = new Questionnaire();
         questionnaire.setDescription(this.getDescription());

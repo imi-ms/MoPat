@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WeeklyErrorTrigger {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        WeeklyErrorTrigger.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(WeeklyErrorTrigger.class);
 
     /* [bt] notice, as told in the Spring documentation (http://docs.spring
     .io/spring/docs/3.0.x/api/org/springframework/scheduling/annotation
@@ -22,9 +21,10 @@ public class WeeklyErrorTrigger {
     @Scheduled(cron = "${de.imi.mopat.cron.WeeklyErrorTrigger.trigger}")
     public void refresh() {
         Marker weeklyMailMarker = MarkerFactory.getMarker("WEEKLY_EMAIL");
-        LOGGER.error(weeklyMailMarker,
-            "This is a weekly dummy error log entry to trigger the weekly"
-                + " error reporting. If you can only see this, "
-                + "everything's running smoothly :)");
+        LOGGER.error(
+                weeklyMailMarker,
+                "This is a weekly dummy error log entry to trigger the weekly"
+                        + " error reporting. If you can only see this, "
+                        + "everything's running smoothly :)");
     }
 }

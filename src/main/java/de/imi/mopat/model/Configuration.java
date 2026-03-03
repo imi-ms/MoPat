@@ -1,17 +1,11 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.enumeration.ConfigurationType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.dto.ConfigurationDTO;
-
-import java.util.ArrayList;
-import java.util.List;
+import de.imi.mopat.model.enumeration.ConfigurationType;
 import jakarta.persistence.CascadeType;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -28,6 +22,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 /**
@@ -42,14 +41,14 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
 @DiscriminatorValue("GENERAL")
 public class Configuration implements Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
 
     @ManyToOne
     @JoinColumn(name = "configuration_group_id", referencedColumnName = "id")
@@ -87,17 +86,25 @@ public class Configuration implements Serializable {
     @Column(name = "update_method", nullable = true)
     private String updateMethod;
 
-    @OneToMany(mappedBy = "parent", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "parent",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     @CascadeOnDelete
     private List<Configuration> children = null;
 
-    public Configuration() {
-    }
+    public Configuration() {}
 
-    public Configuration(final String entityClass, final String attribute,
-        final ConfigurationType configurationType, final String labelMessageCode,
-        final String descriptionMessageCode, final String testMethod, final String updateMethod,
-        final Integer position, final ConfigurationGroup configurationGroup) {
+    public Configuration(
+            final String entityClass,
+            final String attribute,
+            final ConfigurationType configurationType,
+            final String labelMessageCode,
+            final String descriptionMessageCode,
+            final String testMethod,
+            final String updateMethod,
+            final Integer position,
+            final ConfigurationGroup configurationGroup) {
         this.entityClass = entityClass;
         this.attribute = attribute;
         this.configurationType = configurationType;
@@ -128,7 +135,7 @@ public class Configuration implements Serializable {
         configurationDTO.setUpdateMethod(this.getUpdateMethod());
         configurationDTO.setPosition(this.getPosition());
 
-        //If parent not null set the DTO's parent
+        // If parent not null set the DTO's parent
         if (this.parent != null) {
             ConfigurationDTO parentDTO = new ConfigurationDTO();
             parentDTO.setId(this.getParent().getId());
@@ -136,7 +143,7 @@ public class Configuration implements Serializable {
             configurationDTO.setParent(parentDTO);
         }
 
-        //If children not empty or null set the DTO's children
+        // If children not empty or null set the DTO's children
         if (this.getChildren() != null && !this.getChildren().isEmpty()) {
             List<ConfigurationDTO> childrenDTOs = new ArrayList<>();
             for (Configuration child : this.getChildren()) {

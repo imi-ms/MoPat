@@ -27,5 +27,4 @@ public interface BundleDao extends MoPatDao<Bundle> {
      * @return {@link List} of {@link Questionnaire} objects
      */
     List<Questionnaire> getAvailableQuestionnairesForBundle(Long bundleId);
-
 }

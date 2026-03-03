@@ -48,15 +48,18 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 String value = clinicConfigurationMappingDTO.getValue();
 
                 if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
-                    message = messageSource.getMessage("configuration.validate" + ".boolean",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".boolean", new Object[] {}, LocaleContextHolder.getLocale());
                 }
-                if(value.equalsIgnoreCase("true")){
+                if (value.equalsIgnoreCase("true")) {
                     ClinicConfiguration clinicConfiguration = clinicConfigurationDao.getElementById(
-                        clinicConfigurationMappingDTO.getClinicConfigurationId());
-                    if(clinicConfiguration.getMappedConfigurationGroup() != null && clinicConfigurationMappingDTO.getMappedConfigurationGroup()==null){
-                        message = messageSource.getMessage("configuration.validate" + ".mappedConfigurationNotFound",
-                            new Object[]{}, LocaleContextHolder.getLocale());
+                            clinicConfigurationMappingDTO.getClinicConfigurationId());
+                    if (clinicConfiguration.getMappedConfigurationGroup() != null
+                            && clinicConfigurationMappingDTO.getMappedConfigurationGroup() == null) {
+                        message = messageSource.getMessage(
+                                "configuration.validate" + ".mappedConfigurationNotFound",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale());
                     }
                 }
                 break;
@@ -64,8 +67,8 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 try {
                     Double.valueOf(clinicConfigurationMappingDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".double",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".double", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case IMAGE:
@@ -74,23 +77,24 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 try {
                     Integer.valueOf(clinicConfigurationMappingDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".integer",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".integer", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case LONG:
                 try {
                     Long.valueOf(clinicConfigurationMappingDTO.getValue());
                 } catch (NumberFormatException e) {
-                    message = messageSource.getMessage("configuration.validate" + ".long",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".long", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case LOCAL_PATH:
                 File dir = new File(clinicConfigurationMappingDTO.getValue());
-                if ((!dir.canRead() || !dir.canWrite()) || clinicConfigurationMappingDTO.getValue().isEmpty()) {
-                    message = messageSource.getMessage("configuration.validate" + ".localPath",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                if ((!dir.canRead() || !dir.canWrite())
+                        || clinicConfigurationMappingDTO.getValue().isEmpty()) {
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".localPath", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case PASSWORD:
@@ -98,8 +102,8 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
             case PATTERN:
                 String pattern = clinicConfigurationMappingDTO.getPattern();
                 if (!clinicConfigurationMappingDTO.getValue().matches(pattern)) {
-                    message = messageSource.getMessage("configuration.validate" + ".pattern",
-                        new Object[]{}, LocaleContextHolder.getLocale());
+                    message = messageSource.getMessage(
+                            "configuration.validate" + ".pattern", new Object[] {}, LocaleContextHolder.getLocale());
                 }
                 break;
             case STRING:
@@ -111,8 +115,8 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
                 if (richTextValue != null && !richTextValue.isEmpty()) {
 
                     if (!richTextValue.equals(stripXSS(richTextValue))) {
-                        message = messageSource.getMessage("configuration.validate.xss",
-                            new Object[]{}, LocaleContextHolder.getLocale());
+                        message = messageSource.getMessage(
+                                "configuration.validate.xss", new Object[] {}, LocaleContextHolder.getLocale());
                     }
                 }
                 break;
@@ -121,9 +125,14 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
         }
 
         if (message != null) {
-            message = message.replace("{field}",
-                "'" + messageSource.getMessage(clinicConfigurationMappingDTO.getLabelMessageCode(),
-                    new Object[]{}, LocaleContextHolder.getLocale()) + "'");
+            message = message.replace(
+                    "{field}",
+                    "'"
+                            + messageSource.getMessage(
+                                    clinicConfigurationMappingDTO.getLabelMessageCode(),
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale())
+                            + "'");
             errors.rejectValue("value", "errormessage", message);
         }
     }
@@ -135,7 +144,6 @@ public class ClinicConfigurationMappingDTOValidator implements Validator {
             value = value.replaceAll("(?i)javascript:", "");
             value = value.replaceAll("(?i)on\\w+\\s*=", "");
             return value;
-
         }
         return null;
     }

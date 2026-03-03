@@ -1,13 +1,10 @@
 package de.imi.mopat.controller;
 
-import de.imi.mopat.dao.*;
-import de.imi.mopat.dao.user.AclEntryDao;
-import de.imi.mopat.dao.user.UserDao;
-import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.auth.PinAuthorizationService;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
@@ -15,33 +12,60 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ResponseDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.PinAuthorizationDao;
+import de.imi.mopat.dao.user.UserDao;
+import de.imi.mopat.helper.controller.AuthService;
+import de.imi.mopat.helper.controller.ClinicConfigurationMappingService;
+import de.imi.mopat.helper.controller.ClinicService;
 import de.imi.mopat.helper.controller.HL7v22PatientInformationRetrieverByPID;
+import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.io.EncounterExporter;
-import de.imi.mopat.model.*;
-import de.imi.mopat.model.dto.ClinicDTO;
-import de.imi.mopat.model.enumeration.*;
+import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.Bundle;
+import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.Clinic;
+import de.imi.mopat.model.Configuration;
+import de.imi.mopat.model.Encounter;
+import de.imi.mopat.model.EncounterExportTemplate;
+import de.imi.mopat.model.ExportTemplate;
+import de.imi.mopat.model.PointOnImage;
+import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.Response;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
+import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.PointOnImageDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
+import de.imi.mopat.model.enumeration.AuditEntryActionType;
+import de.imi.mopat.model.enumeration.AuditPatientAttribute;
+import de.imi.mopat.model.enumeration.ExportStatus;
+import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.validator.MoPatValidator;
-
-import java.sql.Timestamp;
-import java.util.*;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -73,60 +97,84 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SurveyController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SurveyController.class);
-    @Autowired
-    private ApplicationContext appContext;
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private ConfigurationDao configurationDao;
-    @Autowired
-    private BundleDao bundleDao;
-    @Autowired
-    private EncounterDao encounterDao;
-    @Autowired
-    private AnswerDao answerDao;
-    @Autowired
-    private QuestionnaireDao questionnaireDao;
-    @Autowired
-    private ConditionDao conditionDao;
-    @Autowired
-    private ResponseDao responseDao;
-    @Autowired
-    private ScoreDao scoreDao;
-    @Autowired(required = false)
-    private EncounterExporter encounterExporter;
-    @Autowired
-    private MessageSource messageSource;
-    @Autowired
-    private AuditEntryDao auditEntryDao;
-    @Autowired
-    private BundleDTOMapper bundleDTOMapper;
-    @Autowired
-    private AclEntryDao aclEntryDao;
-    @Autowired
-    private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
-    @Autowired
-    private ClinicConfigurationMappingService clinicConfigurationMappingService;
-    @Autowired
-    private UserDao userDao;
-    @Autowired
-    private EncounterDTOMapper encounterDTOMapper;
-    @Autowired
-    private PinAuthorizationDao pinAuthorizationDao;
-    @Autowired
-    private PinAuthorizationService pinAuthorizationService;
-    @Autowired
-    private ClinicDao clinicDao;
-    @Autowired
-    private ClinicService clinicService;
-    @Autowired
-    private ClinicDTOMapper clinicDTOMapper;
-    @Autowired
-    private Validator validator;
-
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
     private final String caseNumberTypeProperty = "caseNumberType";
+
+    @Autowired
+    private ApplicationContext appContext;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private ConfigurationDao configurationDao;
+
+    @Autowired
+    private BundleDao bundleDao;
+
+    @Autowired
+    private EncounterDao encounterDao;
+
+    @Autowired
+    private AnswerDao answerDao;
+
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+
+    @Autowired
+    private ConditionDao conditionDao;
+
+    @Autowired
+    private ResponseDao responseDao;
+
+    @Autowired
+    private ScoreDao scoreDao;
+
+    @Autowired(required = false)
+    private EncounterExporter encounterExporter;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @Autowired
+    private AuditEntryDao auditEntryDao;
+
+    @Autowired
+    private BundleDTOMapper bundleDTOMapper;
+
+    @Autowired
+    private AclEntryDao aclEntryDao;
+
+    @Autowired
+    private ClinicConfigurationMappingDao clinicConfigurationMappingDao;
+
+    @Autowired
+    private ClinicConfigurationMappingService clinicConfigurationMappingService;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private EncounterDTOMapper encounterDTOMapper;
+
+    @Autowired
+    private PinAuthorizationDao pinAuthorizationDao;
+
+    @Autowired
+    private PinAuthorizationService pinAuthorizationService;
+
+    @Autowired
+    private ClinicDao clinicDao;
+
+    @Autowired
+    private ClinicService clinicService;
+
+    @Autowired
+    private ClinicDTOMapper clinicDTOMapper;
+
+    @Autowired
+    private Validator validator;
 
     /**
      * Controls the HTTP GET requests for the URL
@@ -138,10 +186,7 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/index", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showCheckCaseNumberFirstTime(final Model model) {
-        model.addAttribute(
-            "encounterDTO",
-            encounterDTOMapper.apply(true, new Encounter())
-        );
+        model.addAttribute("encounterDTO", encounterDTOMapper.apply(true, new Encounter()));
         model.addAttribute("hideProfile", Boolean.FALSE);
 
         addClinicInfoToModel(model);
@@ -152,7 +197,6 @@ public class SurveyController {
 
         return showCheckCaseNumber(model, null);
     }
-
 
     /**
      * Controls the HTTP GET requests for the URL
@@ -166,7 +210,6 @@ public class SurveyController {
     public String showSelectClinic(final Model model) {
         return showCheckCaseNumberFirstTime(model);
     }
-
 
     /**
      * Controls the HTTP POST requests for the URL
@@ -182,15 +225,12 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/clinicSelect", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String SelectClinic(
-        @ModelAttribute(value = "activeClinicDTO") final ClinicDTO activeClinicDTO,
-        final Model model
-    ) {
+            @ModelAttribute(value = "activeClinicDTO") final ClinicDTO activeClinicDTO, final Model model) {
         User user = getCurrentUser();
         user.setLastSelectedClinicId(activeClinicDTO.getId());
         userDao.merge(user);
 
         return showCheckCaseNumberFirstTime(model);
-
     }
 
     /**
@@ -205,9 +245,7 @@ public class SurveyController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showCheckCaseNumber(final Model model, final BindingResult result) {
         if (!model.containsAttribute("encounterDTO")) {
-            model.addAttribute(
-                "encounterDTO",
-                encounterDTOMapper.apply(true, new Encounter()));
+            model.addAttribute("encounterDTO", encounterDTOMapper.apply(true, new Encounter()));
         }
 
         addClinicInfoToModel(model);
@@ -227,15 +265,16 @@ public class SurveyController {
                 }
             }
 
-            model.addAttribute("register",
-                clinicConfigurationMappingDao.isRegistryOfPatientActivated(activeClinicDTO.getId()));
-            model.addAttribute("pseudonym",
-                clinicConfigurationMappingDao.isPseudonymizationServiceActivated(activeClinicDTO.getId()));
+            model.addAttribute(
+                    "register", clinicConfigurationMappingDao.isRegistryOfPatientActivated(activeClinicDTO.getId()));
+            model.addAttribute(
+                    "pseudonym",
+                    clinicConfigurationMappingDao.isPseudonymizationServiceActivated(activeClinicDTO.getId()));
 
             boolean isHISActivated =
-                clinicConfigurationMappingDao.isUsePatientDataLookupActivated(activeClinicDTO.getId());
+                    clinicConfigurationMappingDao.isUsePatientDataLookupActivated(activeClinicDTO.getId());
             model.addAttribute("searchHIS", isHISActivated);
-            
+
             model.addAttribute("searchHISType", "CASE_NUMBER");
             if (isHISActivated) {
                 PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicDTO.getId());
@@ -243,14 +282,15 @@ public class SurveyController {
                     model.addAttribute("searchHISType", "PID");
                 }
             }
-
         }
 
         model.addAttribute("hideProfile", Boolean.FALSE);
         String caseNumberType = getCaseNumberType();
         if (!caseNumberType.matches("text|number")) {
-            LOGGER.info("[WARNING] The value '{}' of the property " + this.getClass().getName()
-                + ".caseNumberType is invalid. Defaulting to 'text'.", caseNumberType);
+            LOGGER.info(
+                    "[WARNING] The value '{}' of the property "
+                            + this.getClass().getName() + ".caseNumberType is invalid. Defaulting to 'text'.",
+                    caseNumberType);
             caseNumberType = "text";
         }
         model.addAttribute("caseNumberType", caseNumberType);
@@ -277,17 +317,22 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/check", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String checkCaseNumber(
-        @RequestParam(value = "caseNumber", required = true) final String caseNumber,
-        @RequestParam(value = "patientDataService", required = true) final String patientDataService,
-        @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
-        @ModelAttribute(value = "activeClinicId") final Long activeClinicId,
-        final BindingResult result, final Model model, final HttpSession session
-    ) {
+            @RequestParam(value = "caseNumber", required = true) final String caseNumber,
+            @RequestParam(value = "patientDataService", required = true) final String patientDataService,
+            @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
+            @ModelAttribute(value = "activeClinicId") final Long activeClinicId,
+            final BindingResult result,
+            final Model model,
+            final HttpSession session) {
 
         if (!caseNumber.isEmpty() && caseNumber.trim().isEmpty()) {
-            result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("encounter.error" + ".caseNumberIsEmpty", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            result.rejectValue(
+                    "caseNumber",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "encounter.error" + ".caseNumberIsEmpty",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         validator.validate(encounterDTO, result);
@@ -300,42 +345,46 @@ public class SurveyController {
 
         Clinic activeClinic = clinicDao.getElementById(activeClinicId);
 
-        //Checkout which service to save or get patient data has been chosen
+        // Checkout which service to save or get patient data has been chosen
         if (patientDataService.equalsIgnoreCase("searchHIS")) {
             PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicId);
             if (patientDataRetriever != null) {
-                try{
-                    EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
-                        activeClinic,
-                        caseNumber
-                    );
+                try {
+                    EncounterDTO retrievedEncounter =
+                            patientDataRetriever.retrievePatientData(activeClinic, caseNumber);
                     if (retrievedEncounter != null) {
                         if (retrievedEncounter.getBirthdate() != null
-                            && retrievedEncounter.getBirthdate().before(new java.util.Date())) {
+                                && retrievedEncounter.getBirthdate().before(new java.util.Date())) {
                             encounterDTO.setBirthdate(retrievedEncounter.getBirthdate());
                         }
                         if (retrievedEncounter.getFirstname() != null
-                            && !retrievedEncounter.getFirstname().trim().isEmpty()) {
+                                && !retrievedEncounter.getFirstname().trim().isEmpty()) {
                             encounterDTO.setFirstname(retrievedEncounter.getFirstname());
                         }
                         if (retrievedEncounter.getLastname() != null
-                            && !retrievedEncounter.getLastname().trim().isEmpty()) {
+                                && !retrievedEncounter.getLastname().trim().isEmpty()) {
                             encounterDTO.setLastname(retrievedEncounter.getLastname());
                         }
                         encounterDTO.setGender(retrievedEncounter.getGender());
-                        if (retrievedEncounter.getPatientID() != null
-                            && retrievedEncounter.getPatientID() > 0) {
+                        if (retrievedEncounter.getPatientID() != null && retrievedEncounter.getPatientID() > 0) {
                             encounterDTO.setPatientID(retrievedEncounter.getPatientID());
                         }
                     } else {
-                        result.reject("not.found",
-                            messageSource.getMessage("survey.error" + ".noSuchPatient", new Object[]{},
-                                LocaleContextHolder.getLocale()));
+                        result.reject(
+                                "not.found",
+                                messageSource.getMessage(
+                                        "survey.error" + ".noSuchPatient",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     }
-                } catch (NullPointerException e){
-                    result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage("encounter.error" + ".caseNumberIsEmpty", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                } catch (NullPointerException e) {
+                    result.rejectValue(
+                            "caseNumber",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "encounter.error" + ".caseNumberIsEmpty",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                 }
             }
             model.addAttribute("patientDataService", "searchHIS");
@@ -369,10 +418,11 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/bundles", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String showBundles(
-        @RequestParam(value = "patientDataService", required = false) final String patientDataService,
-        @RequestParam(value = "activeClinicId", required = true) final Long activeClinicId,
-        @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
-        final BindingResult result, final Model model) {
+            @RequestParam(value = "patientDataService", required = false) final String patientDataService,
+            @RequestParam(value = "activeClinicId", required = true) final Long activeClinicId,
+            @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
+            final BindingResult result,
+            final Model model) {
 
         addClinicInfoToModelForKnownId(model, activeClinicId);
 
@@ -380,16 +430,16 @@ public class SurveyController {
             PatientDataRetriever patientDataRetriever = getPatientRetriever(activeClinicId);
             if (patientDataRetriever != null) {
                 Clinic activeClinic = clinicDao.getElementById(activeClinicId);
-                EncounterDTO retrievedEncounter = patientDataRetriever.retrievePatientData(
-                    activeClinic,
-                    encounterDTO.getCaseNumber()
-                );
+                EncounterDTO retrievedEncounter =
+                        patientDataRetriever.retrievePatientData(activeClinic, encounterDTO.getCaseNumber());
 
                 if (retrievedEncounter == null) {
-                    result.reject("not.found",
-                        messageSource.getMessage("survey.error" + ".noSuchPatient", new Object[]{},
-                            LocaleContextHolder.getLocale())
-                    );
+                    result.reject(
+                            "not.found",
+                            messageSource.getMessage(
+                                    "survey.error" + ".noSuchPatient",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                     return showCheckCaseNumber(model, result);
                 }
             }
@@ -398,24 +448,20 @@ public class SurveyController {
         // Create a map with bundleId's as Key and a map with locale codes as
         // key and a lists of encounters as value.
         // This map is easy to handle in the corresponding jsp file
-        SortedMap<BundleDTO, Map<String, List<EncounterDTO>>> bundleLanguageEncounterMap = new TreeMap<>(
-            (BundleDTO o1, BundleDTO o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        SortedMap<BundleDTO, Map<String, List<EncounterDTO>>> bundleLanguageEncounterMap =
+                new TreeMap<>((BundleDTO o1, BundleDTO o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
 
         // Iterate over all available bundles and save the BundleDTO in the Map
         for (Bundle bundle : bundleDao.getAllElements()) {
             // The bundle needs to be published and has to have at least one
             // clinic attached
-            if (bundle.getIsPublished() && !bundle.getBundleClinics()
-                .isEmpty()) {
-                bundleLanguageEncounterMap.put(
-                    bundleDTOMapper.apply(false, bundle),
-                    new HashMap<>());
+            if (bundle.getIsPublished() && !bundle.getBundleClinics().isEmpty()) {
+                bundleLanguageEncounterMap.put(bundleDTOMapper.apply(false, bundle), new HashMap<>());
             }
         }
 
         // Get all incomplete encounters for the given caseNumber
-        List<Encounter> incompleteEncounters = encounterDao.getIncompleteEncounters(
-            encounterDTO.getCaseNumber());
+        List<Encounter> incompleteEncounters = encounterDao.getIncompleteEncounters(encounterDTO.getCaseNumber());
 
         // Loop through all incomplete encounter
         for (Encounter incompleteEncounter : incompleteEncounters) {
@@ -424,8 +470,7 @@ public class SurveyController {
             // If the bundle is already in the map the user has the rights to
             // see it
             if (bundleLanguageEncounterMap.containsKey(tempBundleDTO)) {
-                Map<String, List<EncounterDTO>> localeCodeEncounterMap = bundleLanguageEncounterMap.get(
-                    tempBundleDTO);
+                Map<String, List<EncounterDTO>> localeCodeEncounterMap = bundleLanguageEncounterMap.get(tempBundleDTO);
                 // Check if the map for the current bundle already contains
                 // the current locale code
                 if (!localeCodeEncounterMap.containsKey(incompleteEncounter.getBundleLanguage())) {
@@ -433,22 +478,17 @@ public class SurveyController {
                     // encounter to the map of the current bundle
                     List<EncounterDTO> encounterList = new ArrayList<>();
                     encounterList.add(encounterDTOMapper.apply(true, incompleteEncounter));
-                    localeCodeEncounterMap.put(
-                        incompleteEncounter.getBundleLanguage(),
-                        encounterList);
-                    bundleLanguageEncounterMap.put(
-                        tempBundleDTO,
-                        localeCodeEncounterMap);
+                    localeCodeEncounterMap.put(incompleteEncounter.getBundleLanguage(), encounterList);
+                    bundleLanguageEncounterMap.put(tempBundleDTO, localeCodeEncounterMap);
                 } else {
                     // Otherwise the map for the current bundle contains the
                     // current locale code.
                     // Add the incomplete encounter to the list for the
                     // bundle combined with the language code
-                    bundleLanguageEncounterMap.get(tempBundleDTO)
-                        .get(incompleteEncounter.getBundleLanguage())
-                        .add(encounterDTOMapper.apply(
-                            true,
-                            incompleteEncounter));
+                    bundleLanguageEncounterMap
+                            .get(tempBundleDTO)
+                            .get(incompleteEncounter.getBundleLanguage())
+                            .add(encounterDTOMapper.apply(true, incompleteEncounter));
                 }
             }
         }
@@ -482,14 +522,16 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/select", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String selectBundle(
-        @RequestParam(value = "bundleId", required = false) final Long bundleId,
-        @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
-        @RequestParam(value = "action", required = true) final String action,
-        @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
-        @RequestParam(value = "incompleteEncounterId", required = false) final String incompleteEncounterUUID,
-        @ModelAttribute(value = "activeClinicId") final Long activeClinicId,
-        @ModelAttribute(value = "encounterDTO") EncounterDTO encounterDTO,
-        final BindingResult result, final HttpSession session, final Model model) {
+            @RequestParam(value = "bundleId", required = false) final Long bundleId,
+            @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
+            @RequestParam(value = "action", required = true) final String action,
+            @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
+            @RequestParam(value = "incompleteEncounterId", required = false) final String incompleteEncounterUUID,
+            @ModelAttribute(value = "activeClinicId") final Long activeClinicId,
+            @ModelAttribute(value = "encounterDTO") EncounterDTO encounterDTO,
+            final BindingResult result,
+            final HttpSession session,
+            final Model model) {
 
         addClinicInfoToModel(model);
 
@@ -503,12 +545,11 @@ public class SurveyController {
 
         String caseNumber = encounterDTO.getCaseNumber();
         if (caseNumber == null || caseNumber.isEmpty() || caseNumber.trim().isEmpty()) {
-            result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage(
-                    "encounter.error.caseNumberInvalid",
-                    new Object[]{},
-                    LocaleContextHolder.getLocale()
-                ));
+            result.rejectValue(
+                    "caseNumber",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "encounter.error.caseNumberInvalid", new Object[] {}, LocaleContextHolder.getLocale()));
             return showCheckCaseNumber(model, result);
         }
 
@@ -521,13 +562,10 @@ public class SurveyController {
             // If an incomplete encounter is selected, load it from the db
             // and add it
             // to the model to override the default (new) encounter
-            if (incompleteEncounterUUID != null
-                && !incompleteEncounterUUID.isEmpty()) {
-                EncounterDTO incompleteEncounterDTO = encounterDTOMapper.apply(true,
-                    encounterDao.getElementByUUID(incompleteEncounterUUID));
-                model.addAttribute(
-                    "encounterDTO",
-                    incompleteEncounterDTO);
+            if (incompleteEncounterUUID != null && !incompleteEncounterUUID.isEmpty()) {
+                EncounterDTO incompleteEncounterDTO =
+                        encounterDTOMapper.apply(true, encounterDao.getElementByUUID(incompleteEncounterUUID));
+                model.addAttribute("encounterDTO", incompleteEncounterDTO);
                 // Otherwise get the bundle and set it to the default (new)
                 // encounter
             } else {
@@ -545,32 +583,40 @@ public class SurveyController {
                 try {
                     encounter.setCaseNumber(encounterDTO.getCaseNumber());
                 } catch (Exception e) {
-                    //This line should not be reachable, but is somehow reached in production. This is for
-                    //debugging purposes and can be removed if the error is solved.
+                    // This line should not be reachable, but is somehow reached in production. This is for
+                    // debugging purposes and can be removed if the error is solved.
                     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                     HttpServletRequest request =
-                        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+                            ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 
                     String userAgent = request.getHeader("User-Agent");
                     String ip = request.getRemoteAddr();
 
-                    LOGGER.error("Exception setting case number : {},"
-                            + " activeClinicId {}, bundleId {}, action {}, encounterUuid {}, "
-                            + "\nSESSION STATE: new={}, ageMs={}, sessionLastAccessesTime {}, auth={}, "
-                            + "userId: {}, userAgent: {}, ip: {}",
-                        encounterDTO.getCaseNumber(), activeClinicId, bundleId,
-                        action, encounter.getUUID(), session.isNew(),
-                        System.currentTimeMillis() - session.getCreationTime(),
-                        session.getLastAccessedTime(), auth.isAuthenticated(), auth.getName(),
-                        userAgent, ip
-                    );
-                    
-                    result.rejectValue("caseNumber", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                        messageSource.getMessage(
-                            "encounter.error.caseNumberInvalid",
-                            new Object[]{},
-                            LocaleContextHolder.getLocale()
-                        ));
+                    LOGGER.error(
+                            "Exception setting case number : {},"
+                                    + " activeClinicId {}, bundleId {}, action {}, encounterUuid {}, "
+                                    + "\nSESSION STATE: new={}, ageMs={}, sessionLastAccessesTime {}, auth={}, "
+                                    + "userId: {}, userAgent: {}, ip: {}",
+                            encounterDTO.getCaseNumber(),
+                            activeClinicId,
+                            bundleId,
+                            action,
+                            encounter.getUUID(),
+                            session.isNew(),
+                            System.currentTimeMillis() - session.getCreationTime(),
+                            session.getLastAccessedTime(),
+                            auth.isAuthenticated(),
+                            auth.getName(),
+                            userAgent,
+                            ip);
+
+                    result.rejectValue(
+                            "caseNumber",
+                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                            messageSource.getMessage(
+                                    "encounter.error.caseNumberInvalid",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                     return showCheckCaseNumber(model, result);
                 }
 
@@ -583,9 +629,7 @@ public class SurveyController {
                 // otherwise the bundle object would not be merged
                 encounterDao.merge(encounter);
                 encounterDTO = encounterDTOMapper.apply(true, encounter);
-                model.addAttribute(
-                    "encounterDTO",
-                    encounterDTO);
+                model.addAttribute("encounterDTO", encounterDTO);
             }
             // If the selected bundle language is available for the gui, then
             // use this language
@@ -597,7 +641,6 @@ public class SurveyController {
                 Locale locale = LocaleContextHolder.getLocale();
                 return "redirect:/mobile/survey/questionnaire?lang=" + locale;
             }
-
         }
         model.addAttribute("hideProfile", Boolean.FALSE);
         return showBundles(null, null, encounterDTO, result, model);
@@ -621,13 +664,13 @@ public class SurveyController {
         encounterDTO.removeDemographics();
         model.addAttribute("encounterDTO", encounterDTO);
         // Check all questionnaireDTOs for conditions and set the boolean
-        for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
-            .getBundleQuestionnaireDTOs()) {
+        for (BundleQuestionnaireDTO bundleQuestionnaireDTO :
+                encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs()) {
             // Get the QuestionnaireDTO
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             // Get the boolean if this questionnaire has any conditions
-            boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                questionnaireDao.getElementById(questionnaireDTO.getId()));
+            boolean hasConditionsAsTarget =
+                    conditionDao.isConditionTarget(questionnaireDao.getElementById(questionnaireDTO.getId()));
             // Set the boolean in the QuestionnaireDTO
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
@@ -653,10 +696,13 @@ public class SurveyController {
      * @return The <i>bundle/fill</i> website.
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.GET)
-    public String testBundle(@RequestParam(value = "id", required = false) final Long bundleId,
-        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
-        @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
-        final Model model, final HttpServletRequest request) {
+    public String testBundle(
+            @RequestParam(value = "id", required = false) final Long bundleId,
+            @RequestParam(value = "performExportTest", required = false, defaultValue = "false")
+                    final Boolean performExportTest,
+            @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
+            final Model model,
+            final HttpServletRequest request) {
 
         if (performExportTest && !authService.isCurrentUserAdmin()) {
             return "redirect:/error/accessdenied";
@@ -667,7 +713,7 @@ public class SurveyController {
             return "redirect:/error/accessdenied";
 
         } else {
-            if(caseNumber == null || caseNumber.isBlank()) {
+            if (caseNumber == null || caseNumber.isBlank()) {
                 caseNumber = "test";
             }
 
@@ -675,33 +721,35 @@ public class SurveyController {
             encounterDTO.setBundleDTO(bundleDTOMapper.apply(true, bundle));
             model.addAttribute("encounterDTO", encounterDTO);
 
-            model.addAttribute(
-                "hideProfile",
-                "false");
-            model.addAttribute(
-                "bundle",
-                bundle);
-            model.addAttribute("performExportTest",performExportTest);
+            model.addAttribute("hideProfile", "false");
+            model.addAttribute("bundle", bundle);
+            model.addAttribute("performExportTest", performExportTest);
 
             // Check all questionnaireDTOs for conditions and set the boolean
-            for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
-                .getBundleQuestionnaireDTOs()) {
+            for (BundleQuestionnaireDTO bundleQuestionnaireDTO :
+                    encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs()) {
                 // Get the QuestionnaireDTO
                 QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
                 // Get the boolean if this questionnaire has any conditions
-                boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                    questionnaireDao.getElementById(questionnaireDTO.getId()));
+                boolean hasConditionsAsTarget =
+                        conditionDao.isConditionTarget(questionnaireDao.getElementById(questionnaireDTO.getId()));
                 // Set the boolean in the QuestionnaireDTO
                 questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
             }
 
             if (encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs().get(0) != null
-                && !encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs().isEmpty()
-                && !encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs().get(0)
-                .getIsEnabled()) {
-                model.addAttribute("noActiveQuestionnaire",
-                    messageSource.getMessage("bundle.error" + ".noActiveQuestionnaires",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    && !encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs().isEmpty()
+                    && !encounterDTO
+                            .getBundleDTO()
+                            .getBundleQuestionnaireDTOs()
+                            .get(0)
+                            .getIsEnabled()) {
+                model.addAttribute(
+                        "noActiveQuestionnaire",
+                        messageSource.getMessage(
+                                "bundle.error" + ".noActiveQuestionnaires",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
 
             return "mobile/survey/bundleTest";
@@ -720,25 +768,22 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/test", method = RequestMethod.POST)
     public String testBundle(
-        @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO, BindingResult result,
-        @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
-        @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
-        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest,
-        final Model model, RedirectAttributes redirectAttributes) {
+            @ModelAttribute(value = "encounterDTO") @Valid final EncounterDTO encounterDTO,
+            BindingResult result,
+            @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
+            @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
+            @RequestParam(value = "performExportTest", required = false, defaultValue = "false")
+                    final Boolean performExportTest,
+            final Model model,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute(
-                "org.springframework.validation.BindingResult.encounterDTO",
-                result
-            );
-            redirectAttributes.addFlashAttribute(
-                "encounterDTO",
-                encounterDTO
-            );
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.encounterDTO", result);
+            redirectAttributes.addFlashAttribute("encounterDTO", encounterDTO);
 
             return "redirect:/mobile/survey/test?id="
-                + encounterDTO.getBundleDTO().getId()
-                + "&performExportTest=" + performExportTest
-                + "&caseNumber=" + encounterDTO.getCaseNumber();
+                    + encounterDTO.getBundleDTO().getId()
+                    + "&performExportTest=" + performExportTest
+                    + "&caseNumber=" + encounterDTO.getCaseNumber();
         }
 
         if (performExportTest && !authService.isCurrentUserAdmin()) {
@@ -753,17 +798,19 @@ public class SurveyController {
 
         encounterDTO.setBundleLanguage(bundleLanguage);
         model.addAttribute("encounterDTO", encounterDTO);
-        model.addAttribute("performExportTest",performExportTest);
+        model.addAttribute("performExportTest", performExportTest);
 
         // If the selected bundle language is available for the gui, then use
         // this language
         if (!guiLanguage.isEmpty()) {
-            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage + "&performExportTest="+performExportTest;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + guiLanguage + "&performExportTest="
+                    + performExportTest;
         } else {
             // Otherwise use the selected bundle language for the bundle and
             // the current language for the user interface
             Locale locale = LocaleContextHolder.getLocale();
-            return "redirect:/mobile/survey/questionnairetest?lang=" + locale + "&performExportTest="+performExportTest;
+            return "redirect:/mobile/survey/questionnairetest?lang=" + locale + "&performExportTest="
+                    + performExportTest;
         }
     }
 
@@ -775,18 +822,19 @@ public class SurveyController {
      * @return Show the <i>mobile/survey/questionnairetest</i> website
      */
     @RequestMapping(value = "/mobile/survey/questionnairetest", method = RequestMethod.GET)
-    public String showQuestionaireTest(final Model model, final HttpSession session,
-        @RequestParam(value = "performExportTest", required = false, defaultValue = "false") final Boolean performExportTest
-        ) {
+    public String showQuestionaireTest(
+            final Model model,
+            final HttpSession session,
+            @RequestParam(value = "performExportTest", required = false, defaultValue = "false")
+                    final Boolean performExportTest) {
         if (session.getAttribute("encounterDTO") == null) {
             return "redirect:error/accessdenied";
         }
 
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
         model.addAttribute("encounterDTO", encounterDTO);
-        model.addAttribute("performExportTest",performExportTest);
-        if(!performExportTest)
-            session.invalidate();
+        model.addAttribute("performExportTest", performExportTest);
+        if (!performExportTest) session.invalidate();
 
         return "mobile/survey/questionnaire";
     }
@@ -802,18 +850,20 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/encounter", method = RequestMethod.GET)
     public String selectEncounterLanguage(
-        @RequestParam(value = "hash", required = true) final String uuid, final Model model) {
+            @RequestParam(value = "hash", required = true) final String uuid, final Model model) {
 
-        if (uuid == null || uuid.isEmpty() || encounterDao.getElementByUUID(uuid) == null
-            || encounterDao.getElementByUUID(uuid).getEndTime() != null
-            || encounterDao.getElementByUUID(uuid).getEncounterScheduled() == null) {
+        if (uuid == null
+                || uuid.isEmpty()
+                || encounterDao.getElementByUUID(uuid) == null
+                || encounterDao.getElementByUUID(uuid).getEndTime() != null
+                || encounterDao.getElementByUUID(uuid).getEncounterScheduled() == null) {
             return "encounter/completed";
         }
 
         EncounterDTO encounterDTO = encounterDTOMapper.apply(true, encounterDao.getElementByUUID(uuid));
 
         if (encounterDTO.getEndTime() == null && encounterDTO.getLastSeenQuestionId() == null) {
-            //Set the startTime if the encounter started for the first time
+            // Set the startTime if the encounter started for the first time
             encounterDTO.setStartTime(new Timestamp(new Date().getTime()));
             Encounter encounter = encounterDao.getElementById(encounterDTO.getId());
             encounter.setStartTime(encounterDTO.getStartTime());
@@ -825,9 +875,10 @@ public class SurveyController {
 
         // If the encounter is resumed or there is only one selectable language
         if (encounterDTO.getLastSeenQuestionId() != null
-            || encounterDTO.getBundleDTO().getAvailableLanguages().size() == 1) {
+                || encounterDTO.getBundleDTO().getAvailableLanguages().size() == 1) {
             if (encounterDTO.getBundleLanguage() == null) {
-                String language = encounterDTO.getBundleDTO().getAvailableLanguages().get(0);
+                String language =
+                        encounterDTO.getBundleDTO().getAvailableLanguages().get(0);
                 for (String locale : LocaleHelper.getLocalesUsedInSurvey()) {
                     if (locale.contains(language) || locale.contains(language.substring(0, 2))) {
                         encounterDTO.setBundleLanguage(locale);
@@ -836,13 +887,13 @@ public class SurveyController {
                 }
 
                 if (encounterDTO.getBundleLanguage() == null) {
-                    encounterDTO.setBundleLanguage(LocaleContextHolder.getLocale().toString());
+                    encounterDTO.setBundleLanguage(
+                            LocaleContextHolder.getLocale().toString());
                 }
             }
 
             // Skip the language selection page
-            return "redirect:/mobile/survey/questionnaireScheduled?lang="
-                + encounterDTO.getBundleLanguage();
+            return "redirect:/mobile/survey/questionnaireScheduled?lang=" + encounterDTO.getBundleLanguage();
         }
 
         return "mobile/survey/bundleScheduled";
@@ -863,11 +914,11 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/schedule", method = RequestMethod.POST)
     public String startScheduledEncounter(
-        @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
-        @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
-        @RequestParam(value = "incompleteEncounterId", required = false) final String incompleteEncounterUUID,
-        @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
-        final Model model) {
+            @RequestParam(value = "bundleLanguage", required = false) final String bundleLanguage,
+            @RequestParam(value = "guiLanguage", required = true) final String guiLanguage,
+            @RequestParam(value = "incompleteEncounterId", required = false) final String incompleteEncounterUUID,
+            @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
+            final Model model) {
 
         // If the bundle language is null or empty, stay on the current site
         if (bundleLanguage == null || bundleLanguage.isEmpty()) {
@@ -877,11 +928,9 @@ public class SurveyController {
         // and add it
         // to the model to override the default (new) encounter
         if (incompleteEncounterUUID != null && !incompleteEncounterUUID.isEmpty()) {
-            EncounterDTO incompleteEncounterDTO = encounterDTOMapper.apply(true,
-                encounterDao.getElementByUUID(incompleteEncounterUUID));
-            model.addAttribute(
-                "encounterDTO",
-                incompleteEncounterDTO);
+            EncounterDTO incompleteEncounterDTO =
+                    encounterDTOMapper.apply(true, encounterDao.getElementByUUID(incompleteEncounterUUID));
+            model.addAttribute("encounterDTO", incompleteEncounterDTO);
             // Otherwise set the bundleLanguage and startTime to the
             // encounter and merge it
         } else {
@@ -889,9 +938,7 @@ public class SurveyController {
             encounter.setStartTime(new Timestamp(new Date().getTime()));
             encounter.setBundleLanguage(bundleLanguage);
             encounterDao.merge(encounter);
-            model.addAttribute(
-                "encounterDTO",
-                encounterDTOMapper.apply(true, encounter));
+            model.addAttribute("encounterDTO", encounterDTOMapper.apply(true, encounter));
         }
 
         // If the selected bundle language is available for the gui, then use
@@ -915,18 +962,17 @@ public class SurveyController {
      */
     @RequestMapping(value = "mobile/survey/questionnaireScheduled", method = RequestMethod.GET)
     public String showQuestionnaireScheduled(
-        @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO,
-        final Model model) {
+            @ModelAttribute(value = "encounterDTO") final EncounterDTO encounterDTO, final Model model) {
         encounterDTO.removeDemographics();
         model.addAttribute("encounterDTO", encounterDTO);
         // Check all questionnaireDTOs for conditions and set the boolean
-        for (BundleQuestionnaireDTO bundleQuestionnaireDTO : encounterDTO.getBundleDTO()
-            .getBundleQuestionnaireDTOs()) {
+        for (BundleQuestionnaireDTO bundleQuestionnaireDTO :
+                encounterDTO.getBundleDTO().getBundleQuestionnaireDTOs()) {
             // Get the QuestionnaireDTO
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             // Get the boolean if this questionnaire has any conditions
-            boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                questionnaireDao.getElementById(questionnaireDTO.getId()));
+            boolean hasConditionsAsTarget =
+                    conditionDao.isConditionTarget(questionnaireDao.getElementById(questionnaireDTO.getId()));
             // Set the boolean in the QuestionnaireDTO
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
@@ -962,7 +1008,7 @@ public class SurveyController {
                 // Get all already existing responses
                 Set<Response> existingResponses = new HashSet<>(encounter.getResponses());
 
-                //Get a list with all existing answer IDs
+                // Get a list with all existing answer IDs
                 Set<Long> existingAnswerIds = new HashSet<>();
                 for (Response response : existingResponses) {
                     existingAnswerIds.add(response.getAnswer().getId());
@@ -988,7 +1034,7 @@ public class SurveyController {
                                 // Delete it from answer and existing
                                 // responses list
                                 Response responseToDelete = responseDao.getResponseByAnswerInEncounter(
-                                    responseDTO.getAnswerId(), encounter.getId());
+                                        responseDTO.getAnswerId(), encounter.getId());
                                 currentAnswer.removeResponse(responseToDelete);
                                 existingResponses.remove(responseToDelete);
                             }
@@ -1001,8 +1047,7 @@ public class SurveyController {
                             // Get current response from the existing responses
                             Response currentResponse = null;
                             for (Response response : existingResponses) {
-                                if (response.getAnswer().getId()
-                                    .equals(responseDTO.getAnswerId())) {
+                                if (response.getAnswer().getId().equals(responseDTO.getAnswerId())) {
                                     currentResponse = response;
                                     break;
                                 }
@@ -1016,24 +1061,26 @@ public class SurveyController {
                                     if (responseDTO.getValue() == null) {
                                         givenAnswerIds.remove(responseDTO.getAnswerId());
                                     } else if (currentResponse.getValue() == null
-                                        || !currentResponse.getValue()
-                                        .equals(responseDTO.getValue())) {
+                                            || !currentResponse.getValue().equals(responseDTO.getValue())) {
                                         currentResponse.setValue(responseDTO.getValue());
                                     }
                                     break;
                                 case NUMBER_CHECKBOX_TEXT:
-                                    if (responseDTO.getValue() == null && (
-                                        responseDTO.getCustomtext() == null
-                                            || responseDTO.getCustomtext().equals(""))) {
+                                    if (responseDTO.getValue() == null
+                                            && (responseDTO.getCustomtext() == null
+                                                    || responseDTO
+                                                            .getCustomtext()
+                                                            .equals(""))) {
                                         givenAnswerIds.remove(responseDTO.getAnswerId());
                                     } else {
                                         // If new response is not null and
                                         // the existing response is null or
                                         // is not equal to the new one, set it
-                                        if (responseDTO.getValue() != null && (
-                                            currentResponse.getValue() == null
-                                                || !currentResponse.getValue()
-                                                .equals(responseDTO.getValue()))) {
+                                        if (responseDTO.getValue() != null
+                                                && (currentResponse.getValue() == null
+                                                        || !currentResponse
+                                                                .getValue()
+                                                                .equals(responseDTO.getValue()))) {
                                             currentResponse.setValue(responseDTO.getValue());
                                             // If the new repsonse is null,
                                             // set the existing to null
@@ -1045,29 +1092,32 @@ public class SurveyController {
                                         // customtext is null or not equal to
                                         // the new one, set the new one
                                         if ((responseDTO.getCustomtext() != null
-                                            && !responseDTO.getCustomtext().equals("")) && (
-                                            currentResponse.getCustomtext() == null
-                                                || currentResponse.getCustomtext().equals("")
-                                                || !currentResponse.getCustomtext()
-                                                .equals(responseDTO.getCustomtext()))) {
-                                            currentResponse.setCustomtext(
-                                                responseDTO.getCustomtext());
+                                                        && !responseDTO
+                                                                .getCustomtext()
+                                                                .equals(""))
+                                                && (currentResponse.getCustomtext() == null
+                                                        || currentResponse
+                                                                .getCustomtext()
+                                                                .equals("")
+                                                        || !currentResponse
+                                                                .getCustomtext()
+                                                                .equals(responseDTO.getCustomtext()))) {
+                                            currentResponse.setCustomtext(responseDTO.getCustomtext());
                                             // If the new custom text is null
                                             // or empty, set the existing
                                             // custom text to null
                                         } else if (responseDTO.getCustomtext() == null
-                                            || responseDTO.getCustomtext().equals("")) {
+                                                || responseDTO.getCustomtext().equals("")) {
                                             currentResponse.setCustomtext("");
                                         }
                                     }
                                     break;
                                 case FREE_TEXT:
                                     if (responseDTO.getCustomtext() == null
-                                        || responseDTO.getCustomtext().equals("")) {
+                                            || responseDTO.getCustomtext().equals("")) {
                                         givenAnswerIds.remove(responseDTO.getAnswerId());
                                     } else if (currentResponse.getCustomtext() == null
-                                        || !currentResponse.getCustomtext()
-                                        .equals(responseDTO.getCustomtext())) {
+                                            || !currentResponse.getCustomtext().equals(responseDTO.getCustomtext())) {
                                         currentResponse.setCustomtext(responseDTO.getCustomtext());
                                     }
                                     break;
@@ -1075,14 +1125,13 @@ public class SurveyController {
                                     if (responseDTO.getDate() == null) {
                                         givenAnswerIds.remove(responseDTO.getAnswerId());
                                     } else if (currentResponse.getDate() == null
-                                        || !currentResponse.getDate()
-                                        .equals(responseDTO.getDate())) {
+                                            || !currentResponse.getDate().equals(responseDTO.getDate())) {
                                         currentResponse.setDate(responseDTO.getDate());
                                     }
                                     break;
                                 case IMAGE:
                                     if (responseDTO.getPointsOnImage() == null
-                                        || responseDTO.getPointsOnImage().isEmpty()) {
+                                            || responseDTO.getPointsOnImage().isEmpty()) {
                                         givenAnswerIds.remove(responseDTO.getAnswerId());
                                     } else {
                                         List<PointOnImage> pointsOnImage = new ArrayList<>();
@@ -1111,8 +1160,7 @@ public class SurveyController {
                     // existing responses
                     for (Long id : existingAnswerIds) {
                         Answer answer = answerDao.getElementById(id);
-                        Response responseToDelete = responseDao.getResponseByAnswerInEncounter(id,
-                            encounter.getId());
+                        Response responseToDelete = responseDao.getResponseByAnswerInEncounter(id, encounter.getId());
                         answer.removeResponse(responseToDelete);
                         existingResponses.remove(responseToDelete);
                         questionnaireDao.merge(answer.getQuestion().getQuestionnaire());
@@ -1129,14 +1177,13 @@ public class SurveyController {
                     try {
                         Thread.sleep(5000L);
                     } catch (InterruptedException ex) {
-                        LOGGER.debug(
-                            "The waiting of the exporting thread " + "was" + " interrupted");
+                        LOGGER.debug("The waiting of the exporting thread " + "was" + " interrupted");
                     }
 
                     // Get all export templates that should be done
                     Set<ExportTemplate> remainingExportTemplates = new HashSet<>();
-                    for (BundleQuestionnaire bundleQuestionnaire : encounter.getBundle()
-                        .getBundleQuestionnaires()) {
+                    for (BundleQuestionnaire bundleQuestionnaire :
+                            encounter.getBundle().getBundleQuestionnaires()) {
                         remainingExportTemplates.addAll(bundleQuestionnaire.getExportTemplates());
                     }
                     int loopCounter = 0;
@@ -1149,14 +1196,12 @@ public class SurveyController {
                         encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
                         // Remove all (successfully) exported templates from
                         // remaining templates
-                        for (EncounterExportTemplate encounterExportTemplate : encounter.getEncounterExportTemplates()) {
-                            if (!(
-                                encounterExportTemplate.getExportTemplate().getExportTemplateType()
-                                    == ExportTemplateType.ODM) || !(
-                                encounterExportTemplate.getExportStatus()
-                                    == ExportStatus.FAILURE)) {
-                                remainingExportTemplates.remove(
-                                    encounterExportTemplate.getExportTemplate());
+                        for (EncounterExportTemplate encounterExportTemplate :
+                                encounter.getEncounterExportTemplates()) {
+                            if (!(encounterExportTemplate.getExportTemplate().getExportTemplateType()
+                                            == ExportTemplateType.ODM)
+                                    || !(encounterExportTemplate.getExportStatus() == ExportStatus.FAILURE)) {
+                                remainingExportTemplates.remove(encounterExportTemplate.getExportTemplate());
                             }
                         }
                         // If there are remaining export templates wait 2
@@ -1167,8 +1212,7 @@ public class SurveyController {
                                 Thread.sleep(2000L);
                                 loopCounter++;
                             } catch (InterruptedException ex) {
-                                LOGGER.debug(
-                                    "The waiting of the exporting " + "thread was interrupted");
+                                LOGGER.debug("The waiting of the exporting " + "thread was interrupted");
                             }
                         } else {
                             break;
@@ -1182,17 +1226,17 @@ public class SurveyController {
                     // remaining templates
                     for (EncounterExportTemplate encounterExportTemplate : encounter.getEncounterExportTemplates()) {
                         if (!(encounterExportTemplate.getExportTemplate().getExportTemplateType()
-                            == ExportTemplateType.ODM) || !(
-                            encounterExportTemplate.getExportStatus() == ExportStatus.FAILURE)) {
-                            remainingExportTemplates.remove(
-                                encounterExportTemplate.getExportTemplate());
+                                        == ExportTemplateType.ODM)
+                                || !(encounterExportTemplate.getExportStatus() == ExportStatus.FAILURE)) {
+                            remainingExportTemplates.remove(encounterExportTemplate.getExportTemplate());
                         }
                     }
 
                     // And export the templates which were not yet exported
                     for (ExportTemplate exportTemplate : remainingExportTemplates) {
-                        if (encounter.getActiveQuestionnaires()
-                            .contains(exportTemplate.getQuestionnaire().getId())) {
+                        if (encounter
+                                .getActiveQuestionnaires()
+                                .contains(exportTemplate.getQuestionnaire().getId())) {
                             encounterExporter.export(encounter, exportTemplate);
                         }
                     }
@@ -1203,12 +1247,16 @@ public class SurveyController {
                 if (encounter.getPatientID() != null) {
                     patientAttributes.add(AuditPatientAttribute.PATIENT_ID);
                 }
-                if (encounter.getResponses() != null && !encounter.getResponses().isEmpty()) {
+                if (encounter.getResponses() != null
+                        && !encounter.getResponses().isEmpty()) {
                     patientAttributes.add(AuditPatientAttribute.TREATMENT_DATA);
                 }
-                auditEntryDao.writeAuditEntry(this.getClass().getSimpleName(),
-                    "updateEncounter(EncounterDTO)", encounter.getCaseNumber(), patientAttributes,
-                    AuditEntryActionType.WRITE);
+                auditEntryDao.writeAuditEntry(
+                        this.getClass().getSimpleName(),
+                        "updateEncounter(EncounterDTO)",
+                        encounter.getCaseNumber(),
+                        patientAttributes,
+                        AuditEntryActionType.WRITE);
             }
             return "";
         }
@@ -1224,7 +1272,7 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/scores", method = RequestMethod.POST)
     public @ResponseBody Map<String, String> getActivatedScores(
-        @RequestParam(value = "encounterUuid", required = true) final String encounterUuid) {
+            @RequestParam(value = "encounterUuid", required = true) final String encounterUuid) {
         Map<String, String> activatedScores = new LinkedHashMap<>();
         // If the given encounter Uuid is null
         if (encounterUuid == null || encounterUuid.equals("")) {
@@ -1232,23 +1280,31 @@ public class SurveyController {
             return activatedScores;
         }
         Encounter encounter = encounterDao.getElementByUUID(encounterUuid);
-        for (BundleQuestionnaire bundleQuestionnaire : encounter.getBundle()
-            .getBundleQuestionnaires()) {
+        for (BundleQuestionnaire bundleQuestionnaire : encounter.getBundle().getBundleQuestionnaires()) {
             if (bundleQuestionnaire.getShowScores()) {
-                activatedScores.put(bundleQuestionnaire.getQuestionnaire().getLocalizedDisplayName()
-                    .getOrDefault(LocaleContextHolder.getLocale().toString(),
-                        bundleQuestionnaire.getQuestionnaire().getName()), null);
-                List<Score> sortedScores = new ArrayList(
-                    bundleQuestionnaire.getQuestionnaire().getScores());
-                Collections.sort(sortedScores,
-                    (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
+                activatedScores.put(
+                        bundleQuestionnaire
+                                .getQuestionnaire()
+                                .getLocalizedDisplayName()
+                                .getOrDefault(
+                                        LocaleContextHolder.getLocale().toString(),
+                                        bundleQuestionnaire.getQuestionnaire().getName()),
+                        null);
+                List<Score> sortedScores =
+                        new ArrayList(bundleQuestionnaire.getQuestionnaire().getScores());
+                Collections.sort(
+                        sortedScores, (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
                 for (Score score : sortedScores) {
                     if (score.evaluate(encounter) != null) {
-                        activatedScores.put(score.getName(), score.evaluate(encounter).toString());
+                        activatedScores.put(
+                                score.getName(), score.evaluate(encounter).toString());
                     } else {
-                        activatedScores.put(score.getName(),
-                            messageSource.getMessage("encounter.export" + ".scoreNotCalculable",
-                                new Object[]{}, LocaleContextHolder.getLocale()));
+                        activatedScores.put(
+                                score.getName(),
+                                messageSource.getMessage(
+                                        "encounter.export" + ".scoreNotCalculable",
+                                        new Object[] {},
+                                        LocaleContextHolder.getLocale()));
                     }
                 }
             }
@@ -1267,8 +1323,8 @@ public class SurveyController {
     @RequestMapping(value = "/mobile/survey/finishQuestionnaire", method = RequestMethod.POST)
     @ResponseBody
     public void finishQuestionnaire(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestBody final EncounterDTO encounterDTO) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestBody final EncounterDTO encounterDTO) {
         if (!encounterDTO.getIsTest()) {
             if (encounterDTO.getId() != null) {
                 Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
@@ -1287,7 +1343,6 @@ public class SurveyController {
         }
     }
 
-
     /**
      * Controls the HTTP POST requests for the URL
      * <i>/mobile/survey/finishQuestionnaireExportTest</i>. Stores/Updates the given
@@ -1300,17 +1355,17 @@ public class SurveyController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @ResponseBody
     public void finishQuestionnaireWithExportTest(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
-        @RequestBody final EncounterDTO encounterDTO) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestParam(value = "caseNumber", required = false, defaultValue = "test") String caseNumber,
+            @RequestBody final EncounterDTO encounterDTO) {
         if (encounterDTO.getIsTest()) {
             encounterDTO.setCaseNumber(caseNumber);
             finishQuestionnaireTest(questionnaireId, encounterDTO, true);
         }
     }
 
-    private void finishQuestionnaireTest(final Long questionnaireId,
-        final EncounterDTO encounterDTO, final Boolean performExportTest) {
+    private void finishQuestionnaireTest(
+            final Long questionnaireId, final EncounterDTO encounterDTO, final Boolean performExportTest) {
 
         Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
 
@@ -1329,10 +1384,9 @@ public class SurveyController {
 
                     Response response = createResponseObject(responseDTO, encounter, currentAnswer);
                     responses.add(response);
-
                 }
                 encounter.setResponses(responses);
-                if(performExportTest) {
+                if (performExportTest) {
                     encounterExporter.export(encounter, questionnaire, true);
                 }
             }
@@ -1346,8 +1400,7 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/pseudonym", method = RequestMethod.POST)
     public ResponseEntity<String> registerPseuodnym(
-        @RequestParam(value = "pseudonym", required = true) final String pseudonym,
-        final HttpSession session) {
+            @RequestParam(value = "pseudonym", required = true) final String pseudonym, final HttpSession session) {
 
         EncounterDTO encounterDTO = (EncounterDTO) session.getAttribute("encounterDTO");
 
@@ -1367,14 +1420,13 @@ public class SurveyController {
      * @return The configured case number type string.
      */
     private String getCaseNumberType() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            caseNumberTypeProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(caseNumberTypeProperty, className);
         return configuration.getValue();
     }
 
     private User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     private void addClinicInfoToModel(Model model) {
@@ -1400,9 +1452,11 @@ public class SurveyController {
             } else {
                 ClinicDTO activeClinicDTO = (ClinicDTO) model.getAttribute("activeClinicDTO");
                 final Long activeClinicId = activeClinicDTO.getId();
-                //Restore all activeClinicDTO information
-                activeClinicDTO = clinicDTOs.stream().filter(clinicDTO -> clinicDTO.getId().equals(activeClinicId))
-                    .findFirst().get();
+                // Restore all activeClinicDTO information
+                activeClinicDTO = clinicDTOs.stream()
+                        .filter(clinicDTO -> clinicDTO.getId().equals(activeClinicId))
+                        .findFirst()
+                        .get();
                 model.addAttribute("activeClinicDTO", activeClinicDTO);
             }
         }
@@ -1413,19 +1467,17 @@ public class SurveyController {
         List<Clinic> assignedClinics = clinicService.getAssignedClinics(currentUser);
 
         List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(true, assignedClinics);
-        ClinicDTO activeClinicDTO = clinicDTOs.stream().filter(
-            clinicDTO -> clinicDTO.getId().equals(clinicId)
-        ).findFirst().get();
+        ClinicDTO activeClinicDTO = clinicDTOs.stream()
+                .filter(clinicDTO -> clinicDTO.getId().equals(clinicId))
+                .findFirst()
+                .get();
         model.addAttribute("activeClinicDTO", activeClinicDTO);
         model.addAttribute("clinicDTOs", clinicDTOs);
     }
 
-
     private PatientDataRetriever getPatientRetriever(Long clinicId) {
         PatientDataRetriever patientDataRetriever;
-        patientDataRetriever = (PatientDataRetriever) appContext.getBean(
-            "clinicPatientDataRetriever", clinicId
-        );
+        patientDataRetriever = (PatientDataRetriever) appContext.getBean("clinicPatientDataRetriever", clinicId);
         return patientDataRetriever;
     }
 
@@ -1440,7 +1492,8 @@ public class SurveyController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
 
-        if (encounterDTO.getBundleDTO().getIsPublished() == null || !encounterDTO.getBundleDTO().getIsPublished()) {
+        if (encounterDTO.getBundleDTO().getIsPublished() == null
+                || !encounterDTO.getBundleDTO().getIsPublished()) {
             // If the encounter is finished
             if (encounterDTO.getIsCompleted()) {
                 // Wait 5 seconds for a possibly running export
@@ -1452,7 +1505,6 @@ public class SurveyController {
             }
         }
         return "";
-
     }
 
     private Response createResponseObject(ResponseDTO responseDTO, Encounter encounter, Answer currentAnswer) {
@@ -1483,5 +1535,4 @@ public class SurveyController {
         }
         return response;
     }
-
 }

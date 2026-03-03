@@ -3,8 +3,6 @@ package de.imi.mopat.model.score;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.Encounter;
-
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -15,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import java.io.Serializable;
 
 /**
  * The database table model for table <i>operator</i>. Every operator must support the evaluate and
@@ -30,9 +29,11 @@ public abstract class Operator implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @JsonIgnore
     @Column(name = "uuid")
     private String uuid = UUIDGenerator.createUUID();
+
     @Column(name = "display_sign")
     private String displaySign;
 
@@ -55,8 +56,7 @@ public abstract class Operator implements Serializable {
      * @param defaultLanguage The default language for this export.
      * @return The formula of this {@link Operator} with the {@link Expression}.
      */
-    public abstract String getFormula(Expression expression, Encounter encounter,
-        String defaultLanguage);
+    public abstract String getFormula(Expression expression, Encounter encounter, String defaultLanguage);
 
     /**
      * Returns the id of the current operator object.

@@ -19,9 +19,8 @@ public class ConfigurationService {
      * @param configuration    The configuration element
      * @param configurationDTO The currently processed DTO
      */
-    public void processChildrenElements(final Configuration configuration,
-        final ConfigurationDTO configurationDTO) {
-        //Set the children DTOs
+    public void processChildrenElements(final Configuration configuration, final ConfigurationDTO configurationDTO) {
+        // Set the children DTOs
         configurationDTO.setChildren(new ArrayList<>());
         for (Configuration child : configuration.getChildren()) {
             ConfigurationDTO childDTO = child.toConfigurationDTO();
@@ -29,11 +28,8 @@ public class ConfigurationService {
             if (child.getChildren() != null && !child.getChildren().isEmpty()) {
                 processChildrenElements(child, childDTO);
             }
-            //Add dto after processing its children
+            // Add dto after processing its children
             configurationDTO.getChildren().add(childDTO);
-
         }
     }
-
-
 }

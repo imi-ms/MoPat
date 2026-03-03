@@ -1,6 +1,8 @@
 package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
 import org.eclipse.persistence.jpa.PersistenceProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
@@ -13,9 +15,6 @@ import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcesso
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import java.beans.PropertyVetoException;
-import java.util.Properties;
 
 /**
  * Persistence configuration that registers the different data sources that MoPat needs
@@ -61,8 +60,7 @@ public class PersistenceConfig implements EnvironmentAware {
     @Bean
     public ComboPooledDataSource moPatDataSource() throws PropertyVetoException {
         ComboPooledDataSource dataSource = abstractDataSource();
-        dataSource.setJdbcUrl(
-            environment.getProperty("de.imi.mopat.datasource.mopatDataSource.jdbc-url"));
+        dataSource.setJdbcUrl(environment.getProperty("de.imi.mopat.datasource.mopatDataSource.jdbc-url"));
         return dataSource;
     }
 
@@ -80,9 +78,13 @@ public class PersistenceConfig implements EnvironmentAware {
         factoryBean.setJpaVendorAdapter(new EclipseLinkJpaVendorAdapter());
         factoryBean.setDataSource(moPatDataSource());
 
-        factoryBean.setPackagesToScan("de.imi.mopat.model", "de.imi.mopat.model.conditions",
-            "de.imi.mopat.model.dto", "de.imi.mopat.model.enumeration", "de.imi.mopat.model.score",
-            "de.imi.mopat.model.user");
+        factoryBean.setPackagesToScan(
+                "de.imi.mopat.model",
+                "de.imi.mopat.model.conditions",
+                "de.imi.mopat.model.dto",
+                "de.imi.mopat.model.enumeration",
+                "de.imi.mopat.model.score",
+                "de.imi.mopat.model.user");
 
         factoryBean.setPersistenceUnitName("MoPat");
 
@@ -120,10 +122,8 @@ public class PersistenceConfig implements EnvironmentAware {
     @Bean
     public ComboPooledDataSource moPatUserDataSource() throws PropertyVetoException {
         ComboPooledDataSource dataSource = abstractDataSource();
-        dataSource.setJdbcUrl(
-            environment.getProperty("de.imi.mopat.datasource.mopat_userDataSource.jdbc-url"));
+        dataSource.setJdbcUrl(environment.getProperty("de.imi.mopat.datasource.mopat_userDataSource.jdbc-url"));
         return dataSource;
-
     }
 
     /**
@@ -176,8 +176,7 @@ public class PersistenceConfig implements EnvironmentAware {
     @Bean
     public ComboPooledDataSource moPatAuditDataSource() throws PropertyVetoException {
         ComboPooledDataSource dataSource = abstractDataSource();
-        dataSource.setJdbcUrl(
-            environment.getProperty("de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url"));
+        dataSource.setJdbcUrl(environment.getProperty("de.imi.mopat.datasource.mopat_auditDataSource.jdbc-url"));
         return dataSource;
     }
 

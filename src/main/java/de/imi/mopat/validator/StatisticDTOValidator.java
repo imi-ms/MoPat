@@ -21,6 +21,7 @@ public class StatisticDTOValidator implements Validator {
 
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private StatisticDao statisticDao;
 
@@ -39,38 +40,56 @@ public class StatisticDTOValidator implements Validator {
         Date endDate = statisticDTO.getEndDate();
 
         if (startDate != null && (startDate.before(earliestDate) || startDate.after(latestDate))) {
-            errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".startdateOutOfRange", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "startDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".startdateOutOfRange",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         if (endDate != null && (endDate.before(earliestDate) || endDate.after(latestDate))) {
-            errors.rejectValue("endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".enddateOutOfRange", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "endDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".enddateOutOfRange",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         if (startDate != null && endDate != null && startDate.after(endDate)) {
-            errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".enddateBeforeStartdate",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "startDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".enddateBeforeStartdate",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         if (statisticDTO.getCount() < 1) {
-            errors.rejectValue("count", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".countMustBeGreaterThanZero",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "count",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".countMustBeGreaterThanZero",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         if (startDate != null && endDate != null) {
-            int days = (int) TimeUnit.DAYS.convert(endDate.getTime() - startDate.getTime(),
-                TimeUnit.MILLISECONDS) + 1;
+            int days = (int) TimeUnit.DAYS.convert(endDate.getTime() - startDate.getTime(), TimeUnit.MILLISECONDS) + 1;
             if (statisticDTO.getCount() > days) {
-                errors.rejectValue("count", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("statistic.error" + ".countGreaterThanDays",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "count",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "statistic.error" + ".countGreaterThanDays",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
     }
-
 }

@@ -1,8 +1,5 @@
 package de.imi.mopat.model.user;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +12,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The database table model for <i>acl_object_identity</i>. The Access Control List (ACL) framework
@@ -27,32 +27,38 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "acl_object_identity")
 public class AclObjectIdentity implements Serializable {
 
+    @OneToMany(mappedBy = "aclObjectIdentity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final Set<AclEntry> aclEntries = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @NotNull(message = "{aclObjectIdentity.objectIdIdentity.notNull}")
     @Column(name = "object_id_identity")
     private Long objectIdIdentity;
+
     @NotNull(message = "{aclObjectIdentity.entriesInheriting.notNull}")
     @Column(name = "entries_inheriting")
     private Boolean entriesInheriting;
+
     @JoinColumn(name = "owner_sid", referencedColumnName = "id")
     @ManyToOne
     private User owner;
+
     @JoinColumn(name = "object_id_class", referencedColumnName = "id")
     @ManyToOne
     private AclClass objectIdClass;
+
     @JoinColumn(name = "parent_object", referencedColumnName = "id")
     @ManyToOne
     private AclObjectIdentity parentObject;
-    @OneToMany(mappedBy = "aclObjectIdentity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<AclEntry> aclEntries = new HashSet<>();
+
     @ManyToMany(mappedBy = "assignedClinics")
     private Set<Invitation> invitation = new HashSet<>();
 
-    public AclObjectIdentity() {
-    }
+    public AclObjectIdentity() {}
 
     /**
      * Uses the setters to set attributes
@@ -67,8 +73,12 @@ public class AclObjectIdentity implements Serializable {
      * @param parentObject      See {@link AclObjectIdentity#setParentObject(AclObjectIdentity)} for
      *                          a description.
      */
-    public AclObjectIdentity(Long objectIdIdentity, Boolean entriesInheriting,
-        AclClass objectIdClass, User owner, AclObjectIdentity parentObject) {
+    public AclObjectIdentity(
+            Long objectIdIdentity,
+            Boolean entriesInheriting,
+            AclClass objectIdClass,
+            User owner,
+            AclObjectIdentity parentObject) {
         setObjectIdIdentity(objectIdIdentity);
         setEntriesInheriting(entriesInheriting);
         setObjectIdClass(objectIdClass);
@@ -234,8 +244,8 @@ public class AclObjectIdentity implements Serializable {
             return false;
         }
 
-        return (getObjectIdClass().equals(other.getObjectIdClass()) && getObjectIdIdentity().equals(
-            other.getObjectIdIdentity()));
+        return (getObjectIdClass().equals(other.getObjectIdClass())
+                && getObjectIdIdentity().equals(other.getObjectIdIdentity()));
     }
 
     @Override

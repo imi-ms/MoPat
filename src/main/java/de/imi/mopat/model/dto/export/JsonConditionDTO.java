@@ -31,8 +31,7 @@ public class JsonConditionDTO {
     private ThresholdComparisonType thresholdType;
     private Double thresholdValue;
 
-    public JsonConditionDTO() {
-    }
+    public JsonConditionDTO() {}
 
     public JsonConditionDTO(Condition condition) {
         this.setId(condition.getId());

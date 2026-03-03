@@ -13,6 +13,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
  */
 public class MailSender extends JavaMailSenderImpl {
 
+    // Configuration: The name of the attribute for the phone number
+    // which appears in application mail footer
+    private static final String mailFooterPhoneProperty = "mailFooterPhone";
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
     private final String mailSenderHostProperty = "mailSenderHost";
@@ -26,16 +29,12 @@ public class MailSender extends JavaMailSenderImpl {
     private final String mailFooterEmailProperty = "mailFooterMail";
     // Configuration: The name of the attribute for the phone number
     // which appears in application mail footer
-    private static final String mailFooterPhoneProperty = "mailFooterPhone";
-    // Configuration: The name of the attribute for the phone number
-    // which appears in application mail footer
     private final String mailFromProperty = "mailFrom";
 
     @Autowired
     private ConfigurationDao configurationDao;
 
-    public MailSender() {
-    }
+    public MailSender() {}
 
     /**
      * This method will be called if one of the configuration entries which is used in this class
@@ -50,9 +49,11 @@ public class MailSender extends JavaMailSenderImpl {
 
         // TODO Final STRINGS für die Properties
         this.getJavaMailProperties().setProperty("mail.smtp.from", getMailSenderFrom());
-        this.getJavaMailProperties().setProperty("mail.smtp.auth", isMailSenderAuth().toString());
         this.getJavaMailProperties()
-            .setProperty("mail.smtp.starttls.enable", isMailSenderTLSEnabled().toString());
+                .setProperty("mail.smtp.auth", isMailSenderAuth().toString());
+        this.getJavaMailProperties()
+                .setProperty(
+                        "mail.smtp.starttls.enable", isMailSenderTLSEnabled().toString());
         this.getJavaMailProperties().setProperty("mail.smtp.ssl.protocols", "TLSv1.2");
     }
 
@@ -68,8 +69,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The mail sender host as a string.
      */
     private String getMailSenderHost() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderHostProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderHostProperty, className);
         return configuration.getValue();
     }
 
@@ -80,8 +81,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The mail sender port as a integer.
      */
     private Integer getMailSenderPort() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderPortProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderPortProperty, className);
         return Integer.valueOf(configuration.getValue());
     }
 
@@ -92,8 +93,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The mail sender username as a string.
      */
     private String getMailSenderUsername() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderUsernameProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderUsernameProperty, className);
         return configuration.getValue();
     }
 
@@ -104,8 +105,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The mail sender password as a string.
      */
     private String getMailSenderPassword() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderPasswordProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderPasswordProperty, className);
         return configuration.getValue();
     }
 
@@ -117,8 +118,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The configured mailSenderAuth boolean.
      */
     private Boolean isMailSenderAuth() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderAuthProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderAuthProperty, className);
         return Boolean.valueOf(configuration.getValue());
     }
 
@@ -130,8 +131,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The configured mailSenderTLSEnabled boolean.
      */
     private Boolean isMailSenderTLSEnabled() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailSenderStartTLSProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailSenderStartTLSProperty, className);
         return Boolean.valueOf(configuration.getValue());
     }
 
@@ -141,8 +142,7 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The email address from which the {@link MailSender} sends mails.
      */
     public String getMailSenderFrom() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailFromProperty, className);
+        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(mailFromProperty, className);
         return configuration.getValue();
     }
 
@@ -152,8 +152,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The email address which appears in the footer of application mails.
      */
     public String getMailFooterEMail() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailFooterEmailProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailFooterEmailProperty, className);
         return configuration.getValue();
     }
 
@@ -163,8 +163,8 @@ public class MailSender extends JavaMailSenderImpl {
      * @return The phone number which appears in the footer of application mails.
      */
     public String getMailFooterPhone() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            mailFooterPhoneProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(mailFooterPhoneProperty, className);
         return configuration.getValue();
     }
 }

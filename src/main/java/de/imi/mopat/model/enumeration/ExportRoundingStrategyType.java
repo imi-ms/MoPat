@@ -7,8 +7,9 @@ import java.math.RoundingMode;
  * {@link de.imi.mopat.model.ExportRuleFormat} objects.
  */
 public enum ExportRoundingStrategyType {
-
-    STANDARD(RoundingMode.HALF_UP), CEIL(RoundingMode.CEILING), FLOOR(RoundingMode.FLOOR);
+    STANDARD(RoundingMode.HALF_UP),
+    CEIL(RoundingMode.CEILING),
+    FLOOR(RoundingMode.FLOOR);
 
     private final RoundingMode roundingMode;
 

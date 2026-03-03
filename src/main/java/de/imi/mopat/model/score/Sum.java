@@ -1,11 +1,10 @@
 package de.imi.mopat.model.score;
 
 import de.imi.mopat.model.Encounter;
-
-import java.util.Iterator;
-import java.util.List;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This operator returns either the sum of all {@link Expression Expressions} for this
@@ -16,8 +15,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Sum")
 public class Sum extends MultiOperator {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ValueOfQuestionOperator.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ValueOfQuestionOperator.class);
 
     @Override
     public Double evaluate(final Expression expression, final Encounter encounter) {
@@ -47,8 +45,7 @@ public class Sum extends MultiOperator {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof MultiExpression) {
             MultiExpression multiExpression = (MultiExpression) expression;
             List<Expression> sumExpressions = multiExpression.getExpressions();

@@ -19,8 +19,7 @@ public class ScoreDTO {
 
     private boolean hasExportRules;
 
-    public ScoreDTO() {
-    }
+    public ScoreDTO() {}
 
     public Long getId() {
         return id;

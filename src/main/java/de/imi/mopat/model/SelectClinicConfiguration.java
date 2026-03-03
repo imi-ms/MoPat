@@ -1,9 +1,15 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.dto.ClinicConfigurationDTO;
 import de.imi.mopat.model.enumeration.ConfigurationType;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.List;
 
@@ -28,18 +34,33 @@ public class SelectClinicConfiguration extends ClinicConfiguration implements Se
     @ManyToOne(cascade = {CascadeType.ALL})
     private List<String> options;
 
-    //default constructor (in protected state), should not be accessible to
+    // default constructor (in protected state), should not be accessible to
     // anything else but the JPA implementation (here: Hibernate) and the
     // JUnit tests
-    protected SelectClinicConfiguration() {
-    }
+    protected SelectClinicConfiguration() {}
 
-    public SelectClinicConfiguration(final List<String> options, final Long id, final String entityClass,
-        final String attribute, final String value, final ConfigurationType configurationType,
-        final String labelMessageCode, final String descriptionMessageCode, final String testMethod,
-        final String updateMethod, final String name, final Integer position) {
-        super(entityClass, attribute, configurationType, labelMessageCode, descriptionMessageCode,
-            testMethod, updateMethod, position);
+    public SelectClinicConfiguration(
+            final List<String> options,
+            final Long id,
+            final String entityClass,
+            final String attribute,
+            final String value,
+            final ConfigurationType configurationType,
+            final String labelMessageCode,
+            final String descriptionMessageCode,
+            final String testMethod,
+            final String updateMethod,
+            final String name,
+            final Integer position) {
+        super(
+                entityClass,
+                attribute,
+                configurationType,
+                labelMessageCode,
+                descriptionMessageCode,
+                testMethod,
+                updateMethod,
+                position);
         this.options = options;
     }
 

@@ -1,15 +1,10 @@
 package de.imi.mopat.model;
 
+import de.imi.mopat.helper.model.UUIDGenerator;
+import de.imi.mopat.model.enumeration.ExportDateFormatType;
+import de.imi.mopat.model.enumeration.ExportDecimalDelimiterType;
 import de.imi.mopat.model.enumeration.ExportNumberType;
 import de.imi.mopat.model.enumeration.ExportRoundingStrategyType;
-import de.imi.mopat.model.enumeration.ExportDecimalDelimiterType;
-import de.imi.mopat.model.enumeration.ExportDateFormatType;
-import de.imi.mopat.helper.model.UUIDGenerator;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +15,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The database table model for table <i>export_rule_format</i>. An export rule format object
@@ -34,6 +33,7 @@ public class ExportRuleFormat implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
     @Column(name = "uuid")
     private String uuid = UUIDGenerator.createUUID();
 
@@ -56,16 +56,17 @@ public class ExportRuleFormat implements Serializable {
     @Enumerated(EnumType.STRING)
     private ExportDateFormatType dateFormat;
 
-    @OneToMany(mappedBy = "exportRuleFormat", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "exportRuleFormat",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private Set<ExportRule> exportRules = new HashSet<>();
 
     /**
      * Default constructor to create empty objects and accessible to the JPA implementation (here:
      * Hibernate) and the JUnit tests.
      */
-    public ExportRuleFormat() {
-
-    }
+    public ExportRuleFormat() {}
 
     /**
      * Returns the Id of this object.
@@ -224,12 +225,10 @@ public class ExportRuleFormat implements Serializable {
      */
     public void addExportRule(final ExportRule exportRule) {
         assert exportRule != null : "The given ExportRule was null";
-        if (!exportRules.contains(exportRule)) {
-            exportRules.add(exportRule);
-        }
+        exportRules.add(exportRule);
         // take care the objects know each other
-        if (exportRule.getExportRuleFormat() == null || !exportRule.getExportRuleFormat()
-            .equals(this)) {
+        if (exportRule.getExportRuleFormat() == null
+                || !exportRule.getExportRuleFormat().equals(this)) {
             exportRule.setExportRuleFormat(this);
         }
     }
@@ -242,8 +241,8 @@ public class ExportRuleFormat implements Serializable {
     public void removeExportRule(final ExportRule exportRule) {
         assert exportRule != null : "The given ExportRule was null";
         exportRules.remove(exportRule);
-        if (exportRule.getExportRuleFormat() != null && exportRule.getExportRuleFormat()
-            .equals(this)) {
+        if (exportRule.getExportRuleFormat() != null
+                && exportRule.getExportRuleFormat().equals(this)) {
             exportRule.removeExportRuleFormat();
         }
     }
@@ -261,10 +260,9 @@ public class ExportRuleFormat implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof ExportRuleFormat)) {
+        if (!(obj instanceof ExportRuleFormat other)) {
             return false;
         }
-        ExportRuleFormat other = (ExportRuleFormat) obj;
         return getUuid().equals(other.getUuid());
     }
 }

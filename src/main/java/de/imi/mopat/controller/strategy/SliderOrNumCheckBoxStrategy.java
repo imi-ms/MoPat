@@ -9,16 +9,20 @@ import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
-import org.springframework.validation.BindingResult;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.springframework.validation.BindingResult;
 
 public class SliderOrNumCheckBoxStrategy implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         // [bt] TODO add additional validation, since we know here
         //  the question type (and at least one answer has to be
         //  given, e.g.)
@@ -47,30 +51,27 @@ public class SliderOrNumCheckBoxStrategy implements CreateOrUpdateAnswerStrategy
             //
             Set<SliderIcon> iconSet = new HashSet<>();
             for (SliderIconDTO icon : answerDTO.getIcons()) {
-                SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                        sliderAnswer);
+                SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(), sliderAnswer);
                 iconSet.add(newIcon);
             }
             sliderAnswer.setIcons(iconSet);
         } else {
             // Create new answer
-            sliderAnswer = new SliderAnswer(question, isEnabled, minValue, maxValue,
-                    stepsize, vertical);
+            sliderAnswer = new SliderAnswer(question, isEnabled, minValue, maxValue, stepsize, vertical);
             sliderAnswer.setShowIcons(showIcons);
             Set<SliderIcon> iconSet = new HashSet<>();
             for (SliderIconDTO icon : answerDTO.getIcons()) {
-                SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                        sliderAnswer);
+                SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(), sliderAnswer);
                 iconSet.add(newIcon);
             }
             sliderAnswer.setIcons(iconSet);
         }
         if (answerDTO.getLocalizedMinimumText() != null) {
-            for (Map.Entry<String, String> entry : answerDTO.getLocalizedMinimumText()
-                    .entrySet()) {
-                if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                        entry.getValue())) {
+            for (Map.Entry<String, String> entry :
+                    answerDTO.getLocalizedMinimumText().entrySet()) {
+                if (entry.getValue() == null
+                        || entry.getValue().trim().isEmpty()
+                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                     answerDTO.getLocalizedMinimumText().put(entry.getKey(), "");
                 }
             }
@@ -79,11 +80,11 @@ public class SliderOrNumCheckBoxStrategy implements CreateOrUpdateAnswerStrategy
             sliderAnswer.setLocalizedMinimumText(null);
         }
         if (answerDTO.getLocalizedMaximumText() != null) {
-            for (Map.Entry<String, String> entry : answerDTO.getLocalizedMaximumText()
-                    .entrySet()) {
-                if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                        entry.getValue())) {
+            for (Map.Entry<String, String> entry :
+                    answerDTO.getLocalizedMaximumText().entrySet()) {
+                if (entry.getValue() == null
+                        || entry.getValue().trim().isEmpty()
+                        || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
                     answerDTO.getLocalizedMaximumText().put(entry.getKey(), "");
                 }
             }

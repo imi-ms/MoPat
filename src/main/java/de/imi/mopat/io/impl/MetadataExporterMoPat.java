@@ -31,12 +31,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetadataExporterMoPat implements MetadataExporter {
 
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataExporterMoPat.class);
+
     @Autowired
     private JSONHelper jsonHelper;
-
-    private static final org.slf4j.Logger LOGGER =
-            org.slf4j.LoggerFactory.getLogger(MetadataExporterMoPat.class);
-
 
     @Override
     public byte[] export(
@@ -55,23 +53,19 @@ public class MetadataExporterMoPat implements MetadataExporter {
             // Enable pretty print
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             // Deactivate serialization of null or empty properties
-            objectMapper.setSerializationInclusion(
-                    JsonInclude.Include.NON_DEFAULT);
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
             SimpleModule module = new SimpleModule();
             module.addSerializer(SliderIcon.class, new SliderIconSerializer());
             objectMapper.registerModule(module);
             // Generate DTO from model
 
-            JsonQuestionnaireDTO jsonQuestionnaireDTO =
-                    new JsonQuestionnaireDTO();
+            JsonQuestionnaireDTO jsonQuestionnaireDTO = new JsonQuestionnaireDTO();
             jsonHelper.initializeJsonQuestionnaireDTO(jsonQuestionnaireDTO, questionnaire, configurationDao);
-            jsonQuestionnaire =
-                    objectMapper.writeValueAsString(jsonQuestionnaireDTO);
+            jsonQuestionnaire = objectMapper.writeValueAsString(jsonQuestionnaireDTO);
             return jsonQuestionnaire.getBytes(Charset.forName("UTF-8"));
         } catch (JsonProcessingException e) {
             LOGGER.info(
-                    "ERROR: Parsing questionnaire to JSON String failed. "
-                            + "Following error occurred: {}",
+                    "ERROR: Parsing questionnaire to JSON String failed. " + "Following error occurred: {}",
                     e.getMessage());
         }
 

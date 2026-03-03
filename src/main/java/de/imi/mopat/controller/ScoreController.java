@@ -20,11 +20,9 @@ import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.score.ValueOfQuestionOperator;
 import de.imi.mopat.model.score.ValueOperator;
 import de.imi.mopat.validator.ScoreDTOValidator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -44,14 +42,19 @@ public class ScoreController {
 
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private QuestionDao questionDao;
+
     @Autowired
     private ScoreDao scoreDao;
+
     @Autowired
     private OperatorDao operatorDao;
+
     @Autowired
     private ScoreDTOValidator scoreDTOValidator;
 
@@ -66,7 +69,7 @@ public class ScoreController {
     @RequestMapping(value = "/score/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showScoresForQuestionnaire(
-        @RequestParam(value = "id", required = true) final Long id, final Model model) {
+            @RequestParam(value = "id", required = true) final Long id, final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
 
         if (questionnaire == null) {
@@ -100,8 +103,9 @@ public class ScoreController {
     @RequestMapping(value = "/score/fill", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String fillScore(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(value = "id", required = false) final Long scoreId, final Model model) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestParam(value = "id", required = false) final Long scoreId,
+            final Model model) {
         // Get a new ScoreDTO
         ScoreDTO scoreDTO = new ScoreDTO();
         // Get the Questionnaire and the Score
@@ -116,8 +120,7 @@ public class ScoreController {
             availableScores = new ArrayList<>(questionnaire.getScores());
         }
         // Sort the available scores by name
-        Collections.sort(availableScores,
-            (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
+        Collections.sort(availableScores, (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
         scoreDTO.setQuestionnaireId(questionnaireId);
 
         // Get all Operators
@@ -152,10 +155,11 @@ public class ScoreController {
     @RequestMapping(value = "/score/edit", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String editScore(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(required = false, value = "postAction") final String action,
-        @ModelAttribute("scoreDTO") final ScoreDTO scoreDTO, BindingResult result,
-        final Model model) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestParam(required = false, value = "postAction") final String action,
+            @ModelAttribute("scoreDTO") final ScoreDTO scoreDTO,
+            BindingResult result,
+            final Model model) {
 
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/score/list?id=" + questionnaireId;
@@ -170,14 +174,13 @@ public class ScoreController {
             Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
             List<Score> availableScores;
             if (scoreDTO.getId() != null) {
-                availableScores = questionnaire.getAvailableScoresForScore(
-                    scoreDao.getElementById(scoreDTO.getId()));
+                availableScores = questionnaire.getAvailableScoresForScore(scoreDao.getElementById(scoreDTO.getId()));
             } else {
                 availableScores = new ArrayList<>(questionnaire.getScores());
             }
             // Sort the available scores by name
-            Collections.sort(availableScores,
-                (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
+            Collections.sort(
+                    availableScores, (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
             // Get all Operators
             List<Operator> operators = new ArrayList<>(operatorDao.getOperators());
             // And delete value of score, if available scores are empty
@@ -196,8 +199,7 @@ public class ScoreController {
             model.addAttribute("questionnaire", questionnaire);
             return "score/edit";
         }
-        Questionnaire questionnaire = questionnaireDao.getElementById(
-            scoreDTO.getQuestionnaireId());
+        Questionnaire questionnaire = questionnaireDao.getElementById(scoreDTO.getQuestionnaireId());
 
         Score score = null;
 
@@ -211,8 +213,7 @@ public class ScoreController {
 
         score.setName(scoreDTO.getName());
 
-        Expression expression = scoreDTO.getExpression()
-            .toExpression(operatorDao, questionDao, scoreDao);
+        Expression expression = scoreDTO.getExpression().toExpression(operatorDao, questionDao, scoreDao);
         score.setExpression(expression);
 
         scoreDao.merge(score);
@@ -230,15 +231,15 @@ public class ScoreController {
      */
     @RequestMapping(value = "/score/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String removeScore(@RequestParam(value = "id", required = true) final Long scoreId,
-        final Model model) {
+    public String removeScore(@RequestParam(value = "id", required = true) final Long scoreId, final Model model) {
         Score score = scoreDao.getElementById(scoreId);
         List<Score> dependingScores = score.getDependingScores();
         // Sort depending scores by amount of their depending scores to
         // prevent database errors
-        Collections.sort(dependingScores,
-            (Score o1, Score o2) -> o1.getDependingScores().size() - o2.getDependingScores()
-                .size());
+        Collections.sort(
+                dependingScores,
+                (Score o1, Score o2) ->
+                        o1.getDependingScores().size() - o2.getDependingScores().size());
         // Safely delete all depending scores
         for (Score scoreToDelete : dependingScores) {
             scoreDao.remove(scoreToDelete);
@@ -309,8 +310,7 @@ public class ScoreController {
                 ((UnaryExpression) expression).setOperator((ValueOperator) operator);
                 // If this expression contains a value, add it
                 if (expressionDTO.getValue() != null) {
-                    ((UnaryExpression) expression).setValue(
-                        Double.valueOf(expressionDTO.getValue()));
+                    ((UnaryExpression) expression).setValue(Double.valueOf(expressionDTO.getValue()));
                 }
                 break;
             default:

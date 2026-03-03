@@ -80,39 +80,44 @@ public class OdmQuestionnaireImporter {
 
             // Validate Study List
             OdmValidationResult studyValidation = validateStudyList(importedODM);
-            if (!studyValidation.isValid()) {
-                errorMessages.add(studyValidation.getErrorMessage());
+            if (!studyValidation.valid()) {
+                errorMessages.add(studyValidation.errorMessage());
                 return null;
             }
 
             // Validate MetaDataVersion List
             ODMcomplexTypeDefinitionStudy study = importedODM.getStudy().get(0);
             OdmValidationResult metaDataValidation = validateMetaDataVersionList(study);
-            if (!metaDataValidation.isValid()) {
-                errorMessages.add(metaDataValidation.getErrorMessage());
+            if (!metaDataValidation.valid()) {
+                errorMessages.add(metaDataValidation.errorMessage());
                 return null;
             }
 
             // Validate FormDef List
-            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion = study.getMetaDataVersion().get(0);
+            ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion =
+                    study.getMetaDataVersion().get(0);
             OdmValidationResult formDefValidation = validateFormDefList(metaDataVersion);
-            if (!formDefValidation.isValid()) {
-                errorMessages.add(formDefValidation.getErrorMessage());
+            if (!formDefValidation.valid()) {
+                errorMessages.add(formDefValidation.errorMessage());
                 return null;
             }
 
             // Assuming validation has passed, process the file.
-            ODMcomplexTypeDefinitionFormDef formDef = metaDataVersion.getFormDef().get(0);
+            ODMcomplexTypeDefinitionFormDef formDef =
+                    metaDataVersion.getFormDef().get(0);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User principal = (User) authentication.getPrincipal();
             Long changedBy = principal.getId();
 
             List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(
-                "Automatically Generated Exporttemplate", ExportTemplateType.ODM, file, configurationGroupDao,
-                exportTemplateDao);
+                    "Automatically Generated Exporttemplate",
+                    ExportTemplateType.ODM,
+                    file,
+                    configurationGroupDao,
+                    exportTemplateDao);
 
-            ImportQuestionnaireResult result = ODMv132ToMoPatConverter.convertToQuestionnaire(file, formDef, changedBy,
-                metaDataVersion, exportTemplates, messageSource);
+            ImportQuestionnaireResult result = ODMv132ToMoPatConverter.convertToQuestionnaire(
+                    file, formDef, changedBy, metaDataVersion, exportTemplates, messageSource);
 
             questionnaire = result.getQuestionnaire();
             saveQuestionnaireWithVersionGroup(questionnaire, exportTemplates);
@@ -154,14 +159,15 @@ public class OdmQuestionnaireImporter {
 
     private void saveQuestionnaireWithVersionGroup(Questionnaire questionnaire, List<ExportTemplate> exportTemplates) {
         if (!questionnaireDao.isQuestionnaireNameUnique(questionnaire.getName(), 0L)) {
-            String timestamp = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
-                LocaleContextHolder.getLocale()).format(Calendar.getInstance().getTime());
+            String timestamp = DateFormat.getDateTimeInstance(
+                            DateFormat.LONG, DateFormat.LONG, LocaleContextHolder.getLocale())
+                    .format(Calendar.getInstance().getTime());
             questionnaire.setName(questionnaire.getName() + " " + timestamp);
         }
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup versionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup versionGroup =
+                questionnaireVersionGroupService.createQuestionnaireGroup(questionnaire.getName());
         questionnaire.setQuestionnaireVersionGroup(versionGroup);
         versionGroup.addQuestionnaire(questionnaire);
         questionnaireVersionGroupService.add(versionGroup);
@@ -175,5 +181,4 @@ public class OdmQuestionnaireImporter {
     private String getMessage(String code) {
         return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
     }
-
 }

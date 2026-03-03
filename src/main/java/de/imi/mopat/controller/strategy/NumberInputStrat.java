@@ -10,7 +10,12 @@ import org.springframework.validation.BindingResult;
 
 public class NumberInputStrat implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
         Boolean isEnabled = answerDTO.getIsEnabled();
         Double minValue = answerDTO.getMinValue();
@@ -22,8 +27,8 @@ public class NumberInputStrat implements CreateOrUpdateAnswerStrategy {
 
         if (!question.getAnswers().isEmpty()) {
             // Update answer
-            NumberInputAnswer numberInputAnswer = (NumberInputAnswer) question.getAnswers()
-                    .get(0);
+            NumberInputAnswer numberInputAnswer =
+                    (NumberInputAnswer) question.getAnswers().get(0);
             numberInputAnswer.setQuestion(question);
             numberInputAnswer.setMinValue(minValue);
             numberInputAnswer.setMaxValue(maxValue);
@@ -31,8 +36,8 @@ public class NumberInputStrat implements CreateOrUpdateAnswerStrategy {
             numberInputAnswer.setIsEnabled(isEnabled);
         } else {
             // Create new answer
-            NumberInputAnswer numberInputAnswer = new NumberInputAnswer(question, isEnabled,
-                    minValue, maxValue, stepsize);
+            NumberInputAnswer numberInputAnswer =
+                    new NumberInputAnswer(question, isEnabled, minValue, maxValue, stepsize);
         }
     }
 }

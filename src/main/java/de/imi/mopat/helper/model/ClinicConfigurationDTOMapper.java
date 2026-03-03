@@ -32,7 +32,7 @@ public class ClinicConfigurationDTOMapper implements Function<ClinicConfiguratio
         clinicConfigurationDTO.setPosition(clinicConfiguration.getPosition());
         clinicConfigurationDTO.setMappedConfigurationGroup(clinicConfiguration.getMappedConfigurationGroup());
 
-        //If parent not null set the DTO's parent
+        // If parent not null set the DTO's parent
         if (clinicConfiguration.getParent() != null) {
             ClinicConfigurationDTO parentDTO = new ClinicConfigurationDTO();
             parentDTO.setId(clinicConfiguration.getParent().getId());
@@ -40,8 +40,9 @@ public class ClinicConfigurationDTOMapper implements Function<ClinicConfiguratio
             clinicConfigurationDTO.setParent(parentDTO);
         }
 
-        //If children not empty or null set the DTO's children
-        if (clinicConfiguration.getChildren() != null && !clinicConfiguration.getChildren().isEmpty()) {
+        // If children not empty or null set the DTO's children
+        if (clinicConfiguration.getChildren() != null
+                && !clinicConfiguration.getChildren().isEmpty()) {
             List<ClinicConfigurationDTO> childrenDTOs = new ArrayList<>();
             for (ClinicConfiguration child : clinicConfiguration.getChildren()) {
                 ClinicConfigurationDTO childDTO = this.apply(child);

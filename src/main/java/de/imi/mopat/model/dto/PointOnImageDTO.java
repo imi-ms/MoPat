@@ -13,11 +13,9 @@ public class PointOnImageDTO {
     private Float yCoordinate;
     private String color;
 
-    public PointOnImageDTO() {
-    }
+    public PointOnImageDTO() {}
 
-    public PointOnImageDTO(final int position, final Float xCoordinate, final Float yCoordinate,
-        final String color) {
+    public PointOnImageDTO(final int position, final Float xCoordinate, final Float yCoordinate, final String color) {
         setPosition(position);
         setxCoordinate(xCoordinate);
         setyCoordinate(yCoordinate);
@@ -28,28 +26,28 @@ public class PointOnImageDTO {
         return position;
     }
 
-    public Float getxCoordinate() {
-        return xCoordinate;
-    }
-
-    public Float getyCoordinate() {
-        return yCoordinate;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
     public void setPosition(final int position) {
         this.position = position;
+    }
+
+    public Float getxCoordinate() {
+        return xCoordinate;
     }
 
     public void setxCoordinate(Float xCoordinate) {
         this.xCoordinate = xCoordinate;
     }
 
+    public Float getyCoordinate() {
+        return yCoordinate;
+    }
+
     public void setyCoordinate(final Float yCoordinate) {
         this.yCoordinate = yCoordinate;
+    }
+
+    public String getColor() {
+        return color;
     }
 
     public void setColor(final String color) {
@@ -57,7 +55,6 @@ public class PointOnImageDTO {
     }
 
     public PointOnImage toPointOnImage() {
-        return new PointOnImage(this.position, this.xCoordinate, this.yCoordinate,
-            MoPatColor.fromColorCode(color));
+        return new PointOnImage(this.position, this.xCoordinate, this.yCoordinate, MoPatColor.fromColorCode(color));
     }
 }

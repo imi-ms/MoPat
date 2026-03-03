@@ -36,8 +36,7 @@ public class JsonQuestionDTO {
     private JsonQuestionnaireDTO jsonQuestionnaireDTO = null;
     private Integer position = null;
 
-    public JsonQuestionDTO() {
-    }
+    public JsonQuestionDTO() {}
 
     public Long getId() {
         return id;
@@ -129,7 +128,6 @@ public class JsonQuestionDTO {
 
     public void setAnswers(long id, JsonAnswerDTO jsonAnswerDTO) {
         this.answers.put(id, jsonAnswerDTO);
-
     }
 
     public Boolean getIsJustInfo() {

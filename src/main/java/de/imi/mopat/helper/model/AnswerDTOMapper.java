@@ -21,15 +21,13 @@ import java.util.stream.Collectors;
 @Component
 public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
 
-    private static final org.slf4j.Logger LOGGER =
-            org.slf4j.LoggerFactory.getLogger(AnswerDTOMapper.class);
-    
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AnswerDTOMapper.class);
+
     @Autowired
     private ConfigurationDao configurationDao;
-    
+
     @Autowired
     private ConditionDTOMapper conditionDTOMapper;
-
 
     @Override
     public AnswerDTO apply(Answer answer) {
@@ -55,9 +53,8 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
         answerDTO.setIsEnabled(answer.getIsEnabled());
         answerDTO.setHasResponse(!answer.getResponses().isEmpty());
         answerDTO.setHasConditionsAsTrigger(!answer.getConditions().isEmpty());
-        answerDTO.setConditions(answer.getConditions().stream()
-                .map(conditionDTOMapper::apply)
-                .collect(Collectors.toList()));
+        answerDTO.setConditions(
+                answer.getConditions().stream().map(conditionDTOMapper::apply).collect(Collectors.toList()));
         answerDTO.setHasExportRule(!answer.getExportRules().isEmpty());
 
         return answerDTO;
@@ -100,26 +97,25 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
         SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
         Optional.ofNullable(answer.getStartDate())
                 .ifPresent(startDate -> answerDTO.setStartDate(dateFormat.format(startDate)));
-        Optional.ofNullable(answer.getEndDate())
-                .ifPresent(endDate -> answerDTO.setEndDate(dateFormat.format(endDate)));
+        Optional.ofNullable(answer.getEndDate()).ifPresent(endDate -> answerDTO.setEndDate(dateFormat.format(endDate)));
     }
 
     private void mapNumberInputAnswer(NumberInputAnswer answer, AnswerDTO answerDTO) {
         answerDTO.setMinValue(answer.getMinValue());
         answerDTO.setMaxValue(answer.getMaxValue());
-        Optional.ofNullable(answer.getStepsize())
-                .ifPresent(stepsize -> answerDTO.setStepsize(stepsize.toString()));
+        Optional.ofNullable(answer.getStepsize()).ifPresent(stepsize -> answerDTO.setStepsize(stepsize.toString()));
     }
 
     private void mapImageAnswer(ImageAnswer answer, AnswerDTO answerDTO) {
         String imagePath = configurationDao.getImageUploadPath() + "/question/" + answer.getImagePath();
         answerDTO.setImagePath(imagePath);
         try {
-            //Navigate out of classpath root and WEB-INF
+            // Navigate out of classpath root and WEB-INF
             String fileName = imagePath.substring(imagePath.lastIndexOf("/"));
             answerDTO.setImageBase64(StringUtilities.convertImageToBase64String(imagePath, fileName));
         } catch (IOException e) {
-            LOGGER.error("Image of answer with id {} and path {} was not readable!", answer.getId(), answer.getImagePath());
+            LOGGER.error(
+                    "Image of answer with id {} and path {} was not readable!", answer.getId(), answer.getImagePath());
         }
     }
 
@@ -132,7 +128,7 @@ public class AnswerDTOMapper implements Function<Answer, AnswerDTO> {
 
     private String formatStepsize(Double stepsize) {
         DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-        decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
+        decimalFormat.setMaximumFractionDigits(340); // 340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
         return decimalFormat.format(stepsize);
     }
 }

@@ -24,9 +24,7 @@ public class ExportRuleQuestion extends ExportRule implements Serializable {
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests.
      */
-    protected ExportRuleQuestion() {
-
-    }
+    protected ExportRuleQuestion() {}
 
     /**
      * Constructor. See
@@ -38,8 +36,7 @@ public class ExportRuleQuestion extends ExportRule implements Serializable {
      * @param exportField    The export field to indicate the export target.
      * @param question       The {@link Question} object to which this export rule should belong.
      */
-    public ExportRuleQuestion(final ExportTemplate exportTemplate, final String exportField,
-        final Question question) {
+    public ExportRuleQuestion(final ExportTemplate exportTemplate, final String exportField, final Question question) {
         super(exportTemplate, exportField);
         setQuestion(question);
     }

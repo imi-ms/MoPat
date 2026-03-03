@@ -2,15 +2,14 @@ package de.imi.mopat.model.score;
 
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.dto.ExpressionDTO;
-
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This expression contains a {@link MultiOperator} and a list of child

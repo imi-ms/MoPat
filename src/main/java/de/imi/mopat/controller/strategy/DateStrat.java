@@ -7,15 +7,19 @@ import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
-import org.springframework.validation.BindingResult;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.springframework.validation.BindingResult;
 
 public class DateStrat implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {
         AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
         SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
         Boolean isEnabled = answerDTO.getIsEnabled();

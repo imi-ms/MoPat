@@ -14,10 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsChecker;
  */
 public class CustomPreAuthenticationChecks implements UserDetailsChecker {
 
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CustomPreAuthenticationChecks.class);
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        CustomPreAuthenticationChecks.class);
 
     @Override
     public void check(final UserDetails user) {
@@ -25,17 +23,14 @@ public class CustomPreAuthenticationChecks implements UserDetailsChecker {
             LOGGER.debug("User account is locked");
 
             throw new LockedException(
-                messages.getMessage("AbstractUserDetailsAuthenticationProvider.locked",
-                    "User account is locked"));
+                    messages.getMessage("AbstractUserDetailsAuthenticationProvider.locked", "User account is locked"));
         }
 
         if (!user.isAccountNonExpired()) {
             LOGGER.debug("User account is expired");
 
-            throw new AccountExpiredException(
-                messages.getMessage("AbstractUserDetailsAuthenticationProvider.expired",
-                    "User account has expired"));
+            throw new AccountExpiredException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.expired", "User account has expired"));
         }
     }
-
 }

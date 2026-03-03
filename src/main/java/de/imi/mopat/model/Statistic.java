@@ -1,8 +1,5 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * The database table model for table <i>Statistic</i>. Each day is an object that the values ​​in
@@ -61,7 +60,7 @@ public class Statistic implements Serializable, Comparable<Statistic> {
     @Column(name = "HL7ExportCount")
     private Long HL7ExportCount;
 
-    public Statistic() { //default constructor (in protected state), should
+    public Statistic() { // default constructor (in protected state), should
         // not be accessible to anything else but the JPA implementation
         // (here: Hibernate) and the JUnit tests
     }
@@ -249,8 +248,7 @@ public class Statistic implements Serializable, Comparable<Statistic> {
      *                                      statistic object. Must not be <code>null</code>.
      */
     public void setCompleteEncounterDeletedCount(final Long completeEncounterDeletedCount) {
-        assert
-            completeEncounterDeletedCount != null : "The given complete encounter count was null";
+        assert completeEncounterDeletedCount != null : "The given complete encounter count was null";
         this.completeEncounterDeletedCount = completeEncounterDeletedCount;
     }
 
@@ -273,8 +271,7 @@ public class Statistic implements Serializable, Comparable<Statistic> {
      *                                        <code>null</code>.
      */
     public void setIncompleteEncounterDeletedCount(final Long incompleteEncounterDeletedCount) {
-        assert incompleteEncounterDeletedCount != null :
-            "The given incomplete encounter deleted count was " + "null";
+        assert incompleteEncounterDeletedCount != null : "The given incomplete encounter deleted count was " + "null";
         this.incompleteEncounterDeletedCount = incompleteEncounterDeletedCount;
     }
 

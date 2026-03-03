@@ -14,27 +14,18 @@ import java.util.Map;
  * FHIR resources.
  */
 public enum FHIRExtensionType {
-    MIN_VALUE(
-        "http://hl7.org/fhir/StructureDefinition/minValue"), //max value a numeric question accepts
-    MAX_VALUE(
-        "http://hl7.org/fhir/StructureDefinition/maxValue"), //min value a numeric question accepts
-    MIN_NUMBER_ANSWER("http://hl7.org/fhir/StructureDefinition/questionnaire"
-        + "-minOccurs"),      //min number of answers
+    MIN_VALUE("http://hl7.org/fhir/StructureDefinition/minValue"), // max value a numeric question accepts
+    MAX_VALUE("http://hl7.org/fhir/StructureDefinition/maxValue"), // min value a numeric question accepts
+    MIN_NUMBER_ANSWER("http://hl7.org/fhir/StructureDefinition/questionnaire" + "-minOccurs"), // min number of answers
     // that have to be chosen
-    MAX_NUMBER_ANSWER("http://hl7.org/fhir/StructureDefinition/questionnaire"
-        + "-maxOccurs"),      //max number of answers
+    MAX_NUMBER_ANSWER("http://hl7.org/fhir/StructureDefinition/questionnaire" + "-maxOccurs"), // max number of answers
     // that have to be chosen
-    SCORE(
-        "http://hl7.org/fhir/StructureDefinition/questionnaire-ordinalValue"),            //score for a single option
-    MIN_MAX_TEXT("http://hl7.org/fhir/StructureDefinition/questionnaire"
-        + "-optionPrefix"),     //text that is shown at
+    SCORE("http://hl7.org/fhir/StructureDefinition/questionnaire-ordinalValue"), // score for a single option
+    MIN_MAX_TEXT("http://hl7.org/fhir/StructureDefinition/questionnaire" + "-optionPrefix"), // text that is shown at
     // min/max of number checkbox or slide answer
-    MAX_DECIMAL_PLACES(
-        "http://hl7.org/fhir/StructureDefinition" + "/maxDecimalPlaces"),         //maximum
+    MAX_DECIMAL_PLACES("http://hl7.org/fhir/StructureDefinition" + "/maxDecimalPlaces"), // maximum
     // number of decimal places a number input answer accepts
-    TRANSLATION(
-        "http://hl7.org/fhir/StructureDefinition/translation");                     //Locale for language code
-    private final String textValue;
+    TRANSLATION("http://hl7.org/fhir/StructureDefinition/translation"); // Locale for language code
     private static final Map<String, FHIRExtensionType> stringToEnum = new HashMap<>();
 
     static // Initialize map from constant name to enum constant
@@ -44,8 +35,14 @@ public enum FHIRExtensionType {
         }
     }
 
+    private final String textValue;
+
     FHIRExtensionType(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static FHIRExtensionType fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -55,9 +52,5 @@ public enum FHIRExtensionType {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static FHIRExtensionType fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

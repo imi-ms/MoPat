@@ -20,15 +20,15 @@ import org.springframework.stereotype.Service;
 public class ApplicationMailer {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationMailer.class);
-
-    @Autowired
-    private MailSender mailSender;
-    @Autowired
-    private ConfigurationDao configurationDao;
-
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
     private final String isApplicationMailerIsActivatedProperty = "applicationMailerActivated";
+
+    @Autowired
+    private MailSender mailSender;
+
+    @Autowired
+    private ConfigurationDao configurationDao;
 
     /**
      * This method will compose and send an email message asynchronous.
@@ -47,8 +47,12 @@ public class ApplicationMailer {
      * @param replyTo                   The email adress the recipient can reply to.
      */
     @Async
-    public void sendMail(final String recipientTo, final Set<String> allEMailAddressesDistinct,
-        final String subject, final String content, final String replyTo) {
+    public void sendMail(
+            final String recipientTo,
+            final Set<String> allEMailAddressesDistinct,
+            final String subject,
+            final String content,
+            final String replyTo) {
         Boolean activated = getIsApplicationMailerActivated();
         if (activated) {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -57,11 +61,9 @@ public class ApplicationMailer {
             }
             if (allEMailAddressesDistinct != null && !allEMailAddressesDistinct.isEmpty()) {
                 try {
-                    message.setBcc(allEMailAddressesDistinct.toArray(
-                        new String[allEMailAddressesDistinct.size()]));
+                    message.setBcc(allEMailAddressesDistinct.toArray(new String[allEMailAddressesDistinct.size()]));
                 } catch (MailParseException mpe) {
-                    LOGGER.error(
-                        "MailParseException caught while setting the list" + " of bccs: {}", mpe);
+                    LOGGER.error("MailParseException caught while setting the list" + " of bccs: {}", mpe);
                 }
             }
             if (replyTo != null && !replyTo.isEmpty()) {
@@ -73,12 +75,14 @@ public class ApplicationMailer {
                 this.mailSender.send(message);
             } catch (MailException ex) {
                 // TODO add user feedback?
-                LOGGER.error("An exception occured while trying to send an email "
-                    + "to {} with subject {}: ", recipientTo, subject, ex);
+                LOGGER.error(
+                        "An exception occured while trying to send an email " + "to {} with subject {}: ",
+                        recipientTo,
+                        subject,
+                        ex);
             }
         } else {
-            LOGGER.error(
-                "An attemp was made to send a mail but the " + "ApplicationMailer was not active");
+            LOGGER.error("An attemp was made to send a mail but the " + "ApplicationMailer was not active");
         }
     }
 
@@ -90,8 +94,8 @@ public class ApplicationMailer {
      * @return The configured applicationMaierActivated boolean.
      */
     private Boolean getIsApplicationMailerActivated() {
-        Configuration configuration = configurationDao.getConfigurationByAttributeAndClass(
-            isApplicationMailerIsActivatedProperty, className);
+        Configuration configuration =
+                configurationDao.getConfigurationByAttributeAndClass(isApplicationMailerIsActivatedProperty, className);
         return Boolean.valueOf(configuration.getValue());
     }
 

@@ -1,6 +1,5 @@
 package de.imi.mopat.io.impl;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,14 +29,18 @@ import org.springframework.stereotype.Service;
 public class MetadataExporterMoPatComplete implements MetadataExporter {
 
     private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(MetadataExporterMoPatComplete.class);
+            org.slf4j.LoggerFactory.getLogger(MetadataExporterMoPatComplete.class);
 
     @Override
-    public byte[] export(Questionnaire questionnaire, MessageSource messageSource,
-        ConfigurationDao configurationDao, ConfigurationGroupDao configurationGroupDao,
-        ExportTemplateDao exportTemplateDao, QuestionnaireDao questionnaireDao,
-        QuestionDao questionDao, ScoreDao scoreDao) {
-
+    public byte[] export(
+            Questionnaire questionnaire,
+            MessageSource messageSource,
+            ConfigurationDao configurationDao,
+            ConfigurationGroupDao configurationGroupDao,
+            ExportTemplateDao exportTemplateDao,
+            QuestionnaireDao questionnaireDao,
+            QuestionDao questionDao,
+            ScoreDao scoreDao) {
 
         String jsonString = null;
         try {
@@ -60,9 +63,8 @@ public class MetadataExporterMoPatComplete implements MetadataExporter {
 
         } catch (JsonProcessingException e) {
             LOGGER.info(
-                "ERROR: Parsing questionnaire to JSON String failed. "
-                    + "Following error occurred: {}",
-                e.getMessage());
+                    "ERROR: Parsing questionnaire to JSON String failed. " + "Following error occurred: {}",
+                    e.getMessage());
         }
 
         return jsonString.getBytes(Charset.forName("UTF-8"));

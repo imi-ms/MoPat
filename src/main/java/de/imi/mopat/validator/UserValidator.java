@@ -25,12 +25,16 @@ public class UserValidator implements Validator {
 
     @Autowired
     UserDao userDao;
+
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private PepperedBCryptPasswordEncoder passwordEncoder;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ApplicationContext appContext;
 
@@ -72,58 +76,69 @@ public class UserValidator implements Validator {
             if (user.getOldPassword() != null && !user.getOldPassword().isEmpty()) {
                 // Check if the old password is correct
                 if (!isPasswordCorrect(user)) {
-                    errors.rejectValue("oldPassword", "errormessage",
-                        messageSource.getMessage("user.error.passwordNotCorrect", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "oldPassword",
+                            "errormessage",
+                            messageSource.getMessage(
+                                    "user.error.passwordNotCorrect", new Object[] {}, LocaleContextHolder.getLocale()));
                 } else {
                     checkNewPassword = true;
                 }
             }
         } else if (user.isLdap()) {
             if (user.getNewPassword() == null || user.getNewPassword().isEmpty()) {
-                errors.rejectValue("newPassword", "errormessage",
-                    messageSource.getMessage("user.error.passwordNotSet", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "newPassword",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "user.error.passwordNotSet", new Object[] {}, LocaleContextHolder.getLocale()));
             } else {
                 MoPatActiveDirectoryLdapAuthenticationProvider adAuthenticationProvider = appContext.getBean(
-                    "adAuthenticationProvider",
-                    MoPatActiveDirectoryLdapAuthenticationProvider.class);
+                        "adAuthenticationProvider", MoPatActiveDirectoryLdapAuthenticationProvider.class);
                 // Try authentication via active directory
                 try {
-                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        user.getUsername(), user.getNewPassword());
+                    UsernamePasswordAuthenticationToken token =
+                            new UsernamePasswordAuthenticationToken(user.getUsername(), user.getNewPassword());
                     adAuthenticationProvider.authenticate(token);
                     // If a Ldap user was authenticated successfully, check
                     // if the username is already in use
                     if (userDao.loadUserByUsername(user.getUsername()) != null) {
-                        errors.rejectValue("username", "errormessage",
-                            messageSource.getMessage("user.error.usernameInUse", new Object[]{},
-                                LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                "username",
+                                "errormessage",
+                                messageSource.getMessage(
+                                        "user.error.usernameInUse", new Object[] {}, LocaleContextHolder.getLocale()));
                     }
                 } catch (BadCredentialsException thrownException) {
                     // If authentication via active directory was not
                     // successful return the thrown exception
-                    errors.rejectValue("newPassword", "errormessage",
-                        messageSource.getMessage("user.error.passwordNotCorrect", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "newPassword",
+                            "errormessage",
+                            messageSource.getMessage(
+                                    "user.error.passwordNotCorrect", new Object[] {}, LocaleContextHolder.getLocale()));
                 } catch (InsufficientAuthenticationException thrownException) {
                     // This exception returns if a user is not stored in the
                     // database, which is correct for a new registered user
                     // If a Ldap user was authenticated successfully, check
                     // if the username is already in use
                     if (userDao.loadUserByUsername(user.getUsername()) != null) {
-                        errors.rejectValue("username", "errormessage",
-                            messageSource.getMessage("user.error.usernameInUse", new Object[]{},
-                                LocaleContextHolder.getLocale()));
+                        errors.rejectValue(
+                                "username",
+                                "errormessage",
+                                messageSource.getMessage(
+                                        "user.error.usernameInUse", new Object[] {}, LocaleContextHolder.getLocale()));
                     }
                 }
             }
         } else {
             // Check if the username is already in use
             if (userDao.loadUserByUsername(user.getUsername()) != null) {
-                errors.rejectValue("username", "errormessage",
-                    messageSource.getMessage("user.error.usernameInUse", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "username",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "user.error.usernameInUse", new Object[] {}, LocaleContextHolder.getLocale()));
             } else {
                 checkNewPassword = true;
             }
@@ -131,42 +146,51 @@ public class UserValidator implements Validator {
         if (checkNewPassword) {
             // Check if the new password is set and has the correct length
             if (user.getNewPassword() == null
-                || user.getNewPassword().length() < Constants.PASSWORD_MINIMUM_SIZE
-                || user.getNewPassword().length() > Constants.PASSWORD_MAXIMUM_SIZE) {
-                errors.rejectValue("newPassword", "errormessage",
-                    messageSource.getMessage("user.error.passwordSize",
-                        new Object[]{Constants.PASSWORD_MINIMUM_SIZE,
-                            Constants.PASSWORD_MAXIMUM_SIZE}, LocaleContextHolder.getLocale()));
+                    || user.getNewPassword().length() < Constants.PASSWORD_MINIMUM_SIZE
+                    || user.getNewPassword().length() > Constants.PASSWORD_MAXIMUM_SIZE) {
+                errors.rejectValue(
+                        "newPassword",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "user.error.passwordSize",
+                                new Object[] {Constants.PASSWORD_MINIMUM_SIZE, Constants.PASSWORD_MAXIMUM_SIZE},
+                                LocaleContextHolder.getLocale()));
             }
             // Check if the new password and the password approval fields are
             // the same
-            if (user.getNewPassword() != null && !user.getNewPassword()
-                .equals(user.getPasswordCheck())) {
-                errors.rejectValue("passwordCheck", "errormessage",
-                    messageSource.getMessage("user.error.passwordsNotMatching", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+            if (user.getNewPassword() != null && !user.getNewPassword().equals(user.getPasswordCheck())) {
+                errors.rejectValue(
+                        "passwordCheck",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "user.error.passwordsNotMatching", new Object[] {}, LocaleContextHolder.getLocale()));
             }
         }
 
-        //Check if pin is activated, but not set
+        // Check if pin is activated, but not set
         if (user.getUsePin()) {
             if (user.getPin().isEmpty() || user.getPin() == null) {
-                errors.rejectValue("pin", "errormessage",
-                    messageSource.getMessage("user.error.pinActivatedButNull", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "pin",
+                        "errormessage",
+                        messageSource.getMessage(
+                                "user.error.pinActivatedButNull", new Object[] {}, LocaleContextHolder.getLocale()));
             } else {
                 // Check if Pin is long enough
                 if (user.getPin().length() < Constants.PIN_MINIMUM_SIZE) {
-                    errors.rejectValue("pin", "errormessage",
-                        messageSource.getMessage("user.error.pinTooShort", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    errors.rejectValue(
+                            "pin",
+                            "errormessage",
+                            messageSource.getMessage(
+                                    "user.error.pinTooShort", new Object[] {}, LocaleContextHolder.getLocale()));
                 }
-                //Check if pin is a single repeated digit or a consecutive number
-                if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(
-                    user.getPin())) {
-                    errors.rejectValue("pin", "errormessage",
-                        messageSource.getMessage("user.error.pinNotSecure", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                // Check if pin is a single repeated digit or a consecutive number
+                if (user.getPin().matches("\\b(\\d)\\1+\\b") || isConsecutiveSequence(user.getPin())) {
+                    errors.rejectValue(
+                            "pin",
+                            "errormessage",
+                            messageSource.getMessage(
+                                    "user.error.pinNotSecure", new Object[] {}, LocaleContextHolder.getLocale()));
                 }
             }
         }
@@ -175,5 +199,4 @@ public class UserValidator implements Validator {
     public boolean isPasswordCorrect(final User user) {
         return passwordEncoder.matches(user.getOldPassword(), user.getPassword());
     }
-
 }

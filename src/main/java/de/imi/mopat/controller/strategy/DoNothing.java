@@ -6,9 +6,12 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionDTO;
 import org.springframework.validation.BindingResult;
 
-public class DoNothing implements CreateOrUpdateAnswerStrategy{
+public class DoNothing implements CreateOrUpdateAnswerStrategy {
     @Override
-    public void createOrUpdateAnswer(QuestionDTO questionDTO, Question question, QuestionController controller, BindingResult result, Questionnaire questionnaire) {
-
-    }
+    public void createOrUpdateAnswer(
+            QuestionDTO questionDTO,
+            Question question,
+            QuestionController controller,
+            BindingResult result,
+            Questionnaire questionnaire) {}
 }

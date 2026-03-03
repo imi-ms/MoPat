@@ -16,8 +16,7 @@ public class ValueOfScoreOperator extends UnaryOperator {
 
     @Override
     public Object evaluate(final Expression expression, final Encounter encounter) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
 
             if (unaryExpression.getScore() == null) {
                 LOGGER.error("This expression contains no score.");
@@ -33,8 +32,7 @@ public class ValueOfScoreOperator extends UnaryOperator {
     @Override
     public String getFormula(final Expression expression, final Encounter encounter,
         final String defaultLanguage) {
-        if (expression instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
+        if (expression instanceof UnaryExpression unaryExpression) {
 
             if (unaryExpression.getScore() == null) {
                 LOGGER.error("This expression contains no score.");

@@ -20,10 +20,38 @@ public class ClinicDTOValidator implements Validator {
 
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ClinicDao clinicDao;
+
     @Autowired
     private ClinicConfigurationMappingDTOValidator clinicConfigurationMappingDTOValidator;
+
+    private static boolean checkIfAnyOnePatientRetrieverIsEnabled(ClinicDTO clinicDTO) {
+        boolean check = false;
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO :
+                clinicDTO.getClinicConfigurationMappingDTOS()) {
+            if (clinicConfigurationMappingDTO.getAttribute() != null) {
+                if (clinicConfigurationMappingDTO
+                        .getAttribute()
+                        .equals(ClinicConfigurationsPatientRetriever.usePseudonymizationService.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO
+                        .getAttribute()
+                        .equals(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                } else if (clinicConfigurationMappingDTO
+                        .getAttribute()
+                        .equals(ClinicConfigurationsPatientRetriever.registerPatientData.getTextValue())) {
+                    check = clinicConfigurationMappingDTO.getValue().equals("true");
+                }
+            }
+            if (check) {
+                break;
+            }
+        }
+        return check;
+    }
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -36,41 +64,51 @@ public class ClinicDTOValidator implements Validator {
 
         if (!clinicDTO.getName().isEmpty() && clinicDTO.getName().trim().isEmpty()) {
             clinicDTO.setName("");
-            errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("clinic.error.nameIsEmpty", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "name",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "clinic.error.nameIsEmpty", new Object[] {}, LocaleContextHolder.getLocale()));
         }
 
         if (!clinicDTO.getName().matches("^[\\p{L}0-9\\s\\-_.:()\\[\\]!+?]+$")) {
-            errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("clinic.error.nameContainsSpecialCharacters",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "name",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "clinic.error.nameContainsSpecialCharacters",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
         if (clinicDTO.getName().matches("^[\\p{L}0-9\\s\\-_.:()\\[\\]!+?]+$")
-            && !clinicDao.isClinicNameUnused(clinicDTO.getName(), clinicDTO.getId())) {
-            errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("clinic.error.nameInUse", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+                && !clinicDao.isClinicNameUnused(clinicDTO.getName(), clinicDTO.getId())) {
+            errors.rejectValue(
+                    "name",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "clinic.error.nameInUse", new Object[] {}, LocaleContextHolder.getLocale()));
         }
         if (!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)) {
-            errors.rejectValue("clinicConfigurationMappingDTOS[0].value", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("clinic.error.noConfiguration",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "clinicConfigurationMappingDTOS[0].value",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "clinic.error.noConfiguration", new Object[] {}, LocaleContextHolder.getLocale()));
         }
         int indexOfConfiguration = 0;
-        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
+        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO :
+                clinicDTO.getClinicConfigurationMappingDTOS()) {
             if (clinicConfigurationMappingDTO.getParent() == null) {
-                errors.pushNestedPath("clinicConfigurationMappingDTOS["
-                    + indexOfConfiguration + "]");
+                errors.pushNestedPath("clinicConfigurationMappingDTOS[" + indexOfConfiguration + "]");
                 clinicConfigurationMappingDTOValidator.validate(clinicConfigurationMappingDTO, errors);
                 errors.popNestedPath();
                 if (clinicConfigurationMappingDTO.getChildren() != null
-                    && clinicConfigurationMappingDTO.getValue().equalsIgnoreCase("true")) {
+                        && clinicConfigurationMappingDTO.getValue().equalsIgnoreCase("true")) {
                     int indexOfChild = 0;
                     for (ClinicConfigurationMappingDTO childDTO : clinicConfigurationMappingDTO.getChildren()) {
                         errors.pushNestedPath("clinicConfigurationMappingDTOS[" + indexOfConfiguration + "]"
-                            + ".children[" + indexOfChild + "]");
+                                + ".children[" + indexOfChild + "]");
                         clinicConfigurationMappingDTOValidator.validate(childDTO, errors);
                         errors.popNestedPath();
                         indexOfChild++;
@@ -79,27 +117,5 @@ public class ClinicDTOValidator implements Validator {
                 indexOfConfiguration++;
             }
         }
-    }
-
-    private static boolean checkIfAnyOnePatientRetrieverIsEnabled(ClinicDTO clinicDTO) {
-        boolean check = false;
-        for (ClinicConfigurationMappingDTO clinicConfigurationMappingDTO : clinicDTO.getClinicConfigurationMappingDTOS()) {
-            if (clinicConfigurationMappingDTO.getAttribute() != null) {
-                if (clinicConfigurationMappingDTO.getAttribute()
-                    .equals(ClinicConfigurationsPatientRetriever.usePseudonymizationService.getTextValue())) {
-                    check = clinicConfigurationMappingDTO.getValue().equals("true");
-                } else if (clinicConfigurationMappingDTO.getAttribute()
-                    .equals(ClinicConfigurationsPatientRetriever.usePatientDataLookup.getTextValue())) {
-                    check = clinicConfigurationMappingDTO.getValue().equals("true");
-                } else if (clinicConfigurationMappingDTO.getAttribute()
-                    .equals(ClinicConfigurationsPatientRetriever.registerPatientData.getTextValue())) {
-                    check = clinicConfigurationMappingDTO.getValue().equals("true");
-                }
-            }
-            if (check) {
-                break;
-            }
-        }
-        return check;
     }
 }

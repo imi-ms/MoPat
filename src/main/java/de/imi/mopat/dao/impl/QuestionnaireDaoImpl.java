@@ -34,8 +34,8 @@ public class QuestionnaireDaoImpl extends MoPatDaoImpl<Questionnaire> implements
     @Override
     public boolean isQuestionnaireNameUnique(final String name, final Long id) {
         try {
-            Query query = moPatEntityManager.createQuery(
-                "SELECT q FROM " + "Questionnaire q WHERE q.name='" + name + "'");
+            Query query =
+                    moPatEntityManager.createQuery("SELECT q FROM " + "Questionnaire q WHERE q.name='" + name + "'");
             Questionnaire questionnaire = (Questionnaire) query.getSingleResult();
             // If there is a result, check if it is the same questionnaire
             // that should be edit
@@ -48,8 +48,7 @@ public class QuestionnaireDaoImpl extends MoPatDaoImpl<Questionnaire> implements
     @Override
     public boolean isQuestionnaireNameUsed(final String name) {
         try {
-            Query query = moPatEntityManager.createQuery(
-                    "SELECT COUNT(q) FROM Questionnaire q WHERE q.name = :name");
+            Query query = moPatEntityManager.createQuery("SELECT COUNT(q) FROM Questionnaire q WHERE q.name = :name");
             query.setParameter("name", name);
             Long count = (Long) query.getSingleResult();
             return count > 0;
@@ -57,6 +56,4 @@ public class QuestionnaireDaoImpl extends MoPatDaoImpl<Questionnaire> implements
             return false;
         }
     }
-
-
 }

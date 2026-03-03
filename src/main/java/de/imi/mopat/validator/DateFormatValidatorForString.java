@@ -8,8 +8,7 @@ import jakarta.validation.ConstraintValidatorContext;
 /**
  *
  */
-public class DateFormatValidatorForString implements
-    ConstraintValidator<DateFormatForString, String> {
+public class DateFormatValidatorForString implements ConstraintValidator<DateFormatForString, String> {
 
     private String format;
 
@@ -19,8 +18,7 @@ public class DateFormatValidatorForString implements
     }
 
     @Override
-    public boolean isValid(final String date,
-        final ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(final String date, final ConstraintValidatorContext constraintValidatorContext) {
         if (date == null || date.isEmpty()) {
             return true;
         }

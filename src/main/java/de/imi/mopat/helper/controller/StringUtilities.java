@@ -25,33 +25,6 @@ public class StringUtilities {
 
     Map<String, String> germanUmlautsReplacement = new HashMap<>();
 
-    @PostConstruct
-    public void init() {
-        // Fill the map of characters to exchange for replaceGermanUmlauts
-        // (String germanText)
-        germanUmlautsReplacement.put("Ä", "Ae");
-        germanUmlautsReplacement.put("ä", "ae");
-        germanUmlautsReplacement.put("Ö", "Oe");
-        germanUmlautsReplacement.put("ö", "oe");
-        germanUmlautsReplacement.put("Ü", "Ue");
-        germanUmlautsReplacement.put("ü", "ue");
-        germanUmlautsReplacement.put("ß", "ss");
-    }
-
-    /**
-     * This method exchanges all german umlauts in a given german text to an appropriate english
-     * spelling.
-     *
-     * @param germanText The german text, where the umlauts are changed to the english spelling.
-     * @return The german text without any german umlauts
-     */
-    public String replaceGermanUmlauts(String germanText) {
-        for (String character : germanUmlautsReplacement.keySet()) {
-            germanText = germanText.replaceAll(character, germanUmlautsReplacement.get(character));
-        }
-        return germanText;
-    }
-
     /*
      * Converts an image file given by the filePath and the fileName to base64
      * encoded String.
@@ -61,8 +34,7 @@ public class StringUtilities {
      * @return The image encoded as base64 String.
      * @throws java.io.IOException
      */
-    public static String convertImageToBase64String(String filePath, String fileName)
-        throws IOException {
+    public static String convertImageToBase64String(String filePath, String fileName) throws IOException {
         BufferedImage image;
         String base64String = null;
         image = ImageIO.read(new File(filePath));
@@ -70,8 +42,8 @@ public class StringUtilities {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ImageIO.write(image, imageMimeType, out);
         byte[] imageByteArray = out.toByteArray();
-        base64String = "data:image/" + imageMimeType + ";base64," + StringUtils.newStringUtf8(
-            Base64.encodeBase64(imageByteArray, false));
+        base64String = "data:image/" + imageMimeType + ";base64,"
+                + StringUtils.newStringUtf8(Base64.encodeBase64(imageByteArray, false));
 
         return base64String;
     }
@@ -84,10 +56,10 @@ public class StringUtilities {
      * @param fileName     Name of the resulting image file.
      * @throws java.io.IOException If an I/O error occurs
      */
-    public static void convertAndWriteBase64StringToImage(final String base64String,
-        final String imagePath, final String fileName) throws IOException {
-        byte[] imageByteArray = Base64.decodeBase64(
-            base64String.substring(base64String.lastIndexOf(";base64,") + ";base64,".length()));
+    public static void convertAndWriteBase64StringToImage(
+            final String base64String, final String imagePath, final String fileName) throws IOException {
+        byte[] imageByteArray =
+                Base64.decodeBase64(base64String.substring(base64String.lastIndexOf(";base64,") + ";base64,".length()));
 
         File uploadDir = new File(imagePath);
         if (!uploadDir.isDirectory()) {
@@ -127,5 +99,32 @@ public class StringUtilities {
         }
         Matcher matcher = REMOVE_TAGS.matcher(htmlString);
         return matcher.replaceAll("");
+    }
+
+    @PostConstruct
+    public void init() {
+        // Fill the map of characters to exchange for replaceGermanUmlauts
+        // (String germanText)
+        germanUmlautsReplacement.put("Ä", "Ae");
+        germanUmlautsReplacement.put("ä", "ae");
+        germanUmlautsReplacement.put("Ö", "Oe");
+        germanUmlautsReplacement.put("ö", "oe");
+        germanUmlautsReplacement.put("Ü", "Ue");
+        germanUmlautsReplacement.put("ü", "ue");
+        germanUmlautsReplacement.put("ß", "ss");
+    }
+
+    /**
+     * This method exchanges all german umlauts in a given german text to an appropriate english
+     * spelling.
+     *
+     * @param germanText The german text, where the umlauts are changed to the english spelling.
+     * @return The german text without any german umlauts
+     */
+    public String replaceGermanUmlauts(String germanText) {
+        for (String character : germanUmlautsReplacement.keySet()) {
+            germanText = germanText.replaceAll(character, germanUmlautsReplacement.get(character));
+        }
+        return germanText;
     }
 }

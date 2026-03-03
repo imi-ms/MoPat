@@ -14,9 +14,9 @@ import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.enumeration.PermissionType;
-import de.imi.mopat.helper.controller.UserService;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.ForgotPasswordToken;
@@ -64,36 +64,52 @@ public class UserController {
 
     public static final String LAST_USERNAME_KEY = "LAST_USERNAME";
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     private AclEntryDao aclEntryDao;
+
     @Autowired
     private AclClassDao aclClassDao;
+
     @Autowired
     private AclObjectIdentityDao aclObjectIdentityDao;
+
     @Autowired
     private ClinicDao clinicDao;
+
     @Autowired
     private InvitationDao invitationDao;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private ForgotPasswordTokenDao forgotPasswordDao;
+
     @Autowired
     private UserValidator userValidator;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ApplicationMailer applicationMailer;
+
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private MoPatActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider;
+
     @Autowired
     private PinAuthorizationService pinAuthorizationService;
+
     @Autowired
     private PinAuthorizationDao pinAuthorizationDao;
+
     @Autowired
     private AuthService authService;
 
@@ -120,10 +136,12 @@ public class UserController {
      */
     @ModelAttribute("currentUser")
     public User getCurrentUser() {
-        if (!SecurityContextHolder.getContext().getAuthentication().getPrincipal()
-            .equals("anonymousUser")) {
-            User contextUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
+        if (!SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal()
+                .equals("anonymousUser")) {
+            User contextUser = (User)
+                    SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             User currentUser = userDao.getElementById(contextUser.getId());
             return currentUser;
         } else {
@@ -140,9 +158,7 @@ public class UserController {
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showUsers(
-        @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError,
-        final Model model
-    ) {
+            @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError, final Model model) {
         model.addAttribute("allUsers", userService.sortUsersByNameAsc(userDao.getAllElements()));
         return "user/list";
     }
@@ -156,11 +172,14 @@ public class UserController {
      * @param model      The model, which holds the information for the view.
      * @return The <i>/user/edit</i> website.
      */
-    @RequestMapping(value = {"/user/edit", "/mobile/user/edit"}, method = RequestMethod.GET)
+    @RequestMapping(
+            value = {"/user/edit", "/mobile/user/edit"},
+            method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String edit(
-        @RequestParam(value = "returnPage", required = false) final String returnPage,
-        final HttpServletRequest request, final Model model) {
+            @RequestParam(value = "returnPage", required = false) final String returnPage,
+            final HttpServletRequest request,
+            final Model model) {
         model.addAttribute("returnPage", returnPage);
         model.addAttribute("hideProfile", Boolean.TRUE);
         // Cut of the extension and the first slash from the current url to
@@ -184,16 +203,19 @@ public class UserController {
      * @param model              The model, which holds the information for the view.
      * @return The <i>/user/edit</i> website.
      */
-    @RequestMapping(value = {"/user/edit", "/mobile/user/edit"}, method = RequestMethod.POST)
+    @RequestMapping(
+            value = {"/user/edit", "/mobile/user/edit"},
+            method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_USER')")
     public String edit(
-        @RequestParam(value = "returnPage", required = false) final String returnPage,
-        @RequestParam(value = "oldPassword", required = false) final String oldPassword,
-        @RequestParam(value = "newPassword", required = false) final String newPassword,
-        @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
-        @RequestParam(value = "action", required = false) final String action,
-        @ModelAttribute("currentUser") final User user, final BindingResult result,
-        final Model model) {
+            @RequestParam(value = "returnPage", required = false) final String returnPage,
+            @RequestParam(value = "oldPassword", required = false) final String oldPassword,
+            @RequestParam(value = "newPassword", required = false) final String newPassword,
+            @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
+            @RequestParam(value = "action", required = false) final String action,
+            @ModelAttribute("currentUser") final User user,
+            final BindingResult result,
+            final Model model) {
 
         if (action == null || action.equalsIgnoreCase("save")) {
             // Set given password for the current user
@@ -204,12 +226,12 @@ public class UserController {
             }
             userValidator.validate(user, result);
             if (!result.hasErrors()) {
-                model.addAttribute("success",
-                    messageSource.getMessage("user.success.changed", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "success",
+                        messageSource.getMessage(
+                                "user.success.changed", new Object[] {}, LocaleContextHolder.getLocale()));
                 // Set given old password
-                if (user.getOldPassword() != null && !user.getOldPassword().isEmpty()
-                    && !user.isLdap()) {
+                if (user.getOldPassword() != null && !user.getOldPassword().isEmpty() && !user.isLdap()) {
                     user.setPassword(newPassword);
                     userDao.setPassword(user);
                 }
@@ -251,54 +273,60 @@ public class UserController {
      */
     @RequestMapping(value = "/mobile/user/password", method = RequestMethod.POST)
     public String forgotPassword(
-        @RequestParam(value = "username", required = false) final String username,
-        final HttpServletRequest request, final Model model) {
+            @RequestParam(value = "username", required = false) final String username,
+            final HttpServletRequest request,
+            final Model model) {
         User user = userDao.loadUserByUsername(username);
         if (user != null && user.getEmail() != null && !user.getEmail().isEmpty()) {
             String baseUrl = (String) request.getRequestURL()
-                .subSequence(0, request.getRequestURL().indexOf("/mobile/user/password"));
-            String subject = messageSource.getMessage("mail.forgotPassword.subject", new Object[]{},
-                LocaleContextHolder.getLocale());
+                    .subSequence(0, request.getRequestURL().indexOf("/mobile/user/password"));
+            String subject = messageSource.getMessage(
+                    "mail.forgotPassword.subject", new Object[] {}, LocaleContextHolder.getLocale());
             String footerEmail = applicationMailer.getMailFooterEMail();
             String footerPhone = applicationMailer.getMailFooterPhone();
-            String footer = messageSource.getMessage("mail.forgotPassword.footer",
-                new Object[]{footerEmail, footerPhone}, LocaleContextHolder.getLocale());
+            String footer = messageSource.getMessage(
+                    "mail.forgotPassword.footer",
+                    new Object[] {footerEmail, footerPhone},
+                    LocaleContextHolder.getLocale());
             String content;
             if (user.isLdap()) {
                 String domain = activeDirectoryLdapAuthenticationProvider.getActiveDirectoryLDAPDomain();
-                String domainSupportPhone = activeDirectoryLdapAuthenticationProvider.getActiveDirectoryLDAPSupportPhone();
-                content = messageSource.getMessage("mail.forgotPasswordLdap.content",
-                    new Object[]{baseUrl, domain, domainSupportPhone},
-                    LocaleContextHolder.getLocale());
+                String domainSupportPhone =
+                        activeDirectoryLdapAuthenticationProvider.getActiveDirectoryLDAPSupportPhone();
+                content = messageSource.getMessage(
+                        "mail.forgotPasswordLdap.content",
+                        new Object[] {baseUrl, domain, domainSupportPhone},
+                        LocaleContextHolder.getLocale());
             } else {
-                ForgotPasswordToken oldForgotPasswordToken = forgotPasswordDao.getElementByUser(
-                    user);
+                ForgotPasswordToken oldForgotPasswordToken = forgotPasswordDao.getElementByUser(user);
                 if (oldForgotPasswordToken != null) {
                     forgotPasswordDao.remove(oldForgotPasswordToken);
                 }
                 ForgotPasswordToken forgotPasswordToken = new ForgotPasswordToken(user);
                 forgotPasswordDao.merge(forgotPasswordToken);
-                DateFormat dateformat = DateFormat.getDateInstance(DateFormat.FULL,
-                    LocaleContextHolder.getLocale());
-                content = messageSource.getMessage("mail.forgotPassword.content",
-                    new Object[]{baseUrl, baseUrl + "/mobile/user" + "/passwordreset?token="
-                        + forgotPasswordToken.getUuid(),
-                        dateformat.format(forgotPasswordToken.getExpirationDate())},
-                    LocaleContextHolder.getLocale());
+                DateFormat dateformat = DateFormat.getDateInstance(DateFormat.FULL, LocaleContextHolder.getLocale());
+                content = messageSource.getMessage(
+                        "mail.forgotPassword.content",
+                        new Object[] {
+                            baseUrl,
+                            baseUrl + "/mobile/user" + "/passwordreset?token=" + forgotPasswordToken.getUuid(),
+                            dateformat.format(forgotPasswordToken.getExpirationDate())
+                        },
+                        LocaleContextHolder.getLocale());
             }
             Set<String> recipientsBCC = null;
             try {
-                applicationMailer.sendMail(user.getEmail(), recipientsBCC, subject,
-                    content + footer, null);
+                applicationMailer.sendMail(user.getEmail(), recipientsBCC, subject, content + footer, null);
             } catch (MailException e) {
                 LOGGER.debug("It wasn't possible to send email: " + e.getMessage());
             } catch (Exception ex) {
                 LOGGER.debug("It wasn't possible to send email: " + ex.getMessage());
             }
         } else {
-            model.addAttribute("error",
-                messageSource.getMessage("user.error.usernameNotInUse", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            model.addAttribute(
+                    "error",
+                    messageSource.getMessage(
+                            "user.error.usernameNotInUse", new Object[] {}, LocaleContextHolder.getLocale()));
             return "mobile/user/password";
         }
         request.getSession().setAttribute(LAST_USERNAME_KEY, username);
@@ -317,8 +345,8 @@ public class UserController {
      * @return The <i>/mobile/user/passwordreset</i> website.
      */
     @RequestMapping(value = "/mobile/user/passwordreset", method = RequestMethod.GET)
-    public String passwordReset(@RequestParam(value = "token", required = false) final String token,
-        final Model model) {
+    public String passwordReset(
+            @RequestParam(value = "token", required = false) final String token, final Model model) {
         ForgotPasswordToken currentForgotPasswordToken = forgotPasswordDao.getElementByUUID(token);
         if (currentForgotPasswordToken == null || !currentForgotPasswordToken.isActive()) {
             return "redirect:/error/accessdenied";
@@ -343,10 +371,12 @@ public class UserController {
      * @return The <i>/user/invite</i> website.
      */
     @RequestMapping(value = "/mobile/user/passwordreset", method = RequestMethod.POST)
-    public String register(@RequestParam(value = "token", required = false) final String token,
-        @RequestParam(value = "newPassword", required = false) final String newPassword,
-        @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
-        final HttpServletRequest request, final Model model) {
+    public String register(
+            @RequestParam(value = "token", required = false) final String token,
+            @RequestParam(value = "newPassword", required = false) final String newPassword,
+            @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
+            final HttpServletRequest request,
+            final Model model) {
         ForgotPasswordToken currentForgotPasswordToken = forgotPasswordDao.getElementByUUID(token);
         if (currentForgotPasswordToken == null || !currentForgotPasswordToken.isActive()) {
             return "redirect:/error/accessdenied";
@@ -354,15 +384,19 @@ public class UserController {
             User user = currentForgotPasswordToken.getUser();
             boolean error = false;
             if (newPassword.length() < Constants.PASSWORD_MINIMUM_SIZE
-                || newPassword.length() > Constants.PASSWORD_MAXIMUM_SIZE) {
-                model.addAttribute("error", messageSource.getMessage("user.error.passwordSize",
-                    new Object[]{Constants.PASSWORD_MINIMUM_SIZE, Constants.PASSWORD_MAXIMUM_SIZE},
-                    LocaleContextHolder.getLocale()));
+                    || newPassword.length() > Constants.PASSWORD_MAXIMUM_SIZE) {
+                model.addAttribute(
+                        "error",
+                        messageSource.getMessage(
+                                "user.error.passwordSize",
+                                new Object[] {Constants.PASSWORD_MINIMUM_SIZE, Constants.PASSWORD_MAXIMUM_SIZE},
+                                LocaleContextHolder.getLocale()));
                 error = true;
             } else if (!newPassword.equals(newPasswordApprove)) {
-                model.addAttribute("error",
-                    messageSource.getMessage("user.error.passwordsNotMatching", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "error",
+                        messageSource.getMessage(
+                                "user.error.passwordsNotMatching", new Object[] {}, LocaleContextHolder.getLocale()));
                 error = true;
             }
             if (!error) {
@@ -371,9 +405,10 @@ public class UserController {
                 userDao.merge(user);
                 forgotPasswordDao.remove(currentForgotPasswordToken);
                 request.getSession().setAttribute(LAST_USERNAME_KEY, user.getUsername());
-                model.addAttribute("message",
-                    messageSource.getMessage("user.success.changed", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "message",
+                        messageSource.getMessage(
+                                "user.success.changed", new Object[] {}, LocaleContextHolder.getLocale()));
                 return "mobile/user/login";
             } else {
                 model.addAttribute("user", user);
@@ -393,8 +428,7 @@ public class UserController {
      * @return The <i>/mobile/user/register</i> website.
      */
     @RequestMapping(value = "/mobile/user/register", method = RequestMethod.GET)
-    public String register(@RequestParam(value = "hash", required = false) final String hash,
-        final Model model) {
+    public String register(@RequestParam(value = "hash", required = false) final String hash, final Model model) {
         Invitation currentInvitation = invitationDao.getElementByUUID(hash);
         if (currentInvitation == null || !currentInvitation.isActive()) {
             return "redirect:/error/accessdenied";
@@ -405,8 +439,8 @@ public class UserController {
             user.setEmail(currentInvitation.getEmail());
             model.addAttribute("hash", hash);
             model.addAttribute("user", user);
-            Collection<Clinic> clinics = clinicDao.getClinicsFromAclObjectIdentitys(
-                currentInvitation.getAssignedClinics());
+            Collection<Clinic> clinics =
+                    clinicDao.getClinicsFromAclObjectIdentitys(currentInvitation.getAssignedClinics());
             model.addAttribute("clinics", clinics);
         }
         Boolean activateLdap = activeDirectoryLdapAuthenticationProvider.isActiveDirectoryLDAPAuthenticationActivated();
@@ -433,11 +467,14 @@ public class UserController {
      * @return The <i>/user/invite</i> website.
      */
     @RequestMapping(value = "/mobile/user/register", method = RequestMethod.POST)
-    public String register(@RequestParam(value = "hash", required = false) final String hash,
-        @RequestParam(value = "isLdap", required = false) Boolean isLdap,
-        @RequestParam(value = "newPassword", required = false) final String newPassword,
-        @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
-        @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
+    public String register(
+            @RequestParam(value = "hash", required = false) final String hash,
+            @RequestParam(value = "isLdap", required = false) Boolean isLdap,
+            @RequestParam(value = "newPassword", required = false) final String newPassword,
+            @RequestParam(value = "newPasswordApprove", required = false) final String newPasswordApprove,
+            @ModelAttribute("user") final User user,
+            final BindingResult result,
+            final Model model) {
         Invitation currentInvitation = invitationDao.getElementByUUID(hash);
         if (currentInvitation == null || !currentInvitation.isActive()) {
             return "redirect:/error/accessdenied";
@@ -445,8 +482,7 @@ public class UserController {
             if (isLdap == null) {
                 isLdap = false;
             }
-            user.addAuthority(
-                new Authority(user, UserRole.fromString(currentInvitation.getRole())));
+            user.addAuthority(new Authority(user, UserRole.fromString(currentInvitation.getRole())));
             user.setPrincipal(true);
             if (!isLdap) {
                 user.setPassword(newPassword);
@@ -468,20 +504,20 @@ public class UserController {
                 // get newly persisted user
                 User persistedUser = userDao.loadUserByUsername(user.getUsername());
                 // grant clinic rights
-                Collection<Clinic> assignedClinics = clinicDao.getClinicsFromAclObjectIdentitys(
-                    currentInvitation.getAssignedClinics());
+                Collection<Clinic> assignedClinics =
+                        clinicDao.getClinicsFromAclObjectIdentitys(currentInvitation.getAssignedClinics());
                 for (Clinic clinic : assignedClinics) {
-                    AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic,
-                        persistedUser, PermissionType.READ);
+                    AclEntry clinicACLEntry =
+                            aclEntryDao.getEntryForObjectUserAndRight(clinic, persistedUser, PermissionType.READ);
                     if (clinicACLEntry == null) {
-                        clinicDao.grantRight(clinic, persistedUser, PermissionType.READ,
-                            Boolean.TRUE);
+                        clinicDao.grantRight(clinic, persistedUser, PermissionType.READ, Boolean.TRUE);
                     }
                 }
                 invitationDao.remove(currentInvitation);
-                model.addAttribute("message",
-                    messageSource.getMessage("user.success.changed", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "message",
+                        messageSource.getMessage(
+                                "user.success.changed", new Object[] {}, LocaleContextHolder.getLocale()));
                 return "mobile/user/login";
             }
         }
@@ -492,8 +528,8 @@ public class UserController {
         model.addAttribute("domain", domain);
         model.addAttribute("hash", hash);
         model.addAttribute("user", user);
-        Collection<Clinic> assignedClinics = clinicDao.getClinicsFromAclObjectIdentitys(
-            currentInvitation.getAssignedClinics());
+        Collection<Clinic> assignedClinics =
+                clinicDao.getClinicsFromAclObjectIdentitys(currentInvitation.getAssignedClinics());
         model.addAttribute("clinics", assignedClinics);
         return "mobile/user/register";
     }
@@ -508,9 +544,7 @@ public class UserController {
     @RequestMapping(value = "/user/toggleenabled")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String removeUser(
-        @RequestParam(value = "id", required = true) final Long id,
-        RedirectAttributes redirectAttributes
-    ) {
+            @RequestParam(value = "id", required = true) final Long id, RedirectAttributes redirectAttributes) {
         User currentUser = getCurrentUser();
         User userToDelete = userDao.getElementById(id);
 
@@ -539,8 +573,10 @@ public class UserController {
      * @return The website, which was requested.
      */
     @RequestMapping(value = "/mobile/user/login", method = RequestMethod.GET)
-    public String login(@RequestParam(value = "message", required = false) final String message,
-        final Model model, final HttpSession httpSession) {
+    public String login(
+            @RequestParam(value = "message", required = false) final String message,
+            final Model model,
+            final HttpSession httpSession) {
         // Logout or redirect to Pin Auth first!
         if (pinAuthorizationService.isPinLoginApplicable()) {
             return "mobile/user/pinlogin";
@@ -552,19 +588,24 @@ public class UserController {
             switch (message) {
                 case "InsufficientAuthenticationException":
                 case "BadCredentialsException":
-                    model.addAttribute("message",
-                        messageSource.getMessage("user.error.badCredentials", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    model.addAttribute(
+                            "message",
+                            messageSource.getMessage(
+                                    "user.error.badCredentials", new Object[] {}, LocaleContextHolder.getLocale()));
                     break;
                 case "forgotPasswordSuccess":
-                    model.addAttribute("message",
-                        messageSource.getMessage("user.success" + ".forgotPassword", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    model.addAttribute(
+                            "message",
+                            messageSource.getMessage(
+                                    "user.success" + ".forgotPassword",
+                                    new Object[] {},
+                                    LocaleContextHolder.getLocale()));
                     break;
                 case "DisabledException":
-                    model.addAttribute("message",
-                        messageSource.getMessage("user.error.userDisabled", new Object[]{},
-                            LocaleContextHolder.getLocale()));
+                    model.addAttribute(
+                            "message",
+                            messageSource.getMessage(
+                                    "user.error.userDisabled", new Object[] {}, LocaleContextHolder.getLocale()));
                     break;
                 default:
                     break;
@@ -573,7 +614,7 @@ public class UserController {
             // If the message is null, forget old username
             httpSession.removeAttribute(LAST_USERNAME_KEY);
         }
-        //Get the default language of the application from the configuration
+        // Get the default language of the application from the configuration
         String defaultLanguage = configurationDao.getDefaultLanguage();
         model.addAttribute("defaultLanguage", defaultLanguage);
         model.addAttribute("encounter", null);
@@ -602,37 +643,41 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @RequestMapping(value = "mobile/user/pinlogin", method = RequestMethod.POST)
-    public String pinLogin(@RequestParam("pin") String pin, HttpServletRequest httpServletRequest,
-        final Model model) {
-        //Get the current user
+    public String pinLogin(@RequestParam("pin") String pin, HttpServletRequest httpServletRequest, final Model model) {
+        // Get the current user
         User user;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()
-            && !(authentication.getPrincipal() instanceof String)) {
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String)) {
             user = userDao.loadUserByUsername(authentication.getName());
         } else {
-            //If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal login
+            // If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal
+            // login
             SecurityContextHolder.getContext().setAuthentication(null);
             return "mobile/user/login";
         }
 
         if (userDao.isCorrectPin(user, pin)) {
-            //If pin is entered correctly, the filter has to be stopped by removing all entries from db
+            // If pin is entered correctly, the filter has to be stopped by removing all entries from db
             pinAuthorizationService.removePinAuthForUser(user);
         } else {
             pinAuthorizationService.decreaseRemainingTriesForUser(user);
-            //Refetch the entry
+            // Refetch the entry
             PinAuthorization pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
-                .toList().get(0);
+                    .toList()
+                    .get(0);
 
-            model.addAttribute("message",
-                messageSource.getMessage("user.error.badPin", new Object[]{
-                    String.valueOf(pinAuthorization.getRemainingTries())
-                }, LocaleContextHolder.getLocale()));
+            model.addAttribute(
+                    "message",
+                    messageSource.getMessage(
+                            "user.error.badPin",
+                            new Object[] {String.valueOf(pinAuthorization.getRemainingTries())},
+                            LocaleContextHolder.getLocale()));
             return "mobile/user/pinlogin";
         }
 
-        //Handle Role based redirect manually here
+        // Handle Role based redirect manually here
         if (httpServletRequest.isUserInRole("ROLE_ADMIN")) {
             return "redirect:/admin/index";
         } else {
@@ -648,14 +693,16 @@ public class UserController {
      */
     @RequestMapping(value = "/mobile/user/pinlogout", method = RequestMethod.GET)
     public String deactivatePinLoginAndLogout() {
-        //Get the current user
+        // Get the current user
         User user;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()
-            && !(authentication.getPrincipal() instanceof String)) {
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String)) {
             user = userDao.loadUserByUsername(authentication.getName());
         } else {
-            //If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal login
+            // If this is ever the case, something went wrong with Spring. Then clear the session and redirect to normal
+            // login
             SecurityContextHolder.getContext().setAuthentication(null);
             return "mobile/user/login";
         }
@@ -663,7 +710,6 @@ public class UserController {
         pinAuthorizationService.removePinAuthForUser(user);
         SecurityContextHolder.getContext().setAuthentication(null);
         return "mobile/user/login";
-
     }
 
     /**
@@ -685,8 +731,7 @@ public class UserController {
 
         User user = (User) model.asMap().get("user");
         Collection<Clinic> assignedClinics = clinicDao.getElementsById(
-                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class,
-                        user, PermissionType.READ));
+                aclEntryDao.getObjectIdsForClassUserAndRight(Clinic.class, user, PermissionType.READ));
         Collection<Clinic> availableClinics = clinicDao.getAllElements();
         availableClinics.removeAll(assignedClinics);
         model.addAttribute("availableClinics", availableClinics);
@@ -715,7 +760,9 @@ public class UserController {
             @RequestParam(required = false, value = "clinicIDs") final List<Long> clinicIDs,
             @RequestParam(value = "action", required = true) final String action,
             @RequestParam(value = "role") final UserRole role,
-            @ModelAttribute("user") final User user, final BindingResult result, final Model model) {
+            @ModelAttribute("user") final User user,
+            final BindingResult result,
+            final Model model) {
         if (action.equalsIgnoreCase("save")) {
             userService.updateUserClinicRights(user, clinicIDs);
             userService.replaceUserRoles(user, role);
@@ -737,10 +784,11 @@ public class UserController {
     @RequestMapping(value = "/user/mailtoall", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String getMailToAll(
-        @RequestParam(value = "subject", required = false) final String subject,
-        @RequestParam(value = "content", required = false) final String content,
-        @RequestParam(value = "language", required = false) final Locale language,
-        final Model model, final HttpServletRequest request) {
+            @RequestParam(value = "subject", required = false) final String subject,
+            @RequestParam(value = "content", required = false) final String content,
+            @RequestParam(value = "language", required = false) final Locale language,
+            final Model model,
+            final HttpServletRequest request) {
 
         if (subject != null) {
             model.addAttribute("subject", subject);
@@ -770,26 +818,26 @@ public class UserController {
     @RequestMapping(value = "/user/mailtoall", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String postMailToAll(
-        @RequestParam(value = "subject", required = true) final String subject,
-        @RequestParam(value = "content", required = true) final String content,
-        @RequestParam(value = "language", required = true) final Locale language,
-        @RequestParam final String action, final Model model) {
+            @RequestParam(value = "subject", required = true) final String subject,
+            @RequestParam(value = "content", required = true) final String content,
+            @RequestParam(value = "language", required = true) final Locale language,
+            @RequestParam final String action,
+            final Model model) {
 
         LOGGER.debug(
-            "Enter postMailToAll(String, String) with 1st parameter: {}, " + "2nd parameter: {}",
-            subject, content);
+                "Enter postMailToAll(String, String) with 1st parameter: {}, " + "2nd parameter: {}", subject, content);
 
         String result = null;
         List<String> errors = new ArrayList<>();
 
         if (subject == null || subject.trim().isEmpty()) {
-            errors.add(messageSource.getMessage("user.error.mailToAll.subjectEmpty", new Object[]{},
-                LocaleContextHolder.getLocale()));
+            errors.add(messageSource.getMessage(
+                    "user.error.mailToAll.subjectEmpty", new Object[] {}, LocaleContextHolder.getLocale()));
         }
 
         if (content == null || content.trim().isEmpty()) {
-            errors.add(messageSource.getMessage("user.error.mailToAll.contentEmpty", new Object[]{},
-                LocaleContextHolder.getLocale()));
+            errors.add(messageSource.getMessage(
+                    "user.error.mailToAll.contentEmpty", new Object[] {}, LocaleContextHolder.getLocale()));
         }
 
         model.addAttribute("subject", subject);
@@ -797,8 +845,8 @@ public class UserController {
         model.addAttribute("language", language);
         String footerEmail = applicationMailer.getMailFooterEMail();
         String footerPhone = applicationMailer.getMailFooterPhone();
-        String footer = messageSource.getMessage("mail.invitation.footer",
-            new Object[]{footerEmail, footerPhone}, language);
+        String footer =
+                messageSource.getMessage("mail.invitation.footer", new Object[] {footerEmail, footerPhone}, language);
 
         if (action.equalsIgnoreCase("preview")) {
             model.addAttribute("errors", errors);
@@ -814,17 +862,15 @@ public class UserController {
         } else {
             Set<String> allEMailAddressesDistinct = userDao.getAllEnabledEMailAddressesDistinct();
             if (allEMailAddressesDistinct == null) {
-                errors.add(
-                    messageSource.getMessage("user.error.mailToAll.errorReceiving", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                errors.add(messageSource.getMessage(
+                        "user.error.mailToAll.errorReceiving", new Object[] {}, LocaleContextHolder.getLocale()));
                 model.addAttribute("errors", errors);
                 result = "user/mailtoall";
             } else {
                 String emailFrom = applicationMailer.getMailFrom();
                 allEMailAddressesDistinct.add(emailFrom);
                 try {
-                    applicationMailer.sendMail(null, allEMailAddressesDistinct, subject,
-                        content + footer, null);
+                    applicationMailer.sendMail(null, allEMailAddressesDistinct, subject, content + footer, null);
                 } catch (MailException e) {
                     LOGGER.debug("It wasn't possible to send email: " + e.getMessage());
                 }

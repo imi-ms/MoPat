@@ -23,8 +23,7 @@ public interface UserDao extends UserManagementDao<User> {
      * @throws UsernameNotFoundException if a User cannot be found by its username.
      * @throws DataAccessException       if there is a problem with the access to data
      */
-    User loadUserByUsername(String username)
-        throws UsernameNotFoundException, DataAccessException;
+    User loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException;
 
     /**
      * Set the password for an user.

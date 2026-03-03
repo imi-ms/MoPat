@@ -16,24 +16,6 @@ public class MultiPartFileUploadBean {
     private List<MultipartFile> files;
 
     /**
-     * Add all files from a request to a list of multipart file objects.
-     *
-     * @param files The list of multi part file objects from the request.
-     */
-    public void setFiles(final List<MultipartFile> files) {
-        this.files = files;
-    }
-
-    /**
-     * Returns the current list of multipart file objects from the request.
-     *
-     * @return The current list of multipart file objects from the request.
-     */
-    public List<MultipartFile> getFiles() {
-        return files;
-    }
-
-    /**
      * Save a file with given file name and context path.
      *
      * @param fileName    The name of the file.
@@ -41,8 +23,7 @@ public class MultiPartFileUploadBean {
      * @param contextPath The context path to save the image to the filesystem.
      * @return Return the name of the saved file.
      */
-    public static String saveFile(final String fileName, final MultipartFile file,
-        final String contextPath) {
+    public static String saveFile(final String fileName, final MultipartFile file, final String contextPath) {
         if (file != null && !file.isEmpty()) {
             // Generate new file object
             File uploadFile = new File(contextPath + "/files/", fileName);
@@ -56,5 +37,23 @@ public class MultiPartFileUploadBean {
             }
         }
         return fileName;
+    }
+
+    /**
+     * Returns the current list of multipart file objects from the request.
+     *
+     * @return The current list of multipart file objects from the request.
+     */
+    public List<MultipartFile> getFiles() {
+        return files;
+    }
+
+    /**
+     * Add all files from a request to a list of multipart file objects.
+     *
+     * @param files The list of multi part file objects from the request.
+     */
+    public void setFiles(final List<MultipartFile> files) {
+        this.files = files;
     }
 }

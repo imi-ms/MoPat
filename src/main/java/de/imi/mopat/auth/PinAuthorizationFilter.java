@@ -35,34 +35,32 @@ public class PinAuthorizationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         // Skip filter for login page and other specific conditions
-        return path.startsWith("/error") ||
-            path.startsWith("/public") ||
-            path.startsWith("/css") ||
-            path.startsWith("/js") ||
-            path.startsWith("/images") ||
-            path.startsWith("/mobile/user/pinlogout") ||
-            path.startsWith("/mobile/user/pinlogin") ||
-            path.startsWith("/mobile/survey/scores");
+        return path.startsWith("/error")
+                || path.startsWith("/public")
+                || path.startsWith("/css")
+                || path.startsWith("/js")
+                || path.startsWith("/images")
+                || path.startsWith("/mobile/user/pinlogout")
+                || path.startsWith("/mobile/user/pinlogin")
+                || path.startsWith("/mobile/survey/scores");
     }
 
     @Override
-    protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         if (configurationDao.isGlobalPinAuthEnabled()) {
             // Retrieve the security context from the SecurityContextHolder
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication != null && authentication.isAuthenticated()
-                && !(authentication.getPrincipal() instanceof String)) {
+            if (authentication != null
+                    && authentication.isAuthenticated()
+                    && !(authentication.getPrincipal() instanceof String)) {
                 // User is authenticated
-                //Check if user has Pin Auth activated, then interject this request and redirect to Pin Auth
+                // Check if user has Pin Auth activated, then interject this request and redirect to Pin Auth
                 User user = userDao.loadUserByUsername(authentication.getName());
                 if (user.getUsePin()) {
                     if (pinAuthorizationDao.isPinAuthActivatedForUser(user)) {
-                        //Handle Redirect
+                        // Handle Redirect
                         redirectToPinView(response);
                     }
                 }
@@ -71,7 +69,6 @@ public class PinAuthorizationFilter extends OncePerRequestFilter {
         // User is not authenticated, then do nothing
         // If no redirect interjected, the request can be processed as it normally would
         filterChain.doFilter(request, response);
-
     }
 
     private void redirectToPinView(HttpServletResponse response) throws IOException {

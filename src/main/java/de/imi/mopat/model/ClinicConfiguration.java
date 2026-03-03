@@ -1,18 +1,10 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.dto.ClinicConfigurationDTO;
-import de.imi.mopat.model.enumeration.ConfigurationType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.ConfigurationDTO;
-
-import java.util.ArrayList;
-import java.util.List;
+import de.imi.mopat.model.enumeration.ConfigurationType;
 import jakarta.persistence.CascadeType;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -29,6 +21,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 @Entity
@@ -38,14 +34,14 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
 @DiscriminatorValue("GENERAL")
 public class ClinicConfiguration implements Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
 
     @ManyToOne
     @JoinColumn(name = "parent")
@@ -82,17 +78,24 @@ public class ClinicConfiguration implements Serializable {
     @Column(name = "mapped_configuration_group", nullable = true)
     private String mappedConfigurationGroup;
 
-    @OneToMany(mappedBy = "parent", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "parent",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     @CascadeOnDelete
     private List<ClinicConfiguration> children = null;
 
-    public ClinicConfiguration() {
-    }
+    public ClinicConfiguration() {}
 
-    public ClinicConfiguration(final String entityClass, final String attribute,
-        final ConfigurationType configurationType, final String labelMessageCode,
-        final String descriptionMessageCode, final String testMethod, final String updateMethod,
-        final Integer position) {
+    public ClinicConfiguration(
+            final String entityClass,
+            final String attribute,
+            final ConfigurationType configurationType,
+            final String labelMessageCode,
+            final String descriptionMessageCode,
+            final String testMethod,
+            final String updateMethod,
+            final Integer position) {
         this.entityClass = entityClass;
         this.attribute = attribute;
         this.configurationType = configurationType;
@@ -135,10 +138,6 @@ public class ClinicConfiguration implements Serializable {
         return entityClass;
     }
 
-    public void setAttribute(String attribute) {
-        this.attribute= attribute;
-    }
-
     /**
      * Returns the attribute of the current configuration object.
      *
@@ -147,6 +146,10 @@ public class ClinicConfiguration implements Serializable {
      */
     public String getAttribute() {
         return attribute;
+    }
+
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
     }
 
     /**
@@ -226,7 +229,6 @@ public class ClinicConfiguration implements Serializable {
     public ConfigurationType getConfigurationType() {
         return configurationType;
     }
-
 
     public void setConfigurationType(ConfigurationType configurationType) {
         this.configurationType = configurationType;
@@ -315,6 +317,4 @@ public class ClinicConfiguration implements Serializable {
     public void setMappedConfigurationGroup(String mappedConfigurationGroup) {
         this.mappedConfigurationGroup = mappedConfigurationGroup;
     }
-
-
 }

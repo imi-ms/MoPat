@@ -6,25 +6,21 @@ import de.imi.mopat.model.enumeration.FhirVersion;
 
 public abstract class FhirHelper {
 
-    public static void addDefaultError(ImportQuestionnaireValidation result,
-        SingleValidationMessage message) {
+    public static void addDefaultError(ImportQuestionnaireValidation result, SingleValidationMessage message) {
         result.reject(
-            "import.fhir.validation.error.detailed",
-            new Object[]{
-                message.getSeverity().getCode(),
-                message.getLocationLine(),
-                message.getLocationString(),
-                message.getMessage()
-            },
-            String.format(
-                "An error occurred during validation: Severity: %s, Line: %s, Location: %s, Message: %s",
-                message.getSeverity().getCode(),
-                message.getLocationLine(),
-                message.getLocationString(),
-                message.getMessage()
-            )
-
-        );
+                "import.fhir.validation.error.detailed",
+                new Object[] {
+                    message.getSeverity().getCode(),
+                    message.getLocationLine(),
+                    message.getLocationString(),
+                    message.getMessage()
+                },
+                String.format(
+                        "An error occurred during validation: Severity: %s, Line: %s, Location: %s, Message: %s",
+                        message.getSeverity().getCode(),
+                        message.getLocationLine(),
+                        message.getLocationString(),
+                        message.getMessage()));
     }
 
     class Builder {
@@ -36,7 +32,6 @@ public abstract class FhirHelper {
             return this;
         }
 
-
         public FhirHelper build() {
             switch (version) {
                 case DSTU3 -> {
@@ -46,13 +41,10 @@ public abstract class FhirHelper {
                     return new FhirR4bHelper();
                 }
                 case R5 -> {
-                    //TODO
+                    // TODO
                 }
             }
             return null;
         }
-
-
     }
-
 }

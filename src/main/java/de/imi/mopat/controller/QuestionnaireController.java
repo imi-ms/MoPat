@@ -88,54 +88,77 @@ import org.w3c.dom.NodeList;
 @Controller
 public class QuestionnaireController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        QuestionnaireController.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireController.class);
+
     @Autowired
     MoPatQuestionnaireImporter moPatQuestionnaireImporter;
+
     @Autowired
     MopatCompleteQuestionnaireImporter mopatCompleteQuestionnaireImporter;
+
     @Autowired
     private AnswerDao answerDao;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private ConditionDao conditionDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private QuestionDao questionDao;
+
     @Autowired
     private ScoreDao scoreDao;
+
     @Autowired
     private OperatorDao operatorDao;
+
     @Autowired
     private QuestionValidator questionValidator;
+
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private ConfigurationDao configurationDao;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ConfigurationGroupDao configurationGroupDao;
+
     @Autowired
     private StringUtilities stringUtilityHelper;
+
     @Autowired
     private LocaleHelper localeHelper;
+
     @Autowired
     private QuestionnaireService questionnaireService;
+
     @Autowired
     private AuthService authService;
+
     @Autowired
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
+
     @Autowired
     private FhirImporter fhirImporter;
+
     @Autowired
     private ODMProcessingBean odmReader;
+
     @Autowired
     private OdmQuestionnaireImporter odmQuestionnaireImporter;
+
     @Autowired
     private FhirVersionHelper fhirVersionHelper;
+
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
 
@@ -160,31 +183,28 @@ public class QuestionnaireController {
         // contains the question texts grouped by the country and languages.
         Map<Long, SortedMap<String, Map<String, String>>> localizedDisplayNamesForQuestionnaire = new HashMap<>();
 
-        Set<Long> questionnaireIds = questionnaireService.getUniqueQuestionnaireIds(
-            allQuestionnaires);
-        Set<Long> questionnaireTargetIds = conditionDao.findConditionTargetIds(
-            questionnaireIds.stream().toList(), "Questionnaire");
+        Set<Long> questionnaireIds = questionnaireService.getUniqueQuestionnaireIds(allQuestionnaires);
+        Set<Long> questionnaireTargetIds =
+                conditionDao.findConditionTargetIds(questionnaireIds.stream().toList(), "Questionnaire");
 
         for (Questionnaire questionnaire : allQuestionnaires) {
             // Get the question texts grouped by country from the current
             // question
-            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry = questionnaire.getLocalizedDisplayNamesGroupedByCountry();
+            SortedMap<String, Map<String, String>> groupedLocalizedDisplayNameByCountry =
+                    questionnaire.getLocalizedDisplayNamesGroupedByCountry();
             // And add the grouped-by-country-map to the map for all questions
             // of the current questionnaire
-            localizedDisplayNamesForQuestionnaire.put(questionnaire.getId(),
-                groupedLocalizedDisplayNameByCountry);
-            availableLanguagesInQuestionForQuestionnaires.put(questionnaire.getId(),
-                questionnaire.getAvailableQuestionLanguages());
+            localizedDisplayNamesForQuestionnaire.put(questionnaire.getId(), groupedLocalizedDisplayNameByCountry);
+            availableLanguagesInQuestionForQuestionnaires.put(
+                    questionnaire.getId(), questionnaire.getAvailableQuestionLanguages());
             // Check if the questionnaire has any conditions and set the boolean
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
-        model.addAttribute("allQuestionnaires",
-            questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
-        model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
-            availableLanguagesInQuestionForQuestionnaires);
-        model.addAttribute("localizedDisplayNamesForQuestionnaire",
-            localizedDisplayNamesForQuestionnaire);
+        model.addAttribute("allQuestionnaires", questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
+        model.addAttribute(
+                "availableLanguagesInQuestionForQuestionnaires", availableLanguagesInQuestionForQuestionnaires);
+        model.addAttribute("localizedDisplayNamesForQuestionnaire", localizedDisplayNamesForQuestionnaire);
         return "questionnaire/list";
     }
 
@@ -200,12 +220,12 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/fill", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String fillQuestionnaire(
-        @RequestParam(value = "id", required = false) final Long questionnaireId,
-        final HttpServletRequest request, final Model model) {
-        QuestionnaireDTO questionnaireDTO = questionnaireService.getQuestionnaireDTOById(
-            questionnaireId).orElse(new QuestionnaireDTO());
-        Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(
-            questionnaireDTO);
+            @RequestParam(value = "id", required = false) final Long questionnaireId,
+            final HttpServletRequest request,
+            final Model model) {
+        QuestionnaireDTO questionnaireDTO =
+                questionnaireService.getQuestionnaireDTOById(questionnaireId).orElse(new QuestionnaireDTO());
+        Pair<Boolean, String> canEditWithReason = questionnaireService.canEditQuestionnaireWithReason(questionnaireDTO);
 
         model.addAttribute("isEditableState", canEditWithReason.getLeft());
         model.addAttribute("infoMessage", canEditWithReason.getRight());
@@ -229,11 +249,14 @@ public class QuestionnaireController {
      */
     @RequestMapping(value = "/questionnaire/edit", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String edit(@RequestParam final String action,
-        @RequestParam(value = "logoFile", required = false) final MultipartFile logo,
-        @ModelAttribute("questionnaireDTO") @Valid final QuestionnaireDTO questionnaireDTO,
-        final BindingResult result, final Model model, final HttpServletRequest request,
-        RedirectAttributes redirectAttributes) {
+    public String edit(
+            @RequestParam final String action,
+            @RequestParam(value = "logoFile", required = false) final MultipartFile logo,
+            @ModelAttribute("questionnaireDTO") @Valid final QuestionnaireDTO questionnaireDTO,
+            final BindingResult result,
+            final Model model,
+            final HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/questionnaire/list";
         }
@@ -247,12 +270,11 @@ public class QuestionnaireController {
         }
 
         Long principalId = authService.getAuthenticatedUserId();
-        Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(
-            questionnaireDTO, logo, principalId);
+        Questionnaire questionnaire =
+                questionnaireService.saveOrUpdateQuestionnaire(questionnaireDTO, logo, principalId);
         Boolean hasQuestionnaireConditions = questionnaireService.hasQuestionnaireConditions(
-            questionnaireDao.getElementById(questionnaireDTO.getId()));
-        redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
-            hasQuestionnaireConditions);
+                questionnaireDao.getElementById(questionnaireDTO.getId()));
+        redirectAttributes.addFlashAttribute("hasQuestionnaireConditions", hasQuestionnaireConditions);
         if (action.equals("saveEditButton")) {
             return "redirect:/question/list?id=" + questionnaire.getId();
         } else {
@@ -272,12 +294,10 @@ public class QuestionnaireController {
         boolean isEditableState = true;
 
         if (questionnaireDTO.getId() != null) {
-            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(
-                questionnaireDTO.getId());
+            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
             if (existingQuestionnaire != null) {
                 questionnaireDTO.setLogo(existingQuestionnaire.getLogo());
-                isEditableState = questionnaireService.editingQuestionnaireAllowed(
-                    questionnaireDTO);
+                isEditableState = questionnaireService.editingQuestionnaireAllowed(questionnaireDTO);
             }
         }
         model.addAttribute("isEditableState", isEditableState);
@@ -296,19 +316,18 @@ public class QuestionnaireController {
      */
     @RequestMapping(value = "/questionnaire/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
-    public String removeQuestionnaire(@RequestParam(value = "id", required = true) final Long id,
-        final Model model) {
+    public String removeQuestionnaire(@RequestParam(value = "id", required = true) final Long id, final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
         if (questionnaire != null) {
             if (questionnaire.isDeletable()) {
                 // Delete the associated conditions
                 for (Condition condition : conditionDao.getConditionsByTarget(questionnaire)) {
                     if (condition instanceof SelectAnswerCondition
-                        || condition instanceof SliderAnswerThresholdCondition) {
+                            || condition instanceof SliderAnswerThresholdCondition) {
                         // Refresh the trigger so that multiple conditions of
                         // the same trigger will be deleted correctly
-                        ConditionTrigger conditionTrigger = answerDao.getElementById(
-                            condition.getTrigger().getId());
+                        ConditionTrigger conditionTrigger =
+                                answerDao.getElementById(condition.getTrigger().getId());
                         conditionTrigger.removeCondition(condition);
                         answerDao.merge((Answer) conditionTrigger);
                     }
@@ -316,7 +335,7 @@ public class QuestionnaireController {
                 }
 
                 for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
-                    //Remove ExportTemplates manually to prevent integrity clashes with scores
+                    // Remove ExportTemplates manually to prevent integrity clashes with scores
                     exportTemplateDao.remove(exportTemplate);
                 }
 
@@ -327,9 +346,10 @@ public class QuestionnaireController {
                     List<Score> dependingScores = scoreToDelete.getDependingScores();
                     // Sort depending scores by amount of their depending
                     // scores to prevent database errors
-                    Collections.sort(dependingScores,
-                        (Score o1, Score o2) -> o1.getDependingScores().size()
-                            - o2.getDependingScores().size());
+                    Collections.sort(
+                            dependingScores,
+                            (Score o1, Score o2) -> o1.getDependingScores().size()
+                                    - o2.getDependingScores().size());
                     // First add all depending scores
                     for (Score dependingScore : dependingScores) {
                         if (!scoresToDelete.contains(dependingScore)) {
@@ -354,27 +374,32 @@ public class QuestionnaireController {
                 for (BundleQuestionnaire bundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
                     Bundle bundle = bundleQuestionnaire.getBundle();
                     bundle.removeBundleQuestionnaire(bundleQuestionnaire);
-                    //Update the position of all following bundleQuestionnaires
+                    // Update the position of all following bundleQuestionnaires
                     for (BundleQuestionnaire bundleQuestionnaireToChangePosition : bundle.getBundleQuestionnaires()) {
-                        if (bundleQuestionnaireToChangePosition.getPosition()
-                            > bundleQuestionnaire.getPosition()) {
+                        if (bundleQuestionnaireToChangePosition.getPosition() > bundleQuestionnaire.getPosition()) {
                             bundleQuestionnaireToChangePosition.setPosition(
-                                bundleQuestionnaireToChangePosition.getPosition() - 1);
+                                    bundleQuestionnaireToChangePosition.getPosition() - 1);
                         }
                     }
                     bundleDao.merge(bundle);
                 }
                 questionnaire.removeAllBundleQuestionnaires();
                 questionnaireVersionGroupService.removeQuestionnaire(
-                    questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
+                        questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
                 questionnaireDao.remove(questionnaire);
-                model.addAttribute("messageSuccess",
-                    messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
-                        new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "messageSuccess",
+                        messageSource.getMessage(
+                                "questionnaire.error" + ".deleteQuestionnairePossible",
+                                new Object[] {questionnaire.getName()},
+                                LocaleContextHolder.getLocale()));
             } else {
-                model.addAttribute("messageFail", messageSource.getMessage(
-                    "questionnaire.error" + ".deleteQuestionnaireNotPossible",
-                    new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
+                model.addAttribute(
+                        "messageFail",
+                        messageSource.getMessage(
+                                "questionnaire.error" + ".deleteQuestionnaireNotPossible",
+                                new Object[] {questionnaire.getName()},
+                                LocaleContextHolder.getLocale()));
             }
         }
         return listQuestionnaires(model);
@@ -394,9 +419,9 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/download")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public ResponseEntity<ByteArrayResource> downloadQuestionnaire(
-        @RequestParam(value = "id", required = true) final Long id,
-        @RequestParam(value = "type", required = true) final List<String> types,
-        final Model model) {
+            @RequestParam(value = "id", required = true) final Long id,
+            @RequestParam(value = "type", required = true) final List<String> types,
+            final Model model) {
         Questionnaire questionnaire = questionnaireDao.getElementById(id);
 
         if (questionnaire == null) {
@@ -409,20 +434,26 @@ public class QuestionnaireController {
         List<byte[]> dataList = new ArrayList<>();
 
         for (String type : types) {
-            MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(
-                MetadataFormat.valueOf(type));
+            MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(MetadataFormat.valueOf(type));
 
             for (Question question : questionnaire.getQuestions()) {
                 question.setHasConditionsAsTarget(conditionDao.isConditionTarget(question));
             }
 
-            byte[] data = exporter.export(questionnaire, messageSource, configurationDao,
-                configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
+            byte[] data = exporter.export(
+                    questionnaire,
+                    messageSource,
+                    configurationDao,
+                    configurationGroupDao,
+                    exportTemplateDao,
+                    questionnaireDao,
+                    questionDao,
+                    scoreDao);
 
             // Create a windows-compliant path/filename
             Path path = Paths.get(
-                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
-                    + "_" + type + MetadataFormat.valueOf(type).getFileExtension());
+                    questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_") + "_" + type
+                            + MetadataFormat.valueOf(type).getFileExtension());
 
             paths.add(path);
             dataList.add(data);
@@ -433,13 +464,16 @@ public class QuestionnaireController {
             byte[] data = dataList.get(0);
             ByteArrayResource resource = new ByteArrayResource(data);
 
-            return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment;filename=" + path.getFileName().toString()).contentLength(data.length)
-                .body(resource);
+            return ResponseEntity.ok()
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment;filename=" + path.getFileName().toString())
+                    .contentLength(data.length)
+                    .body(resource);
         }
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(
-            baos)) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ZipOutputStream zos = new ZipOutputStream(baos)) {
 
             for (int i = 0; i < paths.size(); i++) {
                 Path path = paths.get(i);
@@ -455,12 +489,12 @@ public class QuestionnaireController {
             ByteArrayResource zipResource = new ByteArrayResource(baos.toByteArray());
 
             String zipName =
-                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
-                    + "_exports.zip";
+                    questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_") + "_exports.zip";
 
             return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipName)
-                .contentLength(baos.size()).body(zipResource);
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipName)
+                    .contentLength(baos.size())
+                    .body(zipResource);
 
         } catch (IOException e) {
             throw new RuntimeException("Error creating ZIP file", e);
@@ -507,11 +541,12 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/import/upload", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String postImportUpload(
-        @RequestParam(value = "file", required = true) final MultipartFile file,
-        @RequestParam(value = "url", required = false) final String url,
-        @RequestParam(value = "uploadType", required = true) final String uploadType,
-        @ModelAttribute("questionnaire") Questionnaire questionnaire,
-        final BindingResult result, final Model model) {
+            @RequestParam(value = "file", required = true) final MultipartFile file,
+            @RequestParam(value = "url", required = false) final String url,
+            @RequestParam(value = "uploadType", required = true) final String uploadType,
+            @ModelAttribute("questionnaire") Questionnaire questionnaire,
+            final BindingResult result,
+            final Model model) {
 
         switch (uploadType) {
             case "MoPat": {
@@ -543,15 +578,15 @@ public class QuestionnaireController {
      * @param model  The {@link Model} to supply data to the view.
      * @return A redirect string to the fill/edit page on success, or the upload view name on failure.
      */
-    private String handleMopatUpload(MultipartFile file,
-        BindingResult result, Model model) {
+    private String handleMopatUpload(MultipartFile file, BindingResult result, Model model) {
         Questionnaire questionnaire = null;
         try {
             model.addAttribute("fileUpload", true);
             questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(file);
         } catch (IOException e) {
-            LOGGER.info("ERROR: Importing json formatted MoPat questionnaire "
-                + "failed. The following error occurred: {}", e.getLocalizedMessage());
+            LOGGER.info(
+                    "ERROR: Importing json formatted MoPat questionnaire " + "failed. The following error occurred: {}",
+                    e.getLocalizedMessage());
 
             result.reject("import.error.fileNotSupported");
 
@@ -588,8 +623,7 @@ public class QuestionnaireController {
         }
 
         try {
-            odmQuestionnaireResult = odmQuestionnaireImporter.importOdmQuestionnaire(file,
-                validationErrors);
+            odmQuestionnaireResult = odmQuestionnaireImporter.importOdmQuestionnaire(file, validationErrors);
         } catch (Exception e) {
             LOGGER.error("An error occured during importing of ODM: {}", e);
             result.reject("questionnaire.import.failure");
@@ -618,8 +652,8 @@ public class QuestionnaireController {
                 NodeList standardNodes = document.getElementsByTagName("ODM");
                 NodeList customNodes = document.getElementsByTagName("odm:ODM");
 
-                return (standardNodes != null && standardNodes.getLength() > 0) ||
-                    (customNodes != null && customNodes.getLength() > 0);
+                return (standardNodes != null && standardNodes.getLength() > 0)
+                        || (customNodes != null && customNodes.getLength() > 0);
 
             } catch (Exception e) {
                 return false;
@@ -653,27 +687,24 @@ public class QuestionnaireController {
      * @return the upload page view when validation errors exist, a redirect to the upload page on
      * unexpected failure, or {@code questionnaire/import/result} on success
      */
-    private String handleFhirUpload(MultipartFile file, String uploadType, Model model,
-        BindingResult result, String url) {
+    private String handleFhirUpload(
+            MultipartFile file, String uploadType, Model model, BindingResult result, String url) {
         Locale locale = LocaleContextHolder.getLocale();
 
-        boolean isSupportedFile =
-            file.getOriginalFilename().contains(".json") || file.getOriginalFilename()
-                .contains(".xml");
+        boolean isSupportedFile = file.getOriginalFilename().contains(".json")
+                || file.getOriginalFilename().contains(".xml");
         model.addAttribute("fileUpload", isSupportedFile);
 
         FhirVersion fhirVersion = fhirVersionHelper.mapFrontendFhirStringToVersion(uploadType);
 
         try {
-            ImportQuestionnaireValidation importResult = fhirImporter.importFhirQuestionnaire(file,
-                url, fhirVersion, locale.toString());
+            ImportQuestionnaireValidation importResult =
+                    fhirImporter.importFhirQuestionnaire(file, url, fhirVersion, locale.toString());
 
             if (importResult.hasErrors()) {
                 importResult.getValidationErrors().forEach(error -> {
-                    if (error.getErrorArguments() != null
-                        && error.getDefaultErrorMessage() != null) {
-                        result.reject(error.getErrorCode(), error.getErrorArguments(),
-                            error.getDefaultErrorMessage());
+                    if (error.getErrorArguments() != null && error.getDefaultErrorMessage() != null) {
+                        result.reject(error.getErrorCode(), error.getErrorArguments(), error.getDefaultErrorMessage());
                     } else {
                         result.reject(error.getErrorCode());
                     }

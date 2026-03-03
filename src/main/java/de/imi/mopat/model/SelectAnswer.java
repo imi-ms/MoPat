@@ -1,20 +1,19 @@
 package de.imi.mopat.model;
 
 import de.imi.mopat.model.enumeration.BodyPart;
-
-import java.io.Serializable;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.MapKeyColumn;
 
 /**
  * A <i>select</i> answer represents one answer of a multiple-choice question. The user can select
@@ -30,10 +29,12 @@ public class SelectAnswer extends Answer implements Serializable {
     @Column(name = "label")
     @CollectionTable(name = "answer_label", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedLabel;
+
     @Column(name = "isOther")
     private Boolean isOther;
+
     @Column(name = "value")
-    //@Column(nullable = "false") is not possible due to our inheritance
+    // @Column(nullable = "false") is not possible due to our inheritance
     // strategy (see Answer). Thus, the annotation @NotNull
     // for jakarta.validation and JavaDoc together with asserts and tests will
     // be used
@@ -59,8 +60,11 @@ public class SelectAnswer extends Answer implements Serializable {
      * @param localizedLabel A map with localized labels for this {@link Answer}.
      * @param isOther        Indicates whether this answer is marked as other or not.
      */
-    public SelectAnswer(final Question question, final Boolean isEnabled,
-        final Map<String, String> localizedLabel, final Boolean isOther) {
+    public SelectAnswer(
+            final Question question,
+            final Boolean isEnabled,
+            final Map<String, String> localizedLabel,
+            final Boolean isOther) {
         super(question, isEnabled);
         setLocalizedLabel(localizedLabel);
         setIsOther(isOther);
@@ -89,6 +93,18 @@ public class SelectAnswer extends Answer implements Serializable {
      */
     public Map<String, String> getLocalizedLabel() {
         return localizedLabel;
+    }
+
+    /**
+     * Sets the new display text of the {@link Answer}.
+     *
+     * @param localizedLabel The map with the new localized display texts of the {@link Answer}.
+     *                       Must not be <code>null</code>. Must not be empty.
+     */
+    public void setLocalizedLabel(final Map<String, String> localizedLabel) {
+        assert localizedLabel != null : "The given map with localized labels was null";
+        assert !localizedLabel.isEmpty() : "The given map with localized " + "labels was empty";
+        this.localizedLabel = localizedLabel;
     }
 
     /**
@@ -135,18 +151,6 @@ public class SelectAnswer extends Answer implements Serializable {
             }
         }
         return groupedLocalizedAnswerLabelByCountry;
-    }
-
-    /**
-     * Sets the new display text of the {@link Answer}.
-     *
-     * @param localizedLabel The map with the new localized display texts of the {@link Answer}.
-     *                       Must not be <code>null</code>. Must not be empty.
-     */
-    public void setLocalizedLabel(final Map<String, String> localizedLabel) {
-        assert localizedLabel != null : "The given map with localized labels was null";
-        assert !localizedLabel.isEmpty() : "The given map with localized " + "labels was empty";
-        this.localizedLabel = localizedLabel;
     }
 
     /**

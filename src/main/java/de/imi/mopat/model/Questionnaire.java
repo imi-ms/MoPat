@@ -6,21 +6,6 @@ import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTarget;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.score.Score;
-
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -39,6 +24,20 @@ import jakarta.persistence.Transient;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -50,14 +49,32 @@ import org.springframework.cache.annotation.Cacheable;
 @Table(name = "questionnaire")
 public class Questionnaire implements ConditionTarget, Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @JsonIgnore
+    @NotNull(message = "{questionnaire.createdAt.notNull}")
+    @Column(name = "created_at", nullable = false)
+    private final Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+
+    @JsonIgnore
+    @Valid
+    @OneToMany(mappedBy = "questionnaire", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private final Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<BundleQuestionnaire>();
+
+    @JsonIgnore
+    @Valid
+    @OneToMany(
+            mappedBy = "questionnaire",
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    private final Set<ExportTemplate> exportTemplates = new HashSet<ExportTemplate>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
     // @Size and @NotNull have to be combined to realize @NotEmpty
     // If the annotations are changed, they have to be changed in the
     // corresponding data transfer object class
@@ -65,11 +82,13 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Size(min = 3, max = 255, message = "{questionnaire.name.size}")
     @Column(name = "name", nullable = false)
     private String name; // short name of the questionnaire
+
     @ElementCollection
     @MapKeyColumn(name = "language")
     @Column(name = "display_name")
     @CollectionTable(name = "questionnaire_display_name", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedDisplayName;
+
     @JsonIgnore
     // @Size and @NotNull have to be combined to realize @NotEmpty
     // If the annotations are changed, they have to be changed in the
@@ -78,24 +97,24 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @Size(min = 1, message = "{questionnaire.description.notNull}")
     @Column(name = "description", columnDefinition = "TEXT NOT NULL")
     private String description; // full name of the questionnaire
-    @JsonIgnore
-    @NotNull(message = "{questionnaire.createdAt.notNull}")
-    @Column(name = "created_at", nullable = false)
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
     // @NotNull missing, because of jakarta.validation.valid annotation (used
     // in QuestionnaireController)
     @JsonIgnore
     @Column(name = "changed_by", nullable = false)
     private Long changedBy;
+
     @JsonIgnore
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
     @Column(name = "logo")
     private String logo;
+
     @JsonIgnore
     @NotNull(message = "{questionnaire.isPublished.notNull}")
     @Column(name = "is_published", nullable = false)
     private Boolean isPublished = false;
+
     @Transient
     private Boolean hasConditions;
 
@@ -111,21 +130,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
     @CollectionTable(name = "questionnaire_final_text", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedFinalText;
 
-    @JsonIgnore
-    @Valid
-    @OneToMany(mappedBy = "questionnaire", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<BundleQuestionnaire>();
-
     @Valid
     @OneToMany(mappedBy = "questionnaire", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @CascadeOnDelete
     private Set<Question> questions = new HashSet<Question>();
-
-    @JsonIgnore
-    @Valid
-    @OneToMany(mappedBy = "questionnaire", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,
-        CascadeType.MERGE, CascadeType.REMOVE})
-    private Set<ExportTemplate> exportTemplates = new HashSet<ExportTemplate>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "questionnaire", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -133,12 +141,12 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
     @Column(name = "version", nullable = false)
     private Integer version = 1;
-    
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "version_group_id")
     private QuestionnaireVersionGroup questionnaireVersionGroup;
-    
-    public Questionnaire() { //default constructor (in protected state),
+
+    public Questionnaire() { // default constructor (in protected state),
         // should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
     }
@@ -158,8 +166,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
      *                    published<br> <code>false</code> if it should not be published. Must not
      *                    be <code>null</code>.
      */
-    public Questionnaire(final String name, final String description, final Long changedBy,
-        final Boolean isPublished) {
+    public Questionnaire(final String name, final String description, final Long changedBy, final Boolean isPublished) {
 
         setName(name);
         setDescription(description);
@@ -223,7 +230,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
         bundleQuestionnaires.add(bundleQuestionnaire);
         if (bundleQuestionnaire.getQuestionnaire() == null
-            || !bundleQuestionnaire.getQuestionnaire().equals(this)) {
+                || !bundleQuestionnaire.getQuestionnaire().equals(this)) {
             bundleQuestionnaire.setQuestionnaire(this);
         }
     }
@@ -241,8 +248,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
 
         bundleQuestionnaires.remove(bundleQuestionnaire);
 
-        if (bundleQuestionnaire.getQuestionnaire() != null && bundleQuestionnaire.getQuestionnaire()
-            .equals(this)) {
+        if (bundleQuestionnaire.getQuestionnaire() != null
+                && bundleQuestionnaire.getQuestionnaire().equals(this)) {
             bundleQuestionnaire.removeQuestionnaire();
         }
     }
@@ -252,8 +259,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
      * Takes care that the {@link BundleQuestionnaire} objects do not refer to this object anymore.
      */
     public void removeAllBundleQuestionnaires() {
-        Collection<BundleQuestionnaire> tempBundleQuestionnaires = new HashSet<BundleQuestionnaire>(
-            bundleQuestionnaires);
+        Collection<BundleQuestionnaire> tempBundleQuestionnaires =
+                new HashSet<BundleQuestionnaire>(bundleQuestionnaires);
         for (BundleQuestionnaire bundleQuestionnaire : tempBundleQuestionnaires) {
             removeBundleQuestionnaire(bundleQuestionnaire);
         }
@@ -268,6 +275,15 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public SortedSet<Question> getQuestions() {
         return Collections.unmodifiableSortedSet(new TreeSet<Question>(questions));
+    }
+
+    /**
+     * Sets the questions associated with this entity.
+     *
+     * @param questions the questions to set
+     */
+    public void setQuestions(Set<Question> questions) {
+        this.questions = questions;
     }
 
     /**
@@ -295,10 +311,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public void addQuestion(final Question question) {
         assert question != null : "The given Question was null";
-        if (!questions.contains(question)) {
-            questions.add(question);
-        }
-        //Take care that the objects know each other
+        questions.add(question);
+        // Take care that the objects know each other
         if (question.getQuestionnaire() == null || !question.getQuestionnaire().equals(this)) {
             question.setQuestionnaire(this);
         }
@@ -339,9 +353,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
     public void setName(final String name) {
         assert name != null : "The given name was null";
         assert name.trim().length() >= 3 : "The given name has < 3 characters (after trimming)";
-        assert
-            name.trim().length() <= 255 :
-            "The given name has more than 255 Characters (after " + "trimming)";
+        assert name.trim().length() <= 255 : "The given name has more than 255 Characters (after " + "trimming)";
         this.name = name.trim();
     }
 
@@ -406,7 +418,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
             // Languages which are availables for all questions in this
             // questionnaire
             Set<String> availableQuestionLanguagesTemp = new HashSet<>();
-            for (Map.Entry<String, String> entry : question.getLocalizedQuestionText().entrySet()) {
+            for (Map.Entry<String, String> entry :
+                    question.getLocalizedQuestionText().entrySet()) {
                 // Get the locale code
                 String localeCode = entry.getKey();
                 // Add all languages to the temp set
@@ -447,12 +460,10 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public void setDescription(final String description) {
         assert description != null : "The given description was null";
-        assert
-            description.trim().length() <= 255 :
-            "The given description was longer than 255 " + "characters (after trimming)";
-        assert
-            description.trim().length() >= 3 :
-            "The given description has less than 3 characters " + "after (trimming)";
+        assert description.trim().length() <= 255
+                : "The given description was longer than 255 " + "characters (after trimming)";
+        assert description.trim().length() >= 3
+                : "The given description has less than 3 characters " + "after (trimming)";
         this.description = description.trim();
     }
 
@@ -505,8 +516,7 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public void setUpdatedAt(final Timestamp updatedAt) {
         assert updatedAt != null : "The given timestamp was null";
-        assert !updatedAt.after(
-            new Timestamp(System.currentTimeMillis())) : "The given timestamp was in the future";
+        assert !updatedAt.after(new Timestamp(System.currentTimeMillis())) : "The given timestamp was in the future";
         this.updatedAt = updatedAt;
     }
 
@@ -619,10 +629,9 @@ public class Questionnaire implements ConditionTarget, Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Questionnaire)) {
+        if (!(obj instanceof Questionnaire other)) {
             return false;
         }
-        Questionnaire other = (Questionnaire) obj;
         return getUUID().equals(other.getUUID());
     }
 
@@ -675,10 +684,8 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public void addScore(final Score score) {
         assert score != null : "The given Question was null";
-        if (!scores.contains(score)) {
-            scores.add(score);
-        }
-        //Take care that the objects know each other
+        scores.add(score);
+        // Take care that the objects know each other
         if (score.getQuestionnaire() == null || !score.getQuestionnaire().equals(this)) {
             score.setQuestionnaire(this);
         }
@@ -786,16 +793,16 @@ public class Questionnaire implements ConditionTarget, Serializable {
         List<Question> availableQuestionsForScore = new ArrayList<>();
         for (Question question : this.getQuestions()) {
             if (question.getQuestionType() == QuestionType.NUMBER_INPUT
-                || question.getQuestionType() == QuestionType.SLIDER
-                || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX
-                || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX_TEXT) {
+                    || question.getQuestionType() == QuestionType.SLIDER
+                    || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX
+                    || question.getQuestionType() == QuestionType.NUMBER_CHECKBOX_TEXT) {
 
                 availableQuestionsForScore.add(question);
                 // Add multiple choice and dropdown questions only if it
                 // allows exactly one answer
             } else if ((question.getQuestionType() == QuestionType.MULTIPLE_CHOICE
-                || question.getQuestionType() == QuestionType.DROP_DOWN)
-                && question.getMaxNumberAnswers() == 1) {
+                            || question.getQuestionType() == QuestionType.DROP_DOWN)
+                    && question.getMaxNumberAnswers() == 1) {
                 availableQuestionsForScore.add(question);
             }
         }
@@ -835,15 +842,6 @@ public class Questionnaire implements ConditionTarget, Serializable {
      */
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    /**
-     * Sets the questions associated with this entity.
-     *
-     * @param questions the questions to set
-     */
-    public void setQuestions(Set<Question> questions) {
-        this.questions = questions;
     }
 
     /**

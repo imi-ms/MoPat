@@ -86,6 +86,10 @@ public class QuestionnaireDTO {
         return deleteLogo;
     }
 
+    public void setDeleteLogo(Boolean deleteLogo) {
+        this.deleteLogo = deleteLogo;
+    }
+
     public String getLogo() {
         return logo;
     }
@@ -100,10 +104,6 @@ public class QuestionnaireDTO {
 
     public void setLogoBase64(final String logoBase64) {
         this.logoBase64 = logoBase64;
-    }
-
-    public void setDeleteLogo(Boolean deleteLogo) {
-        this.deleteLogo = deleteLogo;
     }
 
     public String getName() {
@@ -146,12 +146,12 @@ public class QuestionnaireDTO {
         this.localizedDisplayName = localizedDisplayName;
     }
 
-    public void setHasConditionsAsTarget(final Boolean hasConditionsAsTarget) {
-        this.hasConditionsAsTarget = hasConditionsAsTarget;
-    }
-
     public boolean getHasConditionsAsTarget() {
         return hasConditionsAsTarget;
+    }
+
+    public void setHasConditionsAsTarget(final Boolean hasConditionsAsTarget) {
+        this.hasConditionsAsTarget = hasConditionsAsTarget;
     }
 
     public Boolean getHasScores() {
@@ -169,12 +169,12 @@ public class QuestionnaireDTO {
         return Objects.equals(this.getId(), questionnaireDTO.getId());
     }
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
     public int getVersion() {
         return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     public Long getQuestionnaireVersionGroupId() {
@@ -182,9 +182,9 @@ public class QuestionnaireDTO {
     }
 
     public String getQuestionnaireVersionGroupName() {
-        return  (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
+        return (questionnaireVersionGroupDTO != null) ? questionnaireVersionGroupDTO.getGroupName() : null;
     }
-    
+
     @JsonIgnore
     public QuestionnaireVersionGroupDTO getQuestionnaireGroupDTO() {
         return questionnaireVersionGroupDTO;

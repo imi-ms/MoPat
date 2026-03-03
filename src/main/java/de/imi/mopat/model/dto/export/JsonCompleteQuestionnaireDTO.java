@@ -22,18 +22,15 @@ public class JsonCompleteQuestionnaireDTO extends JsonQuestionnaireDTO {
 
     private SortedMap<Long, JsonExportTemplateDTO> exportDTOs = new TreeMap<>();
 
-
     public SortedMap<Long, JsonExportTemplateDTO> getExportDTOs() {
         return exportDTOs;
     }
+
     public void setExportDTOs(SortedMap<Long, JsonExportTemplateDTO> exportDTOs) {
         this.exportDTOs = exportDTOs;
     }
 
-    public void addExportDTOs(long id, JsonExportTemplateDTO jsonExportTemplateDTO){
-        this.exportDTOs.put(
-            id,
-            jsonExportTemplateDTO);
-
+    public void addExportDTOs(long id, JsonExportTemplateDTO jsonExportTemplateDTO) {
+        this.exportDTOs.put(id, jsonExportTemplateDTO);
     }
 }

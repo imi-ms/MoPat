@@ -41,65 +41,86 @@ public class EncounterScheduledDTOValidator implements Validator {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         Date today = calendar.getTime();
 
-        // [bt] first, let the standard validator validate the target object with respect to it's JSR-303 constraints (jakarta.validation.constraints annotations)
+        // [bt] first, let the standard validator validate the target object with respect to it's JSR-303 constraints
+        // (jakarta.validation.constraints annotations)
         // [bt] now it's my time to validate the more complex stuff
         EncounterScheduledDTO encounterScheduledDTO = (EncounterScheduledDTO) target;
 
         if (encounterScheduledDTO.getStartDate() != null
-            && encounterScheduledDTO.getStartDate().getTime() < today.getTime()) {
-            errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage(
-                    "encounterScheduled.validator" + ".startdateCanNotBeInThePast", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+                && encounterScheduledDTO.getStartDate().getTime() < today.getTime()) {
+            errors.rejectValue(
+                    "startDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "encounterScheduled.validator" + ".startdateCanNotBeInThePast",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
 
-        if (encounterScheduledDTO.getEncounterScheduledSerialType()
-            .equals(EncounterScheduledSerialType.REPEATEDLY)
-            || encounterScheduledDTO.getEncounterScheduledSerialType()
-            .equals(EncounterScheduledSerialType.WEEKLY)
-            || encounterScheduledDTO.getEncounterScheduledSerialType()
-            .equals(EncounterScheduledSerialType.MONTHLY)) {
+        if (encounterScheduledDTO.getEncounterScheduledSerialType().equals(EncounterScheduledSerialType.REPEATEDLY)
+                || encounterScheduledDTO.getEncounterScheduledSerialType().equals(EncounterScheduledSerialType.WEEKLY)
+                || encounterScheduledDTO
+                        .getEncounterScheduledSerialType()
+                        .equals(EncounterScheduledSerialType.MONTHLY)) {
             if (encounterScheduledDTO.getStartDate() == null) {
-                errors.rejectValue("startDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage(
-                        "encounterScheduled" + ".validator" + ".startDateEmpty", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "startDate",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".startDateEmpty",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             } else if (encounterScheduledDTO.getEndDate() == null) {
-                errors.rejectValue("endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("encounterScheduled" + ".validator" + ".enddateEmpty",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "endDate",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".enddateEmpty",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             } else if (encounterScheduledDTO.getEndDate().before(today)) {
-                errors.rejectValue("endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage(
-                        "encounterScheduled" + ".validator" + ".enddateCanNotBeInThePast",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
-            } else if (
-                !encounterScheduledDTO.getEndDate().after(encounterScheduledDTO.getStartDate())
+                errors.rejectValue(
+                        "endDate",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".enddateCanNotBeInThePast",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
+            } else if (!encounterScheduledDTO.getEndDate().after(encounterScheduledDTO.getStartDate())
                     || encounterScheduledDTO.getEndDate().equals(today)) {
-                errors.rejectValue("endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage(
-                        "encounterScheduled" + ".validator" + ".enddateMustBeAfterStartdate",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "endDate",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".enddateMustBeAfterStartdate",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
-            if (encounterScheduledDTO.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.REPEATEDLY) && (
-                encounterScheduledDTO.getRepeatPeriod() == null
-                    || encounterScheduledDTO.getRepeatPeriod() <= 0)) {
-                errors.rejectValue("repeatPeriod", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage(
-                        "encounterScheduled" + ".validator" + ".repeatPeriodGreaterThanZero",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+            if (encounterScheduledDTO.getEncounterScheduledSerialType().equals(EncounterScheduledSerialType.REPEATEDLY)
+                    && (encounterScheduledDTO.getRepeatPeriod() == null
+                            || encounterScheduledDTO.getRepeatPeriod() <= 0)) {
+                errors.rejectValue(
+                        "repeatPeriod",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".repeatPeriodGreaterThanZero",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
 
         if (!encounterScheduledDTO.getReplyMail().isEmpty()) {
-            if (!encounterScheduledDTO.getReplyMails()
-                .get(encounterScheduledDTO.getBundleDTO().getId())
-                .contains(encounterScheduledDTO.getReplyMail())) {
-                errors.rejectValue("replyMail", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage(
-                        "encounterScheduled" + ".validator" + ".invalidReplyMail", new Object[]{},
-                        LocaleContextHolder.getLocale()));
+            if (!encounterScheduledDTO
+                    .getReplyMails()
+                    .get(encounterScheduledDTO.getBundleDTO().getId())
+                    .contains(encounterScheduledDTO.getReplyMail())) {
+                errors.rejectValue(
+                        "replyMail",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage(
+                                "encounterScheduled" + ".validator" + ".invalidReplyMail",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
     }

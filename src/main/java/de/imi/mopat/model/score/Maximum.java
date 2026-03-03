@@ -16,8 +16,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Maximum")
 public class Maximum extends MultiOperator {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        ValueOfQuestionOperator.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ValueOfQuestionOperator.class);
 
     @Override
     public Object evaluate(final Expression expression, final Encounter encounter) {
@@ -55,8 +54,7 @@ public class Maximum extends MultiOperator {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof MultiExpression) {
             MultiExpression multiExpression = (MultiExpression) expression;
             List<Expression> expressions = multiExpression.getExpressions();

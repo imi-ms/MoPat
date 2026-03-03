@@ -7,9 +7,12 @@ import java.util.Map;
  * Definition of permission types supported within Spring
  */
 public enum PermissionType {
-
-    FORBIDDEN(0), READ(1), WRITE(2), CREATE(3), DELETE(4), ADMIN(5);
-    private final int value;
+    FORBIDDEN(0),
+    READ(1),
+    WRITE(2),
+    CREATE(3),
+    DELETE(4),
+    ADMIN(5);
     private static final Map<Integer, PermissionType> intToEnum = new HashMap<Integer, PermissionType>();
 
     static // Initialize map from constant value to enum constant
@@ -18,6 +21,8 @@ public enum PermissionType {
             intToEnum.put(cValue.getValue(), cValue);
         }
     }
+
+    private final int value;
 
     PermissionType(final int value) {
         this.value = value;

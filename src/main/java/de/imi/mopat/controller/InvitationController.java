@@ -52,28 +52,40 @@ public class InvitationController {
 
     @Autowired
     private AclEntryDao aclEntryDao;
+
     @Autowired
     private AclClassDao aclClassDao;
+
     @Autowired
     private AclObjectIdentityDao aclObjectIdentityDao;
+
     @Autowired
     private ClinicDao clinicDao;
+
     @Autowired
     private InvitationDao invitationDao;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private ForgotPasswordTokenDao forgotPasswordDao;
+
     @Autowired
     private UserValidator userValidator;
+
     @Autowired
     private InvitationDTOValidator invitationDTOValidator;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private ApplicationMailer applicationMailer;
+
     @Autowired
     private ClinicDTOMapper clinicDTOMapper;
+
     @Autowired
     private InvitationService invitationService;
 
@@ -129,10 +141,14 @@ public class InvitationController {
      * @param invitationId Id of the current invitation.
      * @return The <i>invitation/edit</i> website.
      */
-    @RequestMapping(value = {"invitation/edit"}, method = RequestMethod.GET)
+    @RequestMapping(
+            value = {"invitation/edit"},
+            method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String edit(@RequestParam(value = "id", required = false) final Long invitationId,
-        final Model model, final HttpServletRequest request) {
+    public String edit(
+            @RequestParam(value = "id", required = false) final Long invitationId,
+            final Model model,
+            final HttpServletRequest request) {
 
         InvitationDTO invitationDTO = null;
 
@@ -145,9 +161,9 @@ public class InvitationController {
             List<ClinicDTO> assignedClinicDTOs = new ArrayList<>();
 
             // Add assignedClinics to invitation
-            for (AclObjectIdentity aclObjectIdentity
-                : invitation.getAssignedClinics()) {
-                assignedClinicDTOs.add(clinicDTOMapper.apply(clinicDao.getElementById(aclObjectIdentity.getObjectIdIdentity())));
+            for (AclObjectIdentity aclObjectIdentity : invitation.getAssignedClinics()) {
+                assignedClinicDTOs.add(
+                        clinicDTOMapper.apply(clinicDao.getElementById(aclObjectIdentity.getObjectIdIdentity())));
             }
             invitationDTO.setAssignedClinics(assignedClinicDTOs);
         }
@@ -172,12 +188,17 @@ public class InvitationController {
      * @return The <i>invitation/edit</i>, <i> invitation/list</i> or
      * <i>user/list</i> website.
      */
-    @RequestMapping(value = {"/invitation/edit"}, method = RequestMethod.POST)
+    @RequestMapping(
+            value = {"/invitation/edit"},
+            method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional("MoPat_User")
-    public String invite(@RequestParam final String action,
-        @ModelAttribute("invitationDTO") @Valid final InvitationDTO invitationDTO,
-        final BindingResult result, final Model model, final HttpServletRequest request) {
+    public String invite(
+            @RequestParam final String action,
+            @ModelAttribute("invitationDTO") @Valid final InvitationDTO invitationDTO,
+            final BindingResult result,
+            final Model model,
+            final HttpServletRequest request) {
 
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:list";
@@ -185,9 +206,10 @@ public class InvitationController {
 
         // Remove empty Invitation Users
         if (invitationDTO.getInvitationUsers().size() > 1) {
-            invitationDTO.getInvitationUsers().removeIf(
-                (InvitationUserDTO t) -> t.getFirstName() == null && t.getLastName() == null
-                    && t.getEmail() == null);
+            invitationDTO
+                    .getInvitationUsers()
+                    .removeIf((InvitationUserDTO t) ->
+                            t.getFirstName() == null && t.getLastName() == null && t.getEmail() == null);
         }
 
         // Get base URL for preview and mailing
@@ -195,11 +217,11 @@ public class InvitationController {
         String baseUrl = null;
         if (contextPath.equalsIgnoreCase("/")) {
             baseUrl = (String) request.getRequestURL()
-                .subSequence(0, request.getRequestURL().lastIndexOf("/invitation"));
+                    .subSequence(0, request.getRequestURL().lastIndexOf("/invitation"));
         } else {
             baseUrl = request.getRequestURL()
-                .subSequence(0, request.getRequestURL().lastIndexOf(contextPath + "/invitation"))
-                + contextPath;
+                            .subSequence(0, request.getRequestURL().lastIndexOf(contextPath + "/invitation"))
+                    + contextPath;
         }
 
         // Validate inputs
@@ -208,8 +230,9 @@ public class InvitationController {
         // If the edited invitationDTO has errors or is chosen for preview
         if (result.hasErrors() || action.equalsIgnoreCase("preview")) {
             // Delete empty assignedClinics
-            for (Iterator<ClinicDTO> iterator = invitationDTO.getAssignedClinics().iterator();
-                iterator.hasNext(); ) {
+            for (Iterator<ClinicDTO> iterator =
+                            invitationDTO.getAssignedClinics().iterator();
+                    iterator.hasNext(); ) {
                 ClinicDTO assignedClinicDTO = iterator.next();
                 if (assignedClinicDTO == null || assignedClinicDTO.getId() == null) {
                     iterator.remove();
@@ -226,19 +249,18 @@ public class InvitationController {
                 String personalMessage = ".";
                 String personalText = invitationDTO.getPersonalText();
                 if (personalText != null && !personalText.trim().isEmpty()) {
-                    personalMessage = " " + messageSource.getMessage("mail.invitation.personal",
-                        new Object[]{personalText}, locale);
+                    personalMessage = " "
+                            + messageSource.getMessage("mail.invitation.personal", new Object[] {personalText}, locale);
                 }
-                String subject = messageSource.getMessage("mail.invitation.subject", new Object[]{},
-                    locale);
+                String subject = messageSource.getMessage("mail.invitation.subject", new Object[] {}, locale);
                 String footerEmail = applicationMailer.getMailFooterEMail();
                 String footerPhone = applicationMailer.getMailFooterPhone();
-                String footer = messageSource.getMessage("mail.invitation.footer",
-                    new Object[]{footerEmail, footerPhone}, locale);
+                String footer = messageSource.getMessage(
+                        "mail.invitation.footer", new Object[] {footerEmail, footerPhone}, locale);
 
                 // Add the preview information to the model
-                String content = messageSource.getMessage("mail.invitation.content",
-                    new Object[]{personalMessage, "LINK"}, locale);
+                String content = messageSource.getMessage(
+                        "mail.invitation.content", new Object[] {personalMessage, "LINK"}, locale);
                 model.addAttribute("preview", subject + "\n\n" + content + footer);
                 model.addAttribute("invitationDTO", invitationDTO);
             }
@@ -246,24 +268,25 @@ public class InvitationController {
         }
 
         // Set properties of invitation
-        //Get assignedClinics by its related aclObjectIdentity
+        // Get assignedClinics by its related aclObjectIdentity
         AclClass elementClass = aclClassDao.getElementByClass(Clinic.class.getName());
         Set<AclObjectIdentity> aclObjectIdentitys = new HashSet<>();
         for (ClinicDTO clinicDTO : invitationDTO.getAssignedClinics()) {
             if (clinicDTO.getId() != null) {
                 aclObjectIdentitys.add(
-                    this.aclObjectIdentityDao.getElementByClassAndObjectId(elementClass,
-                        clinicDTO.getId()));
+                        this.aclObjectIdentityDao.getElementByClassAndObjectId(elementClass, clinicDTO.getId()));
             }
         }
 
         // Get the invitation object(s) based on the given invitationDTO
         if (invitationDTO.getId() == null) {
             User currentUser = null;
-            if (!SecurityContextHolder.getContext().getAuthentication().getPrincipal()
-                .equals("anonymousUser")) {
-                User contextUser = (User) SecurityContextHolder.getContext().getAuthentication()
-                    .getPrincipal();
+            if (!SecurityContextHolder.getContext()
+                    .getAuthentication()
+                    .getPrincipal()
+                    .equals("anonymousUser")) {
+                User contextUser = (User)
+                        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 currentUser = userDao.getElementById(contextUser.getId());
                 model.addAttribute("currentUser", currentUser);
             }
@@ -308,9 +331,10 @@ public class InvitationController {
      */
     @RequestMapping(value = "invitation/refresh", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String refreshExpirationDate(final Model model,
-        @RequestParam(value = "id", required = false) final Long invitationId,
-        final HttpServletRequest request) {
+    public String refreshExpirationDate(
+            final Model model,
+            @RequestParam(value = "id", required = false) final Long invitationId,
+            final HttpServletRequest request) {
         Invitation invitation = invitationDao.getElementById(invitationId);
         invitation.refreshExpirationDate();
         invitationDao.merge(invitation);
@@ -319,11 +343,11 @@ public class InvitationController {
         String baseUrl = null;
         if (contextPath.equalsIgnoreCase("/")) {
             baseUrl = (String) request.getRequestURL()
-                .subSequence(0, request.getRequestURL().lastIndexOf("/invitation"));
+                    .subSequence(0, request.getRequestURL().lastIndexOf("/invitation"));
         } else {
             baseUrl = request.getRequestURL()
-                .subSequence(0, request.getRequestURL().lastIndexOf(contextPath + "/invitation"))
-                + contextPath;
+                            .subSequence(0, request.getRequestURL().lastIndexOf(contextPath + "/invitation"))
+                    + contextPath;
         }
 
         invitation.sendMail(applicationMailer, messageSource, baseUrl);
@@ -340,10 +364,8 @@ public class InvitationController {
      */
     @GetMapping(value = "invitation/remove")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String remove(final Model model,
-        @RequestParam(value = "id", required = false) final Long invitationId) {
+    public String remove(final Model model, @RequestParam(value = "id", required = false) final Long invitationId) {
         invitationDao.remove(invitationDao.getElementById(invitationId));
         return "redirect:list";
     }
 }
-

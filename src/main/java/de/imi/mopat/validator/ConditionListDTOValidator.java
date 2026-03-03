@@ -20,8 +20,10 @@ public class ConditionListDTOValidator implements Validator {
 
     @Autowired
     private SpringValidatorAdapter validator;
+
     @Autowired
     private MessageSource messageSource;
+
     @Autowired
     private AnswerDao answerDao;
 
@@ -41,25 +43,31 @@ public class ConditionListDTOValidator implements Validator {
         ConditionDTO conditionDTO = conditionListDTO.getConditionDTOs().get(0);
 
         if (conditionDTO.getTriggerId() == null) {
-            errors.rejectValue("conditionDTOs[0].triggerId", MoPatValidator.ERRORCODE_NOT_NULL,
-                messageSource.getMessage("condition.error.triggerIdIsNull", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+            errors.rejectValue(
+                    "conditionDTOs[0].triggerId",
+                    MoPatValidator.ERRORCODE_NOT_NULL,
+                    messageSource.getMessage(
+                            "condition.error.triggerIdIsNull", new Object[] {}, LocaleContextHolder.getLocale()));
         }
         if (!(answerDao.getElementById(conditionDTO.getTriggerId()) instanceof SelectAnswer)) {
             if (conditionDTO.getThresholdType() == null) {
-                errors.rejectValue("conditionDTOs[0].thresholdType",
-                    MoPatValidator.ERRORCODE_NOT_NULL,
-                    messageSource.getMessage("condition.error" + ".thresholdTypeIsNull",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "conditionDTOs[0].thresholdType",
+                        MoPatValidator.ERRORCODE_NOT_NULL,
+                        messageSource.getMessage(
+                                "condition.error" + ".thresholdTypeIsNull",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
             if (conditionDTO.getThresholdValue() == null) {
-                errors.rejectValue("conditionDTOs[0].thresholdValue",
-                    MoPatValidator.ERRORCODE_NOT_NULL,
-                    messageSource.getMessage("condition.error" + ".thresholdValueIsNull",
-                        new Object[]{}, LocaleContextHolder.getLocale()));
+                errors.rejectValue(
+                        "conditionDTOs[0].thresholdValue",
+                        MoPatValidator.ERRORCODE_NOT_NULL,
+                        messageSource.getMessage(
+                                "condition.error" + ".thresholdValueIsNull",
+                                new Object[] {},
+                                LocaleContextHolder.getLocale()));
             }
         }
-
     }
-
 }

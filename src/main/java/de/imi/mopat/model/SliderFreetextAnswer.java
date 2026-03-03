@@ -1,17 +1,16 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
+import de.imi.mopat.model.conditions.ConditionTrigger;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import de.imi.mopat.model.conditions.ConditionTrigger;
-
-import java.util.HashMap;
-import java.util.Map;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A {@link SliderFreetextAnswer} represents the constraints a {@link Question} of type
@@ -48,9 +47,14 @@ public class SliderFreetextAnswer extends SliderAnswer implements Serializable, 
      *                                  description
      * @param vertical               States if the slider should be displayed vertically.
      */
-    public SliderFreetextAnswer(final Question question, final Boolean isEnabled, final Double min,
-        final Double max, final Double stepsize, final Map<String, String> localizedFreetextLabel,
-        final Boolean vertical) {
+    public SliderFreetextAnswer(
+            final Question question,
+            final Boolean isEnabled,
+            final Double min,
+            final Double max,
+            final Double stepsize,
+            final Map<String, String> localizedFreetextLabel,
+            final Boolean vertical) {
         super(question, isEnabled, min, max, stepsize, vertical);
         setLocalizedFreetextLabel(localizedFreetextLabel);
     }
@@ -94,17 +98,13 @@ public class SliderFreetextAnswer extends SliderAnswer implements Serializable, 
      * @param localizedFreetextLabel must not be <code>null</code>. Must not be empty.
      */
     public void setLocalizedFreetextLabel(final Map<String, String> localizedFreetextLabel) {
-        assert
-            localizedFreetextLabel != null :
-            "The given map with localized freetext labels was " + "null";
-        assert !localizedFreetextLabel.isEmpty() :
-            "The given map with " + "localized freetext labels was empty";
+        assert localizedFreetextLabel != null : "The given map with localized freetext labels was " + "null";
+        assert !localizedFreetextLabel.isEmpty() : "The given map with " + "localized freetext labels was empty";
         this.localizedFreetextLabel = localizedFreetextLabel;
     }
 
     @Override
     public String toString() {
-        return "{min: " + getMinValue() + ", max: " + getMaxValue() + ", stepsize: " + getStepsize()
-            + "}";
+        return "{min: " + getMinValue() + ", max: " + getMaxValue() + ", stepsize: " + getStepsize() + "}";
     }
 }

@@ -2,9 +2,6 @@ package de.imi.mopat.model;
 
 import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.enumeration.ExportStatus;
-
-import java.io.Serializable;
-import java.sql.Timestamp;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * The database table model for table <i>encounter_export_template</i>. This model stores if an
@@ -26,27 +25,33 @@ import jakarta.persistence.Table;
 @Table(name = "encounter_export_template")
 public class EncounterExportTemplate implements Serializable, Comparable<EncounterExportTemplate> {
 
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @Column(name = "export_time", nullable = false)
+    private final Timestamp exportTime = new Timestamp(System.currentTimeMillis());
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "encounter_id", referencedColumnName = "id")
     private Encounter encounter;
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "export_template_id", referencedColumnName = "id")
     private ExportTemplate exportTemplate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "export_status")
     private ExportStatus exportStatus = ExportStatus.FAILURE;
-    @Column(name = "export_time", nullable = false)
-    private Timestamp exportTime = new Timestamp(System.currentTimeMillis());
+
     @Column(name = "is_manually_exported", nullable = false)
     private Boolean isManuallyExported = false;
 
-    protected EncounterExportTemplate() { //default constructor (in protected
+    protected EncounterExportTemplate() { // default constructor (in protected
         // state), should not be accessible to anything else but the JPA
         // implementation (here: Hibernate) and the JUnit tests
 
@@ -66,8 +71,8 @@ public class EncounterExportTemplate implements Serializable, Comparable<Encount
      * @param exportStatus   Sets the status of the export. Can not be
      *                       <code>null</code>.
      */
-    public EncounterExportTemplate(final Encounter encounter, final ExportTemplate exportTemplate,
-        final ExportStatus exportStatus) {
+    public EncounterExportTemplate(
+            final Encounter encounter, final ExportTemplate exportTemplate, final ExportStatus exportStatus) {
         setEncounter(encounter);
         setExportTemplate(exportTemplate);
         setExportStatus(exportStatus);
@@ -110,7 +115,7 @@ public class EncounterExportTemplate implements Serializable, Comparable<Encount
     public void setEncounter(final Encounter encounter) {
         assert encounter != null : "The given Encounter was null";
         this.encounter = encounter;
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (!encounter.getEncounterExportTemplates().contains(this)) {
             encounter.addEncounterExportTemplate(this);
         }
@@ -173,10 +178,9 @@ public class EncounterExportTemplate implements Serializable, Comparable<Encount
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof EncounterExportTemplate)) {
+        if (!(obj instanceof EncounterExportTemplate other)) {
             return false;
         }
-        EncounterExportTemplate other = (EncounterExportTemplate) obj;
         return getUUID().equals(other.getUUID());
     }
 

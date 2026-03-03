@@ -1,8 +1,8 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.io.Serializable;
 
 /**
  * Is meant for questions with only one input, being a free text field (represented by

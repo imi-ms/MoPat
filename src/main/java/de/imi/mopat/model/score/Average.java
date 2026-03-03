@@ -32,8 +32,8 @@ public class Average extends MultiOperator {
             }
 
             // Save the number of allowed missing expressions
-            Double allowedMissingExpressions = (Double) avgExpressions.get(
-                avgExpressions.size() - 1).evaluate(encounter);
+            Double allowedMissingExpressions =
+                    (Double) avgExpressions.get(avgExpressions.size() - 1).evaluate(encounter);
             Double missingExpressions = 0.0;
             Double sum = 0.0;
             Double counter = 0.0;
@@ -69,8 +69,7 @@ public class Average extends MultiOperator {
     }
 
     @Override
-    public String getFormula(final Expression expression, final Encounter encounter,
-        final String defaultLanguage) {
+    public String getFormula(final Expression expression, final Encounter encounter, final String defaultLanguage) {
         if (expression instanceof MultiExpression multiExpression) {
             List<Expression> avgExpressions = multiExpression.getExpressions();
             // If there is no expression or only the

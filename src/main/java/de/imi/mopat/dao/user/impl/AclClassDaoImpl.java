@@ -16,13 +16,13 @@ public class AclClassDaoImpl extends UserManagementDaoImpl<AclClass> implements 
     public AclClass getElementByClass(final String className) {
         try {
             TypedQuery<AclClass> query = moPatUserEntityManager.createQuery(
-                "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.className='"
-                    + (className) + "'", getEntityClass());
+                    "SELECT e FROM " + getEntityClass().getSimpleName() + " e" + " WHERE e.className='" + (className)
+                            + "'",
+                    getEntityClass());
             AclClass element = query.getSingleResult();
             return element;
         } catch (NoResultException e) {
             return null;
         }
     }
-
 }

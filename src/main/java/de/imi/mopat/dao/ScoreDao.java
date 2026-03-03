@@ -39,7 +39,7 @@ public interface ScoreDao extends MoPatDao<Score> {
      * @param questionnaireIds to check if a score exists
      * @return Set of ids from questionnaireIds that have a score
      */
-    public Set<Long> findQuestionnairesWithScores(List<Long> questionnaireIds);
+    Set<Long> findQuestionnairesWithScores(List<Long> questionnaireIds);
 
     /**
      * Returns the list of associated {@link Score scores} to the given {@link Question}.

@@ -54,8 +54,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetadataExporterFhirR5 implements MetadataExporter {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        MetadataExporterFhirR5.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataExporterFhirR5.class);
     private final String ANSWER_OID = "MoPat/Answer/";
 
     private String currentDefaultLanguage = "en_GB";
@@ -70,25 +69,29 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @return Byte array containing the bytes of the metadata xml string.
      */
     @Override
-    public byte[] export(final Questionnaire questionnaire, final MessageSource messageSource,
-        final ConfigurationDao configurationDao, final ConfigurationGroupDao configurationGroupDao,
-        final ExportTemplateDao exportTemplateDao, final QuestionnaireDao questionnaireDao,
-        final QuestionDao questionDao, final ScoreDao scoreDao) {
+    public byte[] export(
+            final Questionnaire questionnaire,
+            final MessageSource messageSource,
+            final ConfigurationDao configurationDao,
+            final ConfigurationGroupDao configurationGroupDao,
+            final ExportTemplateDao exportTemplateDao,
+            final QuestionnaireDao questionnaireDao,
+            final QuestionDao questionDao,
+            final ScoreDao scoreDao) {
 
         this.currentDefaultLanguage = determineDefaultLanguageForQuestionnaire(questionnaire);
 
         org.hl7.fhir.r5.model.Questionnaire fhirQuestionnaire = new org.hl7.fhir.r5.model.Questionnaire();
 
         fhirQuestionnaire.setName(questionnaire.getName());
-        fhirQuestionnaire.setTitleElement(
-            convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
+        fhirQuestionnaire.setTitleElement(convertLocalizedTextToStringType(questionnaire.getLocalizedDisplayName()));
         fhirQuestionnaire.setDescription(questionnaire.getDescription());
         fhirQuestionnaire.setLanguage(formatLanguageForBcp47(currentDefaultLanguage));
 
         String fhirUrl = configurationDao.getFHIRsystemURI();
-        String questionnaireUrl = String.format("%s/%s",
-            fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl,
-            questionnaire.getId());
+        String questionnaireUrl = String.format(
+                "%s/%s",
+                fhirUrl.endsWith("/") ? fhirUrl.substring(0, fhirUrl.length() - 1) : fhirUrl, questionnaire.getId());
 
         fhirQuestionnaire.setUrl(questionnaireUrl);
 
@@ -96,8 +99,7 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
             fhirQuestionnaire.setDate(new Date(questionnaire.getUpdatedAt().getTime()));
         }
 
-        fhirQuestionnaire.setStatus(
-            questionnaire.isPublished() ? PublicationStatus.ACTIVE : PublicationStatus.DRAFT);
+        fhirQuestionnaire.setStatus(questionnaire.isPublished() ? PublicationStatus.ACTIVE : PublicationStatus.DRAFT);
 
         Map<Question, QuestionnaireItemComponent> triggeringQuestions = new HashMap<>();
         Map<Question, QuestionnaireItemComponent> targetQuestions = new HashMap<>();
@@ -140,7 +142,9 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      */
     private StringType convertLocalizedTextToStringType(Map<String, String> localizedText) {
         Map.Entry<String, String> defaultEntry = localizedText.entrySet().stream()
-            .filter(e -> e.getKey().equals(currentDefaultLanguage)).findFirst().orElse(null);
+                .filter(e -> e.getKey().equals(currentDefaultLanguage))
+                .findFirst()
+                .orElse(null);
 
         StringType text = new StringType();
 
@@ -187,8 +191,7 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @param localizedText a map where the keys are language codes (e.g., "en_US") with the
      *                      corresponding values being the localized strings.
      */
-    private void addRemainingLanguageExtensions(StringType text,
-        Map<String, String> localizedText) {
+    private void addRemainingLanguageExtensions(StringType text, Map<String, String> localizedText) {
         localizedText.entrySet().forEach(entry -> {
             addLanguageExtension(text, entry);
         });
@@ -212,13 +215,12 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @return a FHIR {@link QuestionnaireItemComponent} representing the question in the FHIR
      * questionnaire format
      */
-    private QuestionnaireItemComponent convertQuestionToFhirItem(Question question,
-        ConfigurationDao configurationDao) {
+    private QuestionnaireItemComponent convertQuestionToFhirItem(Question question, ConfigurationDao configurationDao) {
         QuestionnaireItemComponent item = new QuestionnaireItemComponent();
 
         item.setLinkId(Question.class.getSimpleName() + "/" + question.getId());
 
-        //Repeat and Required not allowed for display items
+        // Repeat and Required not allowed for display items
         if (question.getQuestionType() != QuestionType.INFO_TEXT) {
             item.setRepeats(false);
             item.setRequired(question.getIsRequired());
@@ -237,7 +239,7 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
                 break;
 
             case NUMBER_CHECKBOX_TEXT:
-                // fallthrough to NUMBER_CHECKBOX to handle Slider and freetext creation
+            // fallthrough to NUMBER_CHECKBOX to handle Slider and freetext creation
             case NUMBER_CHECKBOX:
             case SLIDER:
                 convertSliderQuestion(item, question);
@@ -267,15 +269,17 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
 
         // Add min/max extensions for choice questions
         if (question.getQuestionType() == QuestionType.DROP_DOWN
-            || question.getQuestionType() == QuestionType.MULTIPLE_CHOICE) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
-                new IntegerType(question.getMinNumberAnswers()));
+                || question.getQuestionType() == QuestionType.MULTIPLE_CHOICE) {
+            item.addExtension(
+                    "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+                    new IntegerType(question.getMinNumberAnswers()));
             item.setRequired(true);
 
             if (question.getMaxNumberAnswers() > 1) {
                 item.setRepeats(true);
-                item.addExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
-                    new IntegerType(question.getMaxNumberAnswers()));
+                item.addExtension(
+                        "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+                        new IntegerType(question.getMaxNumberAnswers()));
             } else if (question.getMaxNumberAnswers() == 1) {
                 item.setRepeats(false);
             }
@@ -302,15 +306,14 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @param question         the domain question containing the answers to convert
      * @param configurationDao DAO to retrieve configuration values such as the FHIR system URI
      */
-    private void convertChoiceQuestion(QuestionnaireItemComponent item, Question question,
-        ConfigurationDao configurationDao) {
+    private void convertChoiceQuestion(
+            QuestionnaireItemComponent item, Question question, ConfigurationDao configurationDao) {
         item.setType(QuestionnaireItemType.CODING);
         for (Answer answer : question.getAnswers()) {
             if (answer instanceof SelectAnswer selectAnswer && !selectAnswer.getIsOther()) {
                 QuestionnaireItemAnswerOptionComponent option = new QuestionnaireItemAnswerOptionComponent();
                 Coding coding = new Coding();
-                StringType display = convertLocalizedTextToStringType(
-                    selectAnswer.getLocalizedLabel());
+                StringType display = convertLocalizedTextToStringType(selectAnswer.getLocalizedLabel());
 
                 coding.setDisplayElement(display);
                 coding.setCode(ANSWER_OID + answer.getId());
@@ -318,13 +321,12 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
 
                 if (selectAnswer.getValue() != null) {
                     coding.addExtension(
-                        "http://hl7.org/fhir/StructureDefinition/questionnaire-ordinalValue",
-                        new DecimalType(selectAnswer.getValue()));
+                            "http://hl7.org/fhir/StructureDefinition/questionnaire-ordinalValue",
+                            new DecimalType(selectAnswer.getValue()));
                 }
                 option.setValue(coding);
                 item.addAnswerOption(option);
-            }
-            else {
+            } else {
                 item.setAnswerConstraint(QuestionnaireAnswerConstraint.OPTIONSORSTRING);
             }
         }
@@ -356,14 +358,16 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
         }
 
         // Determine if type should be decimal or integer
-        boolean isDecimal = sliderAnswer.getStepsize() - sliderAnswer.getStepsize().intValue() > 0
-            || sliderAnswer.getMinValue() - sliderAnswer.getMinValue().intValue() > 0;
+        boolean isDecimal = sliderAnswer.getStepsize()
+                                - sliderAnswer.getStepsize().intValue()
+                        > 0
+                || sliderAnswer.getMinValue() - sliderAnswer.getMinValue().intValue() > 0;
 
         item.setType(isDecimal ? QuestionnaireItemType.DECIMAL : QuestionnaireItemType.INTEGER);
-        item.addExtension("http://hl7.org/fhir/StructureDefinition/minValue",
-            new DecimalType(sliderAnswer.getMinValue()));
-        item.addExtension("http://hl7.org/fhir/StructureDefinition/maxValue",
-            new DecimalType(sliderAnswer.getMaxValue()));
+        item.addExtension(
+                "http://hl7.org/fhir/StructureDefinition/minValue", new DecimalType(sliderAnswer.getMinValue()));
+        item.addExtension(
+                "http://hl7.org/fhir/StructureDefinition/maxValue", new DecimalType(sliderAnswer.getMaxValue()));
     }
 
     /**
@@ -378,19 +382,24 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @param question the domain question containing the number input answer
      */
     private void convertNumberInputQuestion(QuestionnaireItemComponent item, Question question) {
-        NumberInputAnswer numberInputAnswer = (NumberInputAnswer) question.getAnswers().get(0);
+        NumberInputAnswer numberInputAnswer =
+                (NumberInputAnswer) question.getAnswers().get(0);
         boolean isInteger = numberInputAnswer.getStepsize() != null
-            && (numberInputAnswer.getStepsize() - numberInputAnswer.getStepsize().intValue()) == 0;
+                && (numberInputAnswer.getStepsize()
+                                - numberInputAnswer.getStepsize().intValue())
+                        == 0;
 
         item.setType(isInteger ? QuestionnaireItemType.INTEGER : QuestionnaireItemType.DECIMAL);
 
         if (numberInputAnswer.getMinValue() != null) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/minValue",
-                new DecimalType(numberInputAnswer.getMinValue()));
+            item.addExtension(
+                    "http://hl7.org/fhir/StructureDefinition/minValue",
+                    new DecimalType(numberInputAnswer.getMinValue()));
         }
         if (numberInputAnswer.getMaxValue() != null) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/maxValue",
-                new DecimalType(numberInputAnswer.getMaxValue()));
+            item.addExtension(
+                    "http://hl7.org/fhir/StructureDefinition/maxValue",
+                    new DecimalType(numberInputAnswer.getMaxValue()));
         }
     }
 
@@ -411,12 +420,14 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         if (dateAnswer.getStartDate() != null) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/minValue",
-                new DateType(dateFormat.format(dateAnswer.getStartDate())));
+            item.addExtension(
+                    "http://hl7.org/fhir/StructureDefinition/minValue",
+                    new DateType(dateFormat.format(dateAnswer.getStartDate())));
         }
         if (dateAnswer.getEndDate() != null) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/maxValue",
-                new DateType(dateFormat.format(dateAnswer.getEndDate())));
+            item.addExtension(
+                    "http://hl7.org/fhir/StructureDefinition/maxValue",
+                    new DateType(dateFormat.format(dateAnswer.getEndDate())));
         }
     }
 
@@ -435,13 +446,13 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      */
     private QuestionnaireItemComponent createFreeTextItemIfNeeded(Question question) {
         if (question.getQuestionType() == QuestionType.NUMBER_CHECKBOX_TEXT) {
-            SliderFreetextAnswer sliderFreetextAnswer = (SliderFreetextAnswer) question.getAnswers()
-                .get(0);
+            SliderFreetextAnswer sliderFreetextAnswer =
+                    (SliderFreetextAnswer) question.getAnswers().get(0);
             QuestionnaireItemComponent freeTextItem = new QuestionnaireItemComponent();
             freeTextItem.setLinkId(Question.class.getSimpleName() + "/" + question.getId() + "-ft");
             freeTextItem.setType(QuestionnaireItemType.TEXT);
             freeTextItem.setTextElement(
-                convertLocalizedTextToStringType(sliderFreetextAnswer.getLocalizedFreetextLabel()));
+                    convertLocalizedTextToStringType(sliderFreetextAnswer.getLocalizedFreetextLabel()));
             return freeTextItem;
         }
         return null;
@@ -472,8 +483,8 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      *                            their FHIR questionnaire items
      */
     private void convertConditionsToEnableWhen(
-        Map<Question, QuestionnaireItemComponent> triggeringQuestions,
-        Map<Question, QuestionnaireItemComponent> targetQuestions) {
+            Map<Question, QuestionnaireItemComponent> triggeringQuestions,
+            Map<Question, QuestionnaireItemComponent> targetQuestions) {
         for (Map.Entry<Question, QuestionnaireItemComponent> currentEntry : triggeringQuestions.entrySet()) {
             Question question = currentEntry.getKey();
             QuestionnaireItemComponent item = currentEntry.getValue();
@@ -491,16 +502,18 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
                             if (selectAnswerCondition.getAction() == ConditionActionType.ENABLE) {
                                 for (QuestionnaireItemAnswerOptionComponent option : item.getAnswerOption()) {
                                     try {
-                                        if (option.getValueCoding().getCode()
-                                            .equals(ANSWER_OID + answer.getId())) {
-                                            QuestionnaireItemEnableWhenComponent enableWhen = new QuestionnaireItemEnableWhenComponent();
+                                        if (option.getValueCoding().getCode().equals(ANSWER_OID + answer.getId())) {
+                                            QuestionnaireItemEnableWhenComponent enableWhen =
+                                                    new QuestionnaireItemEnableWhenComponent();
                                             enableWhen.setAnswer(option.getValueCoding());
                                             enableWhen.setOperator(QuestionnaireItemOperator.EQUAL);
                                             enableWhen.setQuestion(item.getLinkId());
-                                            targetQuestions.get(selectAnswerCondition.getTarget())
-                                                .addEnableWhen(enableWhen);
-                                            targetQuestions.get(selectAnswerCondition.getTarget())
-                                                .setEnableBehavior(EnableWhenBehavior.ALL);
+                                            targetQuestions
+                                                    .get(selectAnswerCondition.getTarget())
+                                                    .addEnableWhen(enableWhen);
+                                            targetQuestions
+                                                    .get(selectAnswerCondition.getTarget())
+                                                    .setEnableBehavior(EnableWhenBehavior.ALL);
                                         }
                                     } catch (Exception ex) {
                                         // Log or handle exception if needed
@@ -512,23 +525,25 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
                         case NUMBER_CHECKBOX:
                         case NUMBER_INPUT:
                         case SLIDER:
-                            SliderAnswerThresholdCondition sliderAnswerCondition = (SliderAnswerThresholdCondition) condition;
+                            SliderAnswerThresholdCondition sliderAnswerCondition =
+                                    (SliderAnswerThresholdCondition) condition;
                             boolean shouldAddEnableWhen =
-                                (sliderAnswerCondition.getAction() == ConditionActionType.ENABLE
-                                    && sliderAnswerCondition.getThresholdComparisonType()
-                                    == ThresholdComparisonType.EQUALS) || (
-                                    sliderAnswerCondition.getAction() == ConditionActionType.DISABLE
-                                        && sliderAnswerCondition.getThresholdComparisonType()
-                                        == ThresholdComparisonType.NOT_EQUALS);
+                                    (sliderAnswerCondition.getAction() == ConditionActionType.ENABLE
+                                                    && sliderAnswerCondition.getThresholdComparisonType()
+                                                            == ThresholdComparisonType.EQUALS)
+                                            || (sliderAnswerCondition.getAction() == ConditionActionType.DISABLE
+                                                    && sliderAnswerCondition.getThresholdComparisonType()
+                                                            == ThresholdComparisonType.NOT_EQUALS);
 
                             if (shouldAddEnableWhen) {
-                                QuestionnaireItemEnableWhenComponent enableWhen = new QuestionnaireItemEnableWhenComponent();
-                                enableWhen.setAnswer(
-                                    new DecimalType(sliderAnswerCondition.getThreshold()));
+                                QuestionnaireItemEnableWhenComponent enableWhen =
+                                        new QuestionnaireItemEnableWhenComponent();
+                                enableWhen.setAnswer(new DecimalType(sliderAnswerCondition.getThreshold()));
                                 enableWhen.setOperator(QuestionnaireItemOperator.EQUAL);
                                 enableWhen.setQuestion(item.getLinkId());
-                                targetQuestions.get(sliderAnswerCondition.getTarget())
-                                    .addEnableWhen(enableWhen);
+                                targetQuestions
+                                        .get(sliderAnswerCondition.getTarget())
+                                        .addEnableWhen(enableWhen);
                             }
                             break;
 
@@ -552,8 +567,7 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
      * @return a byte array containing the serialized XML representation of the questionnaire, or an
      * empty byte array if serialization fails
      */
-    private byte[] serializeFhirQuestionnaire(
-        org.hl7.fhir.r5.model.Questionnaire fhirQuestionnaire) {
+    private byte[] serializeFhirQuestionnaire(org.hl7.fhir.r5.model.Questionnaire fhirQuestionnaire) {
         FhirContext ctx = FhirContext.forR5();
         IParser parser = ctx.newXmlParser().setPrettyPrint(true);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -585,7 +599,6 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
         } else {
             return localeList.get(0);
         }
-
     }
 
     private String formatLanguageForBcp47(String language) {
@@ -599,5 +612,4 @@ public class MetadataExporterFhirR5 implements MetadataExporter {
     private List<String> getLocaleListFromQuestionnaire(Questionnaire questionnaire) {
         return questionnaire.getLocalizedDisplayName().keySet().stream().toList();
     }
-
 }

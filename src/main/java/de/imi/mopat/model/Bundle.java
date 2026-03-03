@@ -48,13 +48,33 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
 @Table(name = "bundle")
 public class Bundle implements Serializable {
 
+    @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @JsonIgnore
+    @NotNull(message = "{bundle.createdAt.notNull}")
+    @Column(name = "created_at", nullable = false)
+    private final Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "bundle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    @CascadeOnDelete
+    private final Set<BundleClinic> bundleClinics = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY)
+    private final Set<Encounter> encounters = new HashSet<>();
+
+    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private final Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
     // @Size and @NotNull have to be combined to realize @NotEmpty
     // If the annotations are changed, they have to be changed in the
     // corresponding data transfer object class
@@ -62,6 +82,7 @@ public class Bundle implements Serializable {
     @Size(min = 1, message = "{bundle.name.notNull}")
     @Column(name = "name")
     private String name; // short name of the bundle
+
     @JsonIgnore
     // @Size and @NotNull have to be combined to realize @NotEmpty
     // If the annotations are changed, they have to be changed in the
@@ -70,53 +91,44 @@ public class Bundle implements Serializable {
     @Size(min = 1, message = "{bundle.description.notNull}")
     @Column(name = "description", columnDefinition = "TEXT NOT NULL")
     private String description;
-    @JsonIgnore
-    @NotNull(message = "{bundle.createdAt.notNull}")
-    @Column(name = "created_at", nullable = false)
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
     // @NotNull missing, because of jakarta.validation.valid annotation (used in BundleController)
     @JsonIgnore
     @Column(name = "changed_by", nullable = false)
     private Long changedBy;
+
     @JsonIgnore
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
     @JsonIgnore
     @NotNull(message = "{bundle.isPublished.notNull}")
     @Column(name = "is_published", nullable = false)
     private Boolean isPublished;
+
     @NotNull(message = "{bundle.showProgressPerBundle.notNull}")
     @Column(name = "show_progress_per_bundle", nullable = false)
     private Boolean showProgressPerBundle;
+
     @NotNull(message = "{bundle.deactivateProgressAndNameDuringSurvey.notNull}")
     @Column(name = "deactivate_progress_and_name_during_survey", nullable = false)
     private Boolean deactivateProgressAndNameDuringSurvey;
+
     @Transient
     private Boolean hasConditions;
+
     @ElementCollection
     @MapKeyColumn(name = "language")
     @Column(name = "welcome_text", columnDefinition = "TEXT NOT NULL")
     @CollectionTable(name = "bundle_welcome_text", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedWelcomeText;
+
     @ElementCollection
     @MapKeyColumn(name = "language")
     @Column(name = "final_text", columnDefinition = "TEXT NOT NULL")
     @CollectionTable(name = "bundle_final_text", joinColumns = @JoinColumn(name = "id"))
     private Map<String, String> localizedFinalText;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "bundle", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Valid
-    @CascadeOnDelete
-    private Set<BundleClinic> bundleClinics = new HashSet<>();
-    @JsonIgnore
-    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY)
-    private Set<Encounter> encounters = new HashSet<>();
-    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Valid
-    private Set<BundleQuestionnaire> bundleQuestionnaires = new HashSet<>();
-
-    public Bundle() { //default constructor (in protected state), should not
+    public Bundle() { // default constructor (in protected state), should not
         // be accessible to anything else but the JPA implementation (here:
         // Hibernate) and the JUnit tests
     }
@@ -156,9 +168,13 @@ public class Bundle implements Serializable {
      *                                              otherwise. Must not be
      *                                              <code>null</code>.
      */
-    public Bundle(final String name, final String description, final Long changedBy,
-        final Boolean isPublished, final Boolean showProgressPerBundle,
-        final Boolean deactivateProgressAndNameDuringSurvey) {
+    public Bundle(
+            final String name,
+            final String description,
+            final Long changedBy,
+            final Boolean isPublished,
+            final Boolean showProgressPerBundle,
+            final Boolean deactivateProgressAndNameDuringSurvey) {
         setName(name);
         setDescription(description);
         setChangedBy(changedBy);
@@ -222,7 +238,7 @@ public class Bundle implements Serializable {
         assert bundleClinic != null : "The given BundleClinic object was null";
 
         this.bundleClinics.add(bundleClinic);
-        //take care that the objects know each other
+        // take care that the objects know each other
         if (bundleClinic.getBundle() == null || !bundleClinic.getBundle().equals(this)) {
             // Add this bundle to the BundleClinic
             bundleClinic.setBundle(this);
@@ -242,7 +258,7 @@ public class Bundle implements Serializable {
     public void removeBundleClinic(final BundleClinic bundleClinic) {
         assert bundleClinic != null : "The given BundleClinic was null";
         bundleClinics.remove(bundleClinic);
-        //Take care of bidirectional removal
+        // Take care of bidirectional removal
         if (bundleClinic.getBundle() != null && bundleClinic.getBundle().equals(this)) {
             bundleClinic.removeBundle();
         }
@@ -301,8 +317,8 @@ public class Bundle implements Serializable {
         assert bundleQuestionnaire != null : "The given BundleQuestionnaire was null";
 
         this.bundleQuestionnaires.add(bundleQuestionnaire);
-        if (bundleQuestionnaire.getBundle() == null || !bundleQuestionnaire.getBundle()
-            .equals(this)) {
+        if (bundleQuestionnaire.getBundle() == null
+                || !bundleQuestionnaire.getBundle().equals(this)) {
             // Add this bundle to the BundleQuestionnaire
             bundleQuestionnaire.setBundle(this);
         }
@@ -317,12 +333,12 @@ public class Bundle implements Serializable {
      */
     public void removeBundleQuestionnaire(final BundleQuestionnaire bundleQuestionnaire) {
         assert bundleQuestionnaire != null : "The given BundleQuestionnaire was null";
-        //Do removal stuff only if the given bundleQuestionnaire is
+        // Do removal stuff only if the given bundleQuestionnaire is
         // associated with this bundle
         bundleQuestionnaires.remove(bundleQuestionnaire);
-        //Take care of bidirectional removal
-        if (bundleQuestionnaire.getBundle() != null && bundleQuestionnaire.getBundle()
-            .equals(this)) {
+        // Take care of bidirectional removal
+        if (bundleQuestionnaire.getBundle() != null
+                && bundleQuestionnaire.getBundle().equals(this)) {
             bundleQuestionnaire.removeBundle();
         }
     }
@@ -332,8 +348,7 @@ public class Bundle implements Serializable {
      * care that the {@link BundleQuestionnaire} objects do not refer to this object anymore.
      */
     public void removeAllBundleQuestionnaires() {
-        Collection<BundleQuestionnaire> tempBundleQuestionnaires = new HashSet<>(
-            bundleQuestionnaires);
+        Collection<BundleQuestionnaire> tempBundleQuestionnaires = new HashSet<>(bundleQuestionnaires);
         for (BundleQuestionnaire bundleQuestionnaire : tempBundleQuestionnaires) {
             removeBundleQuestionnaire(bundleQuestionnaire);
         }
@@ -447,12 +462,8 @@ public class Bundle implements Serializable {
      */
     public void setDescription(final String description) {
         assert description != null : "The given description was null";
-        assert
-            description.trim().length() >= 3 :
-            "The description was < 3 characters long (after " + "trimming)";
-        assert
-            description.trim().length() <= 255 :
-            "The description was > 255 characters long (after " + "trimming)";
+        assert description.trim().length() >= 3 : "The description was < 3 characters long (after " + "trimming)";
+        assert description.trim().length() <= 255 : "The description was > 255 characters long (after " + "trimming)";
         this.description = description.trim();
     }
 
@@ -504,8 +515,7 @@ public class Bundle implements Serializable {
      */
     public void setUpdatedAt(final Timestamp updatedAt) {
         assert updatedAt != null : "The timestamp given was null";
-        assert !updatedAt.after(
-            new Timestamp(System.currentTimeMillis())) : "The given timestamp is in the future";
+        assert !updatedAt.after(new Timestamp(System.currentTimeMillis())) : "The given timestamp is in the future";
         this.updatedAt = updatedAt;
     }
 
@@ -532,8 +542,7 @@ public class Bundle implements Serializable {
      *                                              otherwise. Must not be
      *                                              <code>null</code>.
      */
-    public void setDeactivateProgressAndNameDuringSurvey(
-        final Boolean deactivateProgressAndNameDuringSurvey) {
+    public void setDeactivateProgressAndNameDuringSurvey(final Boolean deactivateProgressAndNameDuringSurvey) {
         assert deactivateProgressAndNameDuringSurvey != null : "The given value was null";
         this.deactivateProgressAndNameDuringSurvey = deactivateProgressAndNameDuringSurvey;
     }
@@ -690,7 +699,7 @@ public class Bundle implements Serializable {
         if (!this.getBundleQuestionnaires().isEmpty()) {
             // Add the languages from the first questionnaire to the set
             availableQuestionnaireLanguages.addAll(
-                this.getBundleQuestionnaires().first().getQuestionnaire().getAvailableLanguages());
+                    this.getBundleQuestionnaires().first().getQuestionnaire().getAvailableLanguages());
             for (BundleQuestionnaire bundleQuestionnaire : this.getBundleQuestionnaires()) {
                 Questionnaire questionnaire = bundleQuestionnaire.getQuestionnaire();
                 // Retain all languages from the current questionnaire -->
@@ -807,7 +816,6 @@ public class Bundle implements Serializable {
     public boolean usedInClinics() {
         return !this.getBundleClinics().isEmpty();
     }
-
 
     public Boolean hasActiveQuestionnaire() {
         for (BundleQuestionnaire bundleQuestionnaire : this.bundleQuestionnaires) {

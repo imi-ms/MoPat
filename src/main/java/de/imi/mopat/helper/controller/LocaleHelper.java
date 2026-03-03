@@ -20,9 +20,10 @@ import org.springframework.stereotype.Service;
 public class LocaleHelper {
 
     // All locales that are used in this application to localize the survey.
-    private static final String[] LOCALESUSEDINSURVEY = {"de_DE", "en_GB", "es_ES", "fr_FR",
-        "hi_IN", "it_IT", "nl_NL", "no_NO", "pl_PL", "pt_PT", "ru_RU", "sv_SE", "tr_TR", "ar",
-        "fa_IR", "dari", "ku"};
+    private static final String[] LOCALESUSEDINSURVEY = {
+        "de_DE", "en_GB", "es_ES", "fr_FR", "hi_IN", "it_IT", "nl_NL", "no_NO", "pl_PL", "pt_PT", "ru_RU", "sv_SE",
+        "tr_TR", "ar", "fa_IR", "dari", "ku"
+    };
 
     /**
      * Returns a list with available locales usable during a survey.
@@ -43,8 +44,7 @@ public class LocaleHelper {
 
         // Get all locales with more than 2 characters. The others are not
         // iso conform
-        List<Locale> availableLocales = new ArrayList<>(
-            Arrays.asList(Locale.getAvailableLocales()));
+        List<Locale> availableLocales = new ArrayList<>(Arrays.asList(Locale.getAvailableLocales()));
         for (Iterator<Locale> iterator = availableLocales.iterator(); iterator.hasNext(); ) {
             Locale locale = iterator.next();
             if (locale.toString().length() == 5) {
@@ -151,5 +151,4 @@ public class LocaleHelper {
     private static boolean isGermanLocale(Locale locale) {
         return locale != null && ("de".equals(locale.getLanguage()) || Locale.GERMANY.equals(locale));
     }
-
 }

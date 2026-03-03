@@ -17,14 +17,14 @@ public class InvitationDTO {
 
     private String role = null;
     private String personalText = null;
+
     @NotNull(message = "{invitation.locale.notNull}")
     @Size(min = 1, message = "{invitation.locale.notNull}")
     private String locale = null;
+
     private List<ClinicDTO> assignedClinics = new ArrayList<>();
 
-    public InvitationDTO() {
-
-    }
+    public InvitationDTO() {}
 
     public List<ClinicDTO> getAssignedClinics() {
         return assignedClinics;
@@ -38,20 +38,40 @@ public class InvitationDTO {
         return uuid;
     }
 
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getRole() {
         return role;
     }
 
+    public void setRole(final String role) {
+        this.role = role;
+    }
+
     public String getPersonalText() {
         return personalText;
     }
 
+    public void setPersonalText(final String personalText) {
+        this.personalText = personalText;
+    }
+
     public String getLocale() {
         return locale;
+    }
+
+    public void setLocale(final String locale) {
+        this.locale = locale;
     }
 
     public List<InvitationUserDTO> getInvitationUsers() {
@@ -60,25 +80,5 @@ public class InvitationDTO {
 
     public void setInvitationUsers(final List<InvitationUserDTO> invitationUsers) {
         this.invitationUsers = invitationUsers;
-    }
-
-    public void setUuid(final String uuid) {
-        this.uuid = uuid;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public void setRole(final String role) {
-        this.role = role;
-    }
-
-    public void setPersonalText(final String personalText) {
-        this.personalText = personalText;
-    }
-
-    public void setLocale(final String locale) {
-        this.locale = locale;
     }
 }

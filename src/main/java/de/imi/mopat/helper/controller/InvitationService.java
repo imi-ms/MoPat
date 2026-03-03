@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class InvitationService {
 
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(InvitationService.class);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(InvitationService.class);
 
     /**
      * Sorts a list of invitation in ascending order by their name.
@@ -25,7 +23,8 @@ public class InvitationService {
      */
     public List<Invitation> sortInvitationByNameAsc(List<Invitation> invitations) {
         return invitations.stream()
-            .sorted(Comparator.comparing(invitation -> invitation.getFirstName().toLowerCase()))
-            .collect(Collectors.toList());
+                .sorted(Comparator.comparing(
+                        invitation -> invitation.getFirstName().toLowerCase()))
+                .collect(Collectors.toList());
     }
 }

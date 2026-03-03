@@ -9,6 +9,6 @@ package de.imi.mopat.model.conditions;
  * @since v1.2
  */
 public enum ConditionActionType {
-
-    DISABLE, ENABLE;
+    DISABLE,
+    ENABLE;
 }

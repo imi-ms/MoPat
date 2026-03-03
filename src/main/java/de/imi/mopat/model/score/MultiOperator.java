@@ -7,6 +7,4 @@ import jakarta.persistence.Entity;
  * {@link Expression}.
  */
 @Entity
-public abstract class MultiOperator extends Operator {
-
-}
+public abstract class MultiOperator extends Operator {}

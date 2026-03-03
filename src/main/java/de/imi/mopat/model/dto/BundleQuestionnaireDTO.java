@@ -14,12 +14,16 @@ public class BundleQuestionnaireDTO {
 
     private QuestionnaireDTO questionnaireDTO;
     private Long position = null;
+
     @JsonIgnore
     private Set<ExportTemplateType> exportTemplateTypes = new HashSet<>();
+
     @JsonIgnore
     private Set<Long> exportTemplates = new HashSet<>();
+
     @JsonIgnore
     private Set<ExportTemplate> exportTemplateObjects = new HashSet<>();
+
     private Boolean isEnabled;
     private Boolean showScores;
     private Long bundleId;
@@ -81,7 +85,6 @@ public class BundleQuestionnaireDTO {
     public void setExportTemplateObjects(final Set<ExportTemplate> exportTemplateObjects) {
         this.exportTemplateObjects = exportTemplateObjects;
     }
-
 
     /**
      * @return the position

@@ -15,7 +15,7 @@ public class ImportQuestionListResult {
 
     private final List<ImportQuestionResult> importQuestionResults = new ArrayList<ImportQuestionResult>();
     private final List<ValidationMessage> validationMessages = new ArrayList<ValidationMessage>();
-    //In ODM this identfier stands for itemGroupDefOID, in FHIR it stands for
+    // In ODM this identfier stands for itemGroupDefOID, in FHIR it stands for
     // the item's linkId which represents a question group
     private String identifier;
 
@@ -73,6 +73,15 @@ public class ImportQuestionListResult {
     }
 
     /**
+     * returns the identifier.
+     *
+     * @return identifier
+     */
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    /**
      * Sets the ItemGroupDef OID for ODM or the item's linkId for FHIR with the incoming string
      *
      * @param itemGroupDefOID The ItemGroupDef OID for ODM or the item's linkId for FHIR with the
@@ -80,15 +89,6 @@ public class ImportQuestionListResult {
      */
     public void setIdentifier(final String itemGroupDefOID) {
         this.identifier = itemGroupDefOID;
-    }
-
-    /**
-     * returns the identifier.
-     *
-     * @return identifier
-     */
-    public String getIdentifier() {
-        return identifier;
     }
 
     /**
@@ -112,8 +112,8 @@ public class ImportQuestionListResult {
 
     public ImportQuestionResult getQuestionResultByIdentifier(final String identifier) {
         for (ImportQuestionResult importQuestionResult : this.importQuestionResults) {
-            if (importQuestionResult.getIdentifier() != null && importQuestionResult.getIdentifier()
-                .equals(identifier)) {
+            if (importQuestionResult.getIdentifier() != null
+                    && importQuestionResult.getIdentifier().equals(identifier)) {
                 return importQuestionResult;
             }
         }

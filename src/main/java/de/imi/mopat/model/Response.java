@@ -5,12 +5,6 @@ import de.imi.mopat.helper.model.UUIDGenerator;
 import de.imi.mopat.model.dto.PointOnImageDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +18,11 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * The database table model for table <i>response</i>. Represents the answer a patient has choosen
@@ -39,26 +38,33 @@ import jakarta.validation.constraints.NotNull;
 public class Response implements Serializable {
 
     @JsonIgnore
+    @Column(name = "uuid")
+    private final String uuid = UUIDGenerator.createUUID();
+
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-    @JsonIgnore
-    @Column(name = "uuid")
-    private String uuid = UUIDGenerator.createUUID();
+
     @Column(name = "customtext", columnDefinition = "TEXT")
     private String customtext = null;
+
     @Column(name = "value")
     private Double value = null;
+
     @Column(name = "date")
     @Temporal(TemporalType.DATE)
     private Date date = null;
+
     @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointOnImage> pointsOnImage = new ArrayList<>();
+
     @NotNull(message = "{response.answer.notNull}")
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
     private Answer answer;
+
     @JsonIgnore
     @NotNull(message = "{response.encounter.notNull}")
     @ManyToOne
@@ -136,16 +142,12 @@ public class Response implements Serializable {
      *              {@link SliderAnswer#getMaxValue()} value.
      */
     public void setValue(final Double value) {
-        assert answer instanceof SliderAnswer :
-            "Trying to set a value to a " + "response that doesn't correspond to a slider answer "
-                + "doesn't make sense";
+        assert answer instanceof SliderAnswer
+                : "Trying to set a value to a " + "response that doesn't correspond to a slider answer "
+                        + "doesn't make sense";
         if (value != null) {
-            assert
-                value >= ((SliderAnswer) answer).getMinValue() :
-                "The value was" + " < than the answer's min value";
-            assert
-                value <= ((SliderAnswer) answer).getMaxValue() :
-                "The value was" + " > than the answer's max value";
+            assert value >= ((SliderAnswer) answer).getMinValue() : "The value was" + " < than the answer's min value";
+            assert value <= ((SliderAnswer) answer).getMaxValue() : "The value was" + " > than the answer's max value";
         }
         this.value = value;
     }
@@ -171,17 +173,18 @@ public class Response implements Serializable {
      *             value. Must not be &gt; the referenced {@link DateAnswer#getEndDate()} value.
      */
     public void setDate(final Date date) {
-        assert answer instanceof DateAnswer : "Trying to set a date to a "
-            + "response that doesn't correspond to a date answer doesn't " + "make sense";
+        assert answer instanceof DateAnswer
+                : "Trying to set a date to a " + "response that doesn't correspond to a date answer doesn't "
+                        + "make sense";
         if (date != null) {
-            if (((DateAnswer) answer).getStartDate() != null) {
-                assert date.getTime() >= ((DateAnswer) answer).getStartDate().getTime() :
-                    "The value was <" + " than the answer's min value";
-            }
-            if (((DateAnswer) answer).getEndDate() != null) {
-                assert date.getTime() <= ((DateAnswer) answer).getEndDate().getTime() :
-                    "The value was >" + " than the answer's max value";
-            }
+            assert ((DateAnswer) answer).getStartDate() == null
+                            || date.getTime()
+                                    >= ((DateAnswer) answer).getStartDate().getTime()
+                    : "The value was <" + " than the answer's min value";
+            assert ((DateAnswer) answer).getEndDate() == null
+                            || date.getTime()
+                                    <= ((DateAnswer) answer).getEndDate().getTime()
+                    : "The value was >" + " than the answer's max value";
         }
         this.date = date;
     }
@@ -243,8 +246,7 @@ public class Response implements Serializable {
      * <code>null</code>.
      */
     public List<PointOnImage> getPointsOnImage() {
-        Collections.sort(pointsOnImage,
-            (PointOnImage o1, PointOnImage o2) -> o1.getPosition() - o2.getPosition());
+        Collections.sort(pointsOnImage, (PointOnImage o1, PointOnImage o2) -> o1.getPosition() - o2.getPosition());
         return pointsOnImage;
     }
 
@@ -255,9 +257,9 @@ public class Response implements Serializable {
      * @param pointsOnImage The list of {@link PointOnImage PointsOnImage} of this response.
      */
     public void setPointsOnImage(final List<PointOnImage> pointsOnImage) {
-        assert answer instanceof ImageAnswer :
-            "Trying to set a list of " + "pointsOnImage to a response that doesn't correspond to a "
-                + "image answer doesn't make sense";
+        assert answer instanceof ImageAnswer
+                : "Trying to set a list of " + "pointsOnImage to a response that doesn't correspond to a "
+                        + "image answer doesn't make sense";
         this.pointsOnImage = pointsOnImage;
     }
 
@@ -292,10 +294,9 @@ public class Response implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Response)) {
+        if (!(obj instanceof Response other)) {
             return false;
         }
-        Response other = (Response) obj;
         return getUUID().equals(other.getUUID());
     }
 

@@ -1,12 +1,8 @@
 package de.imi.mopat.model;
 
-import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
+import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.user.User;
-
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +12,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,31 +29,43 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class AuditEntry implements Serializable {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuditEntry.class);
+
+    @NotNull
+    @Column(name = "log_time", nullable = false)
+    private final Timestamp logTime = new Timestamp(System.currentTimeMillis());
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
     @Column(name = "user_id")
     @NotNull
     private Long userId;
+
     @Column(name = "module")
     private String module;
+
     @Column(name = "action")
     private String method;
+
     @NotNull
     @NotEmpty
     @Column(name = "content", columnDefinition = "TEXT NOT NULL")
     private String content;
+
     @Column(name = "sender_receiver", columnDefinition = "TEXT", nullable = true)
     private String senderReceiver;
-    @NotNull
-    @Column(name = "log_time", nullable = false)
-    private Timestamp logTime = new Timestamp(System.currentTimeMillis());
+
     @Transient
     private AuditEntryActionType action;
 
-    public AuditEntry(final String module, final String method, final String caseNumber,
-        final Set<AuditPatientAttribute> patientAttributes, final AuditEntryActionType action) {
+    public AuditEntry(
+            final String module,
+            final String method,
+            final String caseNumber,
+            final Set<AuditPatientAttribute> patientAttributes,
+            final AuditEntryActionType action) {
         assert caseNumber != null : "The given case number was null";
         assert !caseNumber.trim().isEmpty() : "The given case number was empty";
         assert patientAttributes != null : "The set of given patient attributes to log was null";
@@ -84,34 +95,44 @@ public class AuditEntry implements Serializable {
             jsonContent.put("action", action.toString());
         } catch (JSONException jsone) {
             Marker fatal = MarkerFactory.getMarker("FATAL");
-            LOGGER.error(fatal, "Could not add affected patient data items to the audit "
-                    + "log content. Audit log entry was supposed to "
-                    + "contain: user ID: {}; module: {}; method: {}; "
-                    + "case number: {}; patient attributes: {}; "
-                    + "action: {}; timestamp: {}; reason: {}",
-                new Object[]{userId, module, method, caseNumber, patientAttributes, action, logTime,
-                    new JSONException("blabla")});
+            LOGGER.error(
+                    fatal,
+                    "Could not add affected patient data items to the audit "
+                            + "log content. Audit log entry was supposed to "
+                            + "contain: user ID: {}; module: {}; method: {}; "
+                            + "case number: {}; patient attributes: {}; "
+                            + "action: {}; timestamp: {}; reason: {}",
+                    userId,
+                    module,
+                    method,
+                    caseNumber,
+                    patientAttributes,
+                    action,
+                    logTime,
+                    new JSONException("blabla"));
         }
 
         this.content = jsonContent.toString();
     }
 
-    public AuditEntry(final String module, final String method, final String caseNumber,
-        final Set<AuditPatientAttribute> patientAttributes, final AuditEntryActionType action,
-        final String senderReceiver) {
+    public AuditEntry(
+            final String module,
+            final String method,
+            final String caseNumber,
+            final Set<AuditPatientAttribute> patientAttributes,
+            final AuditEntryActionType action,
+            final String senderReceiver) {
         this(module, method, caseNumber, patientAttributes, action);
         if (action == AuditEntryActionType.RECEIVED || action == AuditEntryActionType.SENT) {
-            assert
-                senderReceiver != null :
-                "The sender/receiver given was null although " + "the action to log was " + action;
-            assert !senderReceiver.trim().isEmpty() :
-                "The sender/receiver given was" + " empty although the action to log was " + action;
+            assert senderReceiver != null
+                    : "The sender/receiver given was null although " + "the action to log was " + action;
+            assert !senderReceiver.trim().isEmpty()
+                    : "The sender/receiver given was" + " empty although the action to log was " + action;
         }
         this.senderReceiver = senderReceiver;
     }
 
-    protected AuditEntry() {
-    }
+    protected AuditEntry() {}
 
     @Override
     public String toString() {

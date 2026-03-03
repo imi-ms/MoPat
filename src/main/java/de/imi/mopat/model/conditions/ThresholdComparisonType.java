@@ -14,11 +14,14 @@ import de.imi.mopat.model.SliderAnswer;
  * @since v1.2
  */
 public enum ThresholdComparisonType {
-
-    SMALLER_THAN("<"), SMALLER_THAN_EQUALS("<="), EQUALS("="), BIGGER_THAN_EQUALS(
-        ">="), BIGGER_THAN(">"), NOT_EQUALS("!=");
-    private String textValue;
-    private static final Map<String, ThresholdComparisonType> stringToEnum = new HashMap<String, ThresholdComparisonType>();
+    SMALLER_THAN("<"),
+    SMALLER_THAN_EQUALS("<="),
+    EQUALS("="),
+    BIGGER_THAN_EQUALS(">="),
+    BIGGER_THAN(">"),
+    NOT_EQUALS("!=");
+    private static final Map<String, ThresholdComparisonType> stringToEnum =
+            new HashMap<String, ThresholdComparisonType>();
 
     static // Initialize map from constant name to enum constant
     {
@@ -27,8 +30,14 @@ public enum ThresholdComparisonType {
         }
     }
 
+    private String textValue;
+
     ThresholdComparisonType(final String textValue) {
         this.textValue = textValue;
+    }
+
+    public static ThresholdComparisonType fromString(final String textValue) {
+        return stringToEnum.get(textValue);
     }
 
     @Override
@@ -38,9 +47,5 @@ public enum ThresholdComparisonType {
 
     public String getTextValue() {
         return textValue;
-    }
-
-    public static ThresholdComparisonType fromString(final String textValue) {
-        return stringToEnum.get(textValue);
     }
 }

@@ -30,29 +30,38 @@ import org.springframework.stereotype.Service;
 @Service
 public class BundleService {
 
-    private static final org.slf4j.Logger LOGGER =
-        org.slf4j.LoggerFactory.getLogger(BundleService.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BundleService.class);
 
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
+
     @Autowired
     private BundleDao bundleDao;
+
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
     @Autowired
     private ScoreDao scoreDao;
+
     @Autowired
     private BundleQuestionnaireDao bundleQuestionnaireDao;
+
     @Autowired
     private QuestionnaireService questionnaireService;
+
     @Autowired
     private AuthService authService;
+
     @Autowired
     private ExportTemplateDao exportTemplateDao;
+
     @Autowired
     private AclClassDao aclClassDao;
+
     @Autowired
     private AclObjectIdentityDao aclObjectIdentityDao;
+
     @Autowired
     private BundleDTOMapper bundleDTOMapper;
 
@@ -77,13 +86,13 @@ public class BundleService {
         bundleDTO.getBundleQuestionnaireDTOs().forEach(bundleQuestionnaireDTO -> {
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             if (questionnaireDTO != null && questionnaireDTO.getId() != null) {
-                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaireDao.getElementById(questionnaireDTO.getId())));
+                questionnaireDTO.setHasScores(
+                        scoreDao.hasScore(questionnaireDao.getElementById(questionnaireDTO.getId())));
             }
         });
 
         return bundleDTO;
     }
-
 
     /**
      * Retrieves all questionnaires that are not assigned to the given bundle.
@@ -96,8 +105,7 @@ public class BundleService {
         Optional<Bundle> bundle = findBundleById(bundleId);
 
         List<Questionnaire> unassignedQuestionnaires;
-        unassignedQuestionnaires = bundle
-                .map(this::getUnassignedQuestionnaires)
+        unassignedQuestionnaires = bundle.map(this::getUnassignedQuestionnaires)
                 .orElseGet(() -> questionnaireService.getAllQuestionnaires());
 
         return unassignedQuestionnaires.stream()
@@ -107,10 +115,10 @@ public class BundleService {
                     questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
                     return questionnaireDTO;
                 })
-                .sorted(
-                        Comparator.comparing(QuestionnaireDTO::getQuestionnaireVersionGroupName, String::compareToIgnoreCase)
-                                .thenComparing(QuestionnaireDTO::getQuestionnaireVersionGroupId)
-                                .thenComparing(QuestionnaireDTO::getVersion))
+                .sorted(Comparator.comparing(
+                                QuestionnaireDTO::getQuestionnaireVersionGroupName, String::compareToIgnoreCase)
+                        .thenComparing(QuestionnaireDTO::getQuestionnaireVersionGroupId)
+                        .thenComparing(QuestionnaireDTO::getVersion))
                 .collect(Collectors.toList());
     }
 
@@ -161,14 +169,15 @@ public class BundleService {
      */
     public Set<Long> getUniqueQuestionnaireIds(List<Bundle> bundles) {
         Set<Long> resultSet = new HashSet<>();
-        for (Bundle bundle: bundles) {
+        for (Bundle bundle : bundles) {
             resultSet.add(bundle.getId());
         }
         return resultSet;
     }
 
     public boolean isBundleModifiable(BundleDTO bundleDTO) {
-        return bundleDTO.getId() == null || bundleDao.getElementById(bundleDTO.getId()).isModifiable();
+        return bundleDTO.getId() == null
+                || bundleDao.getElementById(bundleDTO.getId()).isModifiable();
     }
 
     /**
@@ -198,9 +207,10 @@ public class BundleService {
     }
 
     private void removeUnassignedBundleQuestionnaires(BundleDTO bundleDTO) {
-        bundleDTO.getBundleQuestionnaireDTOs().removeIf(
-                bq -> bq.getQuestionnaireDTO() == null || bq.getQuestionnaireDTO().getId() == null
-        );
+        bundleDTO
+                .getBundleQuestionnaireDTOs()
+                .removeIf(bq -> bq.getQuestionnaireDTO() == null
+                        || bq.getQuestionnaireDTO().getId() == null);
     }
 
     /**
@@ -211,7 +221,8 @@ public class BundleService {
      * @param bundleQuestionnaireDTOS The list of assigned questionnaires.
      * @param availableQuestionnaireDTOs The list of available questionnaires.
      */
-    public void syncAssignedAndAvailableQuestionnaires(List<BundleQuestionnaireDTO> bundleQuestionnaireDTOS, List<QuestionnaireDTO> availableQuestionnaireDTOs) {
+    public void syncAssignedAndAvailableQuestionnaires(
+            List<BundleQuestionnaireDTO> bundleQuestionnaireDTOS, List<QuestionnaireDTO> availableQuestionnaireDTOs) {
         Set<Long> assignedIds = bundleQuestionnaireDTOS.stream()
                 .map(BundleQuestionnaireDTO::getQuestionnaireDTO)
                 .filter(Objects::nonNull)
@@ -229,12 +240,14 @@ public class BundleService {
         bundleQuestionnaireDTOS.sort(Comparator.comparing(BundleQuestionnaireDTO::getPosition));
     }
 
-    private void updateMissingQuestionnaireData(List<BundleQuestionnaireDTO> assignedBundleQuestionnaires, List<QuestionnaireDTO> assignedQuestionnaires) {
-        Map<Long, QuestionnaireDTO> assignedQuestionnaireMap = assignedQuestionnaires.stream()
-                .collect(Collectors.toMap(QuestionnaireDTO::getId, Function.identity()));
+    private void updateMissingQuestionnaireData(
+            List<BundleQuestionnaireDTO> assignedBundleQuestionnaires, List<QuestionnaireDTO> assignedQuestionnaires) {
+        Map<Long, QuestionnaireDTO> assignedQuestionnaireMap =
+                assignedQuestionnaires.stream().collect(Collectors.toMap(QuestionnaireDTO::getId, Function.identity()));
 
         assignedBundleQuestionnaires.forEach(abq -> {
-            QuestionnaireDTO assignedQuestionnaire = assignedQuestionnaireMap.get(abq.getQuestionnaireDTO().getId());
+            QuestionnaireDTO assignedQuestionnaire =
+                    assignedQuestionnaireMap.get(abq.getQuestionnaireDTO().getId());
             if (assignedQuestionnaire != null) {
                 abq.getQuestionnaireDTO().setExportTemplates(assignedQuestionnaire.getExportTemplates());
                 abq.getQuestionnaireDTO().setQuestionnaireGroupDTO(assignedQuestionnaire.getQuestionnaireGroupDTO());
@@ -252,9 +265,7 @@ public class BundleService {
     public void saveOrUpdateBundle(BundleDTO bundleDTO) {
         User currentUser = authService.getAuthenticatedUser();
 
-        Bundle bundle = (bundleDTO.getId() != null)
-                ? bundleDao.getElementById(bundleDTO.getId())
-                : new Bundle();
+        Bundle bundle = (bundleDTO.getId() != null) ? bundleDao.getElementById(bundleDTO.getId()) : new Bundle();
 
         updateBundleProperties(bundle, bundleDTO, currentUser);
 
@@ -277,23 +288,25 @@ public class BundleService {
     }
 
     private void persistBundleQuestionnaires(BundleDTO bundleDTO, Bundle bundle) {
-        if (bundleDTO.getBundleQuestionnaireDTOs() == null || bundleDTO.getBundleQuestionnaireDTOs().isEmpty()) {
+        if (bundleDTO.getBundleQuestionnaireDTOs() == null
+                || bundleDTO.getBundleQuestionnaireDTOs().isEmpty()) {
             return;
         }
 
         for (BundleQuestionnaireDTO bundleQuestionnaireDTO : bundleDTO.getBundleQuestionnaireDTOs()) {
-            if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
+            if (bundleQuestionnaireDTO.getQuestionnaireDTO() == null
+                    || bundleQuestionnaireDTO.getQuestionnaireDTO().getId() == null) {
                 continue;
             }
 
-            Questionnaire questionnaire = questionnaireDao.getElementById(bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
+            Questionnaire questionnaire = questionnaireDao.getElementById(
+                    bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
             BundleQuestionnaire bundleQuestionnaire = new BundleQuestionnaire(
                     bundle,
                     questionnaire,
                     bundleQuestionnaireDTO.getPosition().intValue(),
                     Optional.ofNullable(bundleQuestionnaireDTO.getIsEnabled()).orElse(false),
-                    Optional.ofNullable(bundleQuestionnaireDTO.getShowScores()).orElse(false)
-            );
+                    Optional.ofNullable(bundleQuestionnaireDTO.getShowScores()).orElse(false));
 
             bundleQuestionnaireDTO.getExportTemplates().stream()
                     .map(exportTemplateDao::getElementById)
@@ -302,7 +315,7 @@ public class BundleService {
                         bundleQuestionnaire.addExportTemplate(exportTemplate);
                         exportTemplateDao.merge(exportTemplate);
                     });
-            
+
             bundle.addBundleQuestionnaire(bundleQuestionnaire);
             questionnaire.addBundleQuestionnaire(bundleQuestionnaire);
             questionnaireDao.merge(questionnaire);
@@ -322,12 +335,7 @@ public class BundleService {
 
     private void createAclEntry(Bundle bundle, User currentUser) {
         AclObjectIdentity bundleObjectIdentity = new AclObjectIdentity(
-                bundle.getId(),
-                Boolean.TRUE,
-                aclClassDao.getElementByClass(Bundle.class.getName()),
-                currentUser,
-                null
-        );
+                bundle.getId(), Boolean.TRUE, aclClassDao.getElementByClass(Bundle.class.getName()), currentUser, null);
         aclObjectIdentityDao.persist(bundleObjectIdentity);
     }
 
@@ -345,7 +353,7 @@ public class BundleService {
         bundle.removeAllBundleQuestionnaires();
         bundleDao.merge(bundle);
     }
-    
+
     /**
      * Returns the list of bundles sorted by their name property (ascending).
      *

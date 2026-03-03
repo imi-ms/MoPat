@@ -46,9 +46,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Component
 public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImporter {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        MopatCompleteQuestionnaireImporter.class);
-
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MopatCompleteQuestionnaireImporter.class);
 
     @Autowired
     private ExportMappingController exportMappingController;
@@ -83,23 +81,20 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
 
         ObjectMapper mapper = new ObjectMapper();
 
-        JsonQuestionnaireDTO jsonQuestionnaireDTO = mapper.readValue(
-            file.getInputStream(), JsonQuestionnaireDTO.class);
+        JsonQuestionnaireDTO jsonQuestionnaireDTO = mapper.readValue(file.getInputStream(), JsonQuestionnaireDTO.class);
         Map<Long, Question> questions = new HashMap<>();
-        Map<Long, Answer> answers = new HashMap<>(); //old id <> new answer object with uuid
+        Map<Long, Answer> answers = new HashMap<>(); // old id <> new answer object with uuid
         Map<Long, Score> scores = new HashMap<>();
 
-        Questionnaire questionnaire = createQuestionnaire(jsonQuestionnaireDTO, questions,
-            answers, scores);
+        Questionnaire questionnaire = createQuestionnaire(jsonQuestionnaireDTO, questions, answers, scores);
 
         if (jsonQuestionnaireDTO instanceof JsonCompleteQuestionnaireDTO jsonCompleteQuestionnaireDTO) {
             // Import export_templates and their mappings
             if (jsonCompleteQuestionnaireDTO.getExportDTOs() != null) {
-                for (JsonExportTemplateDTO exportTemplateDTO : jsonCompleteQuestionnaireDTO.getExportDTOs()
-                    .values()) {
+                for (JsonExportTemplateDTO exportTemplateDTO :
+                        jsonCompleteQuestionnaireDTO.getExportDTOs().values()) {
 
-                    importExportTemplate(exportTemplateDTO, questionnaire,
-                        questions, answers, scores);
+                    importExportTemplate(exportTemplateDTO, questionnaire, questions, answers, scores);
                 }
             }
         }
@@ -118,31 +113,29 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param answers map of old answer IDs to newly created {@link Answer} instances
      * @param scores map of old score IDs to newly created {@link Score} instances
      */
-    private void importExportTemplate(JsonExportTemplateDTO exportTemplateDTO,
-        Questionnaire questionnaire,
-        Map<Long, Question> questions,
-        Map<Long, Answer> answers, //old id <> new answer object with uuid
-        Map<Long, Score> scores) {
+    private void importExportTemplate(
+            JsonExportTemplateDTO exportTemplateDTO,
+            Questionnaire questionnaire,
+            Map<Long, Question> questions,
+            Map<Long, Answer> answers, // old id <> new answer object with uuid
+            Map<Long, Score> scores) {
 
         List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(
-            exportTemplateDTO.getName(),
-            exportTemplateDTO.getExportTemplateType(), null, configurationGroupDao,
-            exportTemplateDao);
+                exportTemplateDTO.getName(),
+                exportTemplateDTO.getExportTemplateType(),
+                null,
+                configurationGroupDao,
+                exportTemplateDao);
 
         uploadExportFile(questionnaire, exportTemplates, exportTemplateDTO);
 
         // Now import the export rules using the updateExportMapping function
-        if (exportTemplateDTO.getExportRuleDTOs() != null && !exportTemplateDTO.getExportRuleDTOs()
-            .isEmpty()) {
+        if (exportTemplateDTO.getExportRuleDTOs() != null
+                && !exportTemplateDTO.getExportRuleDTOs().isEmpty()) {
 
             for (ExportTemplate exportTemplate : exportTemplates) {
-                ExportRulesDTO exportRulesDTO = convertToExportRulesDTO(
-                    exportTemplateDTO,
-                    exportTemplate.getId(),
-                    questions,
-                    answers,
-                    scores
-                );
+                ExportRulesDTO exportRulesDTO =
+                        convertToExportRulesDTO(exportTemplateDTO, exportTemplate.getId(), questions, answers, scores);
 
                 persistRulesAndFormats(exportRulesDTO, exportTemplate);
             }
@@ -160,11 +153,12 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param scores old score ID -> new {@link Score}
      * @return populated {@link ExportRulesDTO} for the given export template
      */
-    private ExportRulesDTO convertToExportRulesDTO(JsonExportTemplateDTO exportTemplateDTO,
-        Long newExportTemplateId,
-        Map<Long, Question> questions,
-        Map<Long, Answer> answers, //old id <> new answer object with uuid
-        Map<Long, Score> scores) {
+    private ExportRulesDTO convertToExportRulesDTO(
+            JsonExportTemplateDTO exportTemplateDTO,
+            Long newExportTemplateId,
+            Map<Long, Question> questions,
+            Map<Long, Answer> answers, // old id <> new answer object with uuid
+            Map<Long, Score> scores) {
 
         ExportRulesDTO exportRulesDTO = new ExportRulesDTO();
         exportRulesDTO.setExportTemplateId(newExportTemplateId);
@@ -173,7 +167,8 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         Map<Long, ExportRuleFormatDTO> formatDTOs = new HashMap<>();
         Long tempFormatIdCounter = 0L;
 
-        for (JsonExportRuleDTO jsonRuleDTO : exportTemplateDTO.getExportRuleDTOs().values()) {
+        for (JsonExportRuleDTO jsonRuleDTO :
+                exportTemplateDTO.getExportRuleDTOs().values()) {
 
             ExportRuleDTO ruleDTO = new ExportRuleDTO();
 
@@ -196,9 +191,9 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                 formatDTO.setDateFormat(jsonFormatDTO.getDateFormat());
                 formatDTO.setDecimalDelimiter(jsonFormatDTO.getDecimalDelimiter());
                 formatDTO.setDecimalPlaces(
-                    jsonFormatDTO.getDecimalPlaces() != null ?
-                        jsonFormatDTO.getDecimalPlaces().toString() : null
-                );
+                        jsonFormatDTO.getDecimalPlaces() != null
+                                ? jsonFormatDTO.getDecimalPlaces().toString()
+                                : null);
                 formatDTO.setNumberType(jsonFormatDTO.getNumberType());
                 formatDTO.setRoundingStrategy(jsonFormatDTO.getRoundingStrategy());
 
@@ -225,9 +220,11 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param scores      to use for matching
      */
     private void matchNewIdsFromOldTemplates(
-        ExportRuleDTO ruleDTO, JsonExportRuleDTO jsonRuleDTO,
-        Map<Long, Question> questions, Map<Long, Answer> answers, Map<Long, Score> scores
-    ) {
+            ExportRuleDTO ruleDTO,
+            JsonExportRuleDTO jsonRuleDTO,
+            Map<Long, Question> questions,
+            Map<Long, Answer> answers,
+            Map<Long, Score> scores) {
         Long oldAnswerId = jsonRuleDTO.getAnswerId();
         if (oldAnswerId != null) {
             Long newAnswerId = answers.get(oldAnswerId).getId();
@@ -262,10 +259,12 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param exportTemplates templates to update and persist
      * @param exportTemplateDTO source DTO providing filename and Base64-encoded file contents
      */
-    private void uploadExportFile(Questionnaire questionnaire, List<ExportTemplate> exportTemplates,
-        JsonExportTemplateDTO exportTemplateDTO) {
+    private void uploadExportFile(
+            Questionnaire questionnaire,
+            List<ExportTemplate> exportTemplates,
+            JsonExportTemplateDTO exportTemplateDTO) {
 
-        //Create second list to avoid ConcurrentModificationException
+        // Create second list to avoid ConcurrentModificationException
         List<ExportTemplate> templates = new ArrayList<>();
         templates.addAll(exportTemplates);
 
@@ -274,8 +273,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         for (ExportTemplate template : templates) {
             template.setOriginalFilename(exportTemplateDTO.getOriginalFilename());
 
-            String newFilename =
-                template.getId() + "_imported_" + exportTemplateDTO.getOriginalFilename();
+            String newFilename = template.getId() + "_imported_" + exportTemplateDTO.getOriginalFilename();
             template.setFilename(newFilename);
 
             try {
@@ -290,8 +288,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                 File uploadFile = new File(contextPath, newFilename);
                 uploadFile.createNewFile();
 
-                FileUtils.writeByteArrayToFile(new File(contextPath, newFilename),
-                    fileByteArray);
+                FileUtils.writeByteArrayToFile(new File(contextPath, newFilename), fileByteArray);
 
                 template.setQuestionnaire(questionnaire);
                 questionnaire.addExportTemplate(template);
@@ -312,7 +309,6 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
         }
     }
 
-
     /**
      * Persists export rules for the given template and applies optional rule formats.
      * Resolves referenced entities (answer/score/question) by ID, creates the corresponding rule type,
@@ -321,10 +317,7 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param exportRulesDTO rules/formats to persist
      * @param exportTemplate target export template
      */
-    private void persistRulesAndFormats(
-        ExportRulesDTO exportRulesDTO,
-        ExportTemplate exportTemplate
-    ) {
+    private void persistRulesAndFormats(ExportRulesDTO exportRulesDTO, ExportTemplate exportTemplate) {
         for (ExportRuleDTO exportRuleDTO : exportRulesDTO.getExportRules()) {
             for (String mapping : exportRuleDTO.getExportField()) {
                 ExportRule newExportRule = null;
@@ -332,40 +325,29 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
                 if (exportRuleDTO.getType() == ExportRuleType.ANSWER) {
                     Answer answer = answerDao.getElementById(exportRuleDTO.getAnswerId());
                     if (answer != null) {
-                        newExportRule = new ExportRuleAnswer(
-                            exportTemplate, mapping,
-                            answer
-                        );
+                        newExportRule = new ExportRuleAnswer(exportTemplate, mapping, answer);
                     }
 
                 } else if (exportRuleDTO.getType() == ExportRuleType.SCORE) {
                     Score score = scoreDao.getElementById(exportRuleDTO.getScoreId());
                     if (score != null) {
-                        newExportRule = new ExportRuleScore(
-                            exportTemplate, mapping, score,
-                            exportRuleDTO.getScoreField()
-                        );
+                        newExportRule =
+                                new ExportRuleScore(exportTemplate, mapping, score, exportRuleDTO.getScoreField());
                     }
                 } else if (exportRuleDTO.getType() == ExportRuleType.QUESTION) {
                     Question question = questionDao.getElementById(exportRuleDTO.getQuestionId());
                     if (question != null) {
-                        newExportRule = new ExportRuleQuestion(
-                            exportTemplate, mapping, question
-                        );
+                        newExportRule = new ExportRuleQuestion(exportTemplate, mapping, question);
                     }
                 } else if (exportRuleDTO.getType() == ExportRuleType.ENCOUNTER) {
-                    newExportRule = new ExportRuleEncounter(
-                        exportTemplate, mapping, exportRuleDTO.getEncounterField()
-                    );
+                    newExportRule = new ExportRuleEncounter(exportTemplate, mapping, exportRuleDTO.getEncounterField());
                 }
 
                 if (newExportRule != null) {
                     copyExportRuleFormatOntoExportRule(
-                        exportRulesDTO.getExportRuleFormats(), exportRuleDTO, newExportRule
-                    );
+                            exportRulesDTO.getExportRuleFormats(), exportRuleDTO, newExportRule);
                     exportTemplate.addExportRule(newExportRule);
                 }
-
             }
         }
 
@@ -380,13 +362,11 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
      * @param newExportRule target rule to receive the copied format
      */
     private void copyExportRuleFormatOntoExportRule(
-        Map<Long, ExportRuleFormatDTO> exportRuleFormatDTOMap,
-        ExportRuleDTO exportRuleDTO,
-        ExportRule newExportRule
-    ) {
-        ExportRuleFormatDTO existingExportRuleFormat = exportRuleFormatDTOMap.get(
-            exportRuleDTO.getTempExportFormatId()
-        );
+            Map<Long, ExportRuleFormatDTO> exportRuleFormatDTOMap,
+            ExportRuleDTO exportRuleDTO,
+            ExportRule newExportRule) {
+        ExportRuleFormatDTO existingExportRuleFormat =
+                exportRuleFormatDTOMap.get(exportRuleDTO.getTempExportFormatId());
 
         if (existingExportRuleFormat != null) {
             ExportRuleFormat newExportRuleFormat = new ExportRuleFormat();
@@ -395,10 +375,9 @@ public class MopatCompleteQuestionnaireImporter extends MoPatQuestionnaireImport
             newExportRuleFormat.setRoundingStrategy(existingExportRuleFormat.getRoundingStrategy());
             newExportRuleFormat.setDecimalDelimiter(existingExportRuleFormat.getDecimalDelimiter());
             try {
-                newExportRuleFormat.setDecimalPlaces(
-                    Integer.parseInt(existingExportRuleFormat.getDecimalPlaces()));
+                newExportRuleFormat.setDecimalPlaces(Integer.parseInt(existingExportRuleFormat.getDecimalPlaces()));
             } catch (Exception e) {
-                //Do Nothing
+                // Do Nothing
             }
 
             newExportRule.setExportRuleFormat(newExportRuleFormat);

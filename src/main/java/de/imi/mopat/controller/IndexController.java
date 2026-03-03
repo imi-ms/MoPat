@@ -4,7 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-
 /**
  * Simple Controller that handles requests to domain without any logic.
  */
@@ -36,6 +35,5 @@ public class IndexController {
      */
     @GetMapping("/favicon.ico")
     @ResponseBody
-    void returnNoFavicon() {
-    }
+    void returnNoFavicon() {}
 }

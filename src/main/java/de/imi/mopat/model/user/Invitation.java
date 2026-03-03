@@ -40,9 +40,11 @@ import org.springframework.context.MessageSource;
 public class Invitation implements Serializable {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationMailer.class);
+
     @NotNull
     @Column(name = "uuid")
     private final String uuid = UUIDGenerator.createUUID();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -63,8 +65,9 @@ public class Invitation implements Serializable {
     // behaviour (creation of empty class and injecting values after @valid
     // test)
     @Size(min = 1, max = 255, message = "{invitation.email.size}")
-    @Pattern(regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9"
-        + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+", message = "{global.datatype.email.notValid}")
+    @Pattern(
+            regexp = "[A-Za-z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Za-z0-9" + ".!#$%&'*+-/=?^_`{|}~]+\\.[A-Za-z]{2,}+",
+            message = "{global.datatype.email.notValid}")
     @Column(name = "email")
     private String email;
     // [bt] @NotNull annotation wanted, but not possible due to Spring
@@ -73,22 +76,28 @@ public class Invitation implements Serializable {
     @Size(min = 1, max = 255, message = "{invitation.role.size}")
     @Column(name = "role")
     private String role;
+
     @NotNull(message = "{invitation.expirationDate.notNull}")
     @Column(name = "expirationDate")
     @Temporal(TemporalType.DATE)
     private Date expirationDate;
+
     @Column(name = "personal_text", columnDefinition = "TEXT")
     private String personalText;
+
     @NotNull(message = "{invitation.locale.notNull}")
     @Column(name = "locale")
     private String locale;
+
     @JoinColumn(name = "owner", referencedColumnName = "id")
     @ManyToOne
     private User owner;
+
     @ManyToMany
-    @JoinTable(name = "invitation_acl_object_identity", joinColumns = {
-        @JoinColumn(name = "invitation_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "acl_object_identity_id", referencedColumnName = "id")})
+    @JoinTable(
+            name = "invitation_acl_object_identity",
+            joinColumns = {@JoinColumn(name = "invitation_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "acl_object_identity_id", referencedColumnName = "id")})
     private Set<AclObjectIdentity> assignedClinics = new HashSet<>();
 
     public Invitation() {
@@ -144,12 +153,8 @@ public class Invitation implements Serializable {
      */
     public void setFirstName(final String firstName) {
         assert firstName != null : "The given first name was null";
-        assert
-            firstName.trim().length() >= 1 :
-            "The given first name had < 1 characters (after " + "trimming)";
-        assert
-            firstName.trim().length() <= 255 :
-            "The given first name had > 255 characters (after " + "trimming)";
+        assert firstName.trim().length() >= 1 : "The given first name had < 1 characters (after " + "trimming)";
+        assert firstName.trim().length() <= 255 : "The given first name had > 255 characters (after " + "trimming)";
         this.firstName = firstName.trim();
     }
 
@@ -173,12 +178,8 @@ public class Invitation implements Serializable {
      */
     public void setLastName(final String lastName) {
         assert lastName != null : "The given last name was null";
-        assert
-            lastName.trim().length() >= 1 :
-            "The given last name had < 1 characters (after " + "trimming)";
-        assert
-            lastName.trim().length() <= 255 :
-            "The given last name had >255 characters (after " + "trimming)";
+        assert lastName.trim().length() >= 1 : "The given last name had < 1 characters (after " + "trimming)";
+        assert lastName.trim().length() <= 255 : "The given last name had >255 characters (after " + "trimming)";
         this.lastName = lastName.trim();
     }
 
@@ -211,12 +212,13 @@ public class Invitation implements Serializable {
      */
     public void setEmail(final String email) {
         assert email != null : "The given eMail String was null";
-        // [hd] Secret origin of the eMail regExp: http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
+        // [hd] Secret origin of the eMail regExp:
+        // http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
 
-        assert email.trim().matches(
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\"
-                + ".[A-Za-z]{2,})$") :
-            "The given eMail " + "String didn't machted the eMail pattern";
+        assert email.trim()
+                        .matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\"
+                                + ".[A-Za-z]{2,})$")
+                : "The given eMail " + "String didn't machted the eMail pattern";
         this.email = email.trim();
     }
 
@@ -410,27 +412,26 @@ public class Invitation implements Serializable {
      * @param baseUrl           String to get the root URL of the server.
      * @return True if the mail has been sent, false otherwise.
      */
-    public Boolean sendMail(final ApplicationMailer applicationMailer,
-        final MessageSource messageSource, final String baseUrl) {
+    public Boolean sendMail(
+            final ApplicationMailer applicationMailer, final MessageSource messageSource, final String baseUrl) {
         Locale locale = LocaleHelper.getLocaleFromString(this.getLocale());
 
         // Create mail content
-        String subject = messageSource.getMessage("mail.invitation.subject", new Object[]{},
-            locale);
+        String subject = messageSource.getMessage("mail.invitation.subject", new Object[] {}, locale);
         String footerEmail = applicationMailer.getMailFooterEMail();
         String footerPhone = applicationMailer.getMailFooterPhone();
-        String footer = messageSource.getMessage("mail.invitation.footer",
-            new Object[]{footerEmail, footerPhone}, locale);
+        String footer =
+                messageSource.getMessage("mail.invitation.footer", new Object[] {footerEmail, footerPhone}, locale);
 
         String personalMessage = ".";
         if (this.getPersonalText() != null && !this.getPersonalText().trim().isEmpty()) {
-            personalMessage = " " + messageSource.getMessage("mail.invitation.personal",
-                new Object[]{this.getPersonalText()}, locale);
+            personalMessage = " "
+                    + messageSource.getMessage(
+                            "mail.invitation.personal", new Object[] {this.getPersonalText()}, locale);
         }
-        String activationLink =
-            baseUrl + "/mobile/user/register?hash=" + this.getUuid() + "&lang=" + locale;
-        String content = messageSource.getMessage("mail.invitation.content",
-            new Object[]{personalMessage, activationLink}, locale);
+        String activationLink = baseUrl + "/mobile/user/register?hash=" + this.getUuid() + "&lang=" + locale;
+        String content = messageSource.getMessage(
+                "mail.invitation.content", new Object[] {personalMessage, activationLink}, locale);
 
         try {
             applicationMailer.sendMail(this.getEmail(), null, subject, content + footer, null);

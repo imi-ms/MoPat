@@ -7,6 +7,4 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public interface QuestionDao extends MoPatDao<Question> {
-
-}
+public interface QuestionDao extends MoPatDao<Question> {}

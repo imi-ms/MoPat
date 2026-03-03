@@ -5,6 +5,6 @@ package de.imi.mopat.model.enumeration;
  * {@link de.imi.mopat.model.ExportRuleFormat} objects.
  */
 public enum ExportNumberType {
-
-    INTEGER, FLOAT
+    INTEGER,
+    FLOAT
 }

@@ -27,29 +27,39 @@ public class OneTimeStatisticDTOValidator implements Validator {
 
         OneTimeStatisticDTO oneTimeStatisticDTO = (OneTimeStatisticDTO) o;
         if (oneTimeStatisticDTO.getBundleEndDate() != null
-            && oneTimeStatisticDTO.getBundleStartDate() != null
-            && oneTimeStatisticDTO.getBundleEndDate()
-            .before(oneTimeStatisticDTO.getBundleStartDate())) {
-            errors.rejectValue("bundleStartDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".enddateBeforeStartdate",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+                && oneTimeStatisticDTO.getBundleStartDate() != null
+                && oneTimeStatisticDTO.getBundleEndDate().before(oneTimeStatisticDTO.getBundleStartDate())) {
+            errors.rejectValue(
+                    "bundleStartDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".enddateBeforeStartdate",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
         if (oneTimeStatisticDTO.getPatientEndDate() != null
-            && oneTimeStatisticDTO.getPatientStartDate() != null
-            && oneTimeStatisticDTO.getPatientEndDate()
-            .before(oneTimeStatisticDTO.getPatientStartDate())) {
-            errors.rejectValue("patientStartDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".enddateBeforeStartdate",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+                && oneTimeStatisticDTO.getPatientStartDate() != null
+                && oneTimeStatisticDTO.getPatientEndDate().before(oneTimeStatisticDTO.getPatientStartDate())) {
+            errors.rejectValue(
+                    "patientStartDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".enddateBeforeStartdate",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
         if (oneTimeStatisticDTO.getBundlePatientEndDate() != null
-            && oneTimeStatisticDTO.getBundlePatientStartDate() != null
-            && oneTimeStatisticDTO.getBundlePatientEndDate()
-            .before(oneTimeStatisticDTO.getBundlePatientStartDate())) {
-            errors.rejectValue("bundlePatientStartDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                messageSource.getMessage("statistic.error" + ".enddateBeforeStartdate",
-                    new Object[]{}, LocaleContextHolder.getLocale()));
+                && oneTimeStatisticDTO.getBundlePatientStartDate() != null
+                && oneTimeStatisticDTO
+                        .getBundlePatientEndDate()
+                        .before(oneTimeStatisticDTO.getBundlePatientStartDate())) {
+            errors.rejectValue(
+                    "bundlePatientStartDate",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage(
+                            "statistic.error" + ".enddateBeforeStartdate",
+                            new Object[] {},
+                            LocaleContextHolder.getLocale()));
         }
     }
-
 }

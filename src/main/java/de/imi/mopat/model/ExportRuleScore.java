@@ -24,6 +24,7 @@ public class ExportRuleScore extends ExportRule implements Serializable {
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "score_id", referencedColumnName = "id")
     private Score score;
+
     @Column(name = "score_field")
     @Enumerated(EnumType.STRING)
     private ExportScoreFieldType scoreField;
@@ -32,9 +33,7 @@ public class ExportRuleScore extends ExportRule implements Serializable {
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests
      */
-    protected ExportRuleScore() {
-
-    }
+    protected ExportRuleScore() {}
 
     /**
      * Constructor. See null
@@ -49,8 +48,11 @@ public class ExportRuleScore extends ExportRule implements Serializable {
      * @param scoreField     The {@link ExportScoreFieldType} object to which this export rule
      *                       should belong.
      */
-    public ExportRuleScore(final ExportTemplate exportTemplate, final String exportField,
-        final Score score, final ExportScoreFieldType scoreField) {
+    public ExportRuleScore(
+            final ExportTemplate exportTemplate,
+            final String exportField,
+            final Score score,
+            final ExportScoreFieldType scoreField) {
         super(exportTemplate, exportField);
         setScoreField(scoreField);
         setScore(score);

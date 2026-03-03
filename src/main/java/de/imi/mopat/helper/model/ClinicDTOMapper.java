@@ -40,21 +40,24 @@ public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
         clinicDTO.setEmail(clinic.getEmail());
 
         List<BundleClinicDTO> bundleClinicDTOs = clinic.getBundleClinics().stream()
-            .map(bundleClinic -> bundleClinicDTOMapper.apply(clinicDTO, bundleClinic))
-            .collect(Collectors.toList());
+                .map(bundleClinic -> bundleClinicDTOMapper.apply(clinicDTO, bundleClinic))
+                .collect(Collectors.toList());
 
         clinicDTO.setBundleClinicDTOs(bundleClinicDTOs);
 
         Map<ClinicConfigurationMapping, List<ClinicConfigurationMapping>> relation = new HashMap<>();
         if (clinic.getClinicConfigurationMappings() != null) {
             for (ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()) {
-                ClinicConfiguration parent = clinicConfigurationMapping.getClinicConfiguration().getParent();
+                ClinicConfiguration parent =
+                        clinicConfigurationMapping.getClinicConfiguration().getParent();
                 if (parent != null) {
                     ClinicConfigurationMapping result = clinic.getClinicConfigurationMappings().stream()
-                        .filter(obj -> obj.getClinicConfiguration()
-                            .equals(clinicConfigurationMapping.getClinicConfiguration().getParent()))
-                        .findFirst()
-                        .orElse(null);
+                            .filter(obj -> obj.getClinicConfiguration()
+                                    .equals(clinicConfigurationMapping
+                                            .getClinicConfiguration()
+                                            .getParent()))
+                            .findFirst()
+                            .orElse(null);
                     List<ClinicConfigurationMapping> newList = relation.get(result);
                     if (newList == null) {
                         newList = new ArrayList<>();
@@ -70,7 +73,7 @@ public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
         }
 
         clinicDTO.setClinicConfigurationMappingDTOS(
-            clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
+                clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
 
         return clinicDTO;
     }
@@ -91,13 +94,16 @@ public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
         Map<ClinicConfigurationMapping, List<ClinicConfigurationMapping>> relation = new HashMap<>();
         if (clinic.getClinicConfigurationMappings() != null) {
             for (ClinicConfigurationMapping clinicConfigurationMapping : clinic.getClinicConfigurationMappings()) {
-                ClinicConfiguration parent = clinicConfigurationMapping.getClinicConfiguration().getParent();
+                ClinicConfiguration parent =
+                        clinicConfigurationMapping.getClinicConfiguration().getParent();
                 if (parent != null) {
                     ClinicConfigurationMapping result = clinic.getClinicConfigurationMappings().stream()
-                        .filter(obj -> obj.getClinicConfiguration()
-                            .equals(clinicConfigurationMapping.getClinicConfiguration().getParent()))
-                        .findFirst()
-                        .orElse(null);
+                            .filter(obj -> obj.getClinicConfiguration()
+                                    .equals(clinicConfigurationMapping
+                                            .getClinicConfiguration()
+                                            .getParent()))
+                            .findFirst()
+                            .orElse(null);
                     List<ClinicConfigurationMapping> newList = relation.get(result);
                     if (newList == null) {
                         newList = new ArrayList<>();
@@ -113,7 +119,7 @@ public class ClinicDTOMapper implements Function<Clinic, ClinicDTO> {
         }
 
         clinicDTO.setClinicConfigurationMappingDTOS(
-            clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
+                clinicConfigurationMappingService.processClinicConfigurationMappingHashmap(relation));
 
         return clinicDTO;
     }

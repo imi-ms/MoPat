@@ -87,33 +87,33 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetadataExporterODM implements MetadataExporter {
 
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataExporterODM.class);
     private BigInteger orderNumber = BigInteger.ONE;
     private String configurationOID;
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        MetadataExporterODM.class);
-
     @Override
-    public byte[] export(final Questionnaire questionnaire, final MessageSource messageSource,
-        final ConfigurationDao configurationDao, final ConfigurationGroupDao configurationGroupDao,
-        final ExportTemplateDao exportTemplateDao, final QuestionnaireDao questionnaireDao,
-        final QuestionDao questionDao, final ScoreDao scoreDao) {
+    public byte[] export(
+            final Questionnaire questionnaire,
+            final MessageSource messageSource,
+            final ConfigurationDao configurationDao,
+            final ConfigurationGroupDao configurationGroupDao,
+            final ExportTemplateDao exportTemplateDao,
+            final QuestionnaireDao questionnaireDao,
+            final QuestionDao questionDao,
+            final ScoreDao scoreDao) {
 
         // Get current timestamp as XMLGregorianCalendar
         GregorianCalendar gregorianCalender = new GregorianCalendar();
         XMLGregorianCalendar nowXMLTimestamp = null;
         try {
-            nowXMLTimestamp = DatatypeFactory.newInstance()
-                .newXMLGregorianCalendar(gregorianCalender);
+            nowXMLTimestamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalender);
         } catch (DatatypeConfigurationException e) {
-            LOGGER.error(
-                "DatatypeConfigurationException while creating an " + "XMLGregorianCalendar.");
+            LOGGER.error("DatatypeConfigurationException while creating an " + "XMLGregorianCalendar.");
         }
 
         // Get the OID from the configuration
         configurationOID = configurationDao.getMetadataExporterODMOID();
-        String fileOID =
-            configurationOID + "." + questionnaire.getId() + "." + System.currentTimeMillis();
+        String fileOID = configurationOID + "." + questionnaire.getId() + "." + System.currentTimeMillis();
 
         // Create the ODM file
         ODM odmExportFile = new ODM();
@@ -172,7 +172,8 @@ public class MetadataExporterODM implements MetadataExporter {
         formDef.setOID(configurationOID + "." + questionnaire.getId());
         formDef.setName(questionnaire.getName());
         formDef.setRepeating(YesOrNo.NO);
-        ODMcomplexTypeDefinitionTranslatedText formDefDescriptionTranslatedText = new ODMcomplexTypeDefinitionTranslatedText();
+        ODMcomplexTypeDefinitionTranslatedText formDefDescriptionTranslatedText =
+                new ODMcomplexTypeDefinitionTranslatedText();
         formDefDescriptionTranslatedText.setLang("de-DE");
         formDefDescriptionTranslatedText.setValue(questionnaire.getDescription());
         ODMcomplexTypeDefinitionDescription formDefDescription = new ODMcomplexTypeDefinitionDescription();
@@ -235,9 +236,11 @@ public class MetadataExporterODM implements MetadataExporter {
      *                        added.
      * @param messageSource   {@link MessageSource} to get description and help texts.
      */
-    private void convertToItemDef(final Question question,
-        final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-        final ODMcomplexTypeDefinitionItemGroupDef itemGroup, final MessageSource messageSource) {
+    private void convertToItemDef(
+            final Question question,
+            final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            final ODMcomplexTypeDefinitionItemGroupDef itemGroup,
+            final MessageSource messageSource) {
         ODMcomplexTypeDefinitionItemDef itemDef = new ODMcomplexTypeDefinitionItemDef();
 
         // Set the OID of the question to the internal database ID
@@ -275,21 +278,26 @@ public class MetadataExporterODM implements MetadataExporter {
                 description = new ODMcomplexTypeDefinitionDescription();
                 descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                 descriptionText.setLang("en-GB");
-                if (Objects.equals(question.getMinNumberAnswers(),
-                    question.getMaxNumberAnswers())) {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey.questionnaire.ExactAnswer", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
+                if (Objects.equals(question.getMinNumberAnswers(), question.getMaxNumberAnswers())) {
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey.questionnaire.ExactAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{min}", question.getMinNumberAnswers().toString()));
                 } else if (question.getMinNumberAnswers() == 0) {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey.questionnaire.MaxAnswer", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey.questionnaire.MaxAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{max}", question.getMaxNumberAnswers().toString()));
                 } else {
-                    descriptionText.setValue(
-                        messageSource.getMessage("survey.questionnaire.MinMaxAnswer", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
+                    descriptionText.setValue(messageSource
+                            .getMessage(
+                                    "survey.questionnaire.MinMaxAnswer",
+                                    new Object[0],
+                                    LocaleHelper.getLocaleFromString("en_GB"))
                             .replace("{min}", question.getMinNumberAnswers().toString())
                             .replace("{max}", question.getMaxNumberAnswers().toString()));
                 }
@@ -322,8 +330,7 @@ public class MetadataExporterODM implements MetadataExporter {
                         }
                     }
 
-                    itemDefFreetext.setOID(
-                        configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
+                    itemDefFreetext.setOID(configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
                     itemDefFreetext.setName("I." + question.getId() + "." + freetextAnswer.getId());
                     itemDefFreetext.setDescription(itemDef.getDescription());
 
@@ -331,7 +338,8 @@ public class MetadataExporterODM implements MetadataExporter {
                     // texts
                     ODMcomplexTypeDefinitionQuestion questionFreetextElement = new ODMcomplexTypeDefinitionQuestion();
                     for (Map.Entry entry : question.getLocalizedQuestionText().entrySet()) {
-                        ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                        ODMcomplexTypeDefinitionTranslatedText translatedText =
+                                new ODMcomplexTypeDefinitionTranslatedText();
                         translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                         // Find the select answer that triggers the freetext
                         // answer
@@ -341,9 +349,10 @@ public class MetadataExporterODM implements MetadataExporter {
                                 selectAnswer = (SelectAnswer) currentAnswer;
                             }
                         }
-                        translatedText.setValue(
-                            entry.getValue().toString() + " " + selectAnswer.getLocalizedLabel()
-                                .get(entry.getKey().toString()));
+                        translatedText.setValue(entry.getValue().toString() + " "
+                                + selectAnswer
+                                        .getLocalizedLabel()
+                                        .get(entry.getKey().toString()));
                         questionFreetextElement.getTranslatedText().add(translatedText);
                     }
                     itemDefFreetext.setQuestion(questionFreetextElement);
@@ -364,25 +373,27 @@ public class MetadataExporterODM implements MetadataExporter {
                     descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                     descriptionText.setLang("en-GB");
                     if (dateAnswer.getStartDate() != null && dateAnswer.getEndDate() != null) {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey.questionnaire.label.date.startEndDate",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{startDate}",
-                                    Constants.DATE_FORMAT.format(dateAnswer.getStartDate()))
-                                .replace("{endDate}",
-                                    Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.date.startEndDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{startDate}", Constants.DATE_FORMAT.format(dateAnswer.getStartDate()))
+                                .replace("{endDate}", Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
                     } else if (dateAnswer.getStartDate() != null) {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey.questionnaire.label.date.startDate",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{startDate}",
-                                    Constants.DATE_FORMAT.format(dateAnswer.getStartDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.date.startDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{startDate}", Constants.DATE_FORMAT.format(dateAnswer.getStartDate())));
                     } else {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey.questionnaire.label.date.endDate",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{endDate}",
-                                    Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.date.endDate",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace("{endDate}", Constants.DATE_FORMAT.format(dateAnswer.getEndDate())));
                     }
                     description.getTranslatedText().add(descriptionText);
                     itemDef.setDescription(description);
@@ -396,8 +407,7 @@ public class MetadataExporterODM implements MetadataExporter {
                     startRangeCheck.setSoftHard(SoftOrHard.SOFT);
 
                     ODMcomplexTypeDefinitionCheckValue startCheckValue = new ODMcomplexTypeDefinitionCheckValue();
-                    startCheckValue.setValue(
-                        Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
+                    startCheckValue.setValue(Constants.DATE_FORMAT.format(dateAnswer.getStartDate()));
 
                     startRangeCheck.getCheckValue().add(startCheckValue);
                     itemDef.getRangeCheck().add(startRangeCheck);
@@ -427,7 +437,7 @@ public class MetadataExporterODM implements MetadataExporter {
 
                 // Check if only integers are possible as answers
                 if (sliderAnswer.getStepsize() == Math.floor(sliderAnswer.getStepsize())
-                    && sliderAnswer.getMinValue() == Math.floor(sliderAnswer.getMinValue())) {
+                        && sliderAnswer.getMinValue() == Math.floor(sliderAnswer.getMinValue())) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -453,15 +463,14 @@ public class MetadataExporterODM implements MetadataExporter {
                 metaDataVersion.getItemDef().add(itemDef);
                 break;
             case NUMBER_INPUT:
-                NumberInputAnswer numberInputAnswer = (NumberInputAnswer) question.getAnswers()
-                    .get(0);
+                NumberInputAnswer numberInputAnswer =
+                        (NumberInputAnswer) question.getAnswers().get(0);
 
                 // Check if only integers are possible
                 if (numberInputAnswer.getStepsize() != null
-                    && numberInputAnswer.getStepsize() == Math.floor(
-                    numberInputAnswer.getStepsize()) && (numberInputAnswer.getMinValue() == null
-                    || numberInputAnswer.getMinValue() == Math.floor(
-                    numberInputAnswer.getMinValue()))) {
+                        && numberInputAnswer.getStepsize() == Math.floor(numberInputAnswer.getStepsize())
+                        && (numberInputAnswer.getMinValue() == null
+                                || numberInputAnswer.getMinValue() == Math.floor(numberInputAnswer.getMinValue()))) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -469,28 +478,36 @@ public class MetadataExporterODM implements MetadataExporter {
 
                 // Set the description including minimum and maximum values
                 // if available
-                if (numberInputAnswer.getMinValue() != null
-                    || numberInputAnswer.getMaxValue() != null) {
+                if (numberInputAnswer.getMinValue() != null || numberInputAnswer.getMaxValue() != null) {
                     description = new ODMcomplexTypeDefinitionDescription();
                     descriptionText = new ODMcomplexTypeDefinitionTranslatedText();
                     descriptionText.setLang("en-GB");
-                    if (numberInputAnswer.getMinValue() != null
-                        && numberInputAnswer.getMaxValue() != null) {
-                        descriptionText.setValue(messageSource.getMessage(
-                                "survey.questionnaire.label.numberInput.minMax", new Object[0],
-                                LocaleHelper.getLocaleFromString("en_GB"))
-                            .replace("{min}", numberInputAnswer.getMinValue().toString())
-                            .replace("{max}", numberInputAnswer.getMaxValue().toString()));
+                    if (numberInputAnswer.getMinValue() != null && numberInputAnswer.getMaxValue() != null) {
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.numberInput.minMax",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{min}", numberInputAnswer.getMinValue().toString())
+                                .replace(
+                                        "{max}", numberInputAnswer.getMaxValue().toString()));
                     } else if (numberInputAnswer.getMinValue() != null) {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey.questionnaire.label.numberInput.min",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{min}", numberInputAnswer.getMinValue().toString()));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.numberInput.min",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{min}", numberInputAnswer.getMinValue().toString()));
                     } else {
-                        descriptionText.setValue(
-                            messageSource.getMessage("survey.questionnaire.label.numberInput.max",
-                                    new Object[0], LocaleHelper.getLocaleFromString("en_GB"))
-                                .replace("{max}", numberInputAnswer.getMaxValue().toString()));
+                        descriptionText.setValue(messageSource
+                                .getMessage(
+                                        "survey.questionnaire.label.numberInput.max",
+                                        new Object[0],
+                                        LocaleHelper.getLocaleFromString("en_GB"))
+                                .replace(
+                                        "{max}", numberInputAnswer.getMaxValue().toString()));
                     }
                     description.getTranslatedText().add(descriptionText);
                     itemDef.setDescription(description);
@@ -521,15 +538,13 @@ public class MetadataExporterODM implements MetadataExporter {
                 metaDataVersion.getItemDef().add(itemDef);
                 break;
             case NUMBER_CHECKBOX_TEXT:
-                SliderFreetextAnswer sliderFreetextAnswer = (SliderFreetextAnswer) question.getAnswers()
-                    .get(0);
+                SliderFreetextAnswer sliderFreetextAnswer =
+                        (SliderFreetextAnswer) question.getAnswers().get(0);
                 itemDef.setOID(configurationOID + "." + question.getId() + ".1");
 
                 // Check if only integers are possible
-                if (sliderFreetextAnswer.getStepsize() == Math.floor(
-                    sliderFreetextAnswer.getStepsize())
-                    && sliderFreetextAnswer.getMinValue() == Math.floor(
-                    sliderFreetextAnswer.getMinValue())) {
+                if (sliderFreetextAnswer.getStepsize() == Math.floor(sliderFreetextAnswer.getStepsize())
+                        && sliderFreetextAnswer.getMinValue() == Math.floor(sliderFreetextAnswer.getMinValue())) {
                     itemDef.setDataType(DataType.INTEGER);
                 } else {
                     itemDef.setDataType(DataType.DOUBLE);
@@ -577,8 +592,7 @@ public class MetadataExporterODM implements MetadataExporter {
      * @param itemGroup The {@link ODMcomplexTypeDefinitionItemGroupDef ItemGroup }, to which the
      *                  new {@link ODMcomplexTypeDefinitionItemRef ItemRef} should be added.
      */
-    private void convertToItemRef(final Question question,
-        final ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
+    private void convertToItemRef(final Question question, final ODMcomplexTypeDefinitionItemGroupDef itemGroup) {
         // Create a new itemRef and set its data
         ODMcomplexTypeDefinitionItemRef itemRef = new ODMcomplexTypeDefinitionItemRef();
         itemRef.setOrderNumber(orderNumber);
@@ -635,8 +649,7 @@ public class MetadataExporterODM implements MetadataExporter {
                     break;
                 }
             }
-            itemRefFreetext.setItemOID(
-                configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
+            itemRefFreetext.setItemOID(configurationOID + "." + question.getId() + "." + freetextAnswer.getId());
             itemGroup.getItemRef().add(itemRefFreetext);
 
             orderNumber = orderNumber.add(BigInteger.ONE);
@@ -655,9 +668,11 @@ public class MetadataExporterODM implements MetadataExporter {
      *                        created {@link ODMcomplexTypeDefinitionCodeList CodeList}
      * @return the Id of the freetext answer, -1 if there is none
      */
-    private void convertToCodeList(final Question question, final String codeListOID,
-        final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-        final MessageSource messageSource) {
+    private void convertToCodeList(
+            final Question question,
+            final String codeListOID,
+            final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+            final MessageSource messageSource) {
         // Create a codeList and set its data
         ODMcomplexTypeDefinitionCodeList codeList = new ODMcomplexTypeDefinitionCodeList();
         codeList.setOID(codeListOID);
@@ -677,8 +692,9 @@ public class MetadataExporterODM implements MetadataExporter {
                 // Check the value of the answer and set it
                 // Make sure the coded value is unique in this question, if
                 // it is already used, take the next free integer
-                if (selectAnswer.getCodedValue() == null || selectAnswer.getCodedValue().isEmpty()
-                    || existingCodedValues.contains(selectAnswer.getCodedValue())) {
+                if (selectAnswer.getCodedValue() == null
+                        || selectAnswer.getCodedValue().isEmpty()
+                        || existingCodedValues.contains(selectAnswer.getCodedValue())) {
                     while (existingCodedValues.contains(codedValueCounter.toString())) {
                         codedValueCounter++;
                     }
@@ -693,7 +709,8 @@ public class MetadataExporterODM implements MetadataExporter {
                 codeListItem.setDecode(new ODMcomplexTypeDefinitionDecode());
                 // Add the answer in every available language
                 for (Map.Entry entry : selectAnswer.getLocalizedLabel().entrySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(entry.getKey().toString().replaceAll("_", "-"));
                     translatedText.setValue(entry.getValue().toString());
                     codeListItem.getDecode().getTranslatedText().add(translatedText);
@@ -702,13 +719,15 @@ public class MetadataExporterODM implements MetadataExporter {
                 bodyPartAnswer = (BodyPartAnswer) answer;
                 codeListItem.setCodedValue(bodyPartAnswer.getBodyPart().getMessageCode());
                 codeListItem.setDecode(new ODMcomplexTypeDefinitionDecode());
-                //Add the body part answer in every available language
+                // Add the body part answer in every available language
                 for (String locale : question.getLocalizedQuestionText().keySet()) {
-                    ODMcomplexTypeDefinitionTranslatedText translatedText = new ODMcomplexTypeDefinitionTranslatedText();
+                    ODMcomplexTypeDefinitionTranslatedText translatedText =
+                            new ODMcomplexTypeDefinitionTranslatedText();
                     translatedText.setLang(locale.replaceAll("_", "-"));
-                    translatedText.setValue(
-                        messageSource.getMessage(bodyPartAnswer.getBodyPart().getMessageCode(),
-                            new String[]{}, LocaleHelper.getLocaleFromString(locale)));
+                    translatedText.setValue(messageSource.getMessage(
+                            bodyPartAnswer.getBodyPart().getMessageCode(),
+                            new String[] {},
+                            LocaleHelper.getLocaleFromString(locale)));
                     codeListItem.getDecode().getTranslatedText().add(translatedText);
                 }
             }
@@ -739,7 +758,7 @@ public class MetadataExporterODM implements MetadataExporter {
                 if (selectAnswer.getValue() == null) {
                     return DataType.STRING;
                 } else if (selectAnswer.getValue() != Math.floor(selectAnswer.getValue())
-                    || Double.isInfinite(selectAnswer.getValue())) {
+                        || Double.isInfinite(selectAnswer.getValue())) {
                     return DataType.FLOAT;
                 }
             } else if (answer instanceof BodyPartAnswer) {

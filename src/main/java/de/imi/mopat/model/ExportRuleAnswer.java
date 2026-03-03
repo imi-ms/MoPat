@@ -2,13 +2,13 @@ package de.imi.mopat.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.imi.mopat.model.enumeration.ExportRuleType;
-import java.io.Serializable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.io.Serializable;
 
 /**
  * Represents an {@link ExportRule} corresponding to an {@link Answer}.
@@ -20,6 +20,7 @@ public class ExportRuleAnswer extends ExportRule implements Serializable {
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
     private Answer answer;
+
     @Column(name = "use_freetext_value")
     private Boolean useFreetextValue = false;
 
@@ -27,15 +28,7 @@ public class ExportRuleAnswer extends ExportRule implements Serializable {
      * Default constructor (in protected state), should not be accessible to anything else but the
      * JPA implementation (here: Hibernate) and the JUnit tests.
      */
-    protected ExportRuleAnswer() {
-
-    }
-
-    @Override
-    @JsonProperty("type")
-    public ExportRuleType getType() {
-        return ExportRuleType.ANSWER;
-    }
+    protected ExportRuleAnswer() {}
 
     /**
      * Constructor. See
@@ -47,8 +40,7 @@ public class ExportRuleAnswer extends ExportRule implements Serializable {
      * @param exportField    The export field to indicate the export target.
      * @param answer         The {@link Answer} object to which this export rule should belong.
      */
-    public ExportRuleAnswer(final ExportTemplate exportTemplate, final String exportField,
-        final Answer answer) {
+    public ExportRuleAnswer(final ExportTemplate exportTemplate, final String exportField, final Answer answer) {
         super(exportTemplate, exportField);
         setAnswer(answer);
     }
@@ -66,11 +58,20 @@ public class ExportRuleAnswer extends ExportRule implements Serializable {
      * @param useFreetextValue Indicates this export rule should use the freetext value for
      *                         exporting.
      */
-    public ExportRuleAnswer(final ExportTemplate exportTemplate, final String exportField,
-        final Answer answer, final Boolean useFreetextValue) {
+    public ExportRuleAnswer(
+            final ExportTemplate exportTemplate,
+            final String exportField,
+            final Answer answer,
+            final Boolean useFreetextValue) {
         super(exportTemplate, exportField);
         setAnswer(answer);
         setUseFreetextValue(useFreetextValue);
+    }
+
+    @Override
+    @JsonProperty("type")
+    public ExportRuleType getType() {
+        return ExportRuleType.ANSWER;
     }
 
     /**

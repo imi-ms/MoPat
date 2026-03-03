@@ -1,6 +1,5 @@
 package de.imi.mopat.helper.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -24,15 +23,12 @@ public class ThymeleafMessageHelper {
      */
     public String get(final Locale locale, final String code, final String defaultString) {
 
-        return messageSource.getMessage(
-            new DefaultMessageSourceResolvable(new String[]{code}, defaultString), locale);
+        return messageSource.getMessage(new DefaultMessageSourceResolvable(new String[] {code}, defaultString), locale);
     }
 
-    public String get(final Locale locale, final String code, final Object[] arguments,
-        final String defaultString) {
+    public String get(final Locale locale, final String code, final Object[] arguments, final String defaultString) {
         return messageSource.getMessage(
-            new DefaultMessageSourceResolvable(new String[]{code}, arguments, defaultString),
-            locale);
+                new DefaultMessageSourceResolvable(new String[] {code}, arguments, defaultString), locale);
     }
 
     /**
