@@ -122,11 +122,13 @@ function Question() {
                                 "class": "form-check"
                             });
 
-                            var answerLabel = $("<label/>", {
-                                "for": "input" + answer.id, 
-                                "class": "btn btn-outline-primary center resizable", 
+                            var answerLabelAttributes = {
+                                "for": "input" + answer.id,
+                                "class": "btn btn-outline-primary center resizable",
                                 "id": answer.id
-                            }); 
+                            };
+                            if(isPreview) delete answerLabelAttributes["for"]; // no answer.id yet so the 'for' value does not work
+                            var answerLabel = $("<label/>", answerLabelAttributes);
 
                             var leftDiv = $("<div/>", {
                                 "class": "left"
