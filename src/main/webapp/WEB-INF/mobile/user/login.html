@@ -36,8 +36,9 @@
 						th:value="${sessionScope?.LAST_USERNAME}"
 					/>
 
+					<div class="password-toggle-container">
 					<input
-						class="form-control"
+						class="form-control password-input-with-toggle"
 						index="2"
 						name="password"
 						id="password"
@@ -48,12 +49,22 @@
 						autocapitalize="off"
 						spellcheck="false"
 					/>
+						<button
+								type="button"
+								class="password-toggle-btn"
+								id="passwordToggle"
+								th:title="${messages.get(#locale, 'user.label.togglePassword', 'Click to show/hide password')}"
+						>
+							<i class="bi bi-eye" id="passwordToggleIcon"></i>
+						</button>
+					</div>
 
 					<th:block
 						th:if="${!#strings.isEmpty(message)}"
 						th:text="${message}"
 					></th:block>
 					<a
+						id="forgotPasswordLink"
 						class="btn-link mobile-link"
 						data-ajax="true"
 						onclick="initUser();"
@@ -63,6 +74,7 @@
 					</a>
 
 					<button
+						th:id="'loginButton'"
 						class="btn btn-white btn-mobile"
 						index="3"
 						type="submit"
@@ -89,6 +101,26 @@
 			for (var i = 3; i < op.length; i++) {
 				/*[- op[i].disabled = true; -]*/
 				op[i].style.display = "none";
+			}
+
+			// Password visibility toggle functionality
+			var passwordField = $("#password");
+			var passwordToggle = $("#passwordToggle");
+			var passwordToggleIcon = $("#passwordToggleIcon");
+
+			if (passwordField && passwordToggle && passwordToggleIcon) {
+				$(passwordToggle).on('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+
+					if (passwordField.attr("type") === "password") {
+						passwordField.attr("type","text");
+						passwordToggleIcon.attr("class", "bi bi-eye-slash");
+					} else {
+						passwordField.attr("type","password");
+						passwordToggleIcon.attr("class", "bi bi-eye");
+					}
+				});
 			}
 		});
 	</script>

@@ -23,6 +23,7 @@ services:
       - ${HL7_VOLUME}:/var/lib/tomcat10/export/HL7
       - ${FHIR_VOLUME}:/var/lib/tomcat10/export/FHIR
       - ${ODM_VOLUME}:/var/lib/tomcat10/export/ODM
+      - ${REDCAP_VOLUME}:/var/lib/tomcat10/export/REDCap
       - ${UPLOAD_VOLUME}:/var/lib/tomcat10/upload
       - ${IMAGES_VOLUME}:/var/lib/tomcat10/images
       - ${CONFIG_DIR}:/etc/mopat

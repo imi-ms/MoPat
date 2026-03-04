@@ -821,18 +821,36 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return new ArrayList<>(availableScores);
     }
 
+    /**
+     * @return the current version value
+     */
     public Integer getVersion() {
         return version;
     }
 
+    /**
+     * Sets the version value.
+     *
+     * @param version the version to set
+     */
     public void setVersion(Integer version) {
         this.version = version;
     }
 
+    /**
+     * Sets the questions associated with this entity.
+     *
+     * @param questions the questions to set
+     */
     public void setQuestions(Set<Question> questions) {
         this.questions = questions;
     }
 
+    /**
+     * Checks whether this entity is modifiable by verifying that all associated questions are modifiable.
+     *
+     * @return {@code true} if all questions are modifiable; {@code false} otherwise
+     */
     public boolean isModifiable() {
         for (Question question : this.getQuestions()) {
             if (!question.isModifiable()) {
@@ -842,18 +860,36 @@ public class Questionnaire implements ConditionTarget, Serializable {
         return true;
     }
 
+    /**
+     * Indicates whether this instance represents the original version (version {@code 1}).
+     *
+     * @return {@code true} if {@code version == 1}; {@code false} otherwise
+     */
     public boolean isOriginal() {
         return version == 1;
     }
 
+    /**
+     * @return the associated {@link QuestionnaireVersionGroup}
+     */
     public QuestionnaireVersionGroup getQuestionnaireVersionGroup() {
         return questionnaireVersionGroup;
     }
-    
+
+    /**
+     * Sets the associated {@link QuestionnaireVersionGroup}.
+     *
+     * @param questionnaireVersionGroup the version group to set
+     */
     public void setQuestionnaireVersionGroup(QuestionnaireVersionGroup questionnaireVersionGroup) {
         this.questionnaireVersionGroup = questionnaireVersionGroup;
     }
 
+    /**
+     * Returns the ID of the associated {@link QuestionnaireVersionGroup}, if present.
+     *
+     * @return version group ID, or {@code null} if no group is set
+     */
     public Long getQuestionnaireVersionGroupId() {
         return (questionnaireVersionGroup != null) ? questionnaireVersionGroup.getId() : null;
     }

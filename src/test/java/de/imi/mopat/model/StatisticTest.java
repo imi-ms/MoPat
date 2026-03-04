@@ -273,28 +273,6 @@ public class StatisticTest {
     }
 
     /**
-     * Test of {@link Statistic#getORBISExportCount} and {@link Statistic#setORBISExportCount}.<br>
-     * Invalid input: <code>null</code><br> Valid input: random Long
-     */
-    @Test
-    public void testGetAndSetORBISExportCount() {
-        Long testORBISExportCount = null;
-        Throwable e = null;
-        try {
-            testStatistic.setORBISExportCount(testORBISExportCount);
-        } catch (Throwable ex) {
-            e = ex;
-        }
-        assertTrue("It was possible to set null as the ORBISExportCount",
-            e instanceof AssertionError);
-
-        testORBISExportCount = random.nextLong();
-        testStatistic.setORBISExportCount(testORBISExportCount);
-        assertEquals("The getting ORBISExportCount was not the expected one", testORBISExportCount,
-            testStatistic.getORBISExportCount());
-    }
-
-    /**
      * Test of {@link Statistic#getHL7ExportCount} and {@link Statistic#setHL7ExportCount}.<br>
      * Invalid input: <code>null</code><br> Valid input: random Long
      */

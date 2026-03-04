@@ -135,49 +135,79 @@
 							</td>
 							<td class="actionColumn">
 								<div class="d-none d-xl-block">
-									<a
-										class="link"
-										th:href="@{fill?id=__${item.id}__}"
-									>
-										<i
-											class="bi-pencil-fill"
-											th:title="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
+                                    <div class="btn-group" role="group">
+                                        <a
+                                            id="bundleLink__${item.id}__"
+                                            class="btn btn-sm btn-primary-list link"
+                                            th:href="@{fill?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-pencil-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
+                                            >
+                                            </i>
+                                        </a>
+                                        <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                                            <a
+                                                class="btn btn-sm btn-primary-list link"
+                                                th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
+                                                th:classappend="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false && item.isPublished == false} ? '' : 'btn-crossed'"
+                                            >
+                                                <i
+                                                    class="bi-lab-icon bi-list-icon"
+                                                    th:title="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
+                                                >
+                                                </i>
+                                            </a>
+                                        </th:block>
+                                        <a
+                                            th:if="${item.isPublished == true && item.isModifiable() == true}"
+                                            class="btn btn-sm btn-primary-list link btn-red"
+                                            th:href="@{togglepublish?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-x-circle-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
+                                            >
+                                            </i>
+                                        </a>
+										<a
+											th:if="${item.isPublished == true && item.isModifiable() == false}"
+											class="btn btn-sm btn-primary-list btn-crossed link"
+											aria-disabled="true"
 										>
-										</i>
-									</a>
-									<a
-										th:if="${item.isPublished == true && item.isModifiable() == true}"
-										class="link"
-										th:href="@{togglepublish?id=__${item.id}__}"
-									>
-										<i
-											class="bi-x-circle-fill"
-											th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
-										>
-										</i>
-									</a>
-									<a
-										th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
-										class="link"
-										th:href="@{togglepublish?id=__${item.id}__}"
-									>
-										<i
-											class="bi-check-circle-fill"
-											th:title="${messages.get(#locale, 'bundle.button.publish', 'Enable')}"
-										>
-										</i>
-									</a>
-									<a
-										class="link removeBundleLink"
-										th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
-										th:href="@{remove?id=__${item.id}__}"
-									>
-										<i
-											class="bi-trash-fill"
-											th:title="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
-										>
-										</i>
-									</a>
+											<i
+												class="bi-x-circle-fill bi-list-icon"
+												th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
+											>
+											</i>
+										</a>
+                                        <a
+                                            th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
+                                            class="btn btn-sm btn-primary-list link btn-green"
+                                            th:href="@{togglepublish?id=__${item.id}__}"
+                                        >
+                                            <i
+                                                class="bi-check-circle-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'bundle.button.publish', 'Enable')}"
+                                            >
+                                            </i>
+                                        </a>
+                                        <a
+                                            th:id="'removeBundle_' + ${item.id}"
+                                            class="btn btn-sm btn-primary-list link removeBundleLink btn-red"
+                                            th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="|#deleteModal_${item.id}|"
+                                            th:data-id="${item.id}"
+                                        >
+                                            <i
+                                                class="bi-trash-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
+                                            >
+                                            </i>
+                                        </a>
+                                    </div>
 								</div>
 								<!--/*Action dropdown for smaller resolutions*/-->
 								<div class="d-block d-xl-none">
@@ -199,7 +229,14 @@
 												th:href="@{fill?id=__${item.id}__}"
 												th:text="${messages.get(#locale, 'bundle.button.edit', 'Edit')}"
 											></a>
-
+											<th:block sec:authorize="hasRole('ROLE_ADMIN')">
+												<a
+													th:if="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false && item.isPublished == false}"
+													class="link"
+													th:href="@{/mobile/survey/test(id=${item.id},performExportTest=${true})}"
+													th:text="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
+												></a>
+											</th:block>
 											<a
 												th:if="${item.isPublished == true && item.isModifiable() == true}"
 												class="link"
@@ -215,9 +252,11 @@
 											>
 											</a>
 											<a
-												class="link"
+												class="link removeBundleLink"
 												th:attr="data-hasConditions=${item.isHasConditions()}, data-usedInClinics=${item.usedInClinics()}"
-												th:href="@{remove?id=__${item.id}__}"
+                                                data-bs-toggle="modal"
+                                                th:data-id="${item.id}"
+                                                th:data-bs-target="|#deleteModal_${item.id}|"
 												th:text="${messages.get(#locale, 'bundle.button.remove', 'Remove')}"
 											>
 											</a>
@@ -225,6 +264,13 @@
 									</th:block>
 								</div>
 							</td>
+                            <deleteModal layout:replace="~{fragments/deleteModal :: deleteModal(
+                                type='bundle',
+                                id=${item.id},
+                                name=${item.name},
+                                deleteUrl='remove?id=__${item.id}__')}"
+                            >
+                            </deleteModal>
 						</tr>
 					</th:block>
 				</tbody>
@@ -277,37 +323,6 @@
 			}).column(4).order('desc').draw();
 		});
 
-		var deleteBundleFromClinics =
-			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleFromClinics', 'This bundle is assigned to at least one clinic. Do you want to delete it anyway?')}]]*/ "This bundle is assigned to at least one clinic. Do you want to delete it anyway?";
-		var deleteBundleWithConditions =
-			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditions', 'The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
-		var deleteBundleWithConditionsAndClinics =
-			/*[[${messages.get(#locale, 'bundle.warning.deleteBundleWithConditionsAndClinics', 'The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?')}]]*/ "The bundle is associated with at least one condition and one clinic. The corresponding conditions will also be deleted. Do you want to delete the bundle anyway?";
-
-		$(".removeBundleLink").click(function (e) {
-			/*[- Initialize the result as true if there are no conditions or clinics asssociated -]*/
-			var result = true;
-
-			var hasConditions = $(this).attr("data-hasConditions");
-			var usedInClinics = $(this).attr("data-usedInClinics");
-
-			/*[- Check if the bundle has any corresponding clinics and/or conditions -]*/
-			if (usedInClinics === "true" && hasConditions === "true") {
-				/*[- Let the user confirm, that these clinics and conditions will also be deleted -]*/
-				result = confirm(deleteBundleWithConditionsAndClinics);
-			} else if (usedInClinics === "true") {
-				/*[- Let the user confirm, that these clinics will also be deleted -]*/
-				result = confirm(deleteBundleFromClinics);
-			} else if (hasConditions === "true") {
-				/*[- Let the user confirm, that these conditions will also be deleted -]*/
-				result = confirm(deleteBundleWithConditions);
-			}
-			if (result === true) {
-				return true;
-			} else {
-				return false;
-				e.preventDefault();
-			}
-		});
 	</script>
+    <th:block layout:replace="~{fragments/deleteModal :: deleteModalScript}"></th:block>
 </th:block>

@@ -62,6 +62,9 @@ sudo chmod -R 775 ./data
 
 While the application is runnable without any additional settings, it is highly advised to adjust the `.env` file in the root directory of the project to use secure settings.
 
+### Rootless Podman with TLS
+
+If you want to run MoPat as container without root privileges and using secrets instead of envars for sensitive information like passwords, you can use [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html). Setup instructions can be found [here](examples/quadlet-with-traefik/README.md).
 
 ### Manual Installation
 To install the application manually, follow these steps carefully:
@@ -109,6 +112,14 @@ Get-Content path/to/installationInit.sql | mysql -u root -p
 
 6. Tomcat
 - In order to run the application as a service on a server the use of Tomcat is highly recommended. At least Tomcat 10 is required to run MoPat.
+
+As some pages of the application use rather large forms with many fields, it is necessary to adjust the Tomcat server settings.
+To do so, open the `server.xml` file located in the Tomcat installation directory and adjust the attributes `maxPartCount` and `maxParameterCount` to a higher value.
+We recommend to set them to `2000` each. Be aware that tomcat will generally allow more parameters after adjusting these values. The server has to be able to handle the increased load to prevent DoS attacks.
+
+```xml
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" maxPartCount="2000" maxParameterCount="2000"/>
+```
 
 
 #### Start MoPat
