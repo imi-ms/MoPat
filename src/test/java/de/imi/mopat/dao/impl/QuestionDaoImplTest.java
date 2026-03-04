@@ -7,9 +7,11 @@ import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.AnswerDao;
+import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.QuestionTest;
 import de.imi.mopat.model.SelectAnswerTest;
@@ -49,6 +51,9 @@ public class QuestionDaoImplTest {
 
     @Autowired
     AnswerDao testAnswerDao;
+
+    @Autowired
+    ExportTemplateDao testExportTemplateDao;
 
     @Autowired
     QuestionnaireDao questionnaireDao;
@@ -97,6 +102,12 @@ public class QuestionDaoImplTest {
 
     @Transactional
     protected void clearTable() {
+        List<ExportTemplate> exportTemplates = testExportTemplateDao.getAllElements();
+        for (ExportTemplate exportTemplate : exportTemplates) {
+            testExportTemplateDao.remove(exportTemplate);
+        }
+        entityManager.flush();
+
         List<Answer> allAnswers = testAnswerDao.getAllElements();
         for (Answer answer : allAnswers) {
             testAnswerDao.remove(answer);
