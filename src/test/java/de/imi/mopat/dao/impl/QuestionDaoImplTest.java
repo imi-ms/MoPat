@@ -38,14 +38,10 @@ import org.springframework.transaction.annotation.Transactional;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
-@Transactional("myTxManagerMoPat")
 public class QuestionDaoImplTest {
 
     private static final Random random = new Random();
     
-    @PersistenceContext(unitName = "MoPat")
-    private EntityManager entityManager;
-
     @Autowired
     QuestionDao testQuestionDao;
 
@@ -100,24 +96,13 @@ public class QuestionDaoImplTest {
             testQuestions, testQuestionDao.getAllElements());
     }
 
-    @Transactional
-    protected void clearTable() {
-        List<ExportTemplate> exportTemplates = testExportTemplateDao.getAllElements();
-        for (ExportTemplate exportTemplate : exportTemplates) {
-            testExportTemplateDao.remove(exportTemplate);
-        }
-        entityManager.flush();
-
-        List<Answer> allAnswers = testAnswerDao.getAllElements();
-        for (Answer answer : allAnswers) {
-            testAnswerDao.remove(answer);
-        }
-        entityManager.flush();
-
+    /**
+     * Deletes all exportTemplates, Answers and Questions from the database
+     */
+    private void clearTable() {
         List<Question> allQuestions = testQuestionDao.getAllElements();
         for (Question question : allQuestions) {
             testQuestionDao.remove(question);
         }
-        entityManager.flush();
     }
 }
