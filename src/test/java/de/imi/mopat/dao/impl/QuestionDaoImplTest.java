@@ -100,6 +100,11 @@ public class QuestionDaoImplTest {
      * Deletes all exportTemplates, Answers and Questions from the database
      */
     private void clearTable() {
+        List<ExportTemplate> exportTemplates = testExportTemplateDao.getAllElements();
+        for (ExportTemplate exportTemplate : exportTemplates) {
+            testExportTemplateDao.remove(exportTemplate);
+        }
+
         List<Question> allQuestions = testQuestionDao.getAllElements();
         for (Question question : allQuestions) {
             testQuestionDao.remove(question);
