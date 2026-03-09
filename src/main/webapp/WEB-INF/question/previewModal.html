@@ -186,7 +186,7 @@
 <th:block
         layout:insert="~{fragments/surveyMessages :: surveyMessages}"
 ></th:block>
-
+<th:block layout:replace="~{fragments/resourceFragment :: additionalCSS}"></th:block>
 <script defer th:src="@{/js/mobile/survey/model/question.js?version=3.3.0}"></script>
 <th:block layout:fragment="scriptContainer">
     <script
