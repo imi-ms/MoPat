@@ -1044,7 +1044,7 @@ function Question() {
                     this.rearrange(isPreview);
                 }
 
-                $(window).on("resize", rearrangeEvent); 
+                $(window).on("resize.question", rearrangeEvent);
 
                 // Enable the undo button if there are already points on th image
                 if (!isPreview && encounter.getResponse(question.answers[0].id) !== null && encounter.getResponse(question.answers[0].id).pointsOnImage.length > 0) {
@@ -1785,8 +1785,8 @@ function Question() {
                     var optimalHeight = image.naturalHeight;
 
                     // Set the maximum canvas size
-                    var availableWidth = $('#canvasDiv').width();
-                    var availableHeight = window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
+                    var availableWidth = isPreview ? window.innerWidth * 3/4 : $('#canvasDiv').width();
+                    var availableHeight = isPreview ? window.innerHeight * 3/4 : window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
 
                     // If the available size is smaller than the optimal size recalculate the optimal size depending on the images' proportion
                     if (availableWidth < optimalWidth) {
@@ -1795,7 +1795,7 @@ function Question() {
                         optimalHeight = optimalWidth * proportion;
                     }
                     // Only recalculate the optimal height, when it's not used on mobile devices
-                    if (availableHeight < optimalHeight && isMobile.matches === false) {
+                    if (availableHeight < optimalHeight && (isPreview || isMobile.matches === false)) {
                         var proportion = optimalWidth / optimalHeight;
                         optimalHeight = availableHeight;
                         optimalWidth = optimalHeight * proportion;

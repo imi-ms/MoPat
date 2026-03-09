@@ -231,6 +231,7 @@
         });
 
         $('#previewModal').on('hide.bs.modal', function (event) {
+            $(window).off("resize.question");
             $('#questionContent').empty();
             $('#questionTitle').empty();
         });
