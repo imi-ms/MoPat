@@ -404,7 +404,12 @@ function showCompletenessCheck(incompletedQuestions) {
     var title = strings['survey.questionnaire.button.completenessCheck'];
     var buttonTextNext = "";
     if (encounter.hasNextQuestionnaire()) {
-        buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+        if (encounter.getCurrentQuestionnaire().hasFinalText()) {
+            buttonTextNext = strings['survey.questionnaire.button.completeQuestionnaireInBundle'];
+        } else {
+            buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+        }
+
     } else {
         buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
     }
@@ -514,7 +519,16 @@ function updateButtonsAfterShowQuestion(question) {
 
     // If it is the last question of the questionnaire, rename the Button
     if (!encounter.getCurrentQuestionnaire().hasNextQuestion(completionMode)) {
-        buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
+        if (encounter.hasNextQuestionnaire()) {
+            if (encounter.getCurrentQuestionnaire().hasFinalText()) {
+                buttonTextNext = strings['survey.questionnaire.button.completeQuestionnaireInBundle'];
+            } else {
+                buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+            }
+
+        } else {
+            buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
+        }
     }
 
     Navigation.updateNavigation(title, progress, buttonTextPrevious, buttonTextNext, orientationVertical, encounter.bundle.deactivateProgressAndNameDuringSurvey);
@@ -719,19 +733,14 @@ function switchState(state) {
             // switch into the completionMode and reset the questionIndex of this questionnaire
             var incompletedQuestions = getIncompleteQuestionsCountFromQuestionnaire(encounter.getCurrentQuestionnaire());
             if (incompletedQuestions > 0) {
-                //if completion mode is already true and still have required unanswered questions, then show the next question
-                if(completionMode == true){
-                    switchState(States.NEXT_QUESTION);
-                } else {
-                    completionMode = true;
-                    // reset the question index
-                    encounter.getCurrentQuestionnaire().setQuestionIndex(-1);
-                    // Don't show the questionnaire final page. Show the completeness check site
-                    showCompletenessCheck(incompletedQuestions);
-                    // Set the next state to questionnaire final to indicate, that the current state is
-                    // COMPLETENESS CHECK
-                    this.nextState = States.QUESTIONNAIRE_FINAL;
-                }
+                completionMode = true;
+                // reset the question index
+                encounter.getCurrentQuestionnaire().setQuestionIndex(-1);
+                // Don't show the questionnaire final page. Show the completeness check site
+                showCompletenessCheck(incompletedQuestions);
+                // Set the next state to questionnaire final to indicate, that the current state is
+                // COMPLETENESS CHECK
+                this.nextState = States.QUESTIONNAIRE_FINAL;
                 break;
             }
             
@@ -754,8 +763,7 @@ function switchState(state) {
                 this.nextState = States.BUNDLE_FINAL;
             }
 
-            if (currentQuestionnaire.localizedFinalText[encounter.bundleLanguage] === undefined
-                    || $.trim(currentQuestionnaire.localizedFinalText[encounter.bundleLanguage].replace(/&nbsp;/g, "").replace(/<br>/g, "").replace(/ /g, "").replace(/<p><\/p>/g, "")) === "") {
+            if (!currentQuestionnaire.hasFinalText()) {
                 next();
             } else {
                 showQuestionnaireFinal(encounter.getCurrentQuestionnaire(), hasActiveFollower);
