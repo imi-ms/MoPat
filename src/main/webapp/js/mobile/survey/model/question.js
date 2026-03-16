@@ -1483,6 +1483,15 @@ function Question() {
         }
     }
 
+    function addWithoutRoundingError(i, stepSize) {
+        var i_decimal_length = (i.toString().split('.')[1] ?? '').length;
+        var stepSize_decimal_length = (stepSize.toString().split('.')[1] ?? '').length;
+        var factor = Math.pow(10, Math.max(i_decimal_length, stepSize_decimal_length));
+        var i_int = Math.round(i * factor);
+        var stepSize_int = Math.round(stepSize * factor);
+        return (i_int + stepSize_int) / factor;
+    }
+
     /**
      * Creates a new checkbox div with a vertical button group 
      * Handles the min and max text, if the question has these values
@@ -1529,12 +1538,13 @@ function Question() {
         var buttonGroup = $("<div/>", {
             "class": "btn-group-vertical flex-wrap w-100"
         });
-        
+
+        var stepSize = Number(question.answers[0].stepsize);
         //Add all input elements
         for (
             let i = Number(question.answers[0].minValue); 
             i <= question.answers[0].maxValue; 
-            i += Number(question.answers[0].stepsize)
+            i = addWithoutRoundingError(i, stepSize)
         ) {
             var inputElement = $("<input/>", {
                 "name": "numberedCheckboxes", 
@@ -1648,12 +1658,14 @@ function Question() {
             "class": "btn-group flex-wrap w-100"
         })
 
+        var stepSize = Number(question.answers[0].stepsize);
         //Add all checkboxes
         for (
             let i = Number(question.answers[0].minValue); 
             i <= question.answers[0].maxValue; 
-            i += Number(question.answers[0].stepsize)
+            i = addWithoutRoundingError(i, stepSize)
         ) {
+            let summy = i + question.answers[0].stepsize;
             var inputElement = $("<input/>", {
                 "name": "numberedCheckboxes", 
                 "id": "numberedCheckbox_" + i, 
