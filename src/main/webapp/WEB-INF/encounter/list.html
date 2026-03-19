@@ -982,8 +982,7 @@
 			/*[- Fill the textarea with the right URL -]*/
 			var baseUrl = /*[[${requestURL}]]*/ "";
 			baseUrl = baseUrl.replace(
-				/*[[${requestURL}]]*/ "",
-				/*[[${contextPath}]]*/ ""
+        "/encounter/list", ""
 			);
 			textArea.value =
 				baseUrl + "/mobile/survey/encounter?hash=" + uuid + "&lang=" + locale;
