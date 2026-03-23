@@ -259,11 +259,25 @@
 
         const MAX_H = window.innerHeight * 3/4, MAX_W = window.innerWidth * 3/4;
 
-        function scaleToSelectedRatio() {
+        function calcModalWidth() {
+            if(!modalSettings.ratio) return MAX_W;
             const [rw, rh] = modalSettings.ratio;
             const s = Math.min(MAX_H / rh, MAX_W / rw);
             const w = Math.round(rw * s);
+            return w;
+        }
+
+        function calcModalHeight() {
+            if(!modalSettings.ratio) return MAX_H;
+            const [rw, rh] = modalSettings.ratio;
+            const s = Math.min(MAX_H / rh, MAX_W / rw);
             const h = Math.round(rh * s);
+            return h;
+        }
+
+        function scaleToSelectedRatio() {
+            const w = calcModalWidth();
+            const h = calcModalHeight();
             const outer = document.getElementById('modal-dialog');
             outer.style.width = w + 'px';
             outer.style.height = h + 'px';

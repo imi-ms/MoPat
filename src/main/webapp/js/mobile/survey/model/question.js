@@ -1797,8 +1797,8 @@ function Question() {
                     var optimalHeight = image.naturalHeight;
 
                     // Set the maximum canvas size
-                    var availableWidth = isPreview ? window.innerWidth * 3/4 : $('#canvasDiv').width();
-                    var availableHeight = isPreview ? window.innerHeight * 3/4 : window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
+                    var availableWidth = isPreview ? calcModalWidth() * 4/5: $('#canvasDiv').width();
+                    var availableHeight = isPreview ? calcModalHeight() * 4/5: window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
 
                     // If the available size is smaller than the optimal size recalculate the optimal size depending on the images' proportion
                     if (availableWidth < optimalWidth) {
