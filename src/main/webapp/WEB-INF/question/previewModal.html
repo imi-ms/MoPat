@@ -2,8 +2,11 @@
         id="previewModal"
         class="modal fade"
 >
-    <div class="modal-dialog">
+    <div class="modal-dialog" id="modal-dialog">
         <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" data-bs-dismiss="modal" aria-hidden="true" class="btn-close"></a>
+            </div>
             <div class="modal-body">
                 <div class="px-2 py-1 d-flex align-items-center justify-content-between">
                     <div class="col-1"></div>
@@ -211,6 +214,8 @@
     >
         var language = [[${#locale.toString}]];
 
+        const modalSettings = {};
+
         $('#previewModal').on('show.bs.modal', function (event) {
             let form = document.getElementsByName("questionDTO")[0];
             const formData = new FormData(form);
@@ -227,6 +232,7 @@
                 var content = $('#questionContent');
                 updateQuestionTitles(updatedDTO);
                 question.getHTML(content, true, language);
+                if(modalSettings.ratio) scaleToSelectedRatio();
             });
         });
 
@@ -234,6 +240,8 @@
             $(window).off("resize.question");
             $('#questionContent').empty();
             $('#questionTitle').empty();
+            $('#modal-dialog').attr("style", "");
+            delete modalSettings.ratio
         });
 
         function updateQuestionTitles(question) {
@@ -247,6 +255,19 @@
             var scrollQuestionTitlePaddingDiv = $("<div/>", {
                 "class": "px-5",
             });
+        }
+
+        const MAX_H = window.innerHeight * 3/4, MAX_W = window.innerWidth * 3/4;
+
+        function scaleToSelectedRatio() {
+            const [rw, rh] = modalSettings.ratio;
+            const s = Math.min(MAX_H / rh, MAX_W / rw);
+            const w = Math.round(rw * s);
+            const h = Math.round(rh * s);
+            const outer = document.getElementById('modal-dialog');
+            outer.style.width = w + 'px';
+            outer.style.height = h + 'px';
+            return;
         }
 
     </script>

@@ -1216,13 +1216,26 @@
                         th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
                 >
                 </button>
-                <a
-                        class="btn btn-primary"
-                        value="preview"
-                        id="previewButton"
-                        th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
-                        th:attr="onclick=|showModal();|"
-                ></a>
+                <div class="btn-group">
+                    <button type="button"
+                            class="btn btn-primary"
+                            value="preview"
+                            id="previewButton"
+                            th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
+                            th:attr="onclick=|showModal();|"
+                    ></button>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only"></span>
+                    </button>
+                    <div class="dropdown-menu" id="preview-sizes-dropdown">
+                        <a class="dropdown-item" onclick="showModal([9, 19.5])" th:text="${messages.get(#locale, 'preview.phone.portrait', 'Phone (portrait): 9:19.5')}"></a>
+                        <a class="dropdown-item" onclick="showModal([19.5, 9])" th:text="${messages.get(#locale, 'preview.phone.landscape', 'Phone (landscape): 19.5:9')}"></a>
+                        <a class="dropdown-item" onclick="showModal([3, 4])" th:text="${messages.get(#locale, 'preview.tablet.portrait', 'Tablet (portrait): 3:4')}"></a>
+                        <a class="dropdown-item" onclick="showModal([4, 3])" th:text="${messages.get(#locale, 'preview.tablet.landscape', 'Tablet (landscape): 4:3')}"></a>
+                        <a class="dropdown-item" onclick="showModal([16, 9])" th:text="${messages.get(#locale, 'preview.laptop', 'Laptop: 16:9')}"></a>
+                        <a class="dropdown-item" onclick="showModal([21, 9])" th:text="${messages.get(#locale, 'preview.desktop', 'Desktop: 21:9')}"></a>
+                    </div>
+                </div>
                 <th:block
                         layout:insert="~{helper/localeHelper/deleteLanguageModal}"
                 ></th:block>
@@ -1726,7 +1739,14 @@
             }
         });
 
-        function showModal() {
+
+
+        function showModal(ratio) {
+            if(ratio) {
+                modalSettings.ratio = ratio;
+            } else {
+                delete modalSettings.ratio;
+            }
             $('#previewModal').modal('show');
         }
 
