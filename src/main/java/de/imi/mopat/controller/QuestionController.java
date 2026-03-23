@@ -207,6 +207,10 @@ public class QuestionController {
             }
         }
 
+        if(questionDTO.getQuestionType() == null) {
+            questionDTO.setQuestionType(QuestionType.SLIDER);
+        }
+
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
         model.addAttribute("questionDTO", questionDTO);
         model.addAttribute("questionnaireId", questionnaireId);
