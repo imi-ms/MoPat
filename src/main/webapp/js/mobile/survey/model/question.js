@@ -892,11 +892,11 @@ function Question() {
 
                 var topicLabelHtml = strings['survey.questionnaire.label.dateDescription'];
                 // If the date input has a start and a end date, only a start date value or only a end date get the additional message.
-                if (this.answers[0].startDate !== null && this.answers[0].endDate !== null) {
+                if (this.answers[0].startDate && this.answers[0].endDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.startEndDate'];
-                } else if (this.answers[0].endDate !== null) {
+                } else if (this.answers[0].endDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.endDate'];
-                } else if (this.answers[0].startDate !== null) {
+                } else if (this.answers[0].startDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.startDate'];
                 }
                 // Replace the placeholders.
