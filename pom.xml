@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.imi</groupId>
     <artifactId>MoPat</artifactId>
-    <version>3.3.3</version>
+    <version>3.3.4</version>
     <packaging>war</packaging>
     <name>MoPat</name>
     <!--/*
@@ -13,7 +13,7 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-        <hapi.fhir.version>8.6.1</hapi.fhir.version>
+        <hapi.fhir.version>8.6.7</hapi.fhir.version>
         <hapi.hl7.v2.version>2.6.0</hapi.hl7.v2.version>
         <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,14 +24,14 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
-                <version>6.2.11</version>
+                <version>6.2.17</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
-                <version>6.5.4</version>
+                <version>6.5.9</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -623,11 +623,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
             <version>3.18.0</version>
         </dependency>
         <dependency>
@@ -1002,7 +997,7 @@
                     <dependency>
                         <groupId>org.codehaus.plexus</groupId>
                         <artifactId>plexus-utils</artifactId>
-                        <version>4.0.2</version>
+                        <version>4.0.3</version>
                     </dependency>
                 </dependencies>
                 <executions>
