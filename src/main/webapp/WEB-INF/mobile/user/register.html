@@ -25,6 +25,7 @@
 			>
 				<input
 					type="hidden"
+          th:if="${user.id != null}"
 					th:field="*{id}"
 				/>
 				<input
