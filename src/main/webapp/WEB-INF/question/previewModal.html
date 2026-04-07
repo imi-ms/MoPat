@@ -3,7 +3,7 @@
         class="modal fade"
 >
     <div class="modal-dialog" id="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" id="modal-content">
             <div class="modal-header">
                 <a href="#" data-bs-dismiss="modal" aria-hidden="true" class="btn-close"></a>
             </div>
@@ -232,7 +232,7 @@
                 var content = $('#questionContent');
                 updateQuestionTitles(updatedDTO);
                 question.getHTML(content, true, language);
-                if(modalSettings.ratio) scaleToSelectedRatio();
+                if(modalSettings.dimensions) scaleToSelectedRatio();
             });
         });
 
@@ -241,7 +241,7 @@
             $('#questionContent').empty();
             $('#questionTitle').empty();
             $('#modal-dialog').attr("style", "");
-            delete modalSettings.ratio
+            delete modalSettings.dimensions
         });
 
         function updateQuestionTitles(question) {
@@ -260,19 +260,19 @@
         const MAX_H = window.innerHeight * 3/4, MAX_W = window.innerWidth * 3/4;
 
         function calcModalWidth() {
-            if(!modalSettings.ratio) return MAX_W;
-            const [rw, rh] = modalSettings.ratio;
-            const s = Math.min(MAX_H / rh, MAX_W / rw);
-            const w = Math.round(rw * s);
-            return w;
+            if(!modalSettings.dimensions) return MAX_W;
+            const [w, h] = modalSettings.dimensions;
+            if(w < MAX_W) return w;
+            const s = Math.min(MAX_H / h, MAX_W / w);
+            return Math.round(w * s);
         }
 
         function calcModalHeight() {
-            if(!modalSettings.ratio) return MAX_H;
-            const [rw, rh] = modalSettings.ratio;
-            const s = Math.min(MAX_H / rh, MAX_W / rw);
-            const h = Math.round(rh * s);
-            return h;
+            if(!modalSettings.dimensions) return MAX_H;
+            const [w, h] = modalSettings.dimensions;
+            if(h < MAX_H) return h;
+            const s = Math.min(MAX_H / h, MAX_W / w);
+            return Math.round(h * s);
         }
 
         function scaleToSelectedRatio() {

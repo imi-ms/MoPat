@@ -206,7 +206,7 @@ function Question() {
                         "name": "textarea",
                         "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
-                        "rows": "8",
+                        "rows": calculateTextAreaRows(isPreview),
                         "style": "height: auto;",
                         "disabled": "disabled"
                     });
@@ -288,7 +288,7 @@ function Question() {
                         "name": "textarea",
                         "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
-                        "rows": "8",
+                        "rows": calculateTextAreaRows(isPreview),
                         "style": "height: auto;" + enable,
                         "disabled": "disabled"
                     });
@@ -501,7 +501,7 @@ function Question() {
                     "name": "textarea",
                     "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;"
                 });
                 questionContent.append(textarea);
@@ -515,7 +515,7 @@ function Question() {
                     "name": "textarea",
                     "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + question.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;",
                     "disabled": "disabled"
                 });
@@ -878,7 +878,7 @@ function Question() {
                     "name": "textarea",
                     "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", parseInt($('input[name*=numberedCheckbox_]:checked').val()), $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;"
                 });
                 textareaWrapper.append(label).append(textarea); 
@@ -1735,6 +1735,17 @@ function Question() {
         }
 
         return checkboxDiv; 
+    }
+
+    // Prevents overflow in landscape view modes in Preview
+    function calculateTextAreaRows(isPreview) {
+        if(isPreview && modalSettings.dimensions) {
+            const [w, h] = modalSettings.dimensions;
+            if(w > h) {
+                return "4";
+            }
+        }
+        return "8";
     }
 
     /**
