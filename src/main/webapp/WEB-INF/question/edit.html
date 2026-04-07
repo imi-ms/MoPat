@@ -482,6 +482,30 @@
                                 </fieldset>
                             </div>
 
+                            <!--/* Free Text */-->
+                            <div
+                                    class="my-2"
+                                    id="freeText"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
+                            </div>
+
+                            <!--/* Info Text */-->
+                            <div
+                                    class="my-2"
+                                    id="infoText"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
+                            </div>
+
+                            <!--/* Barcode */-->
+                            <div
+                                    class="my-2"
+                                    id="barcode"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
+                            </div>
+
                             <!--/* SLIDER */-->
                             <div
                                     class="my-2"
@@ -1758,6 +1782,9 @@
             numberInput: {id: "#numberInput", fieldId: "#numberInputField"},
             image: {id: "#image", fieldId: "#imageField"},
             bodyPart: {id: "#bodyPart", fieldId: "#bodyPartField"},
+            freeText: {id: "#freeText"},
+            barcode: {id: "#barcode"},
+            infoText: {id: "#infoText"}
         };
 
         function handleQuestionTypes(onload) {
@@ -1773,7 +1800,8 @@
 
             Object.keys(questionFormTypes).forEach(function(type, index) {
                 $(questionFormTypes[type].id).children().attr("disabled", "disabled");
-                $(questionFormTypes[type].fieldId).children("legend").siblings().hide();
+                let fieldId = $(questionFormTypes[type].fieldId);
+                if(fieldId) fieldId.children("legend").siblings().hide();
                 $(questionFormTypes[type].id).attr("style", "display:none;");
             });
 
@@ -1886,9 +1914,16 @@
                     $("#sliderFreeTextField").children("legend").siblings().show();
                     break;
                 case "FREE_TEXT":
+                    $("#freeText").removeAttr("style");
+                    $("#freeText").children().removeAttr("disabled");
+                    break;
                 case "BARCODE":
+                    $("#barcode").removeAttr("style");
+                    $("#barcode").children().removeAttr("disabled");
                     break;
                 case "INFO_TEXT":
+                    $("#infoText").removeAttr("style");
+                    $("#infoText").children().removeAttr("disabled");
                     $(".labelQuestionText").html(labelInfoText);
                     $("#isRequired1").attr("disabled", "disabled");
                     $("#isRequired1").removeAttr("checked");
