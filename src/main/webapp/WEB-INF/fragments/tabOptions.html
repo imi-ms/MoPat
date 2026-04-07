@@ -36,6 +36,9 @@
                     <img th:src="@{${i[itemIcon]}}" width="64" height="25"
                          th:title="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"/>
                 </a>
+                <div class="tab-hover-text">
+                    <th:block th:text="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"</th:block>
+                </div>
             </li>
         </th:block>
     </ul>
