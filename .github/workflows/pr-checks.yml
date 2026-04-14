@@ -161,7 +161,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner on image
         id: trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@a]b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9
         env:
           TRIVY_DISABLE_VEX_NOTICE: "true"
         with:
