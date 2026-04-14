@@ -1,13 +1,14 @@
 package de.imi.mopat.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.imi.mopat.model.enumeration.ExportEncounterFieldType;
-
-import java.io.Serializable;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import java.io.Serializable;
 
 /**
  * Represents an {@link ExportRule} corresponding to an {@link Encounter} field.
@@ -45,6 +46,12 @@ public class ExportRuleEncounter extends ExportRule implements Serializable {
         final ExportEncounterFieldType encounterField) {
         super(exportTemplate, exportField);
         setEncounterField(encounterField);
+    }
+
+    @Override
+    @JsonProperty("type")
+    public ExportRuleType getType() {
+        return ExportRuleType.ENCOUNTER;
     }
 
     /**

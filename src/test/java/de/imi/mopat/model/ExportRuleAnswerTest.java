@@ -67,6 +67,21 @@ public class ExportRuleAnswerTest {
     /**
      * Returns a valid new ExportRuleAnswer
      *
+     * @param answer {@link Answer} of this ExportRule
+     * @return Returns a valid new ExportRuleAnswer
+     */
+    public static ExportRuleAnswer getNewValidExportRuleAnswer(Answer answer, ExportTemplate exportTemplate) {
+        String exportField = Helper.getRandomString(random.nextInt(50) + 1);
+
+        ExportRuleAnswer exportRuleAnswer = new ExportRuleAnswer(exportTemplate, exportField,
+            answer);
+
+        return exportRuleAnswer;
+    }
+
+    /**
+     * Returns a valid new ExportRuleAnswer
+     *
      * @param exportTemplate {@link ExportTemplate} of this ExportRule
      * @return Returns a valid new ExportRuleAnswer
      */

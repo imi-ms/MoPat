@@ -62,6 +62,9 @@ sudo chmod -R 775 ./data
 
 While the application is runnable without any additional settings, it is highly advised to adjust the `.env` file in the root directory of the project to use secure settings.
 
+### Rootless Podman with TLS
+
+If you want to run MoPat as container without root privileges and using secrets instead of envars for sensitive information like passwords, you can use [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html). Setup instructions can be found [here](examples/quadlet-with-traefik/README.md).
 
 ### Manual Installation
 To install the application manually, follow these steps carefully:
@@ -110,6 +113,14 @@ Get-Content path/to/installationInit.sql | mysql -u root -p
 6. Tomcat
 - In order to run the application as a service on a server the use of Tomcat is highly recommended. At least Tomcat 10 is required to run MoPat.
 
+As some pages of the application use rather large forms with many fields, it is necessary to adjust the Tomcat server settings.
+To do so, open the `server.xml` file located in the Tomcat installation directory and adjust the attributes `maxPartCount` and `maxParameterCount` to a higher value.
+We recommend to set them to `2000` each. Be aware that tomcat will generally allow more parameters after adjusting these values. The server has to be able to handle the increased load to prevent DoS attacks.
+
+```xml
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" maxPartCount="2000" maxParameterCount="2000"/>
+```
+
 
 #### Start MoPat
 If you are installing MoPat on a server, it is recommended to run Tomcat as a service. This ensures that Tomcat automatically starts up whenever the server is rebooted and runs in the background.
@@ -118,12 +129,13 @@ On Linux, you can use system management tools like systemd or init to configure 
 Alternatively, if you are not running Tomcat as a service, you can start it manually using the startup.sh script (on Linux/Unix) or startup.bat script (on Windows) located in the bin directory of your Tomcat installation folder.
 
 Build the WAR (Web Application Archive) file from the MoPat source code or obtain a [pre-built WAR](https://github.com/imi-ms/MoPat/releases) file from the repository.
-MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please adjust `src/main/resources/mopat.properties`:
-```conf
-de.imi.mopat.logback.email.host=
-de.imi.mopat.logback.email.from=
-de.imi.mopat.logback.email.to=
+MoPat uses logback to send out e-mails, when an error occurred. To make sure this works, please set the correct system variables:
+```bash
+export MOPAT_SMTP_HOST=
+export MOPAT_SMTP_FROM=
+export MOPAT_SMTP_TO=
 ```
+For Tomcat to read the system variables, set them in a file under `$CATALINE_BASE/bin/setenv.sh` which will be automatically processed when starting Tomcat. 
 Then, copy the MoPat WAR file into the webapps directory of your Tomcat installation. Tomcat will automatically deploy the web application during its startup or on-the-fly if it is already running.
 
 The application needs read- and write privileges to store application data. If you deploy MoPat on a server with Tomcat, you may have to explicitly allow tomcat to write to these locations. You can do so by creating a file `read-write-path.conf` under `/etc/systemd/system/tomcat10.service.d`.

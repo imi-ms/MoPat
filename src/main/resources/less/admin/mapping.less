@@ -46,7 +46,7 @@
     border-radius: 5px;
     vertical-align: middle;
     font-size: 0.9em;
-    width: 200px;
+    min-width: 200px;
     /* z-index: 10; */
     text-align: center;
     font-weight: normal;
@@ -118,17 +118,30 @@
     z-index: 99999;
 }
 
-#questionnaireNodes {
-    width: 80%;
+
+#exportMappingContainer {
+    width: 78%;
+    max-height: 700px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-radius: @border-radius;
+    box-shadow: @box-shadow-material-md;
 }
 
 #templateNodes {
+    max-height: 700px;
     background-color: #c3dbef;
-    padding: 5px;
-    border: 1px solid #000000;
-    position: absolute; 
-    top: 0; 
-    left: 80.5%;
+    overflow-y: scroll;
+    width: 20%;
+    border-radius: @border-radius;
+    box-shadow: @box-shadow-material-md;
+}
+
+.stickyHeader {
+    position: sticky;
+    background-color: #c3dbef;
+    top: 0;
+    border-bottom: 1px solid @color-black;
 }
 
 .question-header {

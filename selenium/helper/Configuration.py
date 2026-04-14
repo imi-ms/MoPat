@@ -13,7 +13,7 @@ from helper.Navigation import NavigationHelper
 
 class ConfigurationSelectors:
     SELECT_LANGUAGE = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs0\\.value")
-    INPUT_ADDITIONAL_LOGO = (By.CSS_SELECTOR, "#configurationGroup\\.label\\.general > fieldset:nth-child(2) > ul:nth-child(2) > li:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(4) > div:nth-child(3) > div:nth-child(1) > div:nth-child(5) > input:nth-child(3)")
+    INPUT_ADDITIONAL_LOGO = (By.CSS_SELECTOR, "#configurationGroup\.label\.general > fieldset > ul > li:nth-child(2) > div > div > div > div.file-caption > div > input")
     INPUT_CASE_NUMBER_TYPE= (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs2\\.value")
     INPUT_STORAGE_PATH_FOR_UPLOADS = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs3\\.value")
     INPUT_BASE_URL = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs4\\.value")
@@ -37,8 +37,6 @@ class ConfigurationSelectors:
     INPUT_OID = (By.ID, "configurationGroupDTOsmetadataExporter0\\.configurationDTOs0\\.value")
     INPUT_URL_ODM_TO_PDF = (By.ID, "configurationGroupDTOsmetadataExporter0\\.configurationDTOs1\\.value")
     INPUT_SYSTEM_URI_FOR_FHIR = (By.ID, "configurationGroupDTOsmetadataExporter0\\.configurationDTOs2\\.value")
-
-    INPUT_EXPORT_PATH_ORBIS = (By.ID, "configurationGroupDTOsORBIS0\\.configurationDTOs0\\.value")
 
     CHECKBOX_EXPORT_HL7_INTO_DIRECTORY = (By.CSS_SELECTOR, "#configurationGroup\\.label\\.HLSeven > fieldset:nth-child(2) > ul:nth-child(2) > li:nth-child(1) > div:nth-child(1) > div:nth-child(2) > label:nth-child(1) > input:nth-child(2)")
     INPUT_EXPORT_PATH_HL7_DIRECTORY = (By.ID, "configurationGroupDTOsHLSeven0\\.configurationDTOs0\\.children0\\.value")

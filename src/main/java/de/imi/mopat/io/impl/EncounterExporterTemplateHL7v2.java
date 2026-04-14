@@ -1,21 +1,19 @@
 package de.imi.mopat.io.impl;
 
-import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
-import ca.uhn.hl7v2.hoh.util.HapiSocketTlsFactoryWrapper;
-import ca.uhn.hl7v2.model.v23.datatype.ST;
-import ca.uhn.hl7v2.model.v23.group.ORU_R01_PATIENT;
 import ca.uhn.hl7v2.model.v23.message.ORU_R01;
-import ca.uhn.hl7v2.model.v23.segment.MSH;
-import ca.uhn.hl7v2.model.v23.segment.OBR;
-import ca.uhn.hl7v2.model.v23.segment.OBX;
+import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.io.EncounterExporterTemplate;
+import de.imi.mopat.model.Configuration;
+import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportTemplate;
-
-import java.io.*;
+import de.imi.mopat.model.enumeration.ExportStatus;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -28,28 +26,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.app.Connection;
-import ca.uhn.hl7v2.app.Initiator;
-import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.DefaultXMLParser;
-import ca.uhn.hl7v2.parser.PipeParser;
-import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.model.Configuration;
-import de.imi.mopat.model.Encounter;
-import de.imi.mopat.model.enumeration.ExportStatus;
-
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -65,15 +46,10 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private static final String UNDERSCORE = "_";
     private static final SimpleDateFormat HL7XMLFileNameDateFormat = new SimpleDateFormat(
         "dd.MM.yyyy_HH.mm.ss");
-
+    private final ConfigurationDao configurationDao;
     private Document document;
     private Encounter encounter;
     private ExportTemplate exportTemplate;
-
-    private final ConfigurationDao configurationDao;
-
-    private ORU_R01 hl7Message;
-    private ST clinicalDataString;
 
     /**
      * Constructor with given {@link ConfigurationDao} to get configuration informations within this
@@ -91,12 +67,6 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
 
         this.encounter = encounter;
         this.exportTemplate = exportTemplate;
-
-        hl7Message = new ORU_R01();
-
-        LOGGER.info("Creating a HL7 message to send patient data...");
-        // Message initialization
-        hl7Message.initQuickstart("ORU", "R01", "P");
 
         // Include export template path
         String objectStoragePath = configurationDao.getObjectStoragePath();
@@ -122,67 +92,6 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         // Load inputStream into w3c Document object..
         document = dBuilder.parse(new FileInputStream(file));
         document.setXmlStandalone(true);
-
-        // Set HL7 message header
-        MSH msh = hl7Message.getMSH();
-
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
-            if (configuration.getAttribute().equals("sendingFacility")) {
-                msh.getMsh4_SendingFacility().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("receivingApplication")) {
-                msh.getMsh5_ReceivingApplication().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("reveivingFacility")) {
-                msh.getMsh6_ReceivingFacility().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-        }
-        msh.getMsh3_SendingApplication().getHd1_NamespaceID()
-            .setValue(getNode("Formname").getTextContent());
-
-        msh.getMessageControlID().setValue(encounter.getId() + "_" + exportTemplate.getId());
-        msh.getMsh14_ContinuationPointer().setValue("L");
-
-        LOGGER.info("Creating Patient data");
-        ORU_R01_PATIENT patientData = hl7Message.getRESPONSE().getPATIENT();
-        if (encounter.getPatientID() != null) {
-            patientData.getPID().getPatientIDInternalID(0).getCx1_ID()
-                .setValue(Long.toString(encounter.getPatientID()));
-        } else {
-            LOGGER.error("The patient does not have an ID");
-        }
-        if (encounter.getCaseNumber() != null) {
-            patientData.getVISIT().getPV1().getPv119_VisitNumber().getCx1_ID()
-                .setValue(encounter.getCaseNumber());
-        } else {
-            LOGGER.error("The patient does not have a case number");
-        }
-
-        LOGGER.info("Creating Observation data");
-
-        OBR obr = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBR();
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
-            if (configuration.getAttribute().equals("OBRFillerOrderNumber")) {
-                obr.getObr3_FillerOrderNumber().getEi1_EntityIdentifier()
-                    .setValue(configuration.getValue());
-            }
-        }
-        DateFormat dateFormatter = new SimpleDateFormat("yyyyMMddhhmm");
-        obr.getObr7_ObservationDateTime().getTimeOfAnEvent()
-            .setValue(dateFormatter.format(encounter.getStartTime()));
-
-        OBX obx = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBSERVATION(0).getOBX();
-        obx.getObx1_SetIDOBX().setValue("1");
-        obx.getObx2_ValueType().setValue("ST");
-        clinicalDataString = new ST(hl7Message);
-        obx.getObservationValue(0).setData(clinicalDataString);
-        obx.getObx10_NatureOfAbnormalTest().setValue("F");
-
     }
 
     @Override
@@ -202,27 +111,6 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
 
     @Override
     public ExportStatus flush() throws Exception {
-        // Transform doc to string
-        // Text copied from
-        // http://www.journaldev.com/1237/java-convert-string-to-xml-document-and-xml-document-to-string
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer;
-        try {
-            transformer = transformerFactory.newTransformer();
-            // Remove XML declaration
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-            String output = writer.getBuffer().toString();
-            // Replace spaces and new lines
-            output = output.replaceAll("\n", "").replaceAll("\\s", "");
-            // Restore replaced spaces and set value
-            clinicalDataString.setValue(output.replaceAll("_u0020", " "));
-            //
-        } catch (TransformerException exception) {
-            LOGGER.error(exception.toString());
-        }
-
         Boolean isExportServer = null;
         String hostname = null;
         Integer port = null;
@@ -233,6 +121,10 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         String clientPKCSPath = null;
         String clientPKCSPassword = null;
         String serverCertificatePath = null;
+        String sendingFacility = null;
+        String receivingApplication = null;
+        String receivingFacility = null;
+        String obrFillerOrderNumber = null;
         // Get export configurations
         for (Configuration configuration : exportTemplate.getConfigurationGroup()
             .getConfigurations()) {
@@ -246,7 +138,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
                 try {
                     port = Integer.valueOf(configuration.getValue());
                 } catch (NumberFormatException e) {
-                    LOGGER.error("The port could not be converted to a number, as it was " + configuration.getValue(), e);
+                    LOGGER.error("The port could not be converted to a number, as it was "
+                        + configuration.getValue(), e);
                 }
             }
             if (configuration.getAttribute().equals("exportInDirectory")) {
@@ -270,28 +163,227 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             if (configuration.getAttribute().equals("clientPKCSPassword")) {
                 clientPKCSPassword = configuration.getValue();
             }
-        }
-
-        KeyStore keyStore = null;
-        if (Boolean.TRUE.equals(useTLS)) {
-            if (Boolean.TRUE.equals(useClientAuth)) {
-                keyStore = buildKeyStore(clientPKCSPath, clientPKCSPassword, serverCertificatePath);
-            } else {
-                keyStore = buildKeyStore(serverCertificatePath);
+            if (configuration.getAttribute().equals("sendingFacility")) {
+                sendingFacility = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("receivingApplication")) {
+                receivingApplication = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("receivingFacility")) {
+                receivingFacility = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("OBRFillerOrderNumber")) {
+                obrFillerOrderNumber = configuration.getValue();
             }
         }
 
-        // If export to server is activated
-        if (Boolean.TRUE.equals(isExportServer)) {
-            // Export it
-            sendMessageViaComServer(hostname, port, useTLS, keyStore, clientPKCSPassword);
+        return doHandleExports(
+            isExportInDirectory, exportPathDirectory, isExportServer, hostname,
+            port, useTLS, useClientAuth, clientPKCSPath, clientPKCSPassword, serverCertificatePath,
+            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber
+        );
+    }
+
+    /**
+     * Handles the export of data either to a file-based directory or to a server using the HL7
+     * protocol. Constructs and sends an HL7 message based on provided parameters and export
+     * configurations. Returns the status of the export operation.
+     *
+     * @param isExportInDirectory   Flag indicating if the export should be saved to a local
+     *                              directory.
+     * @param exportPathDirectory   Path to the directory where the export file should be saved.
+     * @param isExportServer        Flag indicating if the export should be sent to a server.
+     * @param hostname              The hostname of the destination server for the export.
+     * @param port                  The port number to connect to on the export server.
+     * @param useTLS                Flag indicating if TLS encryption should be used for the server
+     *                              connection.
+     * @param useClientAuth         Flag indicating if client-side authentication should be
+     *                              utilized.
+     * @param clientPKCSPath        Path to the client's PKCS#12 certificate file for
+     *                              authentication.
+     * @param clientPKCSPassword    Password for the client's PKCS#12 certificate file.
+     * @param serverCertificatePath Path to the server's certificate for TLS validation.
+     * @param sendingFacility       The identifier of the facility sending the message.
+     * @param receivingApplication  Application identifier of the recipient.
+     * @param receivingFacility     Identifier of the facility receiving the message.
+     * @param obrFillerOrderNumber  Unique order number for the associated medical order.
+     * @return An {@code ExportStatus} indicating the result of the export operation. Returns
+     * {@code ExportStatus.SUCCESS} if the operation is successful, or {@code ExportStatus.FAILURE}
+     * if an error occurs.
+     * @throws Exception If an error occurs during message construction, file export, or server
+     *                   communication.
+     */
+    private ExportStatus doHandleExports(
+        Boolean isExportInDirectory, String exportPathDirectory, Boolean isExportServer,
+        String hostname, Integer port, Boolean useTLS, Boolean useClientAuth,
+        String clientPKCSPath, String clientPKCSPassword, String serverCertificatePath,
+        String sendingFacility, String receivingApplication,
+        String receivingFacility, String obrFillerOrderNumber
+    ) throws Exception {
+        HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+
+        //Properties have to be set, at least empty strings
+        if (sendingFacility != null && receivingApplication != null
+            && receivingFacility != null && obrFillerOrderNumber != null) {
+
+            // Build Template specific message
+            String output = buildHL7MessageContent();
+            ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(
+                exportTemplate, encounter, sendingFacility, receivingApplication,
+                receivingFacility, obrFillerOrderNumber, output
+            );
+            hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(hl7Message,
+                getNode("Formname").getTextContent());
+
+            //Handle Server Export
+            try {
+                doHandleServerExport(isExportServer, hostname, port, useTLS, useClientAuth,
+                    clientPKCSPath, clientPKCSPassword, serverCertificatePath, hl7Message);
+            } catch (Exception e) {
+                LOGGER.error("Could not send message via server.", e);
+                return ExportStatus.FAILURE;
+            }
+
+            //Handle Filebased Export
+            try {
+                doHandleFilebasedExport(isExportInDirectory, exportPathDirectory, hl7Message);
+            } catch (Exception e) {
+                LOGGER.error("Could not export message to file.", e);
+                return ExportStatus.FAILURE;
+            }
+
+            //Return Success if no exception was thrown
+            return ExportStatus.SUCCESS;
+        } else {
+            LOGGER.error("Missing configuration for sendingFacility, receivingApplication, " +
+                "receivingFacility or OBRFillerOrderNumber. Could not export message.");
+            return ExportStatus.FAILURE;
         }
-        // If filebased export is activated
+    }
+
+    /**
+     * Handles the export of an HL7 message to a server, optionally utilizing TLS and client
+     * authentication for secure communication. The method performs the export only if the
+     * {@code isExportServer} flag is set to true and valid server details (hostname and port) are
+     * provided. In the case of TLS-secured communication, a keystore is built based on the provided
+     * paths and authentication configuration.
+     *
+     * @param isExportServer        A Boolean flag indicating if the export should be performed to a
+     *                              server. When set to true, the export process begins.
+     * @param hostname              The hostname or IP address of the server to which the HL7
+     *                              message will be exported. This should not be null or empty.
+     * @param port                  The port number of the server to which the HL7 message will be
+     *                              exported.
+     * @param useTLS                A Boolean flag indicating whether TLS (Transport Layer Security)
+     *                              should be used for secure communication with the server.
+     * @param useClientAuth         A Boolean flag indicating if client-side authentication is to be
+     *                              performed as part of the TLS handshake. This parameter is
+     *                              relevant only if {@code useTLS} is set to true.
+     * @param clientPKCSPath        The file path to the client PKCS archive, which contains client
+     *                              certificates and keys. This parameter is required when
+     *                              {@code useClientAuth} is set to true.
+     * @param clientPKCSPassword    The password for accessing the client PKCS archive. This is
+     *                              required when {@code useClientAuth} is true.
+     * @param serverCertificatePath The file path to the server certificate. This is required when
+     *                              {@code useTLS} is enabled, regardless of whether client
+     *                              authentication is used.
+     * @param hl7Message            The HL7 message object of type {@code ORU_R01} that will be
+     *                              exported to the server.
+     * @throws Exception If an error occurs during the export process, such as failure in message
+     *                   transmission, keystore creation, or TLS setup.
+     */
+    private void doHandleServerExport(
+        Boolean isExportServer, String hostname, Integer port, Boolean useTLS,
+        Boolean useClientAuth, String clientPKCSPath, String clientPKCSPassword,
+        String serverCertificatePath, ORU_R01 hl7Message
+    ) throws Exception {
+        HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+        if (Boolean.TRUE.equals(isExportServer) &&
+            hostname != null && !hostname.isEmpty() && port != null
+        ) {
+            KeyStore keyStore = null;
+            if (Boolean.TRUE.equals(useTLS)) {
+                if (Boolean.TRUE.equals(useClientAuth)) {
+                    keyStore = buildKeyStore(clientPKCSPath, clientPKCSPassword,
+                        serverCertificatePath);
+                } else {
+                    keyStore = buildKeyStore(serverCertificatePath);
+                }
+            }
+
+            hl7MessageHelper.sendMessageViaComServer(hostname, port, hl7Message, useTLS,
+                keyStore, clientPKCSPassword);
+        }
+    }
+
+    /**
+     * Handles the file-based export of an HL7 message to the specified directory. If the export is
+     * configured to be performed in a directory, this method encodes the HL7 message and writes it
+     * to the designated export path directory.
+     *
+     * @param isExportInDirectory A Boolean flag indicating if the export should be performed within
+     *                            a directory. If set to true, the export will proceed.
+     * @param exportPathDirectory The path of the directory where the HL7 message will be exported.
+     *                            This should be a valid directory path.
+     * @param hl7Message          The HL7 message object (of type ORU_R01) that will be encoded and
+     *                            exported.
+     * @throws Exception If an error occurs during the export process, such as issues with encoding
+     *                   the message or writing to the file system.
+     */
+    private void doHandleFilebasedExport(
+        Boolean isExportInDirectory,
+        String exportPathDirectory,
+        ORU_R01 hl7Message
+    ) throws Exception {
         if (Boolean.TRUE.equals(isExportInDirectory)) {
-            // Export it
-            exportToFolder(exportPathDirectory);
+            // Make sure the path exists
+            File path = new File(exportPathDirectory);
+            if (!path.isDirectory()) {
+                path.mkdirs();
+            }
+            //Create a sub-directory for the exported files
+            File subDirectory = new File(
+                exportPathDirectory + File.separator + exportTemplate.getQuestionnaire().getName()
+                    .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_")
+                    + "/");
+            if (!subDirectory.isDirectory()) {
+                subDirectory.mkdirs();
+            }
+            // Write to disk
+            File exportFile = new File(subDirectory, this.createHL7FileName());
+            FileUtils.writeStringToFile(exportFile, hl7Message.encode(), StandardCharsets.UTF_8);
+            LOGGER.info("The hl7 message has been exported");
         }
-        return ExportStatus.SUCCESS;
+    }
+
+    /**
+     * Builds the content of an HL7 message by transforming the current XML document into a string
+     * and applying necessary formatting adjustments, such as removing XML declarations, replacing
+     * spaces, and handling specific character sequences.
+     *
+     * @return The formatted string representation of the HL7 message content. Returns an empty
+     * string if an exception occurs during the transformation process.
+     */
+    private String buildHL7MessageContent() {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer;
+
+        try {
+            transformer = transformerFactory.newTransformer();
+            // Remove XML declaration
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+            String output = writer.getBuffer().toString();
+            // Replace spaces and new lines
+            output = output.replaceAll("\n", "").replaceAll("\\s", "");
+            // Restore replaced spaces and set value
+            return output.replaceAll("_u0020", " ");
+            //
+        } catch (TransformerException exception) {
+            LOGGER.error(exception.toString());
+        }
+        return "";
     }
 
     /**
@@ -353,75 +445,6 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         } catch (Exception ex) {
             LOGGER.error("Could not add certificate to keystore." + ex.getMessage());
         }
-    }
-
-
-    /**
-     * Exports the HL7 message via a communication server specified by host and port.
-     *
-     * @param hostname           Host name of the communication server.
-     * @param port               Port of the communication server
-     * @param useTLS             weather TLS should be used or not
-     * @param keyStore           the Keystore with the necessary certificates
-     * @param keyStorePassphrase the password to use the keystore
-     * @throws java.lang.Exception
-     */
-    private void sendMessageViaComServer(final String hostname, final Integer port,
-        final Boolean useTLS, final KeyStore keyStore, final String keyStorePassphrase)
-        throws Exception {
-        // Set up a context: factory for connections and parsers and so on
-        HapiContext context = new DefaultHapiContext();
-        MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
-        mllp.setCharset("ISO-8859-1");
-        context.setLowerLayerProtocol(mllp);
-        // Let the default Pipe parser parse our message
-        PipeParser parser = context.getPipeParser();
-        LOGGER.debug("HL7 message created: {}", parser.encode(hl7Message));
-        LOGGER.debug("Opening a Connection for HL7 messaging...");
-        // Open a new connection with the given hostname, port, and
-        // Check configuration before setting keystore
-        if (useTLS) {
-            CustomCertificateTlsSocketFactory sfac = new CustomCertificateTlsSocketFactory(keyStore,
-                keyStorePassphrase);
-            context.setSocketFactory(new HapiSocketTlsFactoryWrapper(sfac));
-        }
-
-        Connection connection = context.newClient(hostname, port, useTLS);
-
-        Initiator initiator = connection.getInitiator();
-        LOGGER.debug("Opening a Connection for HL7 messaging...[DONE]");
-        LOGGER.debug("Sending HL7 message...");
-        initiator.setTimeout(30, TimeUnit.SECONDS);
-        Message response = initiator.sendAndReceive(hl7Message);
-        // Log the ACK which is an empty message (OPTIONAL)
-        LOGGER.info((new DefaultXMLParser()).encode(response));
-        LOGGER.debug("Sending HL7 message...[DONE]");
-        connection.close();
-    }
-
-    /**
-     * Exports the HL7 Message to a given path.
-     *
-     * @param exportPath Export path for the HL7 message
-     * @throws java.lang.Exception if a problem occurs
-     */
-    public void exportToFolder(final String exportPath) throws Exception {
-        // Make sure the path exists
-        File path = new File(exportPath);
-        if (!path.isDirectory()) {
-            path.mkdirs();
-        }
-        //Create a sub-directory for the exported files
-        File subDirectory = new File(
-            exportPath + File.separator + exportTemplate.getQuestionnaire().getName()
-                .replaceAll(":", "_") + "/" + exportTemplate.getName().replaceAll(":", "_") + "/");
-        if (!subDirectory.isDirectory()) {
-            subDirectory.mkdirs();
-        }
-        // Write to disk
-        File exportFile = new File(subDirectory, this.createHL7FileName());
-        FileUtils.writeStringToFile(exportFile, hl7Message.encode(), StandardCharsets.UTF_8);
-        LOGGER.info("The hl7 message has been exported");
     }
 
     /**
