@@ -125,7 +125,7 @@
                                 </label>
                                 <selectOptions
                                         layout:replace="~{fragments/tabOptions :: tabOptions(
-                                    clazz='nav nav-tabs nav-justified',
+                                    clazz='nav nav-tabs nav-justified questionTypeTabs',
                                     path='questionType',
                                     items=${questionTypeList},
                                     itemLabel='textValue',
@@ -133,7 +133,7 @@
                                     itemIcon='iconPath',
                                     localize=${#bools.isTrue(true)},
                                     onChangeFunction='handleQuestionTypes(false)',
-                                    id='questionTypeDropDown')}"
+                                    id='questionTypeTabsInput')}"
                                 >
                                 </selectOptions>
                                 <th:block
@@ -1822,14 +1822,14 @@
             the checkbox tag. -]*/
             $("#isRequired1").removeAttr("disabled");
 
-            if($("#questionTypeDropDown").val() != "IMAGE") {
+            if($("#questionTypeTabsInput").val() != "IMAGE") {
                 $("#isJustInfo1").prop("checked", false);
                 $("#isJustInfo1").attr("disabled", true);
                 $("#isJustInfo1").parent().parent().attr("style", "display:none;");
             }
 
             if(onload) {
-                var selectedValue = $("#questionTypeDropDown").val();
+                var selectedValue = $("#questionTypeTabsInput").val();
                 document.querySelectorAll(".questionTypeLink").forEach(function(element, index) {
                     if(element.dataset.value == selectedValue) {
                         element.click();
@@ -1839,7 +1839,7 @@
             }
 
             /*[- Switch over chosen QuestionType and enable associated elements -]*/
-            switch ($("#questionTypeDropDown").val()) {
+            switch ($("#questionTypeTabsInput").val()) {
                 case "MULTIPLE_CHOICE":
                     $("#multipleChoice").removeAttr("style");
                     $("#multipleChoice").children().removeAttr("disabled");
@@ -2742,14 +2742,14 @@
                 ];
                 /*[- Check if the new questiontype is a valid score question type -]*/
                 if (
-                    validScoreQuestionTypes.includes($("#questionTypeDropDown").val()) ===
+                    validScoreQuestionTypes.includes($("#questionTypeTabsInput").val()) ===
                     false
                 ) {
                     result = confirm(noValidScoreQuestionType);
                 }
                 /*[- Check if the min and max answers equal 1 if multiple choice is chosen -]*/
                 if (
-                    $("#questionTypeDropDown").val() === "MULTIPLE_CHOICE" &&
+                    $("#questionTypeTabsInput").val() === "MULTIPLE_CHOICE" &&
                     ($("#minNumberAnswers").val() !== "1" ||
                         $("#maxNumberAnswers").val() !== "1")
                 ) {

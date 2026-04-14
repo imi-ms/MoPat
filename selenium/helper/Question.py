@@ -74,7 +74,6 @@ class QuestionSelectors:
 
     DROPDOWN_ADD_LANGUAGE = (By.CSS_SELECTOR, "div#languageDropdown.dropdown")
     DROPDOWN_TYPE_OF_IDENTIFICATION = (By.ID, "codedValueType")
-    DROPDOWN_QUESTION_TYPE = (By.ID, "questionTypeDropDown")
     DROPDOWN_IMAGE_TYPE = lambda id_selector: (By.CSS_SELECTOR, f"#{id_selector} select[name='imageType']")
 
     ERROR_SLIDER_CONTAINER = (By.ID, "sliderErrors")
@@ -108,6 +107,8 @@ class QuestionSelectors:
     INPUT_WYSIWYG_SLIDER_MAX = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextSliderCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MIN = lambda language_code: (By.XPATH, f'//*[@id="localizedMinimumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MAX = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
+
+    TAB_QUESTION_TYPE = (By.CLASS_NAME, "questionTypeTabs")
 
     TEXTAREA_ANSWER_TEXT = lambda id_selector, index, language_code: (By.CSS_SELECTOR, f"#{id_selector} textarea[name='answers[{index}].localizedLabel[{language_code}]']")
 
@@ -164,7 +165,7 @@ class QuestionHelper:
 
             # Wait for the question type dropdown to be visible
             question_type_dropdown = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(QuestionSelectors.DROPDOWN_QUESTION_TYPE)
+                EC.presence_of_element_located(QuestionSelectors.TAB_QUESTION_TYPE)
             )
 
             # Retrieve the selected option
@@ -588,10 +589,10 @@ class QuestionHelper:
 
         # Wait for the dropdown to be visible and select the question type
         WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
-            QuestionSelectors.DROPDOWN_QUESTION_TYPE))
+            QuestionSelectors.TAB_QUESTION_TYPE))
 
 
-        self.utils.select_dropdown(QuestionSelectors.DROPDOWN_QUESTION_TYPE, question_type.value, DropdownMethod.VALUE)
+        self.utils.select_dropdown(QuestionSelectors.TAB_QUESTION_TYPE, question_type.value, DropdownMethod.VALUE)
 
         # Wait until the page is fully loaded
         WebDriverWait(self.driver, 30).until(lambda d: d.execute_script("return document.readyState") == "complete")
@@ -777,8 +778,8 @@ class QuestionAssertHelper(QuestionHelper):
         try:
             # Select one of the question types
             WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE))
-            self.utils.select_dropdown(QuestionSelectors.DROPDOWN_QUESTION_TYPE, QuestionType.MULTIPLE_CHOICE.value, DropdownMethod.VALUE)
+                QuestionSelectors.TAB_QUESTION_TYPE))
+            self.utils.select_dropdown(QuestionSelectors.TAB_QUESTION_TYPE, QuestionType.MULTIPLE_CHOICE.value, DropdownMethod.VALUE)
 
             # Validate dropdown to add language
             language_dropdown = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
@@ -787,7 +788,7 @@ class QuestionAssertHelper(QuestionHelper):
 
             # Validate select for question type
             question_type_select = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE))
+                QuestionSelectors.TAB_QUESTION_TYPE))
             assert question_type_select.is_displayed(), "Dropdown for question type is not displayed."
 
             # Validate WYSIWYG editor for the question text
@@ -820,8 +821,8 @@ class QuestionAssertHelper(QuestionHelper):
             raise e
 
     def assert_question_by_type(self, question_type: QuestionType):
-        WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.DROPDOWN_QUESTION_TYPE))
-        Select(self.driver.find_element(*QuestionSelectors.DROPDOWN_QUESTION_TYPE)).select_by_value(question_type.value)
+        WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.TAB_QUESTION_TYPE))
+        Select(self.driver.find_element(*QuestionSelectors.TAB_QUESTION_TYPE)).select_by_value(question_type.value)
         # Wait for the page to fully load
         WebDriverWait(self.driver, 30).until(lambda driver: driver.execute_script("return document.readyState") == "complete")
 
@@ -883,7 +884,7 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_freetext_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE[1],
+                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -895,7 +896,7 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_fields_create_info_text_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE[1],
+                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -907,7 +908,7 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_fields_create_barcode_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE[1],
+                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -1407,7 +1408,7 @@ class QuestionAssertHelper(QuestionHelper):
         try:
             # Wait for the question type dropdown to be visible
             WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
-                QuestionSelectors.DROPDOWN_QUESTION_TYPE))
+                QuestionSelectors.TAB_QUESTION_TYPE))
 
             # Get all visible input, select, and textarea elements
             visible_inputs = [
