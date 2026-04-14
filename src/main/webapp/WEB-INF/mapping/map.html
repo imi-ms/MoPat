@@ -82,9 +82,8 @@
 						</div>
 					</th:block>
 					<div
-						class="panel-body"
+						class="d-flex justify-content-between align-items-start"
 						id="exportRuleBody"
-						style="position: relative"
 					>
 						<input
 							type="hidden"
@@ -1159,65 +1158,86 @@
 									</div>
 								</th:block>
 							</div>
-
-							<div id="templateNodes">
-								<div
-									style="font-weight: bold"
-									th:text="${messages.get(#locale, 'mapping.label.templateFields', 'Template fields')}"
-								>
-								</div>
-								<div class="d-flex mt-2 mb-2 gap-2 w-100">
-									<button
-											type="button"
-											class="btn btn-primary"
-											id="mapDataButton"
-											th:text="${messages.get(#locale, 'map.button.mapData', 'Automatically map fields')}"
-									>
-									</button>
-									<button
-											type="button"
-											class="btn btn-secondary"
-											id="clearMappingButton"
-											th:text="${messages.get(#locale, 'map.button.clearMapping', 'Reset mapping')}"
-									>
-									</button>
-								</div>
-
-								<th:block th:each="t, indexer: ${doc}">
-									<div
-										th:if="${#strings.endsWith(t, ' ')}"
-										style="color: red"
-										th:data-node-index="${indexer.index}"
-										th:data-export-field="${t}"
-										class="map-node"
-										th:text="${t}"
-									>
-									</div>
-									<div
-										th:unless="${#strings.endsWith(t, ' ')}"
-										th:data-node-index="${indexer.index}"
-										th:data-export-field="${t}"
-										class="map-node draggable"
-										th:text="${t}"
-									>
-									</div>
-								</th:block>
-							</div>
 						</div>
+                        <div id="templateNodes">
+                            <div class="stickyHeader p-2">
+                                <div
+                                    style="font-weight: bold"
+                                    th:text="${messages.get(#locale, 'mapping.label.templateFields', 'Template fields')}"
+                                >
+                                </div>
+                                <div class="d-flex mt-2 mb-2 gap-2 w-100">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        id="mapDataButton"
+                                        th:text="${messages.get(#locale, 'mapping.button.mapData', 'Automatically map fields')}"
+                                    >
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        id="clearMappingButton"
+                                        th:text="${messages.get(#locale, 'mapping.button.clearMapping', 'Reset mapping')}"
+                                    >
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="templateContainer" class="p-2">
+                                <th:block th:each="t, indexer: ${doc}">
+                                    <div
+                                        th:if="${#strings.endsWith(t, ' ')}"
+                                        style="color: red"
+                                        th:data-node-index="${indexer.index}"
+                                        th:data-export-field="${t}"
+                                        class="map-node"
+                                        th:text="${t}"
+                                    >
+                                    </div>
+                                    <div
+                                        th:unless="${#strings.endsWith(t, ' ')}"
+                                        th:data-node-index="${indexer.index}"
+                                        th:data-export-field="${t}"
+                                        class="map-node draggable"
+                                        th:text="${t}"
+                                    >
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
 					</div>
 				</div>
 				<button
 					type="submit"
-					class="btn btn-primary"
+					class="btn btn-primary mt-3"
 					value="save"
 					id="saveButton"
 					name="action"
-					style="margin: 5px"
 					th:text="${messages.get(#locale, 'button.save', 'Save')}"
 				>
 				</button>
 			</form>
 		</div>
+        <div class="toast-container position-fixed top-0 start-0 p-4 w-25">
+            <div id="autosaveToast" class="toast mw-100 w-100" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <div class="d-flex w-100 align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-green bi-xlarge bi-check-circle-fill me-3"></i>
+                            <h3 class="mb-0"
+                                th:text="${messages.get(#locale, 'mapping.autosave.title', 'Autosave')}"
+                            ></h3>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="toast-body">
+                        <h5
+                            th:text="${messages.get(#locale, 'mapping.autosave.body', 'The mapping has been saved automatically.')}"
+                        ></h5>
+                </div>
+            </div>
+        </div>
 	</th:block>
 </th:block>
 
@@ -1268,6 +1288,11 @@
 		})();
 
 		$(document).ready(function () {
+            // Auto-save configuration - every 2 minutes
+            const AUTOSAVE_INTERVAL = 2 * 60 * 1000;
+            let autoSaveTimer;
+            let isAutoSaving = false;
+
 			numberTypeChanger = function (source) {
 				if ($(source).val() === "INTEGER") {
 					$(source).parent().children(".map-settings-float").first().hide();
@@ -1306,9 +1331,9 @@
 			var currentParent;
 			var lastHover; 
 
-			$("#templateNodes, .map-answer").each(function() {
+			$("#templateContainer, .map-answer").each(function() {
 				$(this).sortable({
-					group: "templateNodes",
+					group: "templateContainer",
 					sort: false,
 					chosenClass: "map-node-selected",
 					draggable: ".draggable",
@@ -1401,6 +1426,7 @@
 						sortNodeList(); 
 					}
 				}
+                startAutoSave()
 			}
 
 			function moveExistingMappingToTarget(field, target) {
@@ -1410,7 +1436,7 @@
 
 			function sortNodeList() {
 				/*[- sort the assignable nodes list by index -]*/
-				$("#templateNodes > .map-node").sortElements(function (a, b) {
+				$("#templateContainer > .map-node").sortElements(function (a, b) {
 					return $(a).data("node-index") > $(b).data("node-index") ? 1 : -1;
 				});
 			}
@@ -1432,37 +1458,13 @@
 				}
 			});
 
-			sortNodeList(); 
-
-			var templateNodesHeight = $("#templateNodes").height();
-			var questionnaireNodesHeight = $("#questionnaireNodes").height();
-
-			/*[- MAKE THE TEMPLATE NODE LIST ALWAYS VISIBLE
-				Get the templateNode div's upper position on the site -]*/
-			var templateNodesTop =
-				$("#templateNodes").offset().top -
-				parseFloat($("#templateNodes").css("marginTop").replace(/auto/, 0));
-			var questionnaireNodesTop =
-				$("#questionnaireNodes").offset().top -
-				parseFloat(
-					$("#questionnaireNodes").css("marginTop").replace(/auto/, 0)
-				);
-
-			$(window).scroll(function (event) {
-				/*[- get the y position of the scroll -]*/
-				var yScrollPosition = $(this).scrollTop();
-				var fixedElement = $("#templateNodes");
-
-				if (yScrollPosition >= templateNodesTop - 100) {
-					fixedElement.addClass("scrolledOutNodes");
-				} else {
-					fixedElement.removeClass("scrolledOutNodes"); 
-				}
-			});
+			sortNodeList();
+            //Autosave should not trigger for initial load
+            stopAutoSave();
 
 
 			$("#mapDataButton").on("click", function () {
-				let $fields = $("#templateNodes .draggable:not(.node-assigned)");
+				let $fields = $("#templateContainer .draggable:not(.node-assigned)");
 				let $answers = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node)");
 
 				if ($fields.length === 0 || $answers.length === 0) {
@@ -1473,8 +1475,8 @@
 				const totalToMap = Math.min($fields.length, $answers.length);
 
 				for (let i = 0; i < totalToMap; i++) {
-					let $field = $("#templateNodes .draggable:not(.node-assigned)").first();
-					let $answer = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node)").first();
+					let $field = $("#templateContainer .draggable:not(.node-assigned)").first();
+					let $answer = $("#questionnaireNodes .map-question-box .map-answer:not(.has-node):not([id^='score'])").first();
 
 					if ($field.length === 0 || $answer.length === 0) break;
 
@@ -1496,11 +1498,72 @@
 					$parent.removeClass("has-node");
 
 					// Return to template list
-					$("#templateNodes").append($field);
+					$("#templateContainer").append($field);
 					$field.removeClass("node-assigned");
 				});
 
 				sortNodeList();
+			});
+
+
+			function performAutoSave() {
+				if (isAutoSaving) {
+					return;
+				}
+				isAutoSaving = true;
+				const formData = $('form[name="exportRules"]').serialize();
+
+				$.ajax({
+					url: '/mapping/map?autoSave=true',
+					type: 'POST',
+					data: formData,
+					success: function(response) {
+                        var toastEl = $('#autosaveToast');
+                        var toast = new bootstrap.Toast(toastEl, {
+                            delay: 5000
+                        });
+                        toast.show();
+					},
+					error: function(xhr, textStatus, errorThrown) {
+
+					},
+					complete: function() {
+						isAutoSaving = false;
+                        stopAutoSave();
+					}
+				});
+			}
+
+			// Start autosave timer
+			function startAutoSave() {
+				if (autoSaveTimer) {
+                    // Is already running, no need to start another
+                    return;
+				}
+                // Clear any existing timer
+                clearInterval(autoSaveTimer);
+				autoSaveTimer = setInterval(function() {
+					performAutoSave();
+				}, AUTOSAVE_INTERVAL);
+
+			}
+
+			// Stop autosave timer
+			function stopAutoSave() {
+				if (autoSaveTimer) {
+					clearInterval(autoSaveTimer);
+					autoSaveTimer = null;
+				}
+			}
+
+			// Stop auto-save when manually saving
+			$('#saveButton').on('click', function(e) {
+				stopAutoSave();
+			});
+
+			// Clean up on page unload
+			$(window).on('unload', function() {
+				stopAutoSave();
 			});
 
 		});

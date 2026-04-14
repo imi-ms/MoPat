@@ -6,12 +6,17 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
+import de.imi.mopat.dao.AnswerDao;
+import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.QuestionTest;
 import de.imi.mopat.model.SelectAnswerTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -35,8 +41,16 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public class QuestionDaoImplTest {
 
     private static final Random random = new Random();
+    
     @Autowired
     QuestionDao testQuestionDao;
+
+    @Autowired
+    AnswerDao testAnswerDao;
+
+    @Autowired
+    ExportTemplateDao testExportTemplateDao;
+
     @Autowired
     QuestionnaireDao questionnaireDao;
 
@@ -83,9 +97,14 @@ public class QuestionDaoImplTest {
     }
 
     /**
-     * Deletes all {@link Question Questions} from the database.
+     * Deletes all exportTemplates, Answers and Questions from the database
      */
     private void clearTable() {
+        List<ExportTemplate> exportTemplates = testExportTemplateDao.getAllElements();
+        for (ExportTemplate exportTemplate : exportTemplates) {
+            testExportTemplateDao.remove(exportTemplate);
+        }
+
         List<Question> allQuestions = testQuestionDao.getAllElements();
         for (Question question : allQuestions) {
             testQuestionDao.remove(question);

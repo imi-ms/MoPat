@@ -7,6 +7,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock" # Required to communicate with the Docker daemon
       - "./config/:/etc/selenoid/:ro" # Configuration files for Selenoid
       - "./logs/:/opt/selenoid/logs/"
+    environment:
+      - DOCKER_API_VERSION=1.44
     networks: 
       - selenoid-network
     command: ["-container-network", "selenium_selenoid-network"]
@@ -27,7 +29,9 @@ services:
       - selenoid-network
 
   webapp-container:
-    build: ..
+    build:
+      context: ..
+      dockerfile: .github/docker_testenv/Dockerfile
     depends_on:
       - db-container
     ports:

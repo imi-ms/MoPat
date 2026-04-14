@@ -404,7 +404,12 @@ function showCompletenessCheck(incompletedQuestions) {
     var title = strings['survey.questionnaire.button.completenessCheck'];
     var buttonTextNext = "";
     if (encounter.hasNextQuestionnaire()) {
-        buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+        if (encounter.getCurrentQuestionnaire().hasFinalText()) {
+            buttonTextNext = strings['survey.questionnaire.button.completeQuestionnaireInBundle'];
+        } else {
+            buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+        }
+
     } else {
         buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
     }
@@ -514,7 +519,16 @@ function updateButtonsAfterShowQuestion(question) {
 
     // If it is the last question of the questionnaire, rename the Button
     if (!encounter.getCurrentQuestionnaire().hasNextQuestion(completionMode)) {
-        buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
+        if (encounter.hasNextQuestionnaire()) {
+            if (encounter.getCurrentQuestionnaire().hasFinalText()) {
+                buttonTextNext = strings['survey.questionnaire.button.completeQuestionnaireInBundle'];
+            } else {
+                buttonTextNext = strings['survey.questionnaire.button.nextQuestionnaire'];
+            }
+
+        } else {
+            buttonTextNext = strings['survey.questionnaire.button.finishQuestionnaire'];
+        }
     }
 
     Navigation.updateNavigation(title, progress, buttonTextPrevious, buttonTextNext, orientationVertical, encounter.bundle.deactivateProgressAndNameDuringSurvey);
@@ -719,19 +733,14 @@ function switchState(state) {
             // switch into the completionMode and reset the questionIndex of this questionnaire
             var incompletedQuestions = getIncompleteQuestionsCountFromQuestionnaire(encounter.getCurrentQuestionnaire());
             if (incompletedQuestions > 0) {
-                //if completion mode is already true and still have required unanswered questions, then show the next question
-                if(completionMode == true){
-                    switchState(States.NEXT_QUESTION);
-                } else {
-                    completionMode = true;
-                    // reset the question index
-                    encounter.getCurrentQuestionnaire().setQuestionIndex(-1);
-                    // Don't show the questionnaire final page. Show the completeness check site
-                    showCompletenessCheck(incompletedQuestions);
-                    // Set the next state to questionnaire final to indicate, that the current state is
-                    // COMPLETENESS CHECK
-                    this.nextState = States.QUESTIONNAIRE_FINAL;
-                }
+                completionMode = true;
+                // reset the question index
+                encounter.getCurrentQuestionnaire().setQuestionIndex(-1);
+                // Don't show the questionnaire final page. Show the completeness check site
+                showCompletenessCheck(incompletedQuestions);
+                // Set the next state to questionnaire final to indicate, that the current state is
+                // COMPLETENESS CHECK
+                this.nextState = States.QUESTIONNAIRE_FINAL;
                 break;
             }
             
@@ -754,8 +763,7 @@ function switchState(state) {
                 this.nextState = States.BUNDLE_FINAL;
             }
 
-            if (currentQuestionnaire.localizedFinalText[encounter.bundleLanguage] === undefined
-                    || $.trim(currentQuestionnaire.localizedFinalText[encounter.bundleLanguage].replace(/&nbsp;/g, "").replace(/<br>/g, "").replace(/ /g, "").replace(/<p><\/p>/g, "")) === "") {
+            if (!currentQuestionnaire.hasFinalText()) {
                 next();
             } else {
                 showQuestionnaireFinal(encounter.getCurrentQuestionnaire(), hasActiveFollower);
@@ -934,9 +942,45 @@ function getIncompleteQuestionsCountFromQuestionnaire(questionnaire) {
  * to redirect to the start page. If it is <code>false</code>, nothing will happen.
  */
 function postEncounter(encounter, finalSubmit) {
-    if (encounter.isTest === true) {
+    if (encounter.isTest === true && performExportTest === true) {
         if (finalSubmit) {
-            window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
+            var data = ["bundle"];
+            $.ajax({
+                url: "encountertest",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                async: true,
+                timeout: waitBeforeResubmit,
+                // Exclude the bundle object
+                data: JSON.stringify(excludeFromJSON(encounter, data)),
+                success: function () {
+                    if (finalSubmit) {
+                        // Open the success popup, which will overlay the previous one $("#submitDialog").popup("close");
+                        setInterval(function() {
+                            var submitDialog = document.getElementById("submitDialog");
+                            bootstrap.Modal.getOrCreateInstance(submitDialog).hide();
+                        }, 100)
+
+                        setTimeout(function () {
+                            setInterval(function () {
+                                var successDialog = document.getElementById("successDialog");
+                                bootstrap.Modal.getOrCreateInstance(successDialog).show();
+                            }, 250);
+                        }, 500);
+
+
+                        setTimeout(function () {
+                            window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
+                        }, waitBeforeRedirect);
+                    }
+                },
+                error: function () {
+                    if (finalSubmit) {
+                        postEncounter(encounter, true);
+                    }
+                }
+            });
+            // window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
         }
         return true;
     } else {
@@ -1016,13 +1060,31 @@ function postEncounterForScore(encounter) {
  * @param questionnaireId The id of the questionnaire
  */
 function exportEncounter(encounter, questionnaireId) {
-    $.ajax({
-        url: "finishQuestionnaire?questionnaireId=" + questionnaireId,
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        // Exclude the bundle object
-        data: JSON.stringify(excludeFromJSON(encounter, ["bundle", "bundleDTO"]))
-    });
+
+    var filterdata = []
+
+    if(encounter.isTest !== true) {
+        filterdata = ["bundle", "bundleDTO"]
+    }
+
+    if(performExportTest === true) {
+        $.ajax({
+            url: "finishQuestionnaireExportTest?questionnaireId=" + questionnaireId + "&caseNumber="+ encounter.caseNumber,
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            // Exclude the bundle object
+            data: JSON.stringify(excludeFromJSON(encounter,filterdata))
+        });
+    }
+    else{
+        $.ajax({
+            url: "finishQuestionnaire?questionnaireId=" + questionnaireId,
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            // Exclude the bundle object
+            data: JSON.stringify(excludeFromJSON(encounter, filterdata))
+        });
+    }
 }
 
 /**

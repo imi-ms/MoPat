@@ -286,4 +286,17 @@ function Questionnaire() {
         }
         return false;
     }
+
+    /**
+     * Returns true, if the current questionnaire has a localizedFinalText;
+     * false otherwise
+     * @returns {boolean}
+     */
+    this.hasFinalText = function() {
+        return !(this.localizedFinalText[encounter.bundleLanguage]
+          === undefined || $.trim(
+            this.localizedFinalText[encounter.bundleLanguage].replace(
+              /&nbsp;/g, "").replace(/<br>/g, "").replace(/ /g, "").replace(
+              /<p><\/p>/g, "")) === "");
+    };
 }

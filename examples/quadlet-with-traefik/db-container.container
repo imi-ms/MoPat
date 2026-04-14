@@ -1,0 +1,24 @@
+[Unit]
+Description=MariaDB container (db-container)
+After=network.target
+
+[Service]
+Restart=always
+
+[Container]
+ContainerName=db-container
+Image=docker.io/mariadb:12.1.2-ubi10
+
+# Ports (nur localhost)
+PublishPort=127.0.0.1:3306:3306
+
+# Volumes
+Volume=/data/db:/var/lib/mysql:rw
+Volume=%h/.config/containers/systemd/mopat/db:/docker-entrypoint-initdb.d:ro
+
+Environment=MYSQL_DATABASE=initDb
+
+# Secrets → werden automatisch als Umgebungsvariablen gesetzt
+Secret=MYSQL_ROOT_PASSWORD,type=env,target=MYSQL_ROOT_PASSWORD
+Secret=MARIADB_PASSWORD,type=env,target=MYSQL_PASSWORD
+Secret=MARIADB_USER,type=env,target=MYSQL_USER

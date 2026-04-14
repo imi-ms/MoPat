@@ -107,8 +107,8 @@
                         </checkbox>
 
                         <!--/* handling answers */-->
-                        <addVar
-                                layout:replace="~{helper/var :: add(key='answerExist',
+						<addVar
+							layout:replace="~{helper/var :: add(key='answerExist',
                             value=${questionDTO.questionType != null &&
                                 (questionDTO.questionType.name() eq 'MULTIPLE_CHOICE' ||
                                 questionDTO.questionType.name() eq 'DROP_DOWN') &&
@@ -1019,31 +1019,41 @@
                                         id="imageField"
                                         disabled="true"
                                 >
-                                    </legend>
-                                    <div class="form-group imageFile">
-                                        <input
-                                                type="hidden"
-                                                th:field="*{answers[0].id}"
-                                        />
-                                        <file
-                                                layout:replace="~{fragments/forms :: fileWithLabel(
-                                            for='imageFile', required=true, showErrors=true, accept='.png,.jpeg,.jpg',
-                                            path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile', clazz='form-control',
-                                            text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
-                                        >
-                                        </file>
-                                        <div
-                                                id="imageWarning"
-                                                class="alert alert-warning"
-                                        >
-                                            <th:block
-                                                    th:text="${warning}"
-                                                    escapeXml="false"
-                                            />
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            </div>
+                                </legend>
+                                <div class="form-group imageFile">
+                                    <input
+                                            type="hidden"
+                                            th:field="*{answers[0].id}"
+                                    />
+                                    <file
+                                            layout:replace="~{fragments/forms :: fileWithLabel(
+                                        for='imageFile', required=true, showErrors=true, accept='.png,.jpeg,.jpg',
+                                        path='answers[0].imageFile', imageBase64=${questionDTO.answers[0].imageBase64},id='imageFile',
+                                        clazz='form-control standard-file-input',
+                                        text=${messages.get(#locale, 'question.label.filePath', 'File path')})}"
+									>
+									</file>
+									<div
+										id="imageWarning"
+										class="alert alert-warning"
+									>
+										<th:block
+											th:text="${warning}"
+											escapeXml="false"
+										/>
+									</div>
+								</div>
+                                <div class="form-group">
+                                    <checkbox
+                                        layout:replace="~{fragments/forms :: checkbox(
+                                        path='isJustInfo',
+                                        text=${messages.get(#locale, 'question.label.isJustInfo', 'Question is just information without interaction')},
+                                        showErrors=true)}"
+                                    >
+                                    </checkbox>
+                                </div>
+							</fieldset>
+						</div>
 
                             <!--/* BODY_PART */-->
                             <addVar
