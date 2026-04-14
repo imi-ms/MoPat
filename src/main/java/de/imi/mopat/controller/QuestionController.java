@@ -1,5 +1,6 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.controller.util.SaveAndEditNextInOrderUtil;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
@@ -367,7 +368,8 @@ public class QuestionController {
         // not part
         // of the URL
         model.asMap().clear();
-        return "redirect:/question/list?id=" + question.getQuestionnaire().getId();
+        String defaultSaveRoute = "redirect:/question/list?id=" + question.getQuestionnaire().getId();
+        return SaveAndEditNextInOrderUtil.determineNextRoute("question", action, defaultSaveRoute);
     }
 
     private void setImagePathForImageQuestion(QuestionDTO questionDTO, Question question) {
