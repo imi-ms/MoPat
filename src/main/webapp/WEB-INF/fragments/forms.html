@@ -78,7 +78,7 @@
 	<input
 		th:id="${not #strings.isEmpty(id)} ? ${id} : ''"
 		th:field="*{__${path}__}"
-		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : ''"
+		th:class="${not #strings.isEmpty(clazz)} ? ${clazz} : 'standard-file-input'"
 		th:attr="data-path=${imageBase64}"
 		th:accept="${not #strings.isEmpty(accept)} ? ${accept} : ''"
 		type="file"

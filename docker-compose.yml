@@ -14,7 +14,7 @@ services:
       - ./db:/docker-entrypoint-initdb.d
 
   webapp-container:
-    build: .
+    image: wwuimi/mopat
     depends_on:
       - db-container
     ports:
@@ -23,14 +23,17 @@ services:
       - ${HL7_VOLUME}:/var/lib/tomcat10/export/HL7
       - ${FHIR_VOLUME}:/var/lib/tomcat10/export/FHIR
       - ${ODM_VOLUME}:/var/lib/tomcat10/export/ODM
+      - ${REDCAP_VOLUME}:/var/lib/tomcat10/export/REDCap
       - ${UPLOAD_VOLUME}:/var/lib/tomcat10/upload
       - ${IMAGES_VOLUME}:/var/lib/tomcat10/images
       - ${CONFIG_DIR}:/etc/mopat
-      - ./src/main/resources/docker-server.xml:/usr/local/tomcat/conf/server.xml:ro
     environment:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_MOPAT_URL=${MYSQL_MOPAT_URL}
       - MYSQL_MOPAT_USER_URL=${MYSQL_MOPAT_USER_URL}
       - MYSQL_MOPAT_AUDIT_URL=${MYSQL_MOPAT_AUDIT_URL}
+      - MOPAT_SMTP_HOST=smtp.host.com
+      - MOPAT_SMTP_FROM=replaceme@domain.com
+      - MOPAT_SMTP_TO=replaceme@domain.com
       - PEPPER=${PEPPER}

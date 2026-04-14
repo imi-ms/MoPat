@@ -19,6 +19,7 @@ selenium/logs
 selenium/**/__pycache__/
 selenium/.wdm
 selenium/test_results
+selenium/selenium_tests_local.py
 *_secrets.json
 *_test-results.log
 

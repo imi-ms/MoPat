@@ -1,11 +1,13 @@
 package de.imi.mopat.model;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.io.Serializable;
 
 /**
  * Represents an {@link ExportRule} corresponding to an {@link Question}.
@@ -40,6 +42,12 @@ public class ExportRuleQuestion extends ExportRule implements Serializable {
         final Question question) {
         super(exportTemplate, exportField);
         setQuestion(question);
+    }
+
+    @Override
+    @JsonProperty("type")
+    public ExportRuleType getType() {
+        return ExportRuleType.QUESTION;
     }
 
     /**

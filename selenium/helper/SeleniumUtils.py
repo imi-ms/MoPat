@@ -35,12 +35,13 @@ class SeleniumUtils:
         self.driver = driver
         self.navigator = navigation_helper
 
-    def click_element(self, selector):
+    def click_element(self, selector, timeout=20):
         """
+        :param timeout: timeout value to use
         :param selector: A tuple representing the element locator (e.g., (By.ID, "element_id")).
         """
         try:
-            element = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(selector))
+            element = WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(selector))
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
             element.click()
         except ElementClickInterceptedException:
@@ -278,14 +279,20 @@ class SeleniumUtils:
                 self.navigator.navigate_to_manage_questionnaires()
                 search_box_selector = SearchBoxSelectors.QUESTIONNAIRE
                 button_id = RemoveButtonSelectors.QUESTIONNAIRE.format(item_id)
+                button_selector = (By.ID, button_id)
+                needs_modal_confirmation = True
             elif item_type == "bundle":
                 self.navigator.navigate_to_manage_bundles()
                 search_box_selector = SearchBoxSelectors.BUNDLE
                 button_id = RemoveButtonSelectors.BUNDLE.format(item_id)
+                button_selector = (By.ID, button_id)
+                needs_modal_confirmation = True
             elif item_type == "clinic":
                 self.navigator.navigate_to_manage_clinics()
                 search_box_selector = SearchBoxSelectors.CLINIC
                 button_id = RemoveButtonSelectors.CLINIC.format(item_id)
+                button_selector = (By.CSS_SELECTOR, f"button.delete-clinic-btn[data-clinic-id='{item_id}']")
+                needs_modal_confirmation = True
             else:
                 raise ValueError(f"Unknown item type: {item_type}")
 
@@ -293,7 +300,24 @@ class SeleniumUtils:
             self.fill_text_field(search_box_selector, item_name)
 
             # click the remove button
-            self.click_element((By.ID, button_id))
+            self.click_element(button_selector)
+
+            if needs_modal_confirmation:
+                # Wait for modal to appear
+                modal_selector = (By.ID, "deleteModal_" + item_id)
+                WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(modal_selector))
+
+                # Wait and click the confirm button
+                confirm_button_selector = (By.ID, "remove_" + item_id)
+                confirm_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable(confirm_button_selector)
+                )
+                confirm_button.click()
+
+                # Wait for modal to disappear
+                WebDriverWait(self.driver, 10).until(
+                    EC.invisibility_of_element_located(modal_selector)
+                )
         except TimeoutException:
             raise Exception(f"Failed to delete {item_type} '{item_name}' with ID {item_id}'.")
         except Exception as e:

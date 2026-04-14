@@ -1,6 +1,6 @@
 package de.imi.mopat.io.impl;
 
-import de.imi.mopat.helper.controller.ODMProcessingBean;
+import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.io.ExportTemplateImporter;
 import de.unimuenster.imi.org.cdisc.odm.v132.DataType;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;

@@ -1,23 +1,9 @@
 package de.imi.mopat.io.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.app.Connection;
-import ca.uhn.hl7v2.app.Initiator;
-import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v23.datatype.ST;
-import ca.uhn.hl7v2.model.v23.group.ORU_R01_PATIENT;
-import ca.uhn.hl7v2.model.v23.message.ORU_R01;
-import ca.uhn.hl7v2.model.v23.segment.MSH;
-import ca.uhn.hl7v2.model.v23.segment.OBR;
-import ca.uhn.hl7v2.model.v23.segment.OBX;
-import ca.uhn.hl7v2.parser.DefaultXMLParser;
-import ca.uhn.hl7v2.parser.PipeParser;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.ODMProcessingBean;
 import de.imi.mopat.io.EncounterExporterTemplate;
+import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.Encounter;
@@ -36,12 +22,15 @@ import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionSiteRef;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudy;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudyEventData;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionSubjectData;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,23 +39,18 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.DateFormat;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import jakarta.xml.bind.JAXBContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 
 /**
@@ -82,14 +66,11 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     private static final String UNDERSCORE = "_";
     private static final SimpleDateFormat ODMFILENAMEDATEFORMAT = new SimpleDateFormat(
         "dd.MM.yyyy_HH.mm.ss");
-
+    private final ConfigurationDao configurationDao;
+    private final ODMProcessingBean odmProcessor;
     private Encounter encounter;
     private ExportTemplate exportTemplate;
     private ODM exportODM;
-    private final ConfigurationDao configurationDao;
-
-    private final ODMProcessingBean odmProcessor;
-
     // Map to store ItemGroupDefs for the clinical data section (solution for
     // several ItemGroups)
     private HashMap<String, ODMcomplexTypeDefinitionItemGroupData> odmClinicalDataGroupDefs;
@@ -420,38 +401,58 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
         Boolean exportViaHL7 = null;
         String hl7Hostname = null;
         Integer hl7Port = null;
+        String sendingFacility = null;
+        String receivingApplication = null;
+        String receivingFacility = null;
+        String obrFillerOrderNumber = null;
 
         // Get export configurations
         for (Configuration configuration : exportTemplate.getConfigurationGroup()
             .getConfigurations()) {
-            if (configuration.getAttribute().equals("exportInDirectory")) {
-                exportInDirectory = Boolean.parseBoolean(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("exportPath")) {
-                exportPath = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("exportViaRest")) {
-                exportViaRest = Boolean.parseBoolean(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("exportUrl")) {
-                exportUrl = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("exportODMviaHL7")) {
-                exportViaHL7 = Boolean.parseBoolean(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("ODMviaHL7Hostname")) {
-                hl7Hostname = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("ODMviaHL7Port")) {
-                try {
-                    hl7Port = Integer.parseInt(configuration.getValue());
-                } catch (NumberFormatException numberFormatException) {
-                    hl7Port = null;
-                }
+            switch (configuration.getAttribute()) {
+                case "exportInDirectory":
+                    exportInDirectory = Boolean.parseBoolean(configuration.getValue());
+                    break;
+                case "exportPath":
+                    exportPath = configuration.getValue();
+                    break;
+                case "exportViaRest":
+                    exportViaRest = Boolean.parseBoolean(configuration.getValue());
+                    break;
+                case "exportUrl":
+                    exportUrl = configuration.getValue();
+                    break;
+                case "exportODMviaHL7":
+                    exportViaHL7 = Boolean.parseBoolean(configuration.getValue());
+                    break;
+                case "ODMviaHL7Hostname":
+                    hl7Hostname = configuration.getValue();
+                    break;
+                case "ODMviaHL7Port":
+                    try {
+                        hl7Port = Integer.parseInt(configuration.getValue());
+                    } catch (NumberFormatException numberFormatException) {
+                        hl7Port = null;
+                    }
+                    break;
+                case "ODMviaHL7SendingFacility":
+                    sendingFacility = configuration.getValue();
+                    break;
+                case "ODMviaHL7ReceivingApplication":
+                    receivingApplication = configuration.getValue();
+                    break;
+                case "ODMviaHL7ReceivingFacility":
+                    receivingFacility = configuration.getValue();
+                    break;
+                case "ODMviaHL7OBRFillerOrderNumber":
+                    obrFillerOrderNumber = configuration.getValue();
+                    break;
+                default:
+                    break;
             }
         }
 
-        if (exportInDirectory) {
+        if (exportInDirectory != null && exportInDirectory) {
             exportToDirectory(exportPath);
         }
 
@@ -459,8 +460,13 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
         if (exportViaRest) {
             exportStatus = exportToHTTP(exportUrl);
         }
-        if (exportViaHL7 && hl7Hostname != null && !hl7Hostname.isEmpty() && hl7Port != null) {
-            exportStatus = exportViaHL7(hl7Hostname, hl7Port);
+        if (exportViaHL7 != null && exportViaHL7 && hl7Hostname != null && !hl7Hostname.isEmpty()
+            && hl7Port != null && sendingFacility != null && receivingApplication != null
+            && receivingFacility != null && obrFillerOrderNumber != null) {
+            HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+            exportStatus = hl7MessageHelper.createAndSendMessageWithBlob(hl7Hostname, hl7Port, exportTemplate,
+                encounter, sendingFacility, receivingFacility, receivingFacility,
+                obrFillerOrderNumber, generateODMBlob());
         }
         return exportStatus;
     }
@@ -548,94 +554,18 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     }
 
     /**
-     * Injects the ODM file in a HL7 message and sends it to a communication server, which is
-     * specified by the hostname and the port.
+     * Creates a unique ODM XML Filename.
      *
-     * @param hostname Hostname of the HL7 communication server.
-     * @param port     Port of the HL7 communication server.
-     * @return Status of the communication.
-     * @throws Exception
+     * @return The newly created unique ODM XML Filename.
      */
-    private ExportStatus exportViaHL7(final String hostname, final Integer port) throws Exception {
-        ORU_R01 hl7Message = new ORU_R01();
+    private String createODMFileName() {
+        String result =
+            encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
+                + UNDERSCORE + ODMFILENAMEDATEFORMAT.format(new Date()) + DOT + FILE_SUFFIX;
+        return result;
+    }
 
-        LOGGER.info("[ODM via HL7] Creating a HL7 message to send patient " + "data...");
-        // Message initialization
-        hl7Message.initQuickstart("ORU", "R01", "P");
-
-        // Include export template path
-        String objectStoragePath = configurationDao.getObjectStoragePath();
-        if (objectStoragePath == null) {
-            LOGGER.error("[SETUP] No object storage path found. Please provide a "
-                    + "value for {} in the {} file", Constants.OBJECT_STORAGE_PATH_PROPERTY,
-                Constants.CONFIGURATION);
-        } else {
-            LOGGER.info("[SETUP] Object storage path configuration found.");
-        }
-        LOGGER.info("[SETUP] Accessing properties file to look up the export " + "path"
-            + " in  {}...[DONE]", Constants.CONFIGURATION);
-
-        // Set HL7 message header
-        MSH msh = hl7Message.getMSH();
-
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
-            if (configuration.getAttribute().equals("ODMviaHL7SendingFacility")) {
-                msh.getMsh4_SendingFacility().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("ODMviaHL7ReceivingApplication")) {
-                msh.getMsh5_ReceivingApplication().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-            if (configuration.getAttribute().equals("ODMviaHL7ReveivingFacility")) {
-                msh.getMsh6_ReceivingFacility().getHd1_NamespaceID()
-                    .setValue(configuration.getValue());
-            }
-        }
-
-        msh.getMsh3_SendingApplication().getHd1_NamespaceID()
-            .setValue(exportTemplate.getQuestionnaire().getName());
-        msh.getMessageControlID().setValue(encounter.getId() + "_" + exportTemplate.getId());
-        msh.getMsh14_ContinuationPointer().setValue("L");
-
-        LOGGER.info("Creating Patient data");
-        ORU_R01_PATIENT patientData = hl7Message.getRESPONSE().getPATIENT();
-        if (encounter.getPatientID() != null) {
-            patientData.getPID().getPatientIDInternalID(0).getCx1_ID()
-                .setValue(Long.toString(encounter.getPatientID()));
-        } else {
-            LOGGER.error("The patient does not have an ID");
-        }
-        if (encounter.getCaseNumber() != null) {
-            patientData.getVISIT().getPV1().getPv119_VisitNumber().getCx1_ID()
-                .setValue(encounter.getCaseNumber());
-        } else {
-            LOGGER.error("The patient does not have a case number");
-        }
-
-        LOGGER.info("Creating Observation data");
-
-        OBR obr = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBR();
-        for (Configuration configuration : exportTemplate.getConfigurationGroup()
-            .getConfigurations()) {
-            if (configuration.getAttribute().equals("ODMviaHL7OBRFillerOrderNumber")) {
-                obr.getObr3_FillerOrderNumber().getEi1_EntityIdentifier()
-                    .setValue(configuration.getValue());
-            }
-        }
-
-        DateFormat dateFormatter = new SimpleDateFormat("yyyyMMddhhmm");
-        obr.getObr7_ObservationDateTime().getTimeOfAnEvent()
-            .setValue(dateFormatter.format(encounter.getStartTime()));
-
-        OBX obx = hl7Message.getRESPONSE().getORDER_OBSERVATION().getOBSERVATION(0).getOBX();
-        obx.getObx1_SetIDOBX().setValue("1");
-        obx.getObx2_ValueType().setValue("ST");
-        ST clinicalDataString = new ST(hl7Message);
-        obx.getObservationValue(0).setData(clinicalDataString);
-        obx.getObx10_NatureOfAbnormalTest().setValue("F");
-
+    private String generateODMBlob() throws ParserConfigurationException, JAXBException {
         // This code is adapted from http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder;
@@ -661,57 +591,11 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
             // Replace spaces and new lines
             output = output.replaceAll(" ", "u005F").replaceAll("\\s", "");
             // Restore replaced spaces and set value
-            clinicalDataString.setValue(output.replaceAll("u005F", " "));
+            return output.replaceAll("u005F", " ");
         } catch (TransformerException exception) {
             LOGGER.error(exception.toString());
-            return ExportStatus.FAILURE;
+            return null;
         }
-        sendMessageViaComServer(hostname, port, hl7Message);
-
-        return ExportStatus.SUCCESS;
     }
 
-    /**
-     * Creates a unique ODM XML Filename.
-     *
-     * @return The newly created unique ODM XML Filename.
-     */
-    private String createODMFileName() {
-        String result =
-            encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + ODMFILENAMEDATEFORMAT.format(new Date()) + DOT + FILE_SUFFIX;
-        return result;
-    }
-
-    /**
-     * Exports the HL7 message via a communication server specified by host and port.
-     *
-     * @param hostname Host name of the communication server.
-     * @param port     Port of the communication server
-     * @throws java.lang.Exception
-     */
-    private void sendMessageViaComServer(final String hostname, final Integer port,
-        final ORU_R01 hl7Message) throws Exception {
-        // Set up a context: factory for connections and parsers and so on
-        HapiContext context = new DefaultHapiContext();
-        MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
-        mllp.setCharset("ISO-8859-1");
-        context.setLowerLayerProtocol(mllp);
-        // Let the default Pipe parser parse our message
-        PipeParser parser = context.getPipeParser();
-        LOGGER.debug("[ODM via HL7] HL7 message created: {}", parser.encode(hl7Message));
-        LOGGER.debug("Opening a Connection for HL7 messaging...");
-        // Open a new connection with the given hostname, port, and
-        // don't use TLS
-        Connection connection = context.newClient(hostname, port, false);
-        Initiator initiator = connection.getInitiator();
-        LOGGER.debug("Opening a Connection for HL7 messaging...[DONE]");
-        LOGGER.debug("Sending HL7 message...");
-        initiator.setTimeout(30, TimeUnit.SECONDS);
-        Message response = initiator.sendAndReceive(hl7Message);
-        // Log the ACK which is an empty message (OPTIONAL)
-        LOGGER.info((new DefaultXMLParser()).encode(response));
-        LOGGER.debug("Sending HL7 message...[DONE]");
-        connection.close();
-    }
 }
