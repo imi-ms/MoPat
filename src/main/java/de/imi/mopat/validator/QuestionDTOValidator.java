@@ -182,15 +182,6 @@ public class QuestionDTOValidator implements Validator {
                 break;
             }
             case SLIDER:
-                // [bt] tell the errors object that from now on the
-                // validation refers to the first of the question's answers.
-                errors.pushNestedPath("answers[0]");
-                // [bt] sub-validation
-                sliderAnswerDTOValidator.validate(questionDTO.getAnswers().get(0L), errors);
-                // [bt] tell the errors object that validation of the
-                // sub-element/property of this question is over.
-                errors.popNestedPath();
-                break;
             case NUMBER_CHECKBOX:
             case NUMBER_CHECKBOX_TEXT: {
                 // [bt] tell the errors object that from now on the

@@ -118,24 +118,28 @@ public class SliderAnswerDTOValidator implements Validator {
 
             //for each entry in localizedMinimumText check if size of entry is bigger than 255 char
             Map<String, String> localizedMinimumText = sliderAnswer.getLocalizedMinimumText();
-            for (Map.Entry<String, String> entry : localizedMinimumText.entrySet()){
-                if (entry.getValue().length() >= 255){
-                    errors.rejectValue("localizedMinimumText['" + entry.getKey() + "']",
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                            messageSource.getMessage("sliderAnswer.validator.localizedMinimumText",
-                                    new Object[]{}, LocaleContextHolder.getLocale()));
-                }
-            }
-            Map <String, String> localizedMaximumText = sliderAnswer.getLocalizedMaximumText();
-            for (Map.Entry<String, String> entry : localizedMaximumText.entrySet()){
-                if (entry.getValue().length() >= 255){
-                    errors.rejectValue("localizedMaximumText['" + entry.getKey() + "']",
-                            MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                            messageSource.getMessage("sliderAnswer.validator.localizedMinimumText",
-                                    new Object[]{}, LocaleContextHolder.getLocale()));
+            if (localizedMinimumText != null){
+                for (Map.Entry<String, String> entry : localizedMinimumText.entrySet()){
+                    if (entry.getValue() != null && entry.getValue().length() > 255){
+                        errors.rejectValue("localizedMinimumText['" + entry.getKey() + "']",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("sliderAnswer.validator.localizedMinMaxText",
+                                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    }
                 }
             }
 
+            Map <String, String> localizedMaximumText = sliderAnswer.getLocalizedMaximumText();
+            if (localizedMaximumText != null) {
+                for (Map.Entry<String, String> entry : localizedMaximumText.entrySet()) {
+                    if (entry.getValue() != null && entry.getValue().length() > 255) {
+                        errors.rejectValue("localizedMaximumText['" + entry.getKey() + "']",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("sliderAnswer.validator.localizedMinMaxText",
+                                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    }
+                }
+            }
         } catch (NumberFormatException ex) {
         }
     }
