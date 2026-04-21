@@ -108,7 +108,7 @@ class QuestionSelectors:
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MIN = lambda language_code: (By.XPATH, f'//*[@id="localizedMinimumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MAX = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
 
-    TAB_QUESTION_TYPE = (By.CLASS_NAME, "questionTypeTabs")
+    TAB_QUESTION_TYPE = (By.CLASS_NAME, "questionTypeLink")
 
     TEXTAREA_ANSWER_TEXT = lambda id_selector, index, language_code: (By.CSS_SELECTOR, f"#{id_selector} textarea[name='answers[{index}].localizedLabel[{language_code}]']")
 
@@ -592,7 +592,7 @@ class QuestionHelper:
             QuestionSelectors.TAB_QUESTION_TYPE))
 
 
-        self.utils.select_dropdown(QuestionSelectors.TAB_QUESTION_TYPE, question_type.value, DropdownMethod.VALUE)
+        self.utils.select_tab(QuestionSelectors.TAB_QUESTION_TYPE, question_type.value)
 
         # Wait until the page is fully loaded
         WebDriverWait(self.driver, 30).until(lambda d: d.execute_script("return document.readyState") == "complete")
@@ -779,7 +779,7 @@ class QuestionAssertHelper(QuestionHelper):
             # Select one of the question types
             WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
                 QuestionSelectors.TAB_QUESTION_TYPE))
-            self.utils.select_dropdown(QuestionSelectors.TAB_QUESTION_TYPE, QuestionType.MULTIPLE_CHOICE.value, DropdownMethod.VALUE)
+            self.utils.select_tab(QuestionSelectors.TAB_QUESTION_TYPE, QuestionType.MULTIPLE_CHOICE.value)
 
             # Validate dropdown to add language
             language_dropdown = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
@@ -822,7 +822,7 @@ class QuestionAssertHelper(QuestionHelper):
 
     def assert_question_by_type(self, question_type: QuestionType):
         WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(QuestionSelectors.TAB_QUESTION_TYPE))
-        Select(self.driver.find_element(*QuestionSelectors.TAB_QUESTION_TYPE)).select_by_value(question_type.value)
+        self.utils.select_tab(QuestionSelectors.TAB_QUESTION_TYPE, question_type.value)
         # Wait for the page to fully load
         WebDriverWait(self.driver, 30).until(lambda driver: driver.execute_script("return document.readyState") == "complete")
 
@@ -884,7 +884,6 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_freetext_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -896,7 +895,6 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_fields_create_info_text_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -908,7 +906,6 @@ class QuestionAssertHelper(QuestionHelper):
     def assert_fields_create_barcode_question(self):
         try:
             allowed_ids = {
-                QuestionSelectors.TAB_QUESTION_TYPE[1],
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
@@ -1406,7 +1403,7 @@ class QuestionAssertHelper(QuestionHelper):
 
     def assert_question_inputs(self, allowed_ids_of_visible_inputs):
         try:
-            # Wait for the question type dropdown to be visible
+            # Wait for the question type tabs to be visible
             WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
                 QuestionSelectors.TAB_QUESTION_TYPE))
 
