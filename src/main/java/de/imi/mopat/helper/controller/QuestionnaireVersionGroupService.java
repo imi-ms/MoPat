@@ -1,6 +1,5 @@
 package de.imi.mopat.helper.controller;
 
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.QuestionnaireVersionGroupDao;
 import de.imi.mopat.helper.model.QuestionnaireGroupDTOMapper;
 import de.imi.mopat.model.Questionnaire;
@@ -26,7 +25,7 @@ public class QuestionnaireVersionGroupService {
     private QuestionnaireVersionGroupDao questionnaireVersionGroupDao;
     
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
 
     @Autowired
     private QuestionnaireGroupDTOMapper questionnaireGroupDTOMapper;
@@ -197,7 +196,7 @@ public class QuestionnaireVersionGroupService {
 
         // Unlink the questionnaire from the group
         questionnaire.setQuestionnaireVersionGroup(null);
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire);
 
         if (questionnairesInGroup.isEmpty()){
             //If there would be no questionnaire left, delete the group

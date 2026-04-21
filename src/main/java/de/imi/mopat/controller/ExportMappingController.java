@@ -1,7 +1,5 @@
 package de.imi.mopat.controller;
 
-import ca.uhn.fhir.context.ConfigurationException;
-import ca.uhn.fhir.parser.DataFormatException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
@@ -13,13 +11,12 @@ import de.imi.mopat.dao.ExportRuleDao;
 import de.imi.mopat.dao.ExportRuleFormatDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.io.importer.ImportQuestionnaireError;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
-import de.imi.mopat.io.importer.fhir.FhirDstu3Helper;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.io.importer.fhir.FhirImporter;
@@ -55,15 +52,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -108,7 +98,7 @@ public class ExportMappingController {
     @Autowired
     private ExportTemplateDao exportTemplateDao;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
@@ -143,9 +133,8 @@ public class ExportMappingController {
      * object.
      */
     public List<ExportTemplate> getAllMappings(final Long id) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
-        List<ExportTemplate> exportTemplates = new ArrayList<>(questionnaire.getExportTemplates());
-        return exportTemplates;
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
+        return new ArrayList<>(questionnaire.get().getExportTemplates());
     }
 
     /**
@@ -170,14 +159,14 @@ public class ExportMappingController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showMapping(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
-        if (questionnaire == null) {
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
+        if (questionnaire.isEmpty()) {
             //clear the models attributes that are set in the @ModelAttribute
             // methods
             model.addAttribute("exportTemplateTypeList", null);
             return "redirect:/questionnaire/list";
         }
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaire.get());
         model.addAttribute("allMappings", this.getAllMappings(id));
         return "mapping/list";
     }
@@ -195,9 +184,9 @@ public class ExportMappingController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showUploadForm(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
         model.addAttribute("export", new ExportTemplate());
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaire.orElse(null));
         return "mapping/uploadtemplate";
     }
 
@@ -288,7 +277,7 @@ public class ExportMappingController {
             return showUploadForm(questionnaireId, model);
         }
 
-        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(questionnaireId).orElse(null);
 
         List<ExportTemplate> exportTemplates = ExportTemplate.createExportTemplates(name,
             exportTemplateType, file, configurationGroupDao, exportTemplateDao);
@@ -311,7 +300,7 @@ public class ExportMappingController {
                 }
                 File uploadFile = new File(contextPath, uploadFilename);
                 uploadFile.createNewFile();
-                
+
                 //Do the upload for FHIR resource.
                 if (ExportTemplateType.isExportTemplateTypeAFhirType(exportTemplateType)) {
                     try {
@@ -353,7 +342,7 @@ public class ExportMappingController {
         }
 
         // maybe not necessary
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire);
 
         model.addAttribute("questionnaire", questionnaire);
         model.addAttribute("allMappings", this.getAllMappings(questionnaireId));
@@ -398,7 +387,7 @@ public class ExportMappingController {
             }
             questionnaire.removeExportTemplate(exportTemplate);
             exportTemplateDao.remove(exportTemplate);
-            questionnaireDao.merge(questionnaire);
+            questionnaireService.merge(questionnaire);
         }
 
         return showMapping(questionnaire.getId(), model);
@@ -423,7 +412,7 @@ public class ExportMappingController {
         // reasons
         // using the questionnaireDao is a workaround to also get all recently
         // added questions of the questionnaire
-        questionnaire = questionnaireDao.getElementById(questionnaire.getId());
+        questionnaire = questionnaireService.getQuestionnaireById(questionnaire.getId()).get();
 
         // Sort the scores
         List<Score> scores = new ArrayList<>();

@@ -12,7 +12,6 @@ import de.imi.mopat.dao.ClinicDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.EncounterDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ResponseDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.dao.user.PinAuthorizationDao;
@@ -86,7 +85,7 @@ public class SurveyController {
     @Autowired
     private AnswerDao answerDao;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     @Autowired
     private ConditionDao conditionDao;
     @Autowired
@@ -627,7 +626,7 @@ public class SurveyController {
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             // Get the boolean if this questionnaire has any conditions
             boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                questionnaireDao.getElementById(questionnaireDTO.getId()));
+                    questionnaireService.getQuestionnaireById(questionnaireDTO.getId()).orElse(null));
             // Set the boolean in the QuestionnaireDTO
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
@@ -690,7 +689,7 @@ public class SurveyController {
                 QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
                 // Get the boolean if this questionnaire has any conditions
                 boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                    questionnaireDao.getElementById(questionnaireDTO.getId()));
+                        questionnaireService.getQuestionnaireDTOById(questionnaireDTO.getId()).orElse(null));
                 // Set the boolean in the QuestionnaireDTO
                 questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
             }
@@ -926,7 +925,7 @@ public class SurveyController {
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             // Get the boolean if this questionnaire has any conditions
             boolean hasConditionsAsTarget = conditionDao.isConditionTarget(
-                questionnaireDao.getElementById(questionnaireDTO.getId()));
+                    questionnaireService.getQuestionnaireById(questionnaireDTO.getId()).orElse(null));
             // Set the boolean in the QuestionnaireDTO
             questionnaireDTO.setHasConditionsAsTarget(hasConditionsAsTarget);
         }
@@ -992,7 +991,7 @@ public class SurveyController {
                                 currentAnswer.removeResponse(responseToDelete);
                                 existingResponses.remove(responseToDelete);
                             }
-                            questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
+                            questionnaireService.merge(currentAnswer.getQuestion().getQuestionnaire());
                             continue;
                         }
 
@@ -1102,7 +1101,7 @@ public class SurveyController {
                             Response response = createResponseObject(responseDTO, encounter, currentAnswer);
                             existingResponses.add(response);
                         }
-                        questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
+                        questionnaireService.merge(currentAnswer.getQuestion().getQuestionnaire());
                     }
 
                     // Get all existing responses that were not in the DTO
@@ -1115,7 +1114,7 @@ public class SurveyController {
                             encounter.getId());
                         answer.removeResponse(responseToDelete);
                         existingResponses.remove(responseToDelete);
-                        questionnaireDao.merge(answer.getQuestion().getQuestionnaire());
+                        questionnaireService.merge(answer.getQuestion().getQuestionnaire());
                     }
 
                     // Update the response list of the encounter and merge it
@@ -1278,9 +1277,9 @@ public class SurveyController {
                     updateEncounter(encounterDTO);
                     // Refresh encounter from database after storing of responses
                     encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-                    Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-                    if (encounter.getActiveQuestionnaires().contains(questionnaire.getId())) {
-                        encounterExporter.export(encounter, questionnaire, false);
+                    Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(questionnaireId);
+                    if (encounter.getActiveQuestionnaires().contains(questionnaire.get().getId())) {
+                        encounterExporter.export(encounter, questionnaire.orElse(null), false);
                     }
                 }
             }
@@ -1316,8 +1315,8 @@ public class SurveyController {
 
         if (bundle != null && !bundle.getIsPublished()) {
 
-            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-            if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
+            Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(questionnaireId);
+            if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.get().getId())) {
                 Encounter encounter = new Encounter();
                 encounter.setCaseNumber(encounterDTO.getCaseNumber());
                 encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
@@ -1333,7 +1332,7 @@ public class SurveyController {
                 }
                 encounter.setResponses(responses);
                 if(performExportTest) {
-                    encounterExporter.export(encounter, questionnaire, true);
+                    encounterExporter.export(encounter, questionnaire.orElse(null), true);
                 }
             }
         }

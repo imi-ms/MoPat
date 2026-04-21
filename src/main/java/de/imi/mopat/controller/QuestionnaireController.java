@@ -1,15 +1,6 @@
 package de.imi.mopat.controller;
 
-import de.imi.mopat.dao.AnswerDao;
-import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.ConfigurationDao;
-import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.dao.OperatorDao;
-import de.imi.mopat.dao.QuestionDao;
-import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.dao.*;
 import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
@@ -46,16 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilder;
@@ -149,7 +131,7 @@ public class QuestionnaireController {
     @RequestMapping(value = "/questionnaire/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listQuestionnaires(final Model model) {
-        List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
+        List<Questionnaire> allQuestionnaires = questionnaireService.getAllQuestionnaires();
         // This map contians a questionnaire id as key and a set with all
         // languages
         // which are available for all questions in this questionnaire.
@@ -250,7 +232,7 @@ public class QuestionnaireController {
         Questionnaire questionnaire = questionnaireService.saveOrUpdateQuestionnaire(
             questionnaireDTO, logo, principalId);
         Boolean hasQuestionnaireConditions = questionnaireService.hasQuestionnaireConditions(
-            questionnaireDao.getElementById(questionnaireDTO.getId()));
+            questionnaireService.getQuestionnaireById(questionnaireDTO.getId()).orElse(null));
         redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
             hasQuestionnaireConditions);
         if (action.equals("saveEditButton")) {
@@ -272,10 +254,10 @@ public class QuestionnaireController {
         boolean isEditableState = true;
 
         if (questionnaireDTO.getId() != null) {
-            Questionnaire existingQuestionnaire = questionnaireDao.getElementById(
+            Optional<Questionnaire> existingQuestionnaire = questionnaireService.getQuestionnaireById(
                 questionnaireDTO.getId());
-            if (existingQuestionnaire != null) {
-                questionnaireDTO.setLogo(existingQuestionnaire.getLogo());
+            if (existingQuestionnaire.isPresent()) {
+                questionnaireDTO.setLogo(existingQuestionnaire.get().getLogo());
                 isEditableState = questionnaireService.editingQuestionnaireAllowed(
                     questionnaireDTO);
             }
@@ -298,11 +280,11 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String removeQuestionnaire(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
-        if (questionnaire != null) {
-            if (questionnaire.isDeletable()) {
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
+        if (questionnaire.isPresent()) {
+            if (questionnaire.get().isDeletable()) {
                 // Delete the associated conditions
-                for (Condition condition : conditionDao.getConditionsByTarget(questionnaire)) {
+                for (Condition condition : conditionDao.getConditionsByTarget(questionnaire.get())) {
                     if (condition instanceof SelectAnswerCondition
                         || condition instanceof SliderAnswerThresholdCondition) {
                         // Refresh the trigger so that multiple conditions of
@@ -315,7 +297,7 @@ public class QuestionnaireController {
                     conditionDao.remove(condition);
                 }
 
-                for (ExportTemplate exportTemplate : questionnaire.getExportTemplates()) {
+                for (ExportTemplate exportTemplate : questionnaire.get().getExportTemplates()) {
                     //Remove ExportTemplates manually to prevent integrity clashes with scores
                     exportTemplateDao.remove(exportTemplate);
                 }
@@ -323,7 +305,7 @@ public class QuestionnaireController {
                 // Collect all scores in an array list to make sure they will
                 // be removed in correct order
                 List<Score> scoresToDelete = new ArrayList<>();
-                for (Score scoreToDelete : questionnaire.getScores()) {
+                for (Score scoreToDelete : questionnaire.get().getScores()) {
                     List<Score> dependingScores = scoreToDelete.getDependingScores();
                     // Sort depending scores by amount of their depending
                     // scores to prevent database errors
@@ -351,7 +333,7 @@ public class QuestionnaireController {
                 }
 
                 // Delete connection to the bundles
-                for (BundleQuestionnaire bundleQuestionnaire : questionnaire.getBundleQuestionnaires()) {
+                for (BundleQuestionnaire bundleQuestionnaire : questionnaire.get().getBundleQuestionnaires()) {
                     Bundle bundle = bundleQuestionnaire.getBundle();
                     bundle.removeBundleQuestionnaire(bundleQuestionnaire);
                     //Update the position of all following bundleQuestionnaires
@@ -364,17 +346,17 @@ public class QuestionnaireController {
                     }
                     bundleDao.merge(bundle);
                 }
-                questionnaire.removeAllBundleQuestionnaires();
+                questionnaire.get().removeAllBundleQuestionnaires();
                 questionnaireVersionGroupService.removeQuestionnaire(
-                    questionnaire.getQuestionnaireVersionGroupId(), questionnaire);
-                questionnaireDao.remove(questionnaire);
+                    questionnaire.get().getQuestionnaireVersionGroupId(), questionnaire.get());
+                questionnaireService.removeQuestionnaire(questionnaire.get());
                 model.addAttribute("messageSuccess",
                     messageSource.getMessage("questionnaire.error" + ".deleteQuestionnairePossible",
-                        new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
+                        new Object[]{questionnaire.get().getName()}, LocaleContextHolder.getLocale()));
             } else {
                 model.addAttribute("messageFail", messageSource.getMessage(
                     "questionnaire.error" + ".deleteQuestionnaireNotPossible",
-                    new Object[]{questionnaire.getName()}, LocaleContextHolder.getLocale()));
+                    new Object[]{questionnaire.get().getName()}, LocaleContextHolder.getLocale()));
             }
         }
         return listQuestionnaires(model);
@@ -397,9 +379,9 @@ public class QuestionnaireController {
         @RequestParam(value = "id", required = true) final Long id,
         @RequestParam(value = "type", required = true) final List<String> types,
         final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
 
-        if (questionnaire == null) {
+        if (questionnaire.isEmpty()) {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", "list");
             return new ResponseEntity<>(null, headers, HttpStatus.FOUND);
@@ -412,16 +394,16 @@ public class QuestionnaireController {
             MetadataExporter exporter = metadataExporterFactory.getMetadataExporter(
                 MetadataFormat.valueOf(type));
 
-            for (Question question : questionnaire.getQuestions()) {
+            for (Question question : questionnaire.get().getQuestions()) {
                 question.setHasConditionsAsTarget(conditionDao.isConditionTarget(question));
             }
 
-            byte[] data = exporter.export(questionnaire, messageSource, configurationDao,
+            byte[] data = exporter.export(questionnaire.get(), messageSource, configurationDao,
                 configurationGroupDao, exportTemplateDao, questionnaireDao, questionDao, scoreDao);
 
             // Create a windows-compliant path/filename
             Path path = Paths.get(
-                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
+                questionnaire.get().getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
                     + "_" + type + MetadataFormat.valueOf(type).getFileExtension());
 
             paths.add(path);
@@ -455,7 +437,7 @@ public class QuestionnaireController {
             ByteArrayResource zipResource = new ByteArrayResource(baos.toByteArray());
 
             String zipName =
-                questionnaire.getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
+                questionnaire.get().getName().replaceAll("[\\\\/:;*?\"<>|]", "").replaceAll(" ", "_")
                     + "_exports.zip";
 
             return ResponseEntity.ok()

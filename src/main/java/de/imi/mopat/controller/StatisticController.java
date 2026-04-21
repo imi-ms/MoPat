@@ -2,8 +2,8 @@ package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.EncounterDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.StatisticDao;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.model.dto.OneTimeStatisticDTO;
 import de.imi.mopat.model.dto.StatisticDTO;
 import de.imi.mopat.validator.OneTimeStatisticDTOValidator;
@@ -41,7 +41,7 @@ public class StatisticController {
     @Autowired
     private OneTimeStatisticDTOValidator oneTimeStatisticDTOValidator;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     @Autowired
     private BundleDao bundleDao;
     @Autowired
@@ -62,7 +62,7 @@ public class StatisticController {
         OneTimeStatisticDTO oneTimeStatisticDTO = new OneTimeStatisticDTO(new Date(), new Date());
         model.addAttribute("oneTimeStatisticDTO", oneTimeStatisticDTO);
         model.addAttribute("bundles", bundleDao.getAllElements());
-        model.addAttribute("questionnaires", questionnaireDao.getAllElements());
+        model.addAttribute("questionnaires", questionnaireService.getAllQuestionnaires());
         model.addAttribute("patients", encounterDao.getAllCaseNumbers());
         return "statistic/onetimestatistic";
     }
@@ -84,7 +84,7 @@ public class StatisticController {
         final BindingResult result, final Model model) {
         oneTimeStatisticDTOValidator.validate(oneTimeStatisticDTO, result);
         model.addAttribute("bundles", bundleDao.getAllElements());
-        model.addAttribute("questionnaires", questionnaireDao.getAllElements());
+        model.addAttribute("questionnaires", questionnaireService.getAllQuestionnaires());
         model.addAttribute("patients", encounterDao.getAllCaseNumbers());
         if (result.hasErrors()) {
             return "statistic/onetimestatistic";

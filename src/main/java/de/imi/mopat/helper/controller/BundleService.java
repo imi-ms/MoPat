@@ -5,7 +5,6 @@ import de.imi.mopat.dao.user.AclObjectIdentityDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
@@ -37,8 +36,6 @@ public class BundleService {
     private QuestionnaireDTOMapper questionnaireDTOMapper;
     @Autowired
     private BundleDao bundleDao;
-    @Autowired
-    private QuestionnaireDao questionnaireDao;
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
@@ -77,7 +74,7 @@ public class BundleService {
         bundleDTO.getBundleQuestionnaireDTOs().forEach(bundleQuestionnaireDTO -> {
             QuestionnaireDTO questionnaireDTO = bundleQuestionnaireDTO.getQuestionnaireDTO();
             if (questionnaireDTO != null && questionnaireDTO.getId() != null) {
-                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaireDao.getElementById(questionnaireDTO.getId())));
+                questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaireService.getQuestionnaireById(questionnaireDTO.getId()).orElse(null)));
             }
         });
 
@@ -286,10 +283,10 @@ public class BundleService {
                 continue;
             }
 
-            Questionnaire questionnaire = questionnaireDao.getElementById(bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
+            Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(bundleQuestionnaireDTO.getQuestionnaireDTO().getId());
             BundleQuestionnaire bundleQuestionnaire = new BundleQuestionnaire(
                     bundle,
-                    questionnaire,
+                    questionnaire.orElse(null),
                     bundleQuestionnaireDTO.getPosition().intValue(),
                     Optional.ofNullable(bundleQuestionnaireDTO.getIsEnabled()).orElse(false),
                     Optional.ofNullable(bundleQuestionnaireDTO.getShowScores()).orElse(false)
@@ -304,8 +301,8 @@ public class BundleService {
                     });
             
             bundle.addBundleQuestionnaire(bundleQuestionnaire);
-            questionnaire.addBundleQuestionnaire(bundleQuestionnaire);
-            questionnaireDao.merge(questionnaire);
+            questionnaire.get().addBundleQuestionnaire(bundleQuestionnaire);
+            questionnaireService.merge(questionnaire.get());
         }
     }
 
@@ -340,7 +337,7 @@ public class BundleService {
             }
             Questionnaire questionnaire = toDelete.getQuestionnaire();
             questionnaire.removeBundleQuestionnaire(toDelete);
-            questionnaireDao.merge(questionnaire);
+            questionnaireService.merge(questionnaire);
         }
         bundle.removeAllBundleQuestionnaires();
         bundleDao.merge(bundle);

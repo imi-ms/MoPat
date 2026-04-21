@@ -2,7 +2,6 @@ package de.imi.mopat.helper.controller;
 
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.conditions.Condition;
@@ -25,7 +24,7 @@ public class QuestionService {
     private AnswerDao answerDao;
     
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     
     @Autowired
     private BundleDao bundleDao;
@@ -105,9 +104,9 @@ public class QuestionService {
             copiedQuestions.add(newQuestion);
         }
         newQuestionnaire.setQuestions(copiedQuestions);
-        questionnaireDao.merge(newQuestionnaire);
+        questionnaireService.merge(newQuestionnaire);
         //Refetch questionnaire to get ids from db
-        return questionnaireDao.getElementById(newQuestionnaire.getId());
+        return questionnaireService.getQuestionnaireById(newQuestionnaire.getId()).orElse(null);
     }
     
     MapHolder getMappingForDuplicatedQuestions(

@@ -3,6 +3,7 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
@@ -56,7 +57,7 @@ public class QuestionController {
     @Autowired
     private SliderAnswerValidator sliderAnswerValidator;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
 
     @Autowired
     private SliderIconDao sliderIconDao;
@@ -135,9 +136,9 @@ public class QuestionController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String showQuestions(@RequestParam(value = "id", required = true) final Long id,
         final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
 
-        if (questionnaire == null) {
+        if (questionnaire.isEmpty()) {
             //clear the models attributes that are set in the @ModelAttribute
             // methods
             model.addAttribute("question", null);
@@ -149,7 +150,7 @@ public class QuestionController {
         // map, which
         // contains the question texts grouped by the country and languages.
         Map<Long, SortedMap<String, Map<String, String>>> localizedQuestionTextsForQuestion = new HashMap<>();
-        for (Question question : questionnaire.getQuestions()) {
+        for (Question question : questionnaire.get().getQuestions()) {
             // Get the question texts grouped by country from the current
             // question
             SortedMap<String, Map<String, String>> groupedLocalizedQuestionTextByCountry = question.getLocalizedQuestionTextGroupedByCountry();
@@ -163,7 +164,7 @@ public class QuestionController {
             question.setHasScores(scoreDao.hasScore(question));
         }
         model.addAttribute("localizedQuestionTextsForQuestion", localizedQuestionTextsForQuestion);
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaire.get());
         return "question/list";
     }
 
@@ -330,8 +331,8 @@ public class QuestionController {
             return "question/edit";
         }
 
-        Questionnaire questionnaire = questionnaireDao.getElementById(
-            questionDTO.getQuestionnaireId());
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(
+            questionDTO.getQuestionnaireId()).orElse(null);
         Integer minNumberAnswers = questionDTO.getMinNumberAnswers();
         Integer maxNumberAnswers = questionDTO.getMaxNumberAnswers();
         Map<String, String> localizedQuestionText = removePTags(questionDTO);
@@ -359,7 +360,7 @@ public class QuestionController {
         }
         // Merge in any case, because the questionnaire is already persisted
         questionDao.merge(question);
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire);
 
         // Since the next step is a redirect to a controller which loads a
         // new model,
@@ -604,7 +605,7 @@ public class QuestionController {
             deleteFile.delete();
         }
 
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire);
 
         // Since the next step is a redirect to a controller which loads a
         // new model,
@@ -628,7 +629,7 @@ public class QuestionController {
     public @ResponseBody String repositionQuestion(
         @RequestParam(value = "questionIds", required = true) final List<Long> questionIds,
         @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        Questionnaire questionnaire = questionnaireService.getQuestionnaireById(questionnaireId).get();
 
         // Check if any condition trigger is after its target
         for (int i = 0; i < questionIds.size(); i++) {
@@ -661,7 +662,7 @@ public class QuestionController {
         for (Question question : questionnaire.getQuestions()) {
             question.setPosition((questionIds.indexOf(question.getId()) + 1));
         }
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire);
 
         return "";
     }

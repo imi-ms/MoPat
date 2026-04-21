@@ -3,7 +3,6 @@ package de.imi.mopat.helper.controller;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.QuestionDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.NumberInputAnswer;
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class ConditionService {
     
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     
     @Autowired
     private BundleDao bundleDao;
@@ -45,7 +44,7 @@ public class ConditionService {
         // condition into the database
         if (conditionDTO.getBundleId() != null && conditionDTO.getTargetClass()
             .equalsIgnoreCase("de.imi.mopat.model.Questionnaire")) {
-            targetQuestionnaire = questionnaireDao.getElementById(conditionDTO.getTargetId());
+            targetQuestionnaire = questionnaireService.getQuestionnaireById(conditionDTO.getTargetId()).orElse(null);
             bundle = bundleDao.getElementById(conditionDTO.getBundleId());
             conditionDTO.setTargetAnswerQuestionId(null);
         } else {

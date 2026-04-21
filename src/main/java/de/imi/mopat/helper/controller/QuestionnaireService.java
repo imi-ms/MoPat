@@ -47,6 +47,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -126,11 +128,12 @@ public class QuestionnaireService {
      * @return A list of all {@link QuestionnaireDTO} objects.
      */
     public List<QuestionnaireDTO> getAllQuestionnaireDTOs() {
-        return questionnaireDao.getAllElements().stream()
+        return getAllQuestionnaires().stream()
             .map(questionnaireDTOMapper)
             .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "questionnaires", key = "'all'")
     public List<Questionnaire> getAllQuestionnaires() {
         return questionnaireDao.getAllElements();
     }
@@ -158,6 +161,7 @@ public class QuestionnaireService {
      * @param userId           The ID of the user performing the action.
      * @return The saved or updated {@link Questionnaire}.
      */
+    @CacheEvict(value = "questionnaires", key = "'all'")
     public Questionnaire saveOrUpdateQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
 
         // Update questionnaire directly if editing is allowed
@@ -174,6 +178,16 @@ public class QuestionnaireService {
         return createNewQuestionnaire(questionnaireDTO, logo, userId);
     }
 
+    @CacheEvict(value = "questionnaires", key = "'all'")
+    public void removeQuestionnaire(Questionnaire questionnaire) {
+        questionnaireDao.remove(questionnaire);
+    }
+
+    @CacheEvict(value = "questionnaires", key = "'all'")
+    public void merge(Questionnaire questionnaire) {
+        questionnaireDao.merge(questionnaire);
+    }
+
     /**
      * Retrieves a {@link QuestionnaireDTO} by its ID.
      *
@@ -182,11 +196,14 @@ public class QuestionnaireService {
      * otherwise.
      */
     public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
-        if (questionnaireId == null || questionnaireId <= 0) {
+        return getQuestionnaireById(questionnaireId).map(questionnaireDTOMapper);
+    }
+
+    public Optional<Questionnaire> getQuestionnaireById(Long id) {
+        if (id == null || id <= 0) {
             return Optional.empty();
         }
-        return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
-            .map(questionnaireDTOMapper);
+        return Optional.ofNullable(questionnaireDao.getElementById(id));
     }
 
     /**
@@ -312,7 +329,7 @@ public class QuestionnaireService {
             userId,
             Boolean.TRUE
         );
-        questionnaireDao.merge(newQuestionnaire);
+        merge(newQuestionnaire);
 
         QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
             newQuestionnaire.getName());
@@ -320,7 +337,7 @@ public class QuestionnaireService {
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);
-        questionnaireDao.merge(newQuestionnaire);
+        merge(newQuestionnaire);
         return newQuestionnaire;
     }
 
@@ -343,7 +360,7 @@ public class QuestionnaireService {
 
         copyLocalizedTextsToQuestionnaire(existingQuestionnaire, questionnaireDTO);
         handleLogoUpload(existingQuestionnaire, questionnaireDTO, logo);
-        questionnaireDao.merge(existingQuestionnaire);
+        merge(existingQuestionnaire);
         return existingQuestionnaire;
     }
 
@@ -365,7 +382,7 @@ public class QuestionnaireService {
             userId,
             Boolean.TRUE
         );
-        questionnaireDao.merge(newQuestionnaire);
+        merge(newQuestionnaire);
 
         newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(),
             newQuestionnaire);
@@ -389,7 +406,7 @@ public class QuestionnaireService {
         QuestionnaireVersionGroup existingGroup = existingQuestionnaire.getQuestionnaireVersionGroup();
         questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
 
-        questionnaireDao.merge(newQuestionnaire);
+        merge(newQuestionnaire);
 
         //Apparently Conditions are already persisted with the previous merge command
         //for(Condition condition : clonedConditions)
@@ -563,7 +580,7 @@ public class QuestionnaireService {
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing the logo information.
      * @param logo             The {@link MultipartFile} containing the new logo file.
      */
-    public void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
+    private void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         try {
             String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/"
                 + questionnaire.getId().toString();

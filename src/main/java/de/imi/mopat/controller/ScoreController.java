@@ -3,8 +3,8 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.ExpressionDTO;
@@ -21,9 +21,7 @@ import de.imi.mopat.model.score.ValueOfQuestionOperator;
 import de.imi.mopat.model.score.ValueOperator;
 import de.imi.mopat.validator.ScoreDTOValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,7 +43,7 @@ public class ScoreController {
     @Autowired
     private ExportTemplateDao exportTemplateDao;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     @Autowired
     private QuestionDao questionDao;
     @Autowired
@@ -66,16 +64,16 @@ public class ScoreController {
     @RequestMapping(value = "/score/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showScoresForQuestionnaire(
-        @RequestParam(value = "id", required = true) final Long id, final Model model) {
-        Questionnaire questionnaire = questionnaireDao.getElementById(id);
+            @RequestParam(value = "id", required = true) final Long id, final Model model) {
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(id);
 
-        if (questionnaire == null) {
+        if (questionnaire.isEmpty()) {
             return "redirect:/questionnaire/list";
         }
 
         // Sort the scores
         List<Score> scores = new ArrayList<>();
-        scores.addAll(questionnaire.getScores());
+        scores.addAll(questionnaire.get().getScores());
         Collections.sort(scores, (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
 
         List<ScoreDTO> scoreDTOs = new ArrayList<>();
@@ -84,7 +82,7 @@ public class ScoreController {
         }
 
         model.addAttribute("scores", scoreDTOs);
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaire.get());
         return "score/list";
     }
 
@@ -100,24 +98,24 @@ public class ScoreController {
     @RequestMapping(value = "/score/fill", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String fillScore(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(value = "id", required = false) final Long scoreId, final Model model) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestParam(value = "id", required = false) final Long scoreId, final Model model) {
         // Get a new ScoreDTO
         ScoreDTO scoreDTO = new ScoreDTO();
         // Get the Questionnaire and the Score
-        Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(questionnaireId);
         List<Score> availableScores;
         // If the scoreId is set, get the ScoreDTO representation from the score
         if (scoreId != null) {
             Score score = scoreDao.getElementById(scoreId);
             scoreDTO = score.toScoreDTO();
-            availableScores = questionnaire.getAvailableScoresForScore(score);
+            availableScores = questionnaire.get().getAvailableScoresForScore(score);
         } else {
-            availableScores = new ArrayList<>(questionnaire.getScores());
+            availableScores = new ArrayList<>(questionnaire.get().getScores());
         }
         // Sort the available scores by name
         Collections.sort(availableScores,
-            (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
+                (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
         scoreDTO.setQuestionnaireId(questionnaireId);
 
         // Get all Operators
@@ -126,11 +124,11 @@ public class ScoreController {
         if (availableScores.isEmpty()) {
             operators.remove(operatorDao.getOperatorByDisplaySign("valueOfScore"));
         }
-        List<Question> availableQuestionsForScore = questionnaire.getAvailableQuestionsForScore();
+        List<Question> availableQuestionsForScore = questionnaire.get().getAvailableQuestionsForScore();
         if (availableQuestionsForScore == null || availableQuestionsForScore.isEmpty()) {
             operators.remove(operatorDao.getOperatorByDisplaySign("valueOf"));
         }
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaire.get());
         model.addAttribute("operators", operators);
         model.addAttribute("availableQuestionsForScore", availableQuestionsForScore);
         model.addAttribute("availableScoresForScore", availableScores);
@@ -152,10 +150,10 @@ public class ScoreController {
     @RequestMapping(value = "/score/edit", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String editScore(
-        @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
-        @RequestParam(required = false, value = "postAction") final String action,
-        @ModelAttribute("scoreDTO") final ScoreDTO scoreDTO, BindingResult result,
-        final Model model) {
+            @RequestParam(value = "questionnaireId", required = true) final Long questionnaireId,
+            @RequestParam(required = false, value = "postAction") final String action,
+            @ModelAttribute("scoreDTO") final ScoreDTO scoreDTO, BindingResult result,
+            final Model model) {
 
         if (action.equalsIgnoreCase("cancel")) {
             return "redirect:/score/list?id=" + questionnaireId;
@@ -167,24 +165,24 @@ public class ScoreController {
         scoreDTOValidator.validate(scoreDTO, result);
 
         if (result.hasErrors()) {
-            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
+            Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(questionnaireId);
             List<Score> availableScores;
             if (scoreDTO.getId() != null) {
-                availableScores = questionnaire.getAvailableScoresForScore(
-                    scoreDao.getElementById(scoreDTO.getId()));
+                availableScores = questionnaire.get().getAvailableScoresForScore(
+                        scoreDao.getElementById(scoreDTO.getId()));
             } else {
-                availableScores = new ArrayList<>(questionnaire.getScores());
+                availableScores = new ArrayList<>(questionnaire.get().getScores());
             }
             // Sort the available scores by name
             Collections.sort(availableScores,
-                (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
+                    (Score o1, Score o2) -> o1.getName().compareTo(o2.getName()));
             // Get all Operators
             List<Operator> operators = new ArrayList<>(operatorDao.getOperators());
             // And delete value of score, if available scores are empty
             if (availableScores.isEmpty()) {
                 operators.remove(operatorDao.getOperatorByDisplaySign("valueOfScore"));
             }
-            List<Question> availableQuestionsForScore = questionnaire.getAvailableQuestionsForScore();
+            List<Question> availableQuestionsForScore = questionnaire.get().getAvailableQuestionsForScore();
             if (availableQuestionsForScore == null || availableQuestionsForScore.isEmpty()) {
                 operators.remove(operatorDao.getOperatorByDisplaySign("valueOf"));
             }
@@ -193,11 +191,11 @@ public class ScoreController {
             model.addAttribute("availableScoresForScore", availableScores);
             // overwrite the spring errors and take the new one
             model.addAttribute("org.springframework.validation.BindingResult.scoreDTO", result);
-            model.addAttribute("questionnaire", questionnaire);
+            model.addAttribute("questionnaire", questionnaire.get());
             return "score/edit";
         }
-        Questionnaire questionnaire = questionnaireDao.getElementById(
-            scoreDTO.getQuestionnaireId());
+        Optional<Questionnaire> questionnaire = questionnaireService.getQuestionnaireById(
+                scoreDTO.getQuestionnaireId());
 
         Score score = null;
 
@@ -206,17 +204,17 @@ public class ScoreController {
             score.setExpression(null);
         } else {
             score = new Score();
-            score.setQuestionnaire(questionnaire);
+            score.setQuestionnaire(questionnaire.orElse(null));
         }
 
         score.setName(scoreDTO.getName());
 
         Expression expression = scoreDTO.getExpression()
-            .toExpression(operatorDao, questionDao, scoreDao);
+                .toExpression(operatorDao, questionDao, scoreDao);
         score.setExpression(expression);
 
         scoreDao.merge(score);
-        questionnaireDao.merge(questionnaire);
+        questionnaireService.merge(questionnaire.orElse(null));
         return "redirect:/score/list?id=" + questionnaireId;
     }
 
@@ -231,14 +229,13 @@ public class ScoreController {
     @RequestMapping(value = "/score/remove")
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String removeScore(@RequestParam(value = "id", required = true) final Long scoreId,
-        final Model model) {
+                              final Model model) {
         Score score = scoreDao.getElementById(scoreId);
         List<Score> dependingScores = score.getDependingScores();
         // Sort depending scores by amount of their depending scores to
         // prevent database errors
         Collections.sort(dependingScores,
-            (Score o1, Score o2) -> o1.getDependingScores().size() - o2.getDependingScores()
-                .size());
+                Comparator.comparingInt((Score o) -> o.getDependingScores().size()));
         // Safely delete all depending scores
         for (Score scoreToDelete : dependingScores) {
             scoreDao.remove(scoreToDelete);

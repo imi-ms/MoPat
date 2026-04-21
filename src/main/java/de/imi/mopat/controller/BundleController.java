@@ -3,18 +3,10 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
-import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
-import de.imi.mopat.helper.controller.AuthService;
-import de.imi.mopat.helper.controller.BundleService;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.UserService;
-import de.imi.mopat.helper.controller.ClinicService;
-import de.imi.mopat.helper.model.BundleDTOMapper;
-import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
+import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -26,7 +18,6 @@ import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.BundleDTO;
-import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.validator.BundleDTOValidator;
 
@@ -62,7 +53,7 @@ public class BundleController {
     @Autowired
     private ScoreDao scoreDao;
     @Autowired
-    private QuestionnaireDao questionnaireDao;
+    private QuestionnaireService questionnaireService;
     @Autowired
     private BundleDTOValidator bundleDTOValidator;
     @Autowired
@@ -188,7 +179,7 @@ public class BundleController {
                 for (BundleQuestionnaire bundleQuestionnaire : bundle.getBundleQuestionnaires()) {
                     Questionnaire questionnaire = bundleQuestionnaire.getQuestionnaire();
                     questionnaire.removeBundleQuestionnaire(bundleQuestionnaire);
-                    questionnaireDao.merge(questionnaire);
+                    questionnaireService.merge(questionnaire);
                 }
 
                 // Delete the corresponding conditions
