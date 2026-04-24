@@ -13,7 +13,7 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-        <hapi.fhir.version>8.8.1</hapi.fhir.version>
+        <hapi.fhir.version>8.6.8</hapi.fhir.version>
         <hapi.hl7.v2.version>2.6.0</hapi.hl7.v2.version>
         <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
