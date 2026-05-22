@@ -1,6 +1,11 @@
 package de.imi.mopat.helper.model;
 
+import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.model.Bundle;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.dto.EncounterDTO;
@@ -16,11 +21,23 @@ import java.util.function.Function;
 @Component
 public class EncounterScheduledDTOMapper implements Function<EncounterScheduled, EncounterScheduledDTO> {
 
-    @Autowired
-    private BundleDTOMapper bundleDTOMapper;
-    
-    @Autowired
-    private EncounterDTOMapper encounterDTOMapper;
+    private final BundleDTOMapper bundleDTOMapper;
+    private final EncounterDTOMapper encounterDTOMapper;
+    private final BundleDao bundleDao; // Neu hinzugefügt
+    private final ClinicDao clinicDao; // Neu hinzugefügt
+    private final EncounterScheduledDao encounterScheduledDao; // Neu hinzugefügt
+
+    public EncounterScheduledDTOMapper(BundleDTOMapper bundleDTOMapper,
+        EncounterDTOMapper encounterDTOMapper,
+        BundleDao bundleDao,
+        ClinicDao clinicDao,
+        EncounterScheduledDao encounterScheduledDao) {
+        this.bundleDTOMapper = bundleDTOMapper;
+        this.encounterDTOMapper = encounterDTOMapper;
+        this.bundleDao = bundleDao;
+        this.clinicDao = clinicDao;
+        this.encounterScheduledDao = encounterScheduledDao;
+    }
 
     @Override
     public EncounterScheduledDTO apply(EncounterScheduled encounterScheduled) {
@@ -58,6 +75,42 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         encounterScheduledDTO.setEncounterDTOs(encounterDTOs);
 
         return encounterScheduledDTO;
+    }
+
+    public EncounterScheduled mapToEntity(EncounterScheduledDTO dto) {
+        Bundle bundle = bundleDao.getElementById(dto.getBundleDTO().getId());
+        Clinic clinic = clinicDao.getElementById(dto.getClinicDTO().getId());
+
+        if (dto.getId() == null) {
+            return new EncounterScheduled(
+                dto.getCaseNumber(), bundle, clinic, dto.getStartDate(),
+                dto.getEncounterScheduledSerialType(), dto.getEndDate(), dto.getRepeatPeriod(),
+                dto.getEmail(), dto.getLocale().toString(), dto.getPersonalText(),
+                dto.getReplyMail());
+        }
+
+        EncounterScheduled entity = encounterScheduledDao.getElementById(dto.getId());
+        updateEntity(entity, dto, bundle, clinic);
+        return entity;
+    }
+
+    private void updateEntity(EncounterScheduled entity, EncounterScheduledDTO dto, Bundle bundle, Clinic clinic) {
+        entity.setCaseNumber(dto.getCaseNumber());
+        entity.setBundle(bundle);
+        entity.setClinic(clinic);
+        entity.setStartDate(dto.getStartDate());
+        entity.setEncounterScheduledSerialType(dto.getEncounterScheduledSerialType());
+        entity.setEndDate(dto.getEndDate());
+        entity.setRepeatPeriod(dto.getRepeatPeriod());
+        entity.setEmail(dto.getEmail());
+        entity.setLocale(dto.getLocale().toString());
+        entity.setPersonalText(dto.getPersonalText());
+
+        if ("empty".equalsIgnoreCase(dto.getReplyMail())) {
+            entity.setReplyMail(null);
+        } else {
+            entity.setReplyMail(dto.getReplyMail());
+        }
     }
 
 

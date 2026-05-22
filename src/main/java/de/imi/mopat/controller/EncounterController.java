@@ -380,8 +380,6 @@ public class EncounterController {
 
         }
 
-        redirectAttributes.addFlashAttribute("success", "Scheduled encounter saved successfully");
-
         return "redirect:/encounter/list";
     }
 
