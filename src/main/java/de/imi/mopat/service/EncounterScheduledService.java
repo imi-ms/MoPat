@@ -31,8 +31,10 @@ public class EncounterScheduledService {
     private final MailService mailService;
     private final LocalValidatorFactoryBean validator;
     private final ImmediateMailService immediateMailService;
+    private final AuditService auditService;
 
-    public EncounterScheduledService(BundleDao bundleDao, ClinicDao clinicDao, EncounterScheduledDao encounterScheduledDao, EncounterScheduledDTOValidator encounterScheduledDTOValidator, MailService mailService, LocalValidatorFactoryBean validator, ImmediateMailService immediateMailService) {
+    public EncounterScheduledService(BundleDao bundleDao, ClinicDao clinicDao, EncounterScheduledDao encounterScheduledDao, EncounterScheduledDTOValidator encounterScheduledDTOValidator, MailService mailService, LocalValidatorFactoryBean validator, ImmediateMailService immediateMailService,
+        AuditService auditService) {
         this.bundleDao = bundleDao;
         this.clinicDao = clinicDao;
         this.encounterScheduledDao = encounterScheduledDao;
@@ -40,6 +42,7 @@ public class EncounterScheduledService {
         this.mailService = mailService;
         this.validator = validator;
         this.immediateMailService = immediateMailService;
+        this.auditService = auditService;
     }
 
     // in case of REPEATEDLY, RepeatPeriod is already set in dto
@@ -109,13 +112,14 @@ public class EncounterScheduledService {
             };
 
     public MailSendingStatus save(EncounterScheduledDTO dto,
-                                  BindingResult bindingResult,
                                   EncounterScheduledExecutor executor){
         setRepeatConfiguration(dto);
-        encounterScheduledDTOValidator.validate(dto, bindingResult);
-        if (bindingResult.hasErrors()){
-            return null;
-        }
+        //TODO remove if really not necessary
+//        //duplicate validation
+//        encounterScheduledDTOValidator.validate(dto, bindingResult);
+//        if (bindingResult.hasErrors()){
+//            return null;
+//        }
         EncounterScheduled scheduled = mapToEntity(dto);
         encounterScheduledDao.merge(scheduled);
         Bundle bundle = scheduled.getBundle();
@@ -123,6 +127,12 @@ public class EncounterScheduledService {
         if (bundle != null){
             bundleDao.merge(bundle);
         }
+
+        auditService.writeScheduledEncounterAudit(
+            EncounterScheduledService.class,
+            "save(encounterScheduledDTO, bindingResult, executor)",
+            scheduled
+        );
 
         if (immediateMailService.shouldSendEmailImmediately(scheduled,executor)){
             return immediateMailService.createAndSendEncounter(scheduled);

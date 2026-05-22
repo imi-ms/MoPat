@@ -9,10 +9,9 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.service.ClinicService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
-import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -31,13 +30,15 @@ import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.service.AuditService;
+import de.imi.mopat.service.ClinicService;
 import de.imi.mopat.service.EncounterScheduledService;
+import de.imi.mopat.service.MailSendingStatus;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -102,6 +103,8 @@ public class EncounterController {
     private ClinicDao clinicDao;
     @Autowired
     private EncounterScheduledService encounterSchedulingService;
+    @Autowired
+    private AuditService auditService;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -151,11 +154,7 @@ public class EncounterController {
     public String listEncounter(final Model model) {
         // Initialize containers
         Set<AuditPatientAttribute> patientAttributes = new HashSet<>(
-            Arrays.asList(
-                AuditPatientAttribute.CASE_NUMBER,
-                AuditPatientAttribute.EMAIL_ADDRESS
-            )
-        );
+            Arrays.asList(AuditPatientAttribute.CASE_NUMBER, AuditPatientAttribute.EMAIL_ADDRESS));
 
         Set<String> caseNumbers = new HashSet<>();
         List<EncounterDTO> encounterDTOs = new ArrayList<>();
@@ -181,9 +180,8 @@ public class EncounterController {
             });
 
             // Add EncounterScheduled to DTOs based on already grouped data by bundle
-            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
-                .map(encounterScheduledDTOMapper)
-                .forEach(dto -> {
+            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList())
+                .stream().map(encounterScheduledDTOMapper).forEach(dto -> {
                     encounterScheduledDTOs.add(dto);
                     encounterScheduledJSONSet.add(dto.getJSON());
                 });
@@ -274,13 +272,12 @@ public class EncounterController {
         @RequestParam(value = "pseudonym", required = false) final String pseudonym,
         @RequestParam(value = "email", required = false) final String email, final Model model) {
 
-        addClinicInfoToModel(model,getCurrentUser());
+        addClinicInfoToModel(model, getCurrentUser());
         EncounterScheduledDTO encounterScheduledDTO = new EncounterScheduledDTO();
         if (id != null && id > 0) {
             EncounterScheduled encounterScheduled = encounterScheduledDao.getElementById(id);
             if (encounterScheduled != null) {
-                encounterScheduledDTO = encounterScheduledDTOMapper.apply(
-                    encounterScheduled);
+                encounterScheduledDTO = encounterScheduledDTOMapper.apply(encounterScheduled);
                 Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
                 patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
                 patientAttributes.add(AuditPatientAttribute.EMAIL_ADDRESS);
@@ -341,11 +338,13 @@ public class EncounterController {
         final BindingResult result, final Model model,
         final RedirectAttributes redirectAttributes) {
 
-        if (isCancelAction(action)) return "redirect:/encounter/list?series=true";
-
+        if (isCancelAction(action)) {
+            return "redirect:/encounter/list?series=true";
+        }
+        encounterScheduledDTO.setReplyMails(getReplyMails());
 
         encounterScheduledDTOValidator.validate(encounterScheduledDTO, result);
-        //TODO: check, whether we can make it prettier
+
         if (result.hasErrors()) {
             addClinicInfoToModel(model, getCurrentUser());
             List<Bundle> bundles = bundleDao.getAllElements();
@@ -355,20 +354,40 @@ public class EncounterController {
             }
             model.addAttribute("bundleDTOs", bundleDTOs);
             model.addAttribute("encounterScheduledSerialTypeList",
-                    new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
+                new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
             return "encounter/schedule";
         }
-        encounterSchedulingService.save(encounterScheduledDTO, result, encounterScheduledExecutor);
+        MailSendingStatus status= encounterSchedulingService.save(encounterScheduledDTO, encounterScheduledExecutor);
+
+        switch (status){
+            case SUCCESS -> redirectAttributes.addFlashAttribute("success",
+                messageSource.getMessage("encounterScheduled.mail.success", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+            case INVALID_ADDRESS -> redirectAttributes.addFlashAttribute(
+                "failure",
+                messageSource.getMessage(
+                    "encounterScheduled.mail.invalidMail",
+                    new Object[]{encounterScheduledDTO.getEmail()},
+                    LocaleContextHolder.getLocale())
+            );
+            case FAILURE -> redirectAttributes.addFlashAttribute(
+                "failure",
+                messageSource.getMessage(
+                    "encounterScheduled.mail.fail",
+                    null,
+                    LocaleContextHolder.getLocale())
+            );
+
+        }
 
         redirectAttributes.addFlashAttribute("success", "Scheduled encounter saved successfully");
 
         return "redirect:/encounter/list";
     }
 
-    private boolean isCancelAction(String action){
+    private boolean isCancelAction(String action) {
         return "cancel".equalsIgnoreCase(action);
     }
-
 
 
     /**
@@ -656,28 +675,29 @@ public class EncounterController {
 
     /**
      * Adds ClinicDTOS to the model
+     *
      * @param model
      */
-    private void addClinicInfoToModel(Model model, User user){
+    private void addClinicInfoToModel(Model model, User user) {
         boolean isAdmin = false;
-        for(Authority authority: user.getAuthority()){
-            if(authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())){
-                isAdmin=true;
+        for (Authority authority : user.getAuthority()) {
+            if (authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())) {
+                isAdmin = true;
                 break;
             }
         }
-        if(isAdmin){
+        if (isAdmin) {
             model.addAttribute("clinicDTOs", clinicService.getAllClinicsWithoutBundle());
         } else {
             List<Clinic> assignedClinics = clinicService.getAssignedClinics(user);
-            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false, assignedClinics);
+            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false,
+                assignedClinics);
             model.addAttribute("clinicDTOs", clinicDTOs);
         }
 
     }
 
     private User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
