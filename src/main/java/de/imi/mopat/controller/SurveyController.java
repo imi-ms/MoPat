@@ -34,6 +34,7 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.SurveyService;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
@@ -123,6 +124,8 @@ public class SurveyController {
     private ClinicDTOMapper clinicDTOMapper;
     @Autowired
     private Validator validator;
+    @Autowired
+    private SurveyService surveyService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -395,66 +398,10 @@ public class SurveyController {
             }
         }
 
-        // Create a map with bundleId's as Key and a map with locale codes as
-        // key and a lists of encounters as value.
-        // This map is easy to handle in the corresponding jsp file
-        SortedMap<BundleDTO, Map<String, List<EncounterDTO>>> bundleLanguageEncounterMap = new TreeMap<>(
-            (BundleDTO o1, BundleDTO o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-
-        // Iterate over all available bundles and save the BundleDTO in the Map
-        for (Bundle bundle : bundleDao.getAllElements()) {
-            // The bundle needs to be published and has to have at least one
-            // clinic attached
-            if (bundle.getIsPublished() && !bundle.getBundleClinics()
-                .isEmpty()) {
-                bundleLanguageEncounterMap.put(
-                    bundleDTOMapper.apply(false, bundle),
-                    new HashMap<>());
-            }
-        }
-
-        // Get all incomplete encounters for the given caseNumber
-        List<Encounter> incompleteEncounters = encounterDao.getIncompleteEncounters(
-            encounterDTO.getCaseNumber());
-
-        // Loop through all incomplete encounter
-        for (Encounter incompleteEncounter : incompleteEncounters) {
-            // Save the temporarily used BundleDTO to save some computation time
-            BundleDTO tempBundleDTO = bundleDTOMapper.apply(false, incompleteEncounter.getBundle());
-            // If the bundle is already in the map the user has the rights to
-            // see it
-            if (bundleLanguageEncounterMap.containsKey(tempBundleDTO)) {
-                Map<String, List<EncounterDTO>> localeCodeEncounterMap = bundleLanguageEncounterMap.get(
-                    tempBundleDTO);
-                // Check if the map for the current bundle already contains
-                // the current locale code
-                if (!localeCodeEncounterMap.containsKey(incompleteEncounter.getBundleLanguage())) {
-                    // If not, add the language code and the current
-                    // encounter to the map of the current bundle
-                    List<EncounterDTO> encounterList = new ArrayList<>();
-                    encounterList.add(encounterDTOMapper.apply(true, incompleteEncounter));
-                    localeCodeEncounterMap.put(
-                        incompleteEncounter.getBundleLanguage(),
-                        encounterList);
-                    bundleLanguageEncounterMap.put(
-                        tempBundleDTO,
-                        localeCodeEncounterMap);
-                } else {
-                    // Otherwise the map for the current bundle contains the
-                    // current locale code.
-                    // Add the incomplete encounter to the list for the
-                    // bundle combined with the language code
-                    bundleLanguageEncounterMap.get(tempBundleDTO)
-                        .get(incompleteEncounter.getBundleLanguage())
-                        .add(encounterDTOMapper.apply(
-                            true,
-                            incompleteEncounter));
-                }
-            }
-        }
-
-        // Add the map to the model
+        SortedMap<BundleDTO, Map<String, List<EncounterDTO>>> bundleLanguageEncounterMap =
+            surveyService.getBundleLanguageEncounterMap(encounterDTO);
         model.addAttribute("bundleLanguageEncounterMap", bundleLanguageEncounterMap);
+
         model.addAttribute("hideProfile", Boolean.FALSE);
         return "mobile/survey/bundles";
     }
@@ -801,48 +748,23 @@ public class SurveyController {
      * @return The <i>/mobile/survey/bundleScheduled</i> website.
      */
     @RequestMapping(value = "/mobile/survey/encounter", method = RequestMethod.GET)
-    public String selectEncounterLanguage(
+    public String handleScheduledEncounter(
         @RequestParam(value = "hash", required = true) final String uuid, final Model model) {
 
-        if (uuid == null || uuid.isEmpty() || encounterDao.getElementByUUID(uuid) == null
-            || encounterDao.getElementByUUID(uuid).getEndTime() != null
-            || encounterDao.getElementByUUID(uuid).getEncounterScheduled() == null) {
+        if (surveyService.isEncounterForUUIDCompletedOrUnavailable(uuid)) {
             return "encounter/completed";
         }
 
-        EncounterDTO encounterDTO = encounterDTOMapper.apply(true, encounterDao.getElementByUUID(uuid));
+        EncounterDTO encounterDTO = surveyService.getEncounterDTOForUUID(uuid);
 
-        if (encounterDTO.getEndTime() == null && encounterDTO.getLastSeenQuestionId() == null) {
-            //Set the startTime if the encounter started for the first time
-            encounterDTO.setStartTime(new Timestamp(new Date().getTime()));
-            Encounter encounter = encounterDao.getElementById(encounterDTO.getId());
-            encounter.setStartTime(encounterDTO.getStartTime());
-            encounterDao.merge(encounter);
-        }
+        surveyService.startEncounterIfFirstAccess(encounterDTO);
 
         model.addAttribute("hideProfile", "false");
         model.addAttribute("encounterDTO", encounterDTO);
 
-        // If the encounter is resumed or there is only one selectable language
-        if (encounterDTO.getLastSeenQuestionId() != null
-            || encounterDTO.getBundleDTO().getAvailableLanguages().size() == 1) {
-            if (encounterDTO.getBundleLanguage() == null) {
-                String language = encounterDTO.getBundleDTO().getAvailableLanguages().get(0);
-                for (String locale : LocaleHelper.getLocalesUsedInSurvey()) {
-                    if (locale.contains(language) || locale.contains(language.substring(0, 2))) {
-                        encounterDTO.setBundleLanguage(locale);
-                        break;
-                    }
-                }
-
-                if (encounterDTO.getBundleLanguage() == null) {
-                    encounterDTO.setBundleLanguage(LocaleContextHolder.getLocale().toString());
-                }
-            }
-
-            // Skip the language selection page
-            return "redirect:/mobile/survey/questionnaireScheduled?lang="
-                + encounterDTO.getBundleLanguage();
+        if (surveyService.shouldSkipLanguageSelection(encounterDTO)) {
+            String language = surveyService.resolveBundleLanguage(encounterDTO);
+            return "redirect:/mobile/survey/questionnaireScheduled?lang=" + language;
         }
 
         return "mobile/survey/bundleScheduled";
