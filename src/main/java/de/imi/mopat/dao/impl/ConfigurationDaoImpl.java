@@ -164,6 +164,13 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
     }
 
     @Override
+    public Long getFileDeletionTimeWindow() {
+        Configuration configuration = getConfigurationByAttributeAndClass(
+            Constants.FILE_DELETION_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
+        return Long.valueOf(configuration.getValue());
+    }
+
+    @Override
     public Long getFinishedEncounterScheduledTimeWindow() {
         Configuration configuration = getConfigurationByAttributeAndClass(
             Constants.FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS, Constants.CLASS_GLOBAL);
