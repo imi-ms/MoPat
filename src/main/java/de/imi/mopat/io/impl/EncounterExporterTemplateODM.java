@@ -64,8 +64,6 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     private static final String FILE_SUFFIX = "xml";
     private static final String DOT = ".";
     private static final String UNDERSCORE = "_";
-    private static final SimpleDateFormat ODMFILENAMEDATEFORMAT = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
     private final ConfigurationDao configurationDao;
     private final ODMProcessingBean odmProcessor;
     private Encounter encounter;
@@ -561,7 +559,7 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     private String createODMFileName() {
         String result =
             encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + ODMFILENAMEDATEFORMAT.format(new Date()) + DOT + FILE_SUFFIX;
+                + UNDERSCORE + Constants.EXPORT_DATE_FORMAT.format(new Date()) + DOT + FILE_SUFFIX;
         return result;
     }
 

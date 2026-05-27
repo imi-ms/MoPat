@@ -28,6 +28,9 @@ public abstract class Constants {
     // Date format. For eg.: 2013/05/12
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
+    // Date format for the export filename -> 01.01.2000_10.12.23
+    public static final SimpleDateFormat EXPORT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy_HH.mm.ss");
+
     //Paths to body part images
     public static final String BODY_FRONT = "images/body_front.svg";
     public static final String BODY_BACK = "images/body_back.svg";
@@ -71,6 +74,8 @@ public abstract class Constants {
     // Configuration: The name of the attribute for the
     // finishedEncounterMailadressTimeWindowInMillis
     public static final String FINISHED_ENCOUNTER_MAILADDRESS_TIME_WINDOW_IN_MILLIS = "finishedEncounterMailaddressTimeWindowInMillis";
+    //Configuration: The name of the attribute for the fileDeletionTimeWindowInMillis;
+    public static final String FILE_DELETION_TIME_WINDOW_IN_MILLIS = "fileDeletionTimeWindowInMillis";
     // Configuration: The name of the attribute for the pseudonymizationService
     public static final String USE_PSEUDONYMIZATION_SERVICE = "usePseudonymizationService";
     // Configuration: The name of the attribute for the registryOfPatient
@@ -92,4 +97,6 @@ public abstract class Constants {
 
     // Configuration: The name of the attribute for the Imprint text message
     public static final String IMPRINT_TEXT = "imprintText";
+
+
 }

@@ -28,8 +28,6 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         EncounterExporterTemplateFhirR4b.class);
-    private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
 
     private final ConfigurationDao configurationDao;
 
@@ -271,7 +269,7 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
                 }
                 String result =
                     encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "_"
-                        + FILENAMEDATEFORMAT.format(new Date()) + ".xml";
+                        + Constants.EXPORT_DATE_FORMAT.format(new Date()) + ".xml";
                 // Write to disk
                 File exportFile = new File(subDirectory, result);
                 FhirR4bHelper.writeResourceToFile(questionnaireResponse, exportFile);
