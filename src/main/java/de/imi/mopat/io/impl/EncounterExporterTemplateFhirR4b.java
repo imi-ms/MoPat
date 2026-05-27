@@ -1,7 +1,6 @@
 package de.imi.mopat.io.impl;
 
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.hl7v2.model.DataTypeException;
 import ca.uhn.hl7v2.model.v23.message.ORU_R01;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;

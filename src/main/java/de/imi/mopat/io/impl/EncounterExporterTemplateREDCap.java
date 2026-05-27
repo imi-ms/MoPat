@@ -13,7 +13,6 @@ import de.imi.mopat.model.enumeration.ExportStatus;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
