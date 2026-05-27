@@ -2,181 +2,175 @@
     * View to edit an existing user    
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'user.heading.editProfile', 'Change password')}"
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'user.heading.editProfile', 'Change password')}"
 >
-	<th:block layout:fragment="content">
-		<div class="panel-body">
-			<form
-				name="currentUser"
-				th:object="${currentUser}"
-				enctype="application/x-www-form-urlencoded"
-				method="POST"
-				action="edit"
-			>
-				<th:block th:if="${success ne null}">
-					<div
-						id="notification"
-						class="alert alert-success"
-						th:text="${success}"
-					></div>
-				</th:block>
-				<input
-					type="hidden"
-					th:field="*{id}"
-				/>
+    <th:block layout:fragment="content">
+        <div class="panel-body">
+            <form
+                name="currentUser"
+                th:object="${currentUser}"
+                enctype="application/x-www-form-urlencoded"
+                method="POST"
+                action="edit"
+            >
+                <th:block th:if="${success ne null}">
+                    <div
+                        id="notification"
+                        class="alert alert-success"
+                        th:text="${success}"
+                    ></div>
+                </th:block>
+                <input
+                    type="hidden"
+                    th:field="*{id}"
+                />
 
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+                <div class="form-group">
+                    <input
+                        layout:replace="~{fragments/forms :: inputWithLabel(
                         for='firstname', required=false, path='firstname',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'user.label.firstname', 'Firstname:')})}"
-
-					/>
-				</div>
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+                    />
+                </div>
+                <div class="form-group">
+                    <input
+                        layout:replace="~{fragments/forms :: inputWithLabel(
                         for='lastname', required=false, path='lastname',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'user.label.lastname', 'Lastname:')})}"
-
-					/>
-				</div>
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+                    />
+                </div>
+                <div class="form-group">
+                    <input
+                        layout:replace="~{fragments/forms :: inputWithLabel(
                         for='email', required=false, path='email',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'user.label.email', 'Email:')})}"
-
-					/>
-				</div>
-				<div class="form-group">
-					<label 
-						layout:replace="~{fragments/forms :: label(
+                    />
+                </div>
+                <th:block th:unless="${isDemoInstance}">
+                    <div class="form-group">
+                        <label
+                            layout:replace="~{fragments/forms :: label(
 							for='pin', required='false', 
 							text=${messages.get(#locale, 'user.label.activatePin', 'Activate quick login with a pin')})}"
-					></label>
-					<div class="d-flex justify-content-between align-content-center">
-						<div class="form-check form-switch d-flex align-items-center">
-							<input
-								class="form-check-input form-control me-3"
-								th:field="*{usePin}"
-								id="usePin"
-								onchange="switchPinInput(this);"
-								role="switch"
-								type="checkbox"
-							/>
-						</div>
-						<input
-							layout:replace="~{fragments/forms :: plainInput(
+                        ></label>
+                        <div class="d-flex justify-content-between align-content-center">
+                            <div class="form-check form-switch d-flex align-items-center">
+                                <input
+                                    class="form-check-input form-control me-3"
+                                    th:field="*{usePin}"
+                                    id="usePin"
+                                    onchange="switchPinInput(this)"
+                                    role="switch"
+                                    type="checkbox"
+                                />
+                            </div>
+                            <input
+                                layout:replace="~{fragments/forms :: plainInput(
 							name='pin', clazz='form-control', type='password',
 							id='pin', showErrors=true)}"
-						/>
-					</div>
-					<error 
-						layout:replace="~{fragments/forms :: errorField(path='pin')}"
-					/>
-				</div>
-				<th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
-					<div class="form-group form-checkbox">
-						<label>
-							<input
-								type="checkbox"
-								th:with="message=${messages.get(
+                            />
+                        </div>
+                        <error layout:replace="~{fragments/forms :: errorField(path='pin')}" />
+                    </div>
+                    <th:block th:if="${#bools.isFalse(currentUser.isLdap())}">
+                        <div class="form-group form-checkbox">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    th:with="message=${messages.get(
 									#locale,
 									'user.label.changePassword',
 									messages.buildArguments(#authentication.getPrincipal().getUsername()),
 									'Change the password for the the user __${#authentication.getPrincipal().getUsername()}__')}"
-								th:utext="${message}"
-								th:checked="${#fields.hasErrors('oldPassword') or #fields.hasErrors('newPassword') or #fields.hasErrors('passwordCheck') ? 'true' : 'false'}"
-								onclick="togglePasswordVisibility();"
-							/>
-						</label>
-					</div>				
+                                    th:utext="${message}"
+                                    th:checked="${#fields.hasErrors('oldPassword') or #fields.hasErrors('newPassword') or #fields.hasErrors('passwordCheck') ? 'true' : 'false'}"
+                                    onclick="togglePasswordVisibility()"
+                                />
+                            </label>
+                        </div>
 
-					<div 
-						id="passwordContainer"
-						th:classappend="${not #fields.hasErrors('oldPassword') and not #fields.hasErrors('newPassword') and not #fields.hasErrors('passwordCheck') ? 'd-none' : ''}"
-					>
-						<div class="form-group">
-							<input
-								layout:replace="~{fragments/forms :: plainInputWithLabel(
+                        <div
+                            id="passwordContainer"
+                            th:classappend="${not #fields.hasErrors('oldPassword') and not #fields.hasErrors('newPassword') and not #fields.hasErrors('passwordCheck') ? 'd-none' : ''}"
+                        >
+                            <div class="form-group">
+                                <input
+                                    layout:replace="~{fragments/forms :: plainInputWithLabel(
 								for='oldPassword', required=false, clazz='form-control',
 								type='password', id='oldPassword', name='oldPassword', 
 								text=${messages.get(#locale, 'user.label.oldPassword', 'Current password:')})}"
-
-							/>
-							<error
-								layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
-							/>
-						</div>
-						<div class="form-group">
-							<input
-								layout:replace="~{fragments/forms :: plainInputWithLabel(
+                                />
+                                <error
+                                    layout:replace="~{fragments/forms :: errorField(path='oldPassword')}"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <input
+                                    layout:replace="~{fragments/forms :: plainInputWithLabel(
 								for='newPassword', required=false, clazz='form-control', 
 								type='password', id='newPassword', name='newPassword',
 								text=${messages.get(#locale, 'user.label.newPassword', 'New password:')})}"
-
-							/>
-							<error
-								layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
-							/>
-						</div>
-						<div class="form-group">
-							<input
-								layout:replace="~{fragments/forms :: plainInputWithLabel(
+                                />
+                                <error
+                                    layout:replace="~{fragments/forms :: errorField(path='newPassword')}"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <input
+                                    layout:replace="~{fragments/forms :: plainInputWithLabel(
 								for='newPasswordApprove', required=false, clazz='form-control',
 								type='password', id='newPasswordApprove', name='newPasswordApprove',
 								text=${messages.get(#locale, 'user.label.newPasswordApprove', 'Enter new password again:')})}"
+                                />
+                                <error
+                                    layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
+                                />
+                            </div>
+                        </div>
+                    </th:block>
+                </th:block>
 
-							/>
-							<error
-								layout:replace="~{fragments/forms :: errorField(path='passwordCheck')}"
-							/>
-						</div>
-					</div>
-				</th:block>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    value="save"
+                    id="saveButton"
+                    name="action"
+                    th:text="${messages.get(#locale, 'button.save', 'Save')}"
+                >
+                </button>
+            </form>
+        </div>
+    </th:block>
+    <th:block layout:fragment="scriptContainer">
+        <script>
+            $(document).ready(function () {
+                switchPinInput($("#usePin"));
+            });
 
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="save"
-					id="saveButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.save', 'Save')}"
-				>
-				</button>
-			</form>
-		</div>
-	</th:block>
-	<th:block layout:fragment="scriptContainer">
-		<script>
-			$(document).ready(function () {
-				switchPinInput($("#usePin"));
-			});
+            function switchPinInput(element) {
+                var isPinActive = $(element).get(0).checked;
 
-			function switchPinInput(element) {
-				var isPinActive = $(element).get(0).checked;
+                if (isPinActive) {
+                    // Activate input
+                    $("#pin").removeAttr("disabled");
+                } else {
+                    // Deactivate input
+                    $("#pin").attr("disabled", "disabled");
+                }
+            }
 
-				if (isPinActive) {
-					// Activate input
-					$("#pin").removeAttr("disabled");
-				} else {
-					// Deactivate input
-					$("#pin").attr("disabled", "disabled");
-				}
-			}
-
-			function togglePasswordVisibility() {
-				if ($("#passwordContainer").hasClass("d-none")) {
-					$("#passwordContainer").removeClass("d-none"); 
-				} else {
-					$("#passwordContainer").addClass("d-none");
-				}
-			}
-		</script>
-	</th:block>
+            function togglePasswordVisibility() {
+                if ($("#passwordContainer").hasClass("d-none")) {
+                    $("#passwordContainer").removeClass("d-none");
+                } else {
+                    $("#passwordContainer").addClass("d-none");
+                }
+            }
+        </script>
+    </th:block>
 </th:block>
