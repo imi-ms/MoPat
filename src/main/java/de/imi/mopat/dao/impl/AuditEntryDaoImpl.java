@@ -1,5 +1,6 @@
 package de.imi.mopat.dao.impl;
 
+import java.util.List;
 import java.util.Set;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -30,6 +31,17 @@ public class AuditEntryDaoImpl implements AuditEntryDao {
     public void writeAuditEntries(final String module, final String method,
         final Set<String> caseNumbers, final Set<AuditPatientAttribute> patientAttributes,
         final AuditEntryActionType action) {
+        for (String caseNumber : caseNumbers) {
+            AuditEntry auditEntry = new AuditEntry(module, method, caseNumber, patientAttributes,
+                action);
+            moPatAuditEntityManager.persist(auditEntry);
+        }
+    }
+
+    @Override
+    @Transactional("MoPat_Audit")
+    public void writeAuditEntries(String module, String method, List<String> caseNumbers,
+        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action) {
         for (String caseNumber : caseNumbers) {
             AuditEntry auditEntry = new AuditEntry(module, method, caseNumber, patientAttributes,
                 action);
