@@ -18,6 +18,12 @@ public interface ConfigurationGroupDao extends MoPatDao<ConfigurationGroup> {
      */
     List<ConfigurationGroup> getConfigurationGroups(String labelMessageCode);
 
+    /**
+     * Get all configuration group objects.
+     * @return The configuration group objects in the database
+     */
+    List<ConfigurationGroup> getAllConfigurationGroups();
+
 
     /**
      * Get configuration group object with the given name.
