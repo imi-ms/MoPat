@@ -115,7 +115,8 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (90, 'GENERAL', 11, 87, 9, 'FHIRViaHL7v2SendingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7SendingFacility', NULL, NULL, '87e35940-97e2-4c3e-ae6c-b35ea65717e3', '', NULL),
 (91, 'GENERAL', 11, 87, 10, 'FHIRViaHL7v2ReceivingApplication', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7ReceivingApplication', NULL, NULL, 'd500a3a1-c1ce-4091-ace9-4557481dba37', '', NULL),
 (92, 'GENERAL', 11, 87, 11, 'FHIRViaHL7v2ReceivingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7ReceivingFacility', NULL, NULL, '613cc529-396e-4a06-b785-158c15629d02', '', NULL),
-(93, 'GENERAL', 11, 87, 11, 'FHIRViaHL7v2OBRFillerOrderNumber', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7OBRFillerOrderNumber', NULL, NULL, 'e78a6310-b2b1-4ee7-aea0-378ab33c3f73', '', NULL);
+(93, 'GENERAL', 11, 87, 11, 'FHIRViaHL7v2OBRFillerOrderNumber', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7OBRFillerOrderNumber', NULL, NULL, 'e78a6310-b2b1-4ee7-aea0-378ab33c3f73', '', NULL),
+(94, 'GENERAL', 7, NULL, 5, 'fileDeletionTimeWindowInMillis', 'LONG', 'configuration.description.fileDeletionTimeWindowInMillis', 'GLOBAL', 'configuration.label.encounter.fileDeletionTimeWindowInMillis', NULL, NULL, 'd6a762c1-ed44-49e8-9831-2d2ef6505ce6', '2592000000', NULL);
 
 
 

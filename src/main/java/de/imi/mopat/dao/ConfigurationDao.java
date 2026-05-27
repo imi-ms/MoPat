@@ -94,6 +94,13 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
     Long getIncompleteEncounterTimeWindow();
 
     /**
+     * Returns the time window after which created export files
+     * should be deleted in millis from the {@link Configuration} by using the nae of this class
+     * and the appropriate attribute name.
+     * @return The time window for the file deletion in millis as a long.
+     */
+    Long getFileDeletionTimeWindow();
+    /**
      * Returns the time window after which the mail address of finished encounters should be deleted
      * in millis from the {@link ConfigurationDao} by using the name of this class and the
      * appropriate attribute name.

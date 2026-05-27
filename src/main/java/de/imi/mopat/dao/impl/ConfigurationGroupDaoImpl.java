@@ -30,6 +30,13 @@ public class ConfigurationGroupDaoImpl extends MoPatDaoImpl<ConfigurationGroup> 
     }
 
     @Override
+    public List<ConfigurationGroup> getAllConfigurationGroups() {
+        return moPatEntityManager
+            .createQuery("SELECT cg FROM ConfigurationGroup cg", ConfigurationGroup.class)
+            .getResultList();
+    }
+
+    @Override
     public ConfigurationGroup getConfigurationGroupByName(final String name) {
         try {
             Query query = moPatEntityManager.createQuery("SELECT c FROM "

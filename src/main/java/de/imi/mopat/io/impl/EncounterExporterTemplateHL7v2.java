@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,8 +43,6 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private static final String HL7_SUFFIX = "hl7";
     private static final String DOT = ".";
     private static final String UNDERSCORE = "_";
-    private static final SimpleDateFormat HL7XMLFileNameDateFormat = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
     private final ConfigurationDao configurationDao;
     private Document document;
     private Encounter encounter;
@@ -473,7 +470,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private String createHL7FileName() {
         String result =
             encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + HL7XMLFileNameDateFormat.format(new Date()) + DOT + HL7_SUFFIX;
+                + UNDERSCORE + Constants.EXPORT_DATE_FORMAT.format(new Date()) + DOT + HL7_SUFFIX;
         return result;
     }
 }

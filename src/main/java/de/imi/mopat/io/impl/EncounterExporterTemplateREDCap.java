@@ -13,7 +13,6 @@ import de.imi.mopat.model.enumeration.ExportStatus;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,9 +37,6 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
     private static final String FILE_SUFFIX = "json";
     private static final String DOT = ".";
     private static final String UNDERSCORE = "_";
-    private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
-
     private Encounter encounter;
     private ExportTemplate exportTemplate;
     private final ConfigurationDao configurationDao;
@@ -254,7 +250,7 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
     private String createFileName() {
         String result =
             encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
-                + UNDERSCORE + FILENAMEDATEFORMAT.format(new Date()) + DOT + FILE_SUFFIX;
+                + UNDERSCORE + Constants.EXPORT_DATE_FORMAT.format(new Date()) + DOT + FILE_SUFFIX;
         return result;
     }
 }

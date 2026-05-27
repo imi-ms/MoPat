@@ -37,8 +37,6 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         EncounterExporterTemplateHL7v2.class);
-    private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat(
-        "dd.MM.yyyy_HH.mm.ss");
 
     private final ConfigurationDao configurationDao;
 
@@ -280,7 +278,7 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
                 }
                 String result =
                     encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "_"
-                        + FILENAMEDATEFORMAT.format(new Date()) + ".xml";
+                        + Constants.EXPORT_DATE_FORMAT.format(new Date()) + ".xml";
                 // Write to disk
                 File exportFile = new File(subDirectory, result);
                 FhirDstu3Helper.writeResourceToFile(questionnaireResponse, exportFile);

@@ -2,6 +2,7 @@ package de.imi.mopat.dao;
 
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
+import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,9 @@ public interface AuditEntryDao {
         Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action);
 
     void writeAuditEntries(String module, String method, Set<String> caseNumbers,
+        Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action);
+
+    void writeAuditEntries(String module, String method, List<String> caseNumbers,
         Set<AuditPatientAttribute> patientAttributes, AuditEntryActionType action);
 
     void writeAuditEntry(String module, String method, String caseNumber,
