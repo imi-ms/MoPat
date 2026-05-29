@@ -36,7 +36,6 @@ public class EncounterScheduledService {
         this.setRepeatConfiguration = setRepeatConfiguration;
     }
 
-    @Transactional
     public MailSendingStatus save(EncounterScheduledDTO dto, EncounterScheduledExecutor executor) {
         setRepeatConfiguration.apply(dto);
 

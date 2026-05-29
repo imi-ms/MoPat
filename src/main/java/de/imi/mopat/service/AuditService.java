@@ -7,6 +7,7 @@ import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import java.util.EnumSet;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuditService {
@@ -17,6 +18,7 @@ public class AuditService {
         this.auditEntryDao = auditEntryDao;
     }
 
+    @Transactional("MoPat_Audit")
     public void writeScheduledEncounterAudit(Class<?> sourceClass, String methodName,
         EncounterScheduled scheduled) {
 
