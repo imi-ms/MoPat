@@ -9,10 +9,9 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.ClinicService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
-import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
@@ -31,12 +30,15 @@ import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.service.AuditService;
+import de.imi.mopat.service.ClinicService;
+import de.imi.mopat.service.EncounterScheduledService;
+import de.imi.mopat.service.MailSendingStatus;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -99,6 +101,10 @@ public class EncounterController {
     private ClinicService clinicService;
     @Autowired
     private ClinicDao clinicDao;
+    @Autowired
+    private EncounterScheduledService encounterSchedulingService;
+    @Autowired
+    private AuditService auditService;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -148,11 +154,7 @@ public class EncounterController {
     public String listEncounter(final Model model) {
         // Initialize containers
         Set<AuditPatientAttribute> patientAttributes = new HashSet<>(
-            Arrays.asList(
-                AuditPatientAttribute.CASE_NUMBER,
-                AuditPatientAttribute.EMAIL_ADDRESS
-            )
-        );
+            Arrays.asList(AuditPatientAttribute.CASE_NUMBER, AuditPatientAttribute.EMAIL_ADDRESS));
 
         Set<String> caseNumbers = new HashSet<>();
         List<EncounterDTO> encounterDTOs = new ArrayList<>();
@@ -178,9 +180,8 @@ public class EncounterController {
             });
 
             // Add EncounterScheduled to DTOs based on already grouped data by bundle
-            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
-                .map(encounterScheduledDTOMapper)
-                .forEach(dto -> {
+            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList())
+                .stream().map(encounterScheduledDTOMapper).forEach(dto -> {
                     encounterScheduledDTOs.add(dto);
                     encounterScheduledJSONSet.add(dto.getJSON());
                 });
@@ -271,13 +272,12 @@ public class EncounterController {
         @RequestParam(value = "pseudonym", required = false) final String pseudonym,
         @RequestParam(value = "email", required = false) final String email, final Model model) {
 
-        addClinicInfoToModel(model,getCurrentUser());
+        addClinicInfoToModel(model, getCurrentUser());
         EncounterScheduledDTO encounterScheduledDTO = new EncounterScheduledDTO();
         if (id != null && id > 0) {
             EncounterScheduled encounterScheduled = encounterScheduledDao.getElementById(id);
             if (encounterScheduled != null) {
-                encounterScheduledDTO = encounterScheduledDTOMapper.apply(
-                    encounterScheduled);
+                encounterScheduledDTO = encounterScheduledDTOMapper.apply(encounterScheduled);
                 Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
                 patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
                 patientAttributes.add(AuditPatientAttribute.EMAIL_ADDRESS);
@@ -338,25 +338,9 @@ public class EncounterController {
         final BindingResult result, final Model model,
         final RedirectAttributes redirectAttributes) {
 
-        if (action.equalsIgnoreCase("cancel")) {
+        if (isCancelAction(action)) {
             return "redirect:/encounter/list?series=true";
         }
-
-        switch (encounterScheduledDTO.getEncounterScheduledSerialType()) {
-            case UNIQUELY:
-                encounterScheduledDTO.setRepeatPeriod(null);
-                encounterScheduledDTO.setEndDate(null);
-                break;
-            case WEEKLY:
-                encounterScheduledDTO.setRepeatPeriod(7);
-                break;
-            case MONTHLY:
-                encounterScheduledDTO.setRepeatPeriod(30);
-                break;
-            default:
-                break;
-        }
-
         encounterScheduledDTO.setReplyMails(getReplyMails());
 
         encounterScheduledDTOValidator.validate(encounterScheduledDTO, result);
@@ -373,120 +357,36 @@ public class EncounterController {
                 new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
             return "encounter/schedule";
         }
+        MailSendingStatus status= encounterSchedulingService.save(encounterScheduledDTO, encounterScheduledExecutor);
 
-        EncounterScheduled encounterScheduled = null;
-        Bundle bundle = bundleDao.getElementById(encounterScheduledDTO.getBundleDTO().getId());
-        Clinic clinic = clinicDao.getElementById(encounterScheduledDTO.getClinicDTO().getId());
-        if (encounterScheduledDTO.getId() == null) {
-            encounterScheduled = new EncounterScheduled(encounterScheduledDTO.getCaseNumber(),
-                bundle, clinic, encounterScheduledDTO.getStartDate(),
-                encounterScheduledDTO.getEncounterScheduledSerialType(),
-                encounterScheduledDTO.getEndDate(), encounterScheduledDTO.getRepeatPeriod(),
-                encounterScheduledDTO.getEmail(), encounterScheduledDTO.getLocale().toString(),
-                encounterScheduledDTO.getPersonalText(), encounterScheduledDTO.getReplyMail());
-        } else {
-            encounterScheduled = encounterScheduledDao.getElementById(
-                encounterScheduledDTO.getId());
-            encounterScheduled.setCaseNumber(encounterScheduledDTO.getCaseNumber());
-            encounterScheduled.setBundle(bundle);
-            encounterScheduled.setClinic(clinic);
-            encounterScheduled.setEmail(encounterScheduledDTO.getEmail());
-            encounterScheduled.setEncounterScheduledSerialType(
-                encounterScheduledDTO.getEncounterScheduledSerialType());
-            encounterScheduled.setStartDate(encounterScheduledDTO.getStartDate());
-            encounterScheduled.setEndDate(encounterScheduledDTO.getEndDate());
-            encounterScheduled.setRepeatPeriod(encounterScheduledDTO.getRepeatPeriod());
-            encounterScheduled.setLocale(encounterScheduledDTO.getLocale().toString());
-            encounterScheduled.setPersonalText(encounterScheduledDTO.getPersonalText());
-            if (encounterScheduledDTO.getReplyMail().equalsIgnoreCase("empty")) {
-                encounterScheduled.setReplyMail(null);
-            } else {
-                encounterScheduled.setReplyMail(encounterScheduledDTO.getReplyMail());
-            }
+        switch (status){
+            case SUCCESS -> redirectAttributes.addFlashAttribute("success",
+                messageSource.getMessage("encounterScheduled.mail.success", new Object[]{},
+                    LocaleContextHolder.getLocale()));
+            case INVALID_ADDRESS -> redirectAttributes.addFlashAttribute(
+                "failure",
+                messageSource.getMessage(
+                    "encounterScheduled.mail.invalidMail",
+                    new Object[]{encounterScheduledDTO.getEmail()},
+                    LocaleContextHolder.getLocale())
+            );
+            case FAILURE -> redirectAttributes.addFlashAttribute(
+                "failure",
+                messageSource.getMessage(
+                    "encounterScheduled.mail.fail",
+                    null,
+                    LocaleContextHolder.getLocale())
+            );
+
         }
-
-        Calendar now = Calendar.getInstance();
-        now.setTime(new Date());
-
-        Calendar startDay = Calendar.getInstance();
-        startDay.setTime(encounterScheduledDTO.getStartDate());
-
-        // If the scheduled encounter is scheduled for today,
-        // possibly send the notification mail immediately
-        
-        if (startDay.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) &&
-            startDay.get(Calendar.MONTH) == now.get(Calendar.MONTH) &&
-            startDay.get(Calendar.YEAR) == now.get(Calendar.YEAR)
-        ) {
-            Calendar lastExecutionTime = Calendar.getInstance();
-
-            if (encounterScheduledExecutor.getLastExecutionTime() != null) {
-                lastExecutionTime.setTime(encounterScheduledExecutor.getLastExecutionTime());
-            }
-
-            Calendar nextExecutionTime = Calendar.getInstance();
-            nextExecutionTime.setTime(encounterScheduledExecutor.getNextExecutionTime());
-
-            // When the last execution time of the encounterScheduledExecutor
-            // is not known
-            // and the next run will be tomorrow or
-            // if the last execution time was today,
-            // we have to send the notification email immediately.
-            if ((encounterScheduledExecutor.getLastExecutionTime() == null
-                && now.get(Calendar.DAY_OF_MONTH) != nextExecutionTime.get(Calendar.DAY_OF_MONTH))
-                || (encounterScheduledExecutor.getLastExecutionTime() != null
-                && now.get(Calendar.DAY_OF_MONTH) == lastExecutionTime.get(
-                Calendar.DAY_OF_MONTH))) {
-                // Get date today at midnight to set the encounter's time
-                now.set(Calendar.MILLISECOND, 0);
-                now.set(Calendar.SECOND, 0);
-                now.set(Calendar.MINUTE, 0);
-                now.set(Calendar.HOUR_OF_DAY, 0);
-                Date today = now.getTime();
-
-                Encounter encounter = new Encounter();
-                encounter.setEncounterScheduled(encounterScheduled);
-                encounter.setBundle(bundle);
-                encounter.setClinic(encounterScheduled.getClinic());
-                bundle.addEncounter(encounter);
-                encounter.setCaseNumber(encounterScheduled.getCaseNumber());
-                encounter.setStartTime(new Timestamp(today.getTime()));
-                if (encounter.sendMail(applicationMailer, messageSource,
-                    configurationDao.getBaseURL())) {
-                    redirectAttributes.addFlashAttribute("success",
-                        messageSource.getMessage("encounterScheduled.mail.success", new Object[]{},
-                            LocaleContextHolder.getLocale()));
-                } else {
-                    String failMessage = messageSource.getMessage("encounterScheduled.mail.fail",
-                        new Object[]{}, LocaleContextHolder.getLocale());
-                    if (encounter.getEncounterScheduled().getMailStatus() != null
-                        && encounter.getEncounterScheduled().getMailStatus()
-                        .equals(EncounterScheduledMailStatus.ADDRESS_REJECTED)) {
-                        encounterScheduled.setMailStatus(
-                            EncounterScheduledMailStatus.ADDRESS_REJECTED);
-                        failMessage = messageSource.getMessage(
-                            "encounterScheduled.mail.invalidMail",
-                            new Object[]{encounterScheduled.getEmail()},
-                            LocaleContextHolder.getLocale());
-                    }
-                    redirectAttributes.addFlashAttribute("failure", failMessage);
-                }
-            }
-        }
-        Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
-        patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
-        patientAttributes.add(AuditPatientAttribute.EMAIL_ADDRESS);
-        patientAttributes.add(AuditPatientAttribute.FIRST_NAME);
-        patientAttributes.add(AuditPatientAttribute.LAST_NAME);
-        patientAttributes.add(AuditPatientAttribute.DATE_OF_BIRTH);
-        auditEntryDao.writeAuditEntry(this.getClass().getSimpleName(),
-            "saveScheduledEncounter(encounterScheduledDTO, result, model," + " redirectAttributes)",
-            encounterScheduled.getCaseNumber(), patientAttributes, AuditEntryActionType.WRITE);
-        encounterScheduledDao.merge(encounterScheduled);
-        bundleDao.merge(bundle);
 
         return "redirect:/encounter/list";
     }
+
+    private boolean isCancelAction(String action) {
+        return "cancel".equalsIgnoreCase(action);
+    }
+
 
     /**
      * Controls the HTTP GET Request for the URL <i>/encounter/sendEmail</i>. Sends a remind mail
@@ -773,28 +673,29 @@ public class EncounterController {
 
     /**
      * Adds ClinicDTOS to the model
+     *
      * @param model
      */
-    private void addClinicInfoToModel(Model model, User user){
+    private void addClinicInfoToModel(Model model, User user) {
         boolean isAdmin = false;
-        for(Authority authority: user.getAuthority()){
-            if(authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())){
-                isAdmin=true;
+        for (Authority authority : user.getAuthority()) {
+            if (authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())) {
+                isAdmin = true;
                 break;
             }
         }
-        if(isAdmin){
+        if (isAdmin) {
             model.addAttribute("clinicDTOs", clinicService.getAllClinicsWithoutBundle());
         } else {
             List<Clinic> assignedClinics = clinicService.getAssignedClinics(user);
-            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false, assignedClinics);
+            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false,
+                assignedClinics);
             model.addAttribute("clinicDTOs", clinicDTOs);
         }
 
     }
 
     private User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
