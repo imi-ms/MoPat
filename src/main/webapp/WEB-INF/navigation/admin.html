@@ -211,7 +211,9 @@
 							</li>
 						</ul>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item"
+						th:unless="${isDemoInstance}"
+					>
 						<a
 							class="nav-link"
 							id="configurationLink"

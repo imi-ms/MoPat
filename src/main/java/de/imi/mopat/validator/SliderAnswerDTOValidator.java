@@ -4,6 +4,7 @@ import de.imi.mopat.model.dto.AnswerDTO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 import de.imi.mopat.model.dto.export.SliderIconDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +113,31 @@ public class SliderAnswerDTOValidator implements Validator {
                     // Pop the current icons path to iterate over all
                     // SliderIconDTOs seperately
                     errors.popNestedPath();
+                }
+            }
+
+            //for each entry in localizedMinimumText check if size of entry is bigger than 255 char
+            Map<String, String> localizedMinimumText = sliderAnswer.getLocalizedMinimumText();
+            if (localizedMinimumText != null){
+                for (Map.Entry<String, String> entry : localizedMinimumText.entrySet()){
+                    if (entry.getValue() != null && entry.getValue().length() > 255){
+                        errors.rejectValue("localizedMinimumText['" + entry.getKey() + "']",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("sliderAnswer.validator.localizedMinMaxText",
+                                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    }
+                }
+            }
+
+            Map <String, String> localizedMaximumText = sliderAnswer.getLocalizedMaximumText();
+            if (localizedMaximumText != null) {
+                for (Map.Entry<String, String> entry : localizedMaximumText.entrySet()) {
+                    if (entry.getValue() != null && entry.getValue().length() > 255) {
+                        errors.rejectValue("localizedMaximumText['" + entry.getKey() + "']",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("sliderAnswer.validator.localizedMinMaxText",
+                                        new Object[]{}, LocaleContextHolder.getLocale()));
+                    }
                 }
             }
         } catch (NumberFormatException ex) {
