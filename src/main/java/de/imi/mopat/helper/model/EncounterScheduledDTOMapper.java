@@ -8,7 +8,10 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
+import de.imi.mopat.model.dto.BundleDTO;
+import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
+import de.imi.mopat.model.dto.EncounterScheduledApiRequestDTO;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -111,6 +114,27 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         } else {
             entity.setReplyMail(dto.getReplyMail());
         }
+    }
+
+    public EncounterScheduledDTO mapFromApiRequest(EncounterScheduledApiRequestDTO request) {
+        EncounterScheduledDTO dto = new EncounterScheduledDTO();
+
+        dto.setCaseNumber(request.getCaseNumber());
+        dto.setEmail(request.getEmail());
+        dto.setStartDate(request.getStartDate());
+        dto.setEndDate(request.getEndDate());
+        dto.setEncounterScheduledSerialType(request.getEncounterScheduledSerialType());
+        dto.setReplyMail(request.getReplyMail());
+
+        BundleDTO bundleDTO = new BundleDTO();
+        bundleDTO.setId(request.getBundleId());
+        dto.setBundleDTO(bundleDTO);
+
+        ClinicDTO clinicDTO = new ClinicDTO();
+        clinicDTO.setId(request.getClinicId());
+        dto.setClinicDTO(clinicDTO);
+
+        return dto;
     }
 
 

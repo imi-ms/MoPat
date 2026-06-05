@@ -22,6 +22,7 @@ import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
+import de.imi.mopat.model.dto.EncounterScheduledApiRequestDTO;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
@@ -51,6 +52,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -59,8 +61,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -387,6 +391,26 @@ public class EncounterController {
         return "cancel".equalsIgnoreCase(action);
     }
 
+
+    /**
+     * TODO: schreibe javadoc
+     * @param request
+     * @return
+     */
+    @PostMapping(value = "/encounter/schedule/api")
+    @ResponseBody
+    public ResponseEntity<?> scheduleEncounterFromApi(
+        @RequestBody @Valid EncounterScheduledApiRequestDTO request
+    ) {
+        EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
+        MailSendingStatus status = encounterSchedulingService.save(dto, encounterScheduledExecutor);
+
+        return switch (status) {
+            case SUCCESS -> ResponseEntity.ok(Map.of("message", "Scheduled encounter created successfully"));
+            case INVALID_ADDRESS -> ResponseEntity.badRequest().body(Map.of("error", "Invalid email address"));
+            case FAILURE -> ResponseEntity.internalServerError().body(Map.of("error", "Failed to create scheduled encounter"));
+        };
+    }
 
     /**
      * Controls the HTTP GET Request for the URL <i>/encounter/sendEmail</i>. Sends a remind mail
