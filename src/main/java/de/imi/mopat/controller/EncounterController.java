@@ -62,6 +62,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -393,15 +394,23 @@ public class EncounterController {
 
 
     /**
-     * TODO: schreibe javadoc
+     *
      * @param request
      * @return
      */
     @PostMapping(value = "/encounter/schedule/api")
     @ResponseBody
     public ResponseEntity<?> scheduleEncounterFromApi(
-        @RequestBody @Valid EncounterScheduledApiRequestDTO request
+        @RequestBody @Valid EncounterScheduledApiRequestDTO request,
+        @RequestHeader("x-api-key") String key
     ) {
+        System.out.println("KEY RECEIVED: " + key);
+        String localKey = "apikey123";
+
+        if (!key.equals(localKey)){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
         MailSendingStatus status = encounterSchedulingService.save(dto, encounterScheduledExecutor);
 

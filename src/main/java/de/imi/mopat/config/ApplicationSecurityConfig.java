@@ -343,7 +343,8 @@ public class ApplicationSecurityConfig {
                     "/mobile/survey/pseudonym",
                     "/error/maintenance",
                     "/error/internalservererror",
-                    "/error/accessdenied"
+                    "/error/accessdenied",
+                    "/encounter/schedule/api"
                 ).permitAll()
                 // Login page GET
                 .requestMatchers(HttpMethod.GET, "/mobile/user/login").permitAll()

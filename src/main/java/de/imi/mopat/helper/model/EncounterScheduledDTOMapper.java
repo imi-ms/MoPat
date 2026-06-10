@@ -13,6 +13,7 @@ import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
 import de.imi.mopat.model.dto.EncounterScheduledApiRequestDTO;
 import de.imi.mopat.model.dto.EncounterScheduledDTO;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -133,6 +134,7 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         ClinicDTO clinicDTO = new ClinicDTO();
         clinicDTO.setId(request.getClinicId());
         dto.setClinicDTO(clinicDTO);
+        dto.setLocale(request.getLocale());
 
         return dto;
     }

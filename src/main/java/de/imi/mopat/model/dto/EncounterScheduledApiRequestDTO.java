@@ -4,6 +4,7 @@ import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.util.Date;
+import java.util.Locale;
 import org.springframework.format.annotation.DateTimeFormat;
 
 public class EncounterScheduledApiRequestDTO {
@@ -33,6 +34,9 @@ public class EncounterScheduledApiRequestDTO {
     private String replyMail;
 
     private String personalText;
+
+    //TODO: Yannick fragen, ob das so ok ist
+    private Locale locale;
 
     public String getCaseNumber() {
         return caseNumber;
@@ -104,5 +108,11 @@ public class EncounterScheduledApiRequestDTO {
 
     public void setPersonalText(String personalText) {
         this.personalText = personalText;
+    }
+    public Locale getLocale() {
+        return locale;
+    }
+    public void setLocale (Locale locale){
+        this.locale = locale;
     }
 }
