@@ -402,27 +402,30 @@ public class EncounterController {
     @ResponseBody
     public ResponseEntity<?> scheduleEncounterFromApi(
         @RequestBody @Valid EncounterScheduledApiRequestDTO request,
-        @RequestHeader("x-api-key") String key
+        @RequestHeader(value = "x-api-key", required = false) String key
     ) {
-        System.out.println("KEY RECEIVED: " + key);
-        String localKey = "apikey123";
+        String apiKey = configurationDao.getApiKey();
 
-        if (!key.equals(localKey)){
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        if (configurationDao.isApiKeyAccessEnabled() && apiKey.equals(key)) {
+
+            EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
+            MailSendingStatus status = encounterSchedulingService.save(dto,
+                encounterScheduledExecutor);
+
+            return switch (status) {
+                case SUCCESS -> ResponseEntity.ok(
+                    Map.of("message", "Scheduled encounter created successfully"));
+                case INVALID_ADDRESS ->
+                    ResponseEntity.badRequest().body(Map.of("error", "Invalid email address"));
+                case FAILURE -> ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Failed to create scheduled encounter"));
+            };
         }
-
-        EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
-        MailSendingStatus status = encounterSchedulingService.save(dto, encounterScheduledExecutor);
-
-        return switch (status) {
-            case SUCCESS -> ResponseEntity.ok(Map.of("message", "Scheduled encounter created successfully"));
-            case INVALID_ADDRESS -> ResponseEntity.badRequest().body(Map.of("error", "Invalid email address"));
-            case FAILURE -> ResponseEntity.internalServerError().body(Map.of("error", "Failed to create scheduled encounter"));
-        };
+        else return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
     }
 
     /**
-     * Controls the HTTP GET Request for the URL <i>/encounter/sendEmail</i>. Sends a remind mail
+     * Controls the HTTP GET Request for the URL <i>/encounter/sendEmail</i>. Sends a reminder mail
      * for a given {@link Encounter} object to the patient.
      *
      * @param encounterId        :The id of the {@link Encounter} object.
