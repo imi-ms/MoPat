@@ -394,10 +394,10 @@ public class EncounterController {
 
 
     /**
-     *
+     * Controls the HTTP POST requests for the URL <i>/encounter/schedule/api</i>. Used to
+     * enable automatic scheduled encounters through an API
      * @param request
-     * @return
-     */
+     * */
     @PostMapping(value = "/encounter/schedule/api")
     @ResponseBody
     public ResponseEntity<?> scheduleEncounterFromApi(

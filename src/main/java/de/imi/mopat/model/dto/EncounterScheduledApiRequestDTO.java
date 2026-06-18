@@ -1,5 +1,6 @@
 package de.imi.mopat.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -22,10 +23,10 @@ public class EncounterScheduledApiRequestDTO {
     private String email;
 
     @NotNull
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date startDate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date endDate;
 
     @NotNull

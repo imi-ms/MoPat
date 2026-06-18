@@ -27,9 +27,9 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
 
     private final BundleDTOMapper bundleDTOMapper;
     private final EncounterDTOMapper encounterDTOMapper;
-    private final BundleDao bundleDao; // Neu hinzugefügt
-    private final ClinicDao clinicDao; // Neu hinzugefügt
-    private final EncounterScheduledDao encounterScheduledDao; // Neu hinzugefügt
+    private final BundleDao bundleDao;
+    private final ClinicDao clinicDao;
+    private final EncounterScheduledDao encounterScheduledDao;
 
     public EncounterScheduledDTOMapper(BundleDTOMapper bundleDTOMapper,
         EncounterDTOMapper encounterDTOMapper,
@@ -82,7 +82,14 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
     }
 
     public EncounterScheduled mapToEntity(EncounterScheduledDTO dto) {
+        if (dto.getBundleDTO() == null || dto.getBundleDTO().getId() == null) {
+            throw new IllegalArgumentException("EncounterScheduledDTO must contain a bundle id");
+        }
         Bundle bundle = bundleDao.getElementById(dto.getBundleDTO().getId());
+
+        if (dto.getClinicDTO() == null || dto.getClinicDTO().getId() == null) {
+            throw new IllegalArgumentException("EncounterScheduledDTO must contain a clinic id");
+        }
         Clinic clinic = clinicDao.getElementById(dto.getClinicDTO().getId());
 
         if (dto.getId() == null) {
@@ -135,6 +142,8 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         clinicDTO.setId(request.getClinicId());
         dto.setClinicDTO(clinicDTO);
         dto.setLocale(request.getLocale());
+
+        dto.setPersonalText(request.getPersonalText());
 
         return dto;
     }
