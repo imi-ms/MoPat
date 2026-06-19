@@ -35,6 +35,7 @@ import de.imi.mopat.service.AuditService;
 import de.imi.mopat.service.ClinicService;
 import de.imi.mopat.service.EncounterScheduledService;
 import de.imi.mopat.service.MailSendingStatus;
+import de.imi.mopat.validator.EncounterScheduledApiRequestDTOValidator;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
 import java.sql.Timestamp;
@@ -58,6 +59,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -90,6 +92,8 @@ public class EncounterController {
     private EncounterScheduledDao encounterScheduledDao;
     @Autowired
     private EncounterScheduledDTOValidator encounterScheduledDTOValidator;
+    @Autowired
+    private EncounterScheduledApiRequestDTOValidator encounterScheduledApiRequestDTOValidator;
     @Autowired
     private EncounterScheduledExecutor encounterScheduledExecutor;
     @Autowired
@@ -401,9 +405,22 @@ public class EncounterController {
     @PostMapping(value = "/encounter/schedule/api")
     @ResponseBody
     public ResponseEntity<?> scheduleEncounterFromApi(
-        @RequestBody @Valid EncounterScheduledApiRequestDTO request,
+        @RequestBody EncounterScheduledApiRequestDTO request,
+        BindingResult result,
         @RequestHeader(value = "x-api-key", required = false) String key
     ) {
+        encounterScheduledApiRequestDTOValidator.validate(request, result);
+        if (result.hasErrors()) {
+            Map<String, String> fieldErrors = new LinkedHashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                fieldErrors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Validation failed",
+                "details", fieldErrors
+            ));
+        }
+
         String apiKey = configurationDao.getApiKey();
 
         if (configurationDao.isApiKeyAccessEnabled() && apiKey.equals(key)) {

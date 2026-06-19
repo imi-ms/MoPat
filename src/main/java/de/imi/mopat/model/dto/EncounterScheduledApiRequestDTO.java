@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.util.Date;
 import java.util.Locale;
-import org.springframework.format.annotation.DateTimeFormat;
 
 public class EncounterScheduledApiRequestDTO {
 
@@ -36,7 +35,6 @@ public class EncounterScheduledApiRequestDTO {
 
     private String personalText;
 
-    //TODO: Yannick fragen, ob das so ok ist
     private Locale locale;
 
     public String getCaseNumber() {

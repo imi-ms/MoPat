@@ -100,6 +100,14 @@ public class ConfigurationDTOValidator implements Validator {
                     }
                 }
                 break;
+            case API_KEY:
+                String apiKeyValue = configurationDTO.getValue();
+                String apiKeyPattern = "^[A-Za-z0-9_\\-.]{16,128}$";
+                if (apiKeyValue == null || !apiKeyValue.matches(apiKeyPattern)) {
+                    message = messageSource.getMessage("configuration.validate" + ".apiKey",
+                        new Object[]{}, LocaleContextHolder.getLocale());
+                }
+                break;
             default:
                 break;
         }
