@@ -72,6 +72,8 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error" + ".questionTextIsNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
+            } else if(entry.getValue().length() >1_500){
+                System.out.println("Fragetext hat " + entry.getValue().length() + " Zeichen und überschreitet das Maximum von 1.500 Zeichen");
             }
         }
 
