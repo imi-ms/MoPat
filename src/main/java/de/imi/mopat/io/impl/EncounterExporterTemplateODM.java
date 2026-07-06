@@ -470,6 +470,11 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
         }
         return exportStatus;
     }
+//TODO
+    @Override
+    public String getExportContent() throws Exception {
+        return "";
+    }
 
     /**
      * Exports the resultant ODM to a given path.

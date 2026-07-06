@@ -307,6 +307,11 @@ public class EncounterExporterTemplateFhirR5 implements EncounterExporterTemplat
 
         return exportStatus;
     }
+//TODO
+    @Override
+    public String getExportContent() throws Exception {
+        return "";
+    }
 
     /**
      * Handles the HL7 export process by generating and transmitting an HL7 message.

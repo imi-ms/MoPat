@@ -52,7 +52,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private ExportTemplate exportTemplate;
 
     /**
-     * Constructor with given {@link ConfigurationDao} to get configuration informations within this
+     * Constructor with given {@link ConfigurationDao} to get configuration information within this
      * instance.
      *
      * @param configurationDao The {@link ConfigurationDao} from the context.
@@ -177,11 +177,25 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             }
         }
 
-        return doHandleExports(
-            isExportInDirectory, exportPathDirectory, isExportServer, hostname,
+        return doHandleExports(isExportInDirectory, exportPathDirectory, isExportServer, hostname,
             port, useTLS, useClientAuth, clientPKCSPath, clientPKCSPassword, serverCertificatePath,
-            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber
-        );
+            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber);
+    }
+
+    @Override
+    public String getExportContent() throws Exception {
+        HL7MessageConfig config = readHL7MessageConfig();
+        if (config.sendingFacility() == null || config.receivingApplication () == null
+            || config.receivingFacility()== null || config.obrFillerOrderNumber() == null){
+            // if any of the config values is missing: throw error
+            throw new Exception(
+                "Missing configuration for sendingFacility, receivingApplication, receivingFacility or OBRFillerOrderNumber. "
+                    + "Could not build ExportContent"
+            );
+        }
+        // else build message for export
+        ORU_R01 hl7Message = buildHL7Message(config.sendingFacility(), config.receivingApplication(), config.receivingFacility(), config.obrFillerOrderNumber());
+        return hl7Message.encode();
     }
 
     /**
@@ -213,27 +227,18 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @throws Exception If an error occurs during message construction, file export, or server
      *                   communication.
      */
-    private ExportStatus doHandleExports(
-        Boolean isExportInDirectory, String exportPathDirectory, Boolean isExportServer,
-        String hostname, Integer port, Boolean useTLS, Boolean useClientAuth,
-        String clientPKCSPath, String clientPKCSPassword, String serverCertificatePath,
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber
-    ) throws Exception {
-        HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+    private ExportStatus doHandleExports(Boolean isExportInDirectory, String exportPathDirectory,
+        Boolean isExportServer, String hostname, Integer port, Boolean useTLS,
+        Boolean useClientAuth, String clientPKCSPath, String clientPKCSPassword,
+        String serverCertificatePath, String sendingFacility, String receivingApplication,
+        String receivingFacility, String obrFillerOrderNumber) throws Exception {
+
+        ORU_R01 hl7Message = buildHL7Message(sendingFacility, receivingApplication,
+            receivingFacility, obrFillerOrderNumber);
 
         //Properties have to be set, at least empty strings
-        if (sendingFacility != null && receivingApplication != null
-            && receivingFacility != null && obrFillerOrderNumber != null) {
-
-            // Build Template specific message
-            String output = buildHL7MessageContent();
-            ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(
-                exportTemplate, encounter, sendingFacility, receivingApplication,
-                receivingFacility, obrFillerOrderNumber, output
-            );
-            hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(hl7Message,
-                getNode("Formname").getTextContent());
+        if (sendingFacility != null && receivingApplication != null && receivingFacility != null
+            && obrFillerOrderNumber != null) {
 
             //Handle Server Export
             try {
@@ -255,11 +260,71 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             //Return Success if no exception was thrown
             return ExportStatus.SUCCESS;
         } else {
-            LOGGER.error("Missing configuration for sendingFacility, receivingApplication, " +
-                "receivingFacility or OBRFillerOrderNumber. Could not export message.");
+            LOGGER.error("Missing configuration for sendingFacility, receivingApplication, "
+                + "receivingFacility or OBRFillerOrderNumber. Could not export message.");
             return ExportStatus.FAILURE;
         }
     }
+
+    /**
+     * Builds HL7 message without sending or saving it.
+     *
+     * @param sendingFacility      The identifier of the facility sending the message.
+     * @param receivingApplication Application identifier of the recipient.
+     * @param receivingFacility    Identifier of the facility receiving the message.
+     * @param obrFillerOrderNumber Unique order number for the associated medical order.
+     * @return hl7Message
+     * @throws Exception If an error occurs during message construction, file export, or server
+     *                   communication.
+     */
+    private ORU_R01 buildHL7Message(String sendingFacility, String receivingApplication,
+        String receivingFacility, String obrFillerOrderNumber) throws Exception {
+        // Build Template specific message
+        String output = buildHL7MessageContent();
+        HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
+        ORU_R01 hl7Message = hl7MessageHelper.createMessageWithBlob(exportTemplate, encounter,
+            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber, output);
+        hl7Message = hl7MessageHelper.overwriteMsh3NamespaceId(hl7Message,
+            getNode("Formname").getTextContent());
+        return hl7Message;
+    }
+
+    /**
+     * Reads configuration values, that are relevant for building an HL7 Message.
+     *
+     * @return a {@param HL7MessageConfig} holding facility related values, may be null
+     */
+
+    private HL7MessageConfig readHL7MessageConfig() {
+        String sendingFacility = null;
+        String receivingApplication = null;
+        String receivingFacility = null;
+        String obrFillerOrderNumber = null;
+
+        for (Configuration configuration : exportTemplate.getConfigurationGroup()
+            .getConfigurations()) {
+            if (configuration.getAttribute().equals("sendingFacility")) {
+                sendingFacility = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("receivingApplication")) {
+                receivingApplication = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("receivingFacility")) {
+                receivingFacility = configuration.getValue();
+            }
+            if (configuration.getAttribute().equals("OBRFillerOrderNumber")) {
+                obrFillerOrderNumber = configuration.getValue();
+            }
+        }
+
+        return new HL7MessageConfig(sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber);
+
+    }
+
+    private record HL7MessageConfig(
+        String sendingFacility, String receivingApplication,
+        String receivingFacility, String obrFillerOrderNumber
+    ) {}
 
     /**
      * Handles the export of an HL7 message to a server, optionally utilizing TLS and client
@@ -292,15 +357,12 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @throws Exception If an error occurs during the export process, such as failure in message
      *                   transmission, keystore creation, or TLS setup.
      */
-    private void doHandleServerExport(
-        Boolean isExportServer, String hostname, Integer port, Boolean useTLS,
-        Boolean useClientAuth, String clientPKCSPath, String clientPKCSPassword,
-        String serverCertificatePath, ORU_R01 hl7Message
-    ) throws Exception {
+    private void doHandleServerExport(Boolean isExportServer, String hostname, Integer port,
+        Boolean useTLS, Boolean useClientAuth, String clientPKCSPath, String clientPKCSPassword,
+        String serverCertificatePath, ORU_R01 hl7Message) throws Exception {
         HL7MessageHelper hl7MessageHelper = new HL7MessageHelper();
-        if (Boolean.TRUE.equals(isExportServer) &&
-            hostname != null && !hostname.isEmpty() && port != null
-        ) {
+        if (Boolean.TRUE.equals(isExportServer) && hostname != null && !hostname.isEmpty()
+            && port != null) {
             KeyStore keyStore = null;
             if (Boolean.TRUE.equals(useTLS)) {
                 if (Boolean.TRUE.equals(useClientAuth)) {
@@ -311,8 +373,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
                 }
             }
 
-            hl7MessageHelper.sendMessageViaComServer(hostname, port, hl7Message, useTLS,
-                keyStore, clientPKCSPassword);
+            hl7MessageHelper.sendMessageViaComServer(hostname, port, hl7Message, useTLS, keyStore,
+                clientPKCSPassword);
         }
     }
 
@@ -330,11 +392,8 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
      * @throws Exception If an error occurs during the export process, such as issues with encoding
      *                   the message or writing to the file system.
      */
-    private void doHandleFilebasedExport(
-        Boolean isExportInDirectory,
-        String exportPathDirectory,
-        ORU_R01 hl7Message
-    ) throws Exception {
+    private void doHandleFilebasedExport(Boolean isExportInDirectory, String exportPathDirectory,
+        ORU_R01 hl7Message) throws Exception {
         if (Boolean.TRUE.equals(isExportInDirectory)) {
             // Make sure the path exists
             File path = new File(exportPathDirectory);

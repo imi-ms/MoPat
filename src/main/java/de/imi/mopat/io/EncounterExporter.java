@@ -254,7 +254,7 @@ public class EncounterExporter {
         String value = "";
         // rule is of the type answer
         if (exportRule instanceof ExportRuleAnswer ruleAnswer) {
-            // there exists an response to the answer
+            // there exists a response to the answer
             if (answerResponseMap.containsKey(ruleAnswer.getAnswer())) {
                 // get the response value based on the export rule
                 value = this.getAnswerValue(ruleAnswer,
