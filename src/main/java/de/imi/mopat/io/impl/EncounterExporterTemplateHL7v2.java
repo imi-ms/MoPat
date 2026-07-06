@@ -121,10 +121,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         String clientPKCSPath = null;
         String clientPKCSPassword = null;
         String serverCertificatePath = null;
-        String sendingFacility = null;
-        String receivingApplication = null;
-        String receivingFacility = null;
-        String obrFillerOrderNumber = null;
+
         // Get export configurations
         for (Configuration configuration : exportTemplate.getConfigurationGroup()
             .getConfigurations()) {
@@ -163,38 +160,30 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             if (configuration.getAttribute().equals("clientPKCSPassword")) {
                 clientPKCSPassword = configuration.getValue();
             }
-            if (configuration.getAttribute().equals("sendingFacility")) {
-                sendingFacility = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("receivingApplication")) {
-                receivingApplication = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("receivingFacility")) {
-                receivingFacility = configuration.getValue();
-            }
-            if (configuration.getAttribute().equals("OBRFillerOrderNumber")) {
-                obrFillerOrderNumber = configuration.getValue();
-            }
         }
+
+        HL7MessageConfig hl7MessageConfig = readHL7MessageConfig();
 
         return doHandleExports(isExportInDirectory, exportPathDirectory, isExportServer, hostname,
             port, useTLS, useClientAuth, clientPKCSPath, clientPKCSPassword, serverCertificatePath,
-            sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber);
+            hl7MessageConfig.sendingFacility(), hl7MessageConfig.receivingApplication(),
+            hl7MessageConfig.receivingFacility(), hl7MessageConfig.obrFillerOrderNumber());
     }
 
     @Override
     public String getExportContent() throws Exception {
         HL7MessageConfig config = readHL7MessageConfig();
-        if (config.sendingFacility() == null || config.receivingApplication () == null
-            || config.receivingFacility()== null || config.obrFillerOrderNumber() == null){
+        if (config.sendingFacility() == null || config.receivingApplication() == null
+            || config.receivingFacility() == null || config.obrFillerOrderNumber() == null) {
             // if any of the config values is missing: throw error
             throw new Exception(
                 "Missing configuration for sendingFacility, receivingApplication, receivingFacility or OBRFillerOrderNumber. "
-                    + "Could not build ExportContent"
-            );
+                    + "Could not build ExportContent");
         }
         // else build message for export
-        ORU_R01 hl7Message = buildHL7Message(config.sendingFacility(), config.receivingApplication(), config.receivingFacility(), config.obrFillerOrderNumber());
+        ORU_R01 hl7Message = buildHL7Message(config.sendingFacility(),
+            config.receivingApplication(), config.receivingFacility(),
+            config.obrFillerOrderNumber());
         return hl7Message.encode();
     }
 
@@ -317,14 +306,10 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             }
         }
 
-        return new HL7MessageConfig(sendingFacility, receivingApplication, receivingFacility, obrFillerOrderNumber);
+        return new HL7MessageConfig(sendingFacility, receivingApplication, receivingFacility,
+            obrFillerOrderNumber);
 
     }
-
-    private record HL7MessageConfig(
-        String sendingFacility, String receivingApplication,
-        String receivingFacility, String obrFillerOrderNumber
-    ) {}
 
     /**
      * Handles the export of an HL7 message to a server, optionally utilizing TLS and client
@@ -534,5 +519,10 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
             encounter.getCaseNumber() + UNDERSCORE + exportTemplate.getOriginalFilename()
                 + UNDERSCORE + HL7XMLFileNameDateFormat.format(new Date()) + DOT + HL7_SUFFIX;
         return result;
+    }
+
+    private record HL7MessageConfig(String sendingFacility, String receivingApplication,
+                                    String receivingFacility, String obrFillerOrderNumber) {
+
     }
 }
