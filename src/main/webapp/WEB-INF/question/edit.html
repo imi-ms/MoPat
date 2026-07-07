@@ -1346,6 +1346,20 @@
 						$(this).attr("disabled", true);
 					}
 				});
+
+				// Überwachung der WYSIWYG-Editoren auf maximale Länge
+				$(document).on('keydown', '.note-editable', function(e) {
+					var currentLength = $(this).text().length;
+					if (currentLength >= 1500) {
+						// Verhindere die Eingabe, wenn 1500 Zeichen erreicht sind
+						// (Ausnahme: Backspace/Delete Taste erlauben)
+						console.log("Textlaenge ueberschritten")
+						if (e.keyCode !== 8 && e.keyCode !== 46) {
+							e.preventDefault();
+							alert("Maximale Länge von 1500 Zeichen erreicht!");
+						}
+					}
+				});
 			});
 
 			/*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/
