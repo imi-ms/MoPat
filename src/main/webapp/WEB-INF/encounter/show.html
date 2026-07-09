@@ -69,6 +69,13 @@
 									th:text="${messages.get(#locale, 'encounter.button.export', 'Export')}"
 								>
 								</a>
+								<a
+										th:if="${downloadEnabled}"
+										class="link"
+										th:href="|downloadexport?id=${encounter.id}&templateid=${exportTemplate.id}|"
+										th:text="${messages.get(#locale, 'encounter.button.download', 'Download')}"
+								>
+								</a>
 								<table>
 									<colgroup>
 										<col

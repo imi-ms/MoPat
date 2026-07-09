@@ -231,6 +231,7 @@ public class EncounterController {
             "showEncounter(" + encounterId + ", model)", encounter.getCaseNumber(),
             patientAttributes, AuditEntryActionType.READ);
         model.addAttribute("encounter", encounter);
+        model.addAttribute("downloadEnabled", configurationDao.isEncounterTemplateDownloadEnabled());
         return "encounter/show";
     }
 
