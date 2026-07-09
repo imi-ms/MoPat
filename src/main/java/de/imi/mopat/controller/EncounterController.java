@@ -14,6 +14,7 @@ import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
+import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Clinic;
@@ -31,6 +32,7 @@ import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.service.EncounterExportService;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
 import java.sql.Timestamp;
@@ -49,6 +51,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -79,6 +84,8 @@ public class EncounterController {
     private EncounterDao encounterDao;
     @Autowired(required = false)
     private EncounterExporter encounterExporter;
+    @Autowired
+    private EncounterExportService encounterExportService;
     @Autowired
     private EncounterScheduledDao encounterScheduledDao;
     @Autowired
@@ -178,7 +185,8 @@ public class EncounterController {
             });
 
             // Add EncounterScheduled to DTOs based on already grouped data by bundle
-            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
+            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList())
+                .stream()
                 .map(encounterScheduledDTOMapper)
                 .forEach(dto -> {
                     encounterScheduledDTOs.add(dto);
@@ -200,8 +208,8 @@ public class EncounterController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/encounter/show</i>. Used to show a specific
-     * encounter with inherent questionnaires and associated export templates
+     * Controls the HTTP GET requests for the URL <i>/encounter/show</i>. Used to show a
+     * specific encounter with inherent questionnaires and associated export templates
      *
      * @param encounterId The id from the specific encounter.
      * @param model       The model, which holds the information for the view.
@@ -254,6 +262,43 @@ public class EncounterController {
             encounter.getCaseNumber(), patientAttributes, AuditEntryActionType.WRITE);
         return "redirect:/encounter/show?id=" + encounterId;
     }
+
+    /**
+     * Controls the HTTP GET requests for the URL <i>/encounter/downloadexport</i>. Used for the
+     * manual, on-demand download of an export template's content without persisting or transmitting
+     * it. Unlike {@link #exportEncounterTemplate}, this endpoint returns the export content directly
+     * as a file download instead of redirecting.
+     *
+     * @param encounterId The id from the specific encounter.
+     * @param templateId  The id from the template to be downloaded.
+     * @return The assembled export content as a downloadable file.
+     */
+    @GetMapping(value = "/encounter/downloadexport")
+    @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
+    public ResponseEntity<String> downloadEncounterTemplate(
+        @RequestParam(required = true, value = "id") final Long encounterId,
+        @RequestParam(required = true, value = "templateid") final Long templateId)
+        throws Exception {
+
+        Encounter encounter = encounterDao.getElementById(encounterId);
+        ExportTemplate exportTemplate = exportTemplateDao.getElementById(templateId);
+        String exportContent = encounterExportService.getExportContent(encounter, exportTemplate);
+
+        Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
+        patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
+        patientAttributes.add(AuditPatientAttribute.TREATMENT_DATA);
+        auditEntryDao.writeAuditEntry(this.getClass().getSimpleName(),
+            "downloadEncounterTemplate(" + encounterId + ", " + templateId + ")",
+            encounter.getCaseNumber(), patientAttributes, AuditEntryActionType.READ);
+
+        String filename = encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "." + exportTemplate.getExportTemplateType().getFileExtension();
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .body(exportContent);
+    }
+
 
     /**
      * Controls the HTTP GET requests for the URL
