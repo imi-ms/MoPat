@@ -310,7 +310,7 @@ public class EncounterExporterTemplateFhirR5 implements EncounterExporterTemplat
 //TODO
     @Override
     public String getExportContent() throws Exception {
-        return "";
+        return FhirR5Helper.decodeResourceToString(questionnaireResponse, false);
     }
 
     /**

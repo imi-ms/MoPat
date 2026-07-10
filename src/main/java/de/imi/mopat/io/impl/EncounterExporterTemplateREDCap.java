@@ -178,10 +178,10 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
 
         return exportStatus;
     }
-//TODO
+//TODO (not done yet)
     @Override
     public String getExportContent() throws Exception {
-        return "";
+        return "[" + mapper.writeValueAsString(exportJSON) + "]";
     }
 
     /**

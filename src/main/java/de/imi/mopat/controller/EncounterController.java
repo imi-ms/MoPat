@@ -10,11 +10,11 @@ import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
 import de.imi.mopat.helper.controller.ClinicService;
+import de.imi.mopat.helper.controller.FileUtils;
 import de.imi.mopat.helper.model.BundleDTOMapper;
-import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
+import de.imi.mopat.helper.model.EncounterScheduledDTOMapper;
 import de.imi.mopat.io.EncounterExporter;
-import de.imi.mopat.io.impl.EncounterExporterTemplateHL7v2;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleClinic;
 import de.imi.mopat.model.Clinic;
@@ -35,6 +35,7 @@ import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.service.EncounterExportService;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +107,8 @@ public class EncounterController {
     private ClinicService clinicService;
     @Autowired
     private ClinicDao clinicDao;
+    @Autowired
+    private FileUtils fileUtils;
 
     /**
      * Collects all emails to set for the encounterScheduledDTOs replyMails.
@@ -155,11 +158,7 @@ public class EncounterController {
     public String listEncounter(final Model model) {
         // Initialize containers
         Set<AuditPatientAttribute> patientAttributes = new HashSet<>(
-            Arrays.asList(
-                AuditPatientAttribute.CASE_NUMBER,
-                AuditPatientAttribute.EMAIL_ADDRESS
-            )
-        );
+            Arrays.asList(AuditPatientAttribute.CASE_NUMBER, AuditPatientAttribute.EMAIL_ADDRESS));
 
         Set<String> caseNumbers = new HashSet<>();
         List<EncounterDTO> encounterDTOs = new ArrayList<>();
@@ -186,9 +185,7 @@ public class EncounterController {
 
             // Add EncounterScheduled to DTOs based on already grouped data by bundle
             encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList())
-                .stream()
-                .map(encounterScheduledDTOMapper)
-                .forEach(dto -> {
+                .stream().map(encounterScheduledDTOMapper).forEach(dto -> {
                     encounterScheduledDTOs.add(dto);
                     encounterScheduledJSONSet.add(dto.getJSON());
                 });
@@ -208,8 +205,8 @@ public class EncounterController {
     }
 
     /**
-     * Controls the HTTP GET requests for the URL <i>/encounter/show</i>. Used to show a
-     * specific encounter with inherent questionnaires and associated export templates
+     * Controls the HTTP GET requests for the URL <i>/encounter/show</i>. Used to show a specific
+     * encounter with inherent questionnaires and associated export templates
      *
      * @param encounterId The id from the specific encounter.
      * @param model       The model, which holds the information for the view.
@@ -231,7 +228,8 @@ public class EncounterController {
             "showEncounter(" + encounterId + ", model)", encounter.getCaseNumber(),
             patientAttributes, AuditEntryActionType.READ);
         model.addAttribute("encounter", encounter);
-        model.addAttribute("downloadEnabled", configurationDao.isEncounterTemplateDownloadEnabled());
+        model.addAttribute("downloadEnabled",
+            configurationDao.isEncounterTemplateDownloadEnabled());
         return "encounter/show";
     }
 
@@ -267,8 +265,8 @@ public class EncounterController {
     /**
      * Controls the HTTP GET requests for the URL <i>/encounter/downloadexport</i>. Used for the
      * manual, on-demand download of an export template's content without persisting or transmitting
-     * it. Unlike {@link #exportEncounterTemplate}, this endpoint returns the export content directly
-     * as a file download instead of redirecting.
+     * it. Unlike {@link #exportEncounterTemplate}, this endpoint returns the export content
+     * directly as a file download instead of redirecting.
      *
      * @param encounterId The id from the specific encounter.
      * @param templateId  The id from the template to be downloaded.
@@ -276,7 +274,7 @@ public class EncounterController {
      */
     @GetMapping(value = "/encounter/downloadexport")
     @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
-    public ResponseEntity<String> downloadEncounterTemplate(
+    public ResponseEntity<byte[]> downloadEncounterTemplate(
         @RequestParam(required = true, value = "id") final Long encounterId,
         @RequestParam(required = true, value = "templateid") final Long templateId)
         throws Exception {
@@ -292,12 +290,25 @@ public class EncounterController {
             "downloadEncounterTemplate(" + encounterId + ", " + templateId + ")",
             encounter.getCaseNumber(), patientAttributes, AuditEntryActionType.READ);
 
-        String filename = encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename() + "." + exportTemplate.getExportTemplateType().getFileExtension();
+        String fileExtension = exportTemplate.getExportTemplateType().getFileExtension();
+        String filename = encounter.getCaseNumber() + "_" + exportTemplate.getOriginalFilename()
+            + "." + fileExtension;
+
+        MediaType contentType = resolveContentType(fileExtension);
 
         return ResponseEntity.ok()
-            .contentType(MediaType.TEXT_PLAIN)
+            .contentType(contentType)
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-            .body(exportContent);
+            .body(exportContent.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private MediaType resolveContentType(String fileExtension) {
+        return switch (fileExtension.toLowerCase()) {
+            case "xml" -> new MediaType("application", "xml", StandardCharsets.UTF_8);
+            case "hl7" -> new MediaType("application", "hl7-v2", StandardCharsets.UTF_8);
+            case "json" -> new MediaType("application", "json", StandardCharsets.UTF_8);
+            default -> new MediaType("text", "plain", StandardCharsets.UTF_8);
+        };
     }
 
 
@@ -317,13 +328,12 @@ public class EncounterController {
         @RequestParam(value = "pseudonym", required = false) final String pseudonym,
         @RequestParam(value = "email", required = false) final String email, final Model model) {
 
-        addClinicInfoToModel(model,getCurrentUser());
+        addClinicInfoToModel(model, getCurrentUser());
         EncounterScheduledDTO encounterScheduledDTO = new EncounterScheduledDTO();
         if (id != null && id > 0) {
             EncounterScheduled encounterScheduled = encounterScheduledDao.getElementById(id);
             if (encounterScheduled != null) {
-                encounterScheduledDTO = encounterScheduledDTOMapper.apply(
-                    encounterScheduled);
+                encounterScheduledDTO = encounterScheduledDTOMapper.apply(encounterScheduled);
                 Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
                 patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);
                 patientAttributes.add(AuditPatientAttribute.EMAIL_ADDRESS);
@@ -459,11 +469,10 @@ public class EncounterController {
 
         // If the scheduled encounter is scheduled for today,
         // possibly send the notification mail immediately
-        
-        if (startDay.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) &&
-            startDay.get(Calendar.MONTH) == now.get(Calendar.MONTH) &&
-            startDay.get(Calendar.YEAR) == now.get(Calendar.YEAR)
-        ) {
+
+        if (startDay.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH)
+            && startDay.get(Calendar.MONTH) == now.get(Calendar.MONTH)
+            && startDay.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
             Calendar lastExecutionTime = Calendar.getInstance();
 
             if (encounterScheduledExecutor.getLastExecutionTime() != null) {
@@ -819,28 +828,29 @@ public class EncounterController {
 
     /**
      * Adds ClinicDTOS to the model
+     *
      * @param model
      */
-    private void addClinicInfoToModel(Model model, User user){
+    private void addClinicInfoToModel(Model model, User user) {
         boolean isAdmin = false;
-        for(Authority authority: user.getAuthority()){
-            if(authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())){
-                isAdmin=true;
+        for (Authority authority : user.getAuthority()) {
+            if (authority.getAuthority().equals(UserRole.ROLE_ADMIN.getTextValue())) {
+                isAdmin = true;
                 break;
             }
         }
-        if(isAdmin){
+        if (isAdmin) {
             model.addAttribute("clinicDTOs", clinicService.getAllClinicsWithoutBundle());
         } else {
             List<Clinic> assignedClinics = clinicService.getAssignedClinics(user);
-            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false, assignedClinics);
+            List<ClinicDTO> clinicDTOs = clinicService.transformClinicsToDTOs(false,
+                assignedClinics);
             model.addAttribute("clinicDTOs", clinicDTOs);
         }
 
     }
 
     private User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

@@ -36,7 +36,7 @@ import org.hl7.fhir.dstu3.model.StringType;
 public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemplate {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-        EncounterExporterTemplateHL7v2.class);
+        EncounterExporterTemplateFhirDstu3.class);
     private static final SimpleDateFormat FILENAMEDATEFORMAT = new SimpleDateFormat(
         "dd.MM.yyyy_HH.mm.ss");
 
@@ -306,10 +306,10 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
 
         return exportStatus;
     }
-//TODO
+
     @Override
     public String getExportContent() throws Exception {
-        return "";
+        return FhirDstu3Helper.decodeResourceToString(questionnaireResponse, false);
     }
 
     /**
