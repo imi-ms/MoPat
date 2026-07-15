@@ -73,14 +73,11 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error" + ".questionTextIsNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
-            } else if(entry.getValue().length() > MAX_QUESTION_TEXT_LENGTH){
+            } else if(getVisibleText(entry.getValue()).length() > MAX_QUESTION_TEXT_LENGTH){
                 errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
                         MoPatValidator.ERRORCODE_ERRORMESSAGE,
                         messageSource.getMessage("question.error.questionTextTooLong",
-                                new Object[]{entry.getValue().length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
-
-                System.out.println("\n\n\n" + entry.getValue());
-
+                                new Object[]{getVisibleText(entry.getValue()).length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
             }
         }
 
@@ -242,5 +239,29 @@ public class QuestionDTOValidator implements Validator {
             default:
                 break;
         }
+    }
+
+    // A utility function to remove all HTML tags when counting the characters in a text
+    public static String getVisibleText(String html) {
+        if (html == null || html.isEmpty()) {
+            return "";
+        }
+
+        String text = html
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
+
+        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
+        text = text.replaceAll("(?i)</(?:div|p|li|h[1-6])\\s*>", "\n");
+        text = text.replaceAll("(?s)<[^>]+>", "");
+
+        text = text.replace("&nbsp;", " ");
+        text = text.replace("&amp;", "&");
+        text = text.replace("&lt;", "<");
+        text = text.replace("&gt;", ">");
+        text = text.replace("&quot;", "\"");
+        text = text.replace("&#39;", "'");
+
+        return text.replaceAll("\n{3,}", "\n\n");
     }
 }
