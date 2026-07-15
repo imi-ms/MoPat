@@ -1,0 +1,288 @@
+<div
+        id="previewModal"
+        class="modal fade"
+>
+    <div class="modal-dialog" id="modal-dialog">
+        <div class="modal-content" id="modal-content">
+            <div class="modal-header">
+                <a href="#" data-bs-dismiss="modal" aria-hidden="true" class="btn-close"></a>
+            </div>
+            <div class="modal-body">
+                <div class="px-2 py-1 d-flex align-items-center justify-content-between">
+                    <div class="col-1"></div>
+
+                    <div
+                            id="questionnaireTitle"
+                            class="col-10 questionnaireTitle d-flex justify-content-center"
+                            role="heading"
+                    >
+                    </div>
+
+                    <div class="col-1">
+                        <a
+                                data-bs-toggle="offcanvas"
+                                href="#surveyMobileMenu"
+                        ><i class="bi bi-list d-block d-bp-none"></i
+                        ></a>
+                    </div>
+                </div>
+
+                <div class="questionnaireNavigation d-flex p-2 mx-0">
+                    <div class="d-flex justify-content-start align-items-center col-4">
+                        <div class="h-100">
+                            <button
+                                    class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 align-items-center justify-content-center d-flex"
+                                    id="buttonPrevious"
+                                    disabled="disabled"
+                            >
+                                <div>
+                                    <i class="bi bi-arrow-bar-left me-sm-2"></i>
+                                </div>
+
+                                <span
+                                        id="buttonPreviousText"
+                                        class="text"
+                                >Vorherhige Frage</span
+                                >
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-4 d-flex align-items-center justify-content-center">
+                        <div
+                                id="progressText"
+                                class="d-none"
+                        >
+					<span
+                            class="questionsAnswered"
+                            id="questionsAnswered"
+                    ></span>
+                            <span class="questionsTotal">&nbsp;&#47;&nbsp;</span>
+                            <span
+                                    class="questionsTotal"
+                                    id="questionsTotal"
+                            ></span>
+                        </div>
+                    </div>
+
+                    <div
+                            class="d-flex justify-content-end align-items-center col-4 buttonWrapper"
+                    >
+                        <div class="h-100 mx-1">
+                            <button
+                                    id="fontSizeButton"
+                                    class="btn-lowEmphasis d-flex justify-content-center align-content-end h-100"
+                                    data-bs-toggle="offcanvas"
+                                    href="#fontSizeMenu"
+                                    disabled="disabled"
+                            >
+						<span class="d-flex align-items-center">
+							<span class="fontButtonSmall">A</span>
+							<span class="fontButtonLarge">A</span>
+						</span>
+                            </button>
+
+                            <div
+                                    class="offcanvas optionsMenu offcanvas-bottom"
+                                    tabindex="-1"
+                                    id="fontSizeMenu"
+                                    aria-labelledby="offcanvasBottomLabel"
+                            >
+                                <div class="offcanvas-header">
+                                    <h5
+                                            class="offcanvas-title"
+                                            id="offcanvasBottomLabel"
+                                            th:text="${messages.get(#locale, 'survey.title.fontSize', 'Select a font size')}"
+                                    >
+                                    </h5>
+                                    <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="offcanvas"
+                                            aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div class="offcanvas-body">
+                                    <div
+                                            class="d-grid gap-0"
+                                            id="slider"
+                                    >
+                                        <input
+                                                type="range"
+                                                min="0"
+                                                max="5"
+                                                step="1"
+                                                value="0"
+                                                onchange="setFontSize(this.value)"
+                                        />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-0-fixed">A</span>
+                                            </div>
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-1-fixed">A</span>
+                                            </div>
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-2-fixed">A</span>
+                                            </div>
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-3-fixed">A</span>
+                                            </div>
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-4-fixed">A</span>
+                                            </div>
+                                            <div
+                                                    class="d-flex justify-content-center align-items-center iconContainer"
+                                            >
+                                                <span class="resizable-5-fixed">A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="questionnaireNavigationButtonRight h-100 mx-1">
+                            <button
+                                    class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 d-flex align-items-center justify-content-center"
+                                    id="buttonNext"
+                                    disabled="disabled"
+                            >
+						<span
+                                id="buttonNextText"
+                                class="text"
+                        >Nächste Frage</span
+                        >
+                                <div>
+                                    <i class="bi bi-arrow-bar-right ms-sm-2"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 content">
+                <div
+                        id="questionTitle"
+                        class="itemRow questionTitle resizable w-100 border-bottom"
+                ></div>
+                <div
+                        id="questionContent"
+                        class="itemRow questionContent"
+                >
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div>
+
+<th:block
+        layout:insert="~{fragments/surveyMessages :: surveyMessages}"
+></th:block>
+<th:block layout:replace="~{fragments/resourceFragment :: additionalCSS}"></th:block>
+<script defer th:src="@{/js/mobile/survey/model/question.js?version=3.3.0}"></script>
+<th:block layout:fragment="scriptContainer">
+    <script
+        th:inline="javascript"
+        type="text/javascript"
+    >
+        const images = {};
+    </script>
+</th:block>
+<th:block layout:insert="~{fragments/bodyImages :: bodyImages}"></th:block>
+<th:block layout:fragment="addScripts">
+    <script th:src="@{/js/svg/svg.min.js?version=3.3.0}"></script>
+    <script th:src="@{/js/zxing/zxing.min.js?version=3.3.0}"></script>
+    <script th:src="@{/js/jQuery/jquery-barcode.min.js?version=3.3.0}"></script>
+    <script th:src="@{/js/mobile/helper/survey/questionStyleEnhancer.js?version=3.3.0}"></script>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+    <script
+            th:inline="javascript"
+            type="text/javascript"
+    >
+        var language = [[${#locale.toString}]];
+
+        const modalSettings = {};
+
+        $('#previewModal').on('show.bs.modal', function (event) {
+            let form = document.getElementsByName("questionDTO")[0];
+            const formData = new FormData(form);
+
+            fetch("/question/previewDTO", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(updatedDTO => {
+                var question = new Question();
+                $.extend(question, updatedDTO);
+                question.init();
+                var content = $('#questionContent');
+                updateQuestionTitles(updatedDTO);
+                question.getHTML(content, true, language);
+                if(modalSettings.dimensions) scaleToSelectedRatio();
+            });
+        });
+
+        $('#previewModal').on('hide.bs.modal', function (event) {
+            $(window).off("resize.question");
+            $('#questionContent').empty();
+            $('#questionTitle').empty();
+            $('#modal-dialog').attr("style", "");
+            delete modalSettings.dimensions
+        });
+
+        function updateQuestionTitles(question) {
+            //Add title to the question title div
+            $("#questionTitle").append($("<span/>", {
+                "id": "questionTitleText",
+                "html": question.localizedQuestionText[language],
+            }));
+
+            //Add padding only to the question content for the scrolling question title
+            var scrollQuestionTitlePaddingDiv = $("<div/>", {
+                "class": "px-5",
+            });
+        }
+
+        const MAX_H = window.innerHeight * 3/4, MAX_W = window.innerWidth * 3/4;
+
+        function calcModalWidth() {
+            if(!modalSettings.dimensions) return MAX_W;
+            const [w, h] = modalSettings.dimensions;
+            if(w < MAX_W) return w;
+            const s = Math.min(MAX_H / h, MAX_W / w);
+            return Math.round(w * s);
+        }
+
+        function calcModalHeight() {
+            if(!modalSettings.dimensions) return MAX_H;
+            const [w, h] = modalSettings.dimensions;
+            if(h < MAX_H) return h;
+            const s = Math.min(MAX_H / h, MAX_W / w);
+            return Math.round(h * s);
+        }
+
+        function scaleToSelectedRatio() {
+            const w = calcModalWidth();
+            const h = calcModalHeight();
+            const outer = document.getElementById('modal-dialog');
+            outer.style.width = w + 'px';
+            outer.style.height = h + 'px';
+            return;
+        }
+
+    </script>
+</th:block>

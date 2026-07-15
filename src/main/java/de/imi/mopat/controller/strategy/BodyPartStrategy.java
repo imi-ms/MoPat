@@ -48,7 +48,7 @@ public class BodyPartStrategy implements CreateOrUpdateAnswerStrategy {
                 continue;
             }
             // Otherwise set localized labelsfor the answers
-            controller.setLocalizedLabelByBodyPartMessage(questionDTO, answerDTO);
+            controller.setLocalizedLabelsAndAttributesForBodyPart(questionDTO, answerDTO);
 
             // Create new answer
             BodyPartAnswer bodyPartAnswer = new BodyPartAnswer(
