@@ -133,7 +133,7 @@
                                     itemIcon='iconPath',
                                     localize=${#bools.isTrue(true)},
                                     onChangeFunction='handleQuestionTypes(false)',
-                                    id='questionTypeDropDown')}"
+                                    id='questionTypeTabsInput')}"
                                 >
                                 </selectOptions>
                                 <th:block
@@ -480,6 +480,30 @@
                                     >
                                     </button>
                                 </fieldset>
+                            </div>
+
+                            <!--/* Free Text */-->
+                            <div
+                                    class="my-2"
+                                    id="freeText"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
+                            </div>
+
+                            <!--/* Info Text */-->
+                            <div
+                                    class="my-2"
+                                    id="infoText"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
+                            </div>
+
+                            <!--/* Barcode */-->
+                            <div
+                                    class="my-2"
+                                    id="barcode"
+                            >
+                                <th:block th:text="${messages.get(#locale, 'question.label.nothingToDo', 'This question type does not need further input fields')}"></th:block>
                             </div>
 
                             <!--/* SLIDER */-->
@@ -947,7 +971,6 @@
                                         id="numberInputField"
                                         disabled="true"
                                 >
-                                    </legend>
                                     <div class="form-group">
                                         <div class="row my-1">
                                             <div class="col-sm-4 col-12">
@@ -995,7 +1018,6 @@
                                         id="imageField"
                                         disabled="true"
                                 >
-                                </legend>
                                 <div class="form-group imageFile">
                                     <input
                                             type="hidden"
@@ -1049,7 +1071,6 @@
                                         id="bodyPartField"
                                         disabled="true"
                                 >
-                                    </legend>
                                     <div class="row my-1">
                                         <div class="form-group">
                                             <div class="col-12">
@@ -1226,8 +1247,31 @@
                         th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
                 >
                 </button>
+                <div class="btn-group">
+                    <button type="button"
+                            class="btn btn-primary"
+                            value="preview"
+                            id="previewButton"
+                            th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
+                            th:attr="onclick=|showModal();|"
+                    ></button>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only"></span>
+                    </button>
+                    <div class="dropdown-menu" id="preview-sizes-dropdown">
+                        <a class="dropdown-item" onclick="showModal([444, 962])" th:text="${messages.get(#locale, 'preview.phone.portrait', 'Phone (portrait): 9:19.5')}"></a>
+                        <a class="dropdown-item" onclick="showModal([962, 444])" th:text="${messages.get(#locale, 'preview.phone.landscape', 'Phone (landscape): 19.5:9')}"></a>
+                        <a class="dropdown-item" onclick="showModal([500, 800])" th:text="${messages.get(#locale, 'preview.tablet.portrait', 'Tablet (portrait): 3:4')}"></a>
+                        <a class="dropdown-item" onclick="showModal([800, 500])" th:text="${messages.get(#locale, 'preview.tablet.landscape', 'Tablet (landscape): 4:3')}"></a>
+                        <a class="dropdown-item" onclick="showModal([1280, 720])" th:text="${messages.get(#locale, 'preview.laptop', 'Laptop: 16:9')}"></a>
+                        <a class="dropdown-item" onclick="showModal([1680, 720])" th:text="${messages.get(#locale, 'preview.desktop', 'Desktop: 21:9')}"></a>
+                    </div>
+                </div>
                 <th:block
                         layout:insert="~{helper/localeHelper/deleteLanguageModal}"
+                ></th:block>
+                <th:block
+                        layout:insert="~{question/previewModal}"
                 ></th:block>
             </form>
         </div>
@@ -1726,6 +1770,17 @@
             }
         });
 
+
+
+        function showModal(dimensions) {
+            if(dimensions) {
+                modalSettings.dimensions = dimensions;
+            } else {
+                delete modalSettings.dimensions;
+            }
+            $('#previewModal').modal('show');
+        }
+
         const questionFormTypes = {
             multipleChoice: {id: "#multipleChoice", fieldId: "#answerField"},
             slider: {id: "#slider", fieldId: "#sliderField"},
@@ -1734,6 +1789,9 @@
             numberInput: {id: "#numberInput", fieldId: "#numberInputField"},
             image: {id: "#image", fieldId: "#imageField"},
             bodyPart: {id: "#bodyPart", fieldId: "#bodyPartField"},
+            freeText: {id: "#freeText"},
+            barcode: {id: "#barcode"},
+            infoText: {id: "#infoText"}
         };
 
         function handleQuestionTypes(onload) {
@@ -1749,7 +1807,8 @@
 
             Object.keys(questionFormTypes).forEach(function(type, index) {
                 $(questionFormTypes[type].id).children().attr("disabled", "disabled");
-                $(questionFormTypes[type].fieldId).children("legend").siblings().hide();
+                let fieldId = $(questionFormTypes[type].fieldId);
+                if(fieldId) fieldId.children("legend").siblings().hide();
                 $(questionFormTypes[type].id).attr("style", "display:none;");
             });
 
@@ -1760,14 +1819,14 @@
             the checkbox tag. -]*/
             $("#isRequired1").removeAttr("disabled");
 
-            if($("#questionTypeDropDown").val() != "IMAGE") {
+            if($("#questionTypeTabsInput").val() != "IMAGE") {
                 $("#isJustInfo1").prop("checked", false);
                 $("#isJustInfo1").attr("disabled", true);
                 $("#isJustInfo1").parent().parent().attr("style", "display:none;");
             }
 
             if(onload) {
-                var selectedValue = $("#questionTypeDropDown").val();
+                var selectedValue = $("#questionTypeTabsInput").val();
                 document.querySelectorAll(".questionTypeLink").forEach(function(element, index) {
                     if(element.dataset.value == selectedValue) {
                         element.click();
@@ -1777,7 +1836,7 @@
             }
 
             /*[- Switch over chosen QuestionType and enable associated elements -]*/
-            switch ($("#questionTypeDropDown").val()) {
+            switch ($("#questionTypeTabsInput").val()) {
                 case "MULTIPLE_CHOICE":
                     $("#multipleChoice").removeAttr("style");
                     $("#multipleChoice").children().removeAttr("disabled");
@@ -1862,9 +1921,16 @@
                     $("#sliderFreeTextField").children("legend").siblings().show();
                     break;
                 case "FREE_TEXT":
+                    $("#freeText").removeAttr("style");
+                    $("#freeText").children().removeAttr("disabled");
+                    break;
                 case "BARCODE":
+                    $("#barcode").removeAttr("style");
+                    $("#barcode").children().removeAttr("disabled");
                     break;
                 case "INFO_TEXT":
+                    $("#infoText").removeAttr("style");
+                    $("#infoText").children().removeAttr("disabled");
                     $(".labelQuestionText").html(labelInfoText);
                     $("#isRequired1").attr("disabled", "disabled");
                     $("#isRequired1").removeAttr("checked");
@@ -2673,14 +2739,14 @@
                 ];
                 /*[- Check if the new questiontype is a valid score question type -]*/
                 if (
-                    validScoreQuestionTypes.includes($("#questionTypeDropDown").val()) ===
+                    validScoreQuestionTypes.includes($("#questionTypeTabsInput").val()) ===
                     false
                 ) {
                     result = confirm(noValidScoreQuestionType);
                 }
                 /*[- Check if the min and max answers equal 1 if multiple choice is chosen -]*/
                 if (
-                    $("#questionTypeDropDown").val() === "MULTIPLE_CHOICE" &&
+                    $("#questionTypeTabsInput").val() === "MULTIPLE_CHOICE" &&
                     ($("#minNumberAnswers").val() !== "1" ||
                         $("#maxNumberAnswers").val() !== "1")
                 ) {
@@ -2714,7 +2780,7 @@
                 $ulElement.css('right', 'auto')
             }
         });
-        });
+    });
 
 
 

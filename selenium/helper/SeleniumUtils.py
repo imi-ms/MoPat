@@ -250,6 +250,26 @@ class SeleniumUtils:
             raise Exception(f"Timeout while selecting '{value}' in dropdown {selector}.")
         except Exception as e:
             raise Exception(f"Error while selecting '{value}' in dropdown {selector} using method '{method}': {e}")
+    
+    def select_tab(self, selector, value):
+        """
+        :param selector: The locator tuple for the tab element.
+        :param value: The value, visible text, or index of the option to select.
+        """
+        try:
+            tabs = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(
+                selector))
+
+            for tab in tabs:
+                if tab.get_attribute("data-value") == value:
+                    tab.click()
+                    return
+
+            raise ValueError(f"Could not find value '{value}'.")
+        except TimeoutException:
+            raise Exception(f"Timeout while selecting '{value}' in tab list {selector}.")
+        except Exception as e:
+            raise Exception(f"Error while selecting '{value}' in tab list {selector}.")
 
     def get_visible_table_rows(self, by, value):
         """
