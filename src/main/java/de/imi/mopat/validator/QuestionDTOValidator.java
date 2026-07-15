@@ -79,6 +79,8 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error.questionTextTooLong",
                                 new Object[]{entry.getValue().length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
 
+                System.out.println("\n\n\n" + entry.getValue());
+
             }
         }
 
