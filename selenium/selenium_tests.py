@@ -76,15 +76,12 @@ class IMISeleniumBaseTest(ABC):
             Start a new driver for each test.
             Checks, if the script is called on the server or locally.
         """
-        
-        try:
-            test_name = self._testMethodName
-            self._setServerDriver(test_name)
-        except Exception as e:
-            print(e)
+        test_name = self._testMethodName
+        self._setServerDriver(test_name)
 
-        # maximize window to full-screen
-        self.driver.maximize_window()
+        if self.driver is None:
+            raise RuntimeError("Driver was not initialized.")
+        
 
     def run(self, result=None):
         test_name = self._testMethodName
@@ -149,7 +146,7 @@ class IMISeleniumBaseTest(ABC):
         return None
 
     @abstractmethod
-    def _setServerDriver(self):
+    def _setServerDriver(self, testname):
         self.driver = None
 
     @abstractmethod
@@ -1227,8 +1224,6 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
         name = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{safe_test_name}_chrome"
 
         options = webdriver.ChromeOptions()
-        options.set_capability("acceptInsecureCerts", True)
-        #options.add_argument("--headless=new")
         options.add_argument("--window-size=1920,1080")
         options.set_capability("selenoid:options", {
             "enableVNC": True,
@@ -1239,8 +1234,11 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
             "name": name,
             "logName": f"{name}.log"
         })
-        self.driver = webdriver.Remote(options=options,
-                                       command_executor=self.selenium_grid_url)
+
+        self.driver = webdriver.Remote(
+            options=options,
+            command_executor=self.selenium_grid_url
+        )
 
     def _setLocalDriver(self, directory):
         # download latest driver
