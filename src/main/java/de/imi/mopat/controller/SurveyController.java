@@ -34,6 +34,10 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.AuthService;
+import de.imi.mopat.service.ClinicConfigurationMappingService;
+import de.imi.mopat.service.ClinicService;
+import de.imi.mopat.service.SurveyService;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
@@ -123,6 +127,8 @@ public class SurveyController {
     private ClinicDTOMapper clinicDTOMapper;
     @Autowired
     private Validator validator;
+    @Autowired
+    private SurveyService surveyService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -455,6 +461,7 @@ public class SurveyController {
 
         // Add the map to the model
         model.addAttribute("bundleLanguageEncounterMap", bundleLanguageEncounterMap);
+
         model.addAttribute("hideProfile", Boolean.FALSE);
         return "mobile/survey/bundles";
     }

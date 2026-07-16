@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.service;
 
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
@@ -6,6 +6,7 @@ import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.QuestionnaireDTOMapper;

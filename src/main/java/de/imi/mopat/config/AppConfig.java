@@ -3,6 +3,10 @@ package de.imi.mopat.config;
 import de.imi.mopat.helper.controller.ClinicPatientDataRetrieverFactoryBean;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.PatientDataRetriever;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.apache.commons.lang.LocaleUtils;
 import org.springframework.cache.CacheManager;
@@ -52,7 +56,8 @@ import java.util.Set;
 @ComponentScan(basePackages = {"de.imi.mopat.auth", "de.imi.mopat.config",
     "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
     "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl", "de.imi.mopat.io.importer",
-    "de.imi.mopat.io.importer.fhir", "de.imi.mopat.io.importer.odm", "de.imi.mopat.model", "de.imi.mopat.validator"})
+    "de.imi.mopat.io.importer.fhir", "de.imi.mopat.io.importer.odm", "de.imi.mopat.model",
+    "de.imi.mopat.validator","de.imi.mopat.service"})
 
 @PropertySources({
     @PropertySource("classpath:mopat.properties"),

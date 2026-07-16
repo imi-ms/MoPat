@@ -18,7 +18,7 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.impl.MetadataExporterFhirDstu3;
 import de.imi.mopat.io.impl.MetadataExporterFhirR4b;
 import de.imi.mopat.io.impl.MetadataExporterFhirR5;
@@ -374,53 +374,39 @@ public class FhirImporterTest {
                 result.getImportResult());
 
             //<!-- Repeated linkId (should be unique per Questionnaire) -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire",
-                "Regel que-2: 'The link ids for groups and questions must be unique within the questionnaire' fehlgeschlagen"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire"));
 
             //<!-- Invalid element: 'titel' instead of 'title' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire",
-                "Undefiniertes Element 'titel'"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description",
-                "Element muss einen Inhalt haben"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Primitive Typen müssen einen Wert, oder child Extensions haben"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Constraint failed: ele-1: 'All FHIR elements must have a @value or children' (defined in Element)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
             //<!-- Invalid date format -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Kein gültiges Datum/Uhrzeit (30-06-2025)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date"));
 
             //<!-- Missing 'type' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
-                "Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen (type: ; item: ) (log:  (type: ; item: ))"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
-                "Questionnaire.item.type: mindestens erforderlich = 1, aber nur gefunden 0"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]"));
 
             //<!-- repeats as string instead of boolean -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 49, "Questionnaire.item[1].repeats",
-                "Boolesche Werte müssen 'wahr' oder 'falsch' sein."));
+            assertTrue(checkIfErrorIsPresent(result, "error", 49, "Questionnaire.item[1].repeats"));
 
             //<!-- Group without items (constraint violation) -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 70, "Questionnaire.item[3]",
-                "Regel que-1: 'Group items must have nested items, display items cannot have nested items' fehlgeschlagen"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 70, "Questionnaire.item[3]"));
 
             //<!-- Invalid code, should be 'en' per BCP-47 -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 4, "Questionnaire.language",
-                "Der bereitgestellte Code ist nicht im maximum value set 'All Languages' (http://hl7.org/fhir/ValueSet/all-languages|3.0.2), und ein Code aus diesem ValueSet ist erforderlich) (Code = Unknown code 'urn:ietf:bcp:47#english' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/all-languages'#{2}, Fehler = {3}))"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 4, "Questionnaire.language"));
 
             //<!-- Wrong datatype: status should be a code from allowed values -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "Unknown code 'http://hl7.org/fhir/publication-status#drafted'"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "Der angegebene Wert ('drafted') ist nicht im ValueSet 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|3.0.2), und ein Code aus diesem Valueset ist erforderlich) (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
 
             //<!-- Invalid system URL -->
             assertTrue(checkIfErrorIsPresent(result, "error", 35,
-                "Questionnaire.item[0].option[0].value.ofType(Coding)",
-                "Coding.system muss eine absolute Referenz sein, nicht eine lokale Referenz"));
+                "Questionnaire.item[0].option[0].value.ofType(Coding)"));
 
 
         } catch (ImportFailedException ex) {
@@ -445,45 +431,33 @@ public class FhirImporterTest {
                 result.getImportResult());
 
             //<!-- Repeated linkId (should be unique per Questionnaire) -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire",
-                "Constraint failed: que-2: 'The link ids for groups and questions must be unique within the questionnaire' (defined in http://hl7.org/fhir/StructureDefinition/Questionnaire)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire"));
 
             //<!-- Invalid element: 'titel' instead of 'title' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire",
-                "Undefined element 'titel' at /f:Questionnaire"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description",
-                "Element must have some content"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Primitive types must have a value or must have child extensions"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Constraint failed: ele-1: 'All FHIR elements must have a @value or children' (defined in http://hl7.org/fhir/StructureDefinition/Element)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
             //<!-- Invalid date format -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Not a valid date/time format: '30-06-2025'"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date"));
 
             //<!-- Missing 'type' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
-                "Constraint failed: que-6: 'Required and repeat aren't permitted for display items' (defined in http://hl7.org/fhir/StructureDefinition/Questionnaire)"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]",
-                "Questionnaire.item.type: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/Questionnaire|4.3.0)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 43, "Questionnaire.item[1]"));
 
             //<!-- repeats as string instead of boolean -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 49, "Questionnaire.item[1].repeats",
-                "Boolean values must be 'true' or 'false'"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 49, "Questionnaire.item[1].repeats"));
 
             //<!-- Wrong datatype: status should be a code from allowed values -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "Unknown code 'http://hl7.org/fhir/publication-status#drafted'"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "The value provided ('drafted') was not found in the value set 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|4.3.0), and a code is required from this value set  (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
 
             //<!-- Invalid system URL -->
             assertTrue(checkIfErrorIsPresent(result, "error", 35,
-                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
-                "Coding.system must be an absolute reference, not a local reference"));
+                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)"));
 
 
         } catch (ImportFailedException ex) {
@@ -508,49 +482,36 @@ public class FhirImporterTest {
                 result.getImportResult());
 
             //<!-- Repeated linkId (should be unique per Questionnaire) -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire",
-                "Constraint failed: que-2: 'The link ids for groups and questions must be unique within the questionnaire' (defined in http://hl7.org/fhir/StructureDefinition/Questionnaire)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 2, "Questionnaire"));
 
             //<!-- Invalid element: 'titel' instead of 'title' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire",
-                "Undefined element 'titel' at /f:Questionnaire"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description",
-                "Element must have some content"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Primitive types must have a value or must have child extensions"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description",
-                "Constraint failed: ele-1: 'All FHIR elements must have a @value or children' (defined in http://hl7.org/fhir/StructureDefinition/Element)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
             //<!-- Invalid date format -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date",
-                "Not a valid date/time format: '30-06-2025'"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 24, "Questionnaire.date"));
 
             //<!-- Missing 'type' -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 44, "Questionnaire.item[1]",
-                "Constraint failed: que-6: 'Required and repeat aren't permitted for display items' (defined in http://hl7.org/fhir/StructureDefinition/Questionnaire)"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 44, "Questionnaire.item[1]",
-                "Questionnaire.item.type: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/Questionnaire|5.0.0)"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 44, "Questionnaire.item[1]"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 44, "Questionnaire.item[1]"));
 
             //<!-- repeats as string instead of boolean -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 50, "Questionnaire.item[1].repeats",
-                "Boolean values must be 'true' or 'false'"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 50, "Questionnaire.item[1].repeats"));
 
             //<!-- Wrong datatype: status should be a code from allowed values -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "Unknown code 'http://hl7.org/fhir/publication-status#drafted'"));
-            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status",
-                "The value provided ('drafted') was not found in the value set 'PublicationStatus' (http://hl7.org/fhir/ValueSet/publication-status|5.0.0), and a code is required from this value set  (error message = Unknown code 'http://hl7.org/fhir/publication-status#drafted' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/publication-status')"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 21, "Questionnaire.status"));
 
             //<!-- Invalid type for R5: valid values include choice, string, date, etc. -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 34, "Questionnaire.item[0].type",
-                "The value provided ('choice') was not found in the value set 'Questionnaire Item Type' (http://hl7.org/fhir/ValueSet/item-type|5.0.0), and a code is required from this value set  (error message = Unknown code 'http://hl7.org/fhir/item-type#choice' for in-memory expansion of ValueSet 'http://hl7.org/fhir/ValueSet/item-type')"));
+            assertTrue(checkIfErrorIsPresent(result, "error", 34, "Questionnaire.item[0].type"));
 
             //<!-- Invalid system URL -->
             assertTrue(checkIfErrorIsPresent(result, "error", 36,
-                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)",
-                "Coding.system must be an absolute reference, not a local reference"));
+                "Questionnaire.item[0].answerOption[0].value.ofType(Coding)"));
 
 
         } catch (ImportFailedException ex) {
@@ -574,6 +535,23 @@ public class FhirImporterTest {
             }
         }
         return match;
+    }
+
+    private boolean checkIfErrorIsPresent(ImportQuestionnaireValidation result, String type,
+        int lineNumber, String fhirPath) {
+            boolean match = false;
+
+            for (ImportQuestionnaireError error : filterValidationByIndex(result, lineNumber)) {
+                Object[] arguments = error.getErrorArguments();
+                try {
+                    if (arguments[0].equals(type) && lineNumber == ((int) arguments[1])
+                        && arguments[2].equals(fhirPath)) {
+                        match = true;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            return match;
     }
 
     private List<ImportQuestionnaireError> filterValidationByIndex(

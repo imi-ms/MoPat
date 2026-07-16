@@ -41,4 +41,20 @@ public interface EncounterExporterTemplate {
      * @throws java.lang.Exception if flush to disk went wrong
      */
     ExportStatus flush() throws Exception;
+
+    /**
+     * Builds and returns the fully assembled export content for the currently loaded and filled
+     * export template, without triggering any of the side effects performed by {@link #flush()}
+     * (e.g. writing the export to disk, sending it to a communication server, or delivering it via
+     * HL7v2). This method is intended for on-demand, read-only access to the export data, such as
+     * a manual download triggered by the user.
+
+     * Repeated calls to this method are safe and will not cause duplicate exports, since no data
+     * is persisted or transmitted as part of its execution.
+     *
+     * @return the assembled export content as a {@link String}, ready to be presented to the user
+     *         (e.g. as a file download)
+     * @throws java.lang.Exception if the export content could not be built
+     */
+    String getExportContent() throws Exception;
 }

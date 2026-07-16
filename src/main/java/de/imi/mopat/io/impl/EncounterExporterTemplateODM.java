@@ -24,6 +24,7 @@ import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionStudyEventD
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionSubjectData;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +32,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -469,6 +471,13 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
                 obrFillerOrderNumber, generateODMBlob());
         }
         return exportStatus;
+    }
+
+    @Override
+    public String getExportContent() throws Exception {
+        ByteArrayOutputStream outputstream = new ByteArrayOutputStream();
+        odmProcessor.marshal(exportODM, outputstream);
+        return outputstream.toString(StandardCharsets.UTF_8);
     }
 
     /**

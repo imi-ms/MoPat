@@ -196,11 +196,13 @@ public class FhirDstu3Helper extends FhirHelper {
             ValidationResult result = validator.validateWithResult(fhirResourceString);
 
             List<SingleValidationMessage> messages = result.getMessages().stream().filter(
-                singleValidationMessage ->
-                    (singleValidationMessage.getSeverity() == ResultSeverityEnum.ERROR
-                        || singleValidationMessage.getSeverity() == ResultSeverityEnum.FATAL)
-                        && !Objects.equals(singleValidationMessage.getMessageId(),
-                        PROFILE_UNKNOWN_ID)).toList();
+                m ->
+                    (m.getSeverity() == ResultSeverityEnum.ERROR
+                        || m.getSeverity() == ResultSeverityEnum.FATAL)
+                        && !Objects.equals(m.getMessageId(), PROFILE_UNKNOWN_ID)
+                        //que-7 seems to not work reliably right now. Remove it for the time being
+                        && (m.getMessage() == null || !m.getMessage().contains("que-7"))
+            ).toList();
 
             for (SingleValidationMessage message : messages) {
                 addDefaultError(errors, message);

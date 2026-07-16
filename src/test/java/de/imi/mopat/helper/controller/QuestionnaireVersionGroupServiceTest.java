@@ -13,6 +13,7 @@ import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.QuestionnaireTest;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireVersionGroupDTO;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
