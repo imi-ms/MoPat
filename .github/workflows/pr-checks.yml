@@ -87,6 +87,9 @@ jobs:
       - name: Pull Selenoid Chrome Image
         run: docker pull selenoid/chrome:latest
 
+      - name: Pull Selenoid Video Image
+        run: docker pull selenoid/video-recorder:latest-release
+
       # Setup Docker-Compose
       - name: Docker Compose Action
         uses: hoverkraft-tech/compose-action@4894d2492015c1774ee5a13a95b1072093087ec3
