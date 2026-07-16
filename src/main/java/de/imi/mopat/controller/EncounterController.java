@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -279,8 +280,17 @@ public class EncounterController {
         @RequestParam(required = true, value = "templateid") final Long templateId)
         throws Exception {
 
+        if (!Boolean.TRUE.equals(configurationDao.isEncounterTemplateDownloadEnabled())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Encounter encounter = encounterDao.getElementById(encounterId);
         ExportTemplate exportTemplate = exportTemplateDao.getElementById(templateId);
+
+
+        if (!isFileExportEnabled(exportTemplate)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         String exportContent = encounterExportService.getExportContent(encounter, exportTemplate);
 
         Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
@@ -309,6 +319,16 @@ public class EncounterController {
             case "json" -> new MediaType("application", "json", StandardCharsets.UTF_8);
             default -> new MediaType("text", "plain", StandardCharsets.UTF_8);
         };
+    }
+    private boolean isFileExportEnabled(final ExportTemplate exportTemplate) {
+        if (exportTemplate == null || exportTemplate.getConfigurationGroup() == null) {
+            return false;
+        }
+
+        return exportTemplate.getConfigurationGroup().getConfigurations().stream()
+            .anyMatch(configuration ->
+                "exportInDirectory".equals(configuration.getAttribute())
+                    && Boolean.parseBoolean(configuration.getValue()));
     }
 
 
