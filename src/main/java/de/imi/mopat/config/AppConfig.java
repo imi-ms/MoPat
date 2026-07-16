@@ -13,12 +13,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
@@ -34,11 +29,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
@@ -47,11 +38,15 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * The main configuration class defining the view.
  * <p>
- * Includes other configuration classes, e.g. Security Config. Takes over functionality of old
- * spring-servlet.xml.
+ * Includes other configuration classes, e.g. Security Config. Takes over functionality of old spring-servlet.xml.
  */
 
 @Configuration
@@ -60,11 +55,9 @@ import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 @EnableScheduling
 @ComponentScan(basePackages = {"de.imi.mopat.auth", "de.imi.mopat.config",
     "de.imi.mopat.controller", "de.imi.mopat.cron", "de.imi.mopat.dao", "de.imi.mopat.helper.model",
-    "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl",
-    "de.imi.mopat.io.importer",
+    "de.imi.mopat.helper.controller", "de.imi.mopat.io", "de.imi.mopat.io.impl", "de.imi.mopat.io.importer",
     "de.imi.mopat.io.importer.fhir", "de.imi.mopat.io.importer.odm", "de.imi.mopat.model",
-    "de.imi.mopat.validator",
-    "de.imi.mopat.service"})
+    "de.imi.mopat.validator","de.imi.mopat.service"})
 
 @PropertySources({
     @PropertySource("classpath:mopat.properties"),
@@ -216,9 +209,8 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     /**
      * Adds PatientDataRetriever to servlet depending on whether it is set in the database
      * <p>
-     * Since it is not advised to use NullBeans with java config it is checked whether the
-     * PatientDataRetriever was set in the ClinicPatientDataRetrieverFactoryBean by comparing the
-     * toString results
+     * Since it is not advised to use NullBeans with java config it is checked whether the PatientDataRetriever was set
+     * in the ClinicPatientDataRetrieverFactoryBean by comparing the toString results
      *
      * @return PatientDataRetriever / null
      * @throws Exception
@@ -320,8 +312,7 @@ public class AppConfig implements WebMvcConfigurer, AsyncConfigurer, Environment
     }
 
     /**
-     * Implementation of ViewResolver that resolves a view based on the request file name or Accept
-     * header
+     * Implementation of ViewResolver that resolves a view based on the request file name or Accept header
      *
      * @param contentNegotiationManager ContentNegotiationManager
      * @return ContentNegotiatingViewResolver

@@ -10,11 +10,11 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.AuthService;
+import de.imi.mopat.service.AuthService;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
@@ -150,7 +150,7 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listQuestionnaires(final Model model) {
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
-        // This map contians a questionnaire id as key and a set with all
+        // This map contains a questionnaire id as key and a set with all
         // languages
         // which are available for all questions in this questionnaire.
         Map<Long, List<String>> availableLanguagesInQuestionForQuestionnaires = new HashMap<>();

@@ -23,6 +23,7 @@ import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.enumeration.Gender;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.ApplicationContextService;
 import org.slf4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder;
 
