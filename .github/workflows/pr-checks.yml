@@ -118,6 +118,14 @@ jobs:
         run: |
           python3 selenium/selenium_tests.py > test-results.log
 
+      - name: Upload Selenoid videos
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: selenoid-videos
+          path: selenium/video/
+          if-no-files-found: ignore
+
       - name: Save results to env
         if: always() && github.event_name == 'pull_request'
         id: test_report
