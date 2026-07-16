@@ -117,9 +117,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
 
+      - name: Create video directory
+        run: mkdir -p selenium/video
+
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
+
+      - name: Debug video files
+        if: always()
+        run: |
+          pwd
+          ls -lah selenium/video || true
+          find . -type f | grep -E '\.mp4$' || true
 
       - name: Upload Selenoid videos
         if: always()
