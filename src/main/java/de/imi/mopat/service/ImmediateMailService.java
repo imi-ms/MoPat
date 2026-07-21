@@ -1,6 +1,7 @@
 package de.imi.mopat.service;
 
 import de.imi.mopat.cron.EncounterScheduledExecutor;
+import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
@@ -15,9 +16,11 @@ import java.util.Date;
 @Service
 public class ImmediateMailService {
     private final MailService mailService;
+    private final BundleDao bundleDao;
 
-    public ImmediateMailService(MailService mailService) {
+    public ImmediateMailService(MailService mailService, BundleDao bundleDao) {
         this.mailService = mailService;
+        this.bundleDao = bundleDao;
     }
 
     public boolean shouldSendEmailImmediately(EncounterScheduled scheduled, EncounterScheduledExecutor executor){
@@ -58,6 +61,7 @@ public MailSendingStatus createAndSendEncounter(
 ) {
 
     Encounter encounter = createEncounterForImmediateSending(scheduled);
+    bundleDao.merge(scheduled.getBundle());
 
     return mailService.sendEncounterMail(encounter);
 }
@@ -75,6 +79,7 @@ public MailSendingStatus createAndSendEncounter(
 
         Bundle bundle = scheduled.getBundle();
         bundle.addEncounter(encounter);
+
 
         encounter.setStartTime(
                 new Timestamp(getTodayAtMidnight().getTime())

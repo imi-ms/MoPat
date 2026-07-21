@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -366,26 +367,20 @@ public class EncounterController {
                 new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
             return "encounter/schedule";
         }
-        MailSendingStatus status= encounterSchedulingService.save(encounterScheduledDTO, encounterScheduledExecutor);
+        MailSendingStatus status = encounterSchedulingService.save(encounterScheduledDTO,
+            encounterScheduledExecutor);
 
-        switch (status){
+        switch (status) {
             case SUCCESS -> redirectAttributes.addFlashAttribute("success",
                 messageSource.getMessage("encounterScheduled.mail.success", new Object[]{},
                     LocaleContextHolder.getLocale()));
-            case INVALID_ADDRESS -> redirectAttributes.addFlashAttribute(
-                "failure",
-                messageSource.getMessage(
-                    "encounterScheduled.mail.invalidMail",
+            case INVALID_ADDRESS -> redirectAttributes.addFlashAttribute("failure",
+                messageSource.getMessage("encounterScheduled.mail.invalidMail",
                     new Object[]{encounterScheduledDTO.getEmail()},
-                    LocaleContextHolder.getLocale())
-            );
-            case FAILURE -> redirectAttributes.addFlashAttribute(
-                "failure",
-                messageSource.getMessage(
-                    "encounterScheduled.mail.fail",
-                    null,
-                    LocaleContextHolder.getLocale())
-            );
+                    LocaleContextHolder.getLocale()));
+            case FAILURE -> redirectAttributes.addFlashAttribute("failure",
+                messageSource.getMessage("encounterScheduled.mail.fail", null,
+                    LocaleContextHolder.getLocale()));
 
         }
 
@@ -398,47 +393,50 @@ public class EncounterController {
 
 
     /**
-     * Controls the HTTP POST requests for the URL <i>/encounter/schedule/api</i>. Used to
-     * enable automatic scheduled encounters through an API
-     * @param request
-     * */
+     * Controls the HTTP POST requests for the URL <i>/encounter/schedule/api</i>. Used to enable
+     * automatic scheduled encounters through an API.
+     *
+     * @param request The API request payload for creating a scheduled encounter.
+     * @param result  The validation result.
+     * @param key     The API key from the request header.
+     * @return A response entity describing the result of the request.
+     */
     @PostMapping(value = "/encounter/schedule/api")
     @ResponseBody
     public ResponseEntity<?> scheduleEncounterFromApi(
-        @RequestBody EncounterScheduledApiRequestDTO request,
-        BindingResult result,
-        @RequestHeader(value = "x-api-key", required = false) String key
-    ) {
+        @RequestBody EncounterScheduledApiRequestDTO request, BindingResult result,
+        @RequestHeader(value = "x-api-key", required = false) String key) {
+        if (!configurationDao.isApiKeyAccessEnabled()) {
+            return ResponseEntity.status(403).body(Map.of("error", "API access is disabled"));
+        }
         encounterScheduledApiRequestDTOValidator.validate(request, result);
         if (result.hasErrors()) {
             Map<String, String> fieldErrors = new LinkedHashMap<>();
             for (FieldError error : result.getFieldErrors()) {
                 fieldErrors.put(error.getField(), error.getDefaultMessage());
             }
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "Validation failed",
-                "details", fieldErrors
-            ));
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Validation failed", "details", fieldErrors));
         }
 
         String apiKey = configurationDao.getApiKey();
 
-        if (configurationDao.isApiKeyAccessEnabled() && apiKey.equals(key)) {
-
-            EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
-            MailSendingStatus status = encounterSchedulingService.save(dto,
-                encounterScheduledExecutor);
-
-            return switch (status) {
-                case SUCCESS -> ResponseEntity.ok(
-                    Map.of("message", "Scheduled encounter created successfully"));
-                case INVALID_ADDRESS ->
-                    ResponseEntity.badRequest().body(Map.of("error", "Invalid email address"));
-                case FAILURE -> ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to create scheduled encounter"));
-            };
+        if (!Objects.equals(apiKey, key)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
-        else return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        EncounterScheduledDTO dto = encounterScheduledDTOMapper.mapFromApiRequest(request);
+        MailSendingStatus status = encounterSchedulingService.save(dto, encounterScheduledExecutor);
+
+        return switch (status) {
+            case SUCCESS ->
+                ResponseEntity.ok(Map.of("message", "Scheduled encounter created successfully"));
+            case INVALID_ADDRESS ->
+                ResponseEntity.badRequest().body(Map.of("error", "Invalid email address"));
+            case FAILURE -> ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to create scheduled encounter"));
+        };
+
     }
 
     /**

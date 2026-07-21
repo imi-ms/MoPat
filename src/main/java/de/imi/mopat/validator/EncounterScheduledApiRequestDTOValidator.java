@@ -62,6 +62,12 @@ public class EncounterScheduledApiRequestDTOValidator implements Validator {
                 messageSource.getMessage("encounterScheduledApi.validate.serialType.required",
                     new Object[]{}, LocaleContextHolder.getLocale()));
         }
+        if (dto.getLocale() == null) {
+            errors.rejectValue("locale", "encounterScheduledApi.locale.required",
+                messageSource.getMessage("encounterScheduledApi.validate.locale.required",
+                    new Object[]{}, LocaleContextHolder.getLocale()));
+        }
+
         Date now = new Date();
         // Generate date today at midnight
         Calendar calendar = Calendar.getInstance();
@@ -88,7 +94,7 @@ public class EncounterScheduledApiRequestDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
-        if (dto.getEndDate() != null
+        if (dto.getEndDate() != null && dto.getStartDate() !=null
             && dto.getEndDate().getTime() < dto.getStartDate().getTime()) {
             errors.rejectValue("endDate", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage(

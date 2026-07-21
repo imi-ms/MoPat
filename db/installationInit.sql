@@ -116,8 +116,8 @@ INSERT INTO `configuration` (`id`, `type`, `configuration_group_id`, `parent`, `
 (91, 'GENERAL', 11, 87, 10, 'FHIRViaHL7v2ReceivingApplication', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7ReceivingApplication', NULL, NULL, 'd500a3a1-c1ce-4091-ace9-4557481dba37', '', NULL),
 (92, 'GENERAL', 11, 87, 11, 'FHIRViaHL7v2ReceivingFacility', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7ReceivingFacility', NULL, NULL, '613cc529-396e-4a06-b785-158c15629d02', '', NULL),
 (93, 'GENERAL', 11, 87, 11, 'FHIRViaHL7v2OBRFillerOrderNumber', 'STRING', NULL, 'de.imi.mopat.io.impl.EncounterExporterTemplateFHIR', 'configuration.label.ODMviaHL7OBRFillerOrderNumber', NULL, NULL, 'e78a6310-b2b1-4ee7-aea0-378ab33c3f73', '', NULL),
-(94, 'GENERAL', 1, NULL, 17, 'enableApiTokenAccess', 'BOOLEAN', NULL, 'GLOBAL', 'configuration.label.enableApiTokenAccess', NULL, NULL, '25fd8f5e-2e90-4cd1-8a30-d84c88889c5c', false, NULL),
-(95, 'GENERAL', 1, 94, 18, 'apiKey', 'STRING', NULL, 'GLOBAL', 'configuration.label.apiKey', NULL, NULL, '9b48f864-8cb7-4704-82e2-12045755e2aa', '', NULL);
+(94, 'GENERAL', 1, NULL, 17, 'enableApiTokenAccess', 'BOOLEAN', 'configuration.description.enableApiTokenAccess', 'GLOBAL', 'configuration.label.enableApiTokenAccess', NULL, NULL, '25fd8f5e-2e90-4cd1-8a30-d84c88889c5c', false, NULL),
+(95, 'GENERAL', 1, 94, 18, 'apiKey', 'STRING', 'configuration.description.apiKey', 'GLOBAL', 'configuration.label.apiKey', NULL, NULL, '9b48f864-8cb7-4704-82e2-12045755e2aa', '', NULL);
 
 
 

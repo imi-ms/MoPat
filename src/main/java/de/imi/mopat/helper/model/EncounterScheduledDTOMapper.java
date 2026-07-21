@@ -85,12 +85,12 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         if (dto.getBundleDTO() == null || dto.getBundleDTO().getId() == null) {
             throw new IllegalArgumentException("EncounterScheduledDTO must contain a bundle id");
         }
-        Bundle bundle = bundleDao.getElementById(dto.getBundleDTO().getId());
 
         if (dto.getClinicDTO() == null || dto.getClinicDTO().getId() == null) {
             throw new IllegalArgumentException("EncounterScheduledDTO must contain a clinic id");
         }
         Clinic clinic = clinicDao.getElementById(dto.getClinicDTO().getId());
+        Bundle bundle = bundleDao.getElementById(dto.getBundleDTO().getId());
 
         if (dto.getId() == null) {
             return new EncounterScheduled(
@@ -133,6 +133,7 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         dto.setEndDate(request.getEndDate());
         dto.setEncounterScheduledSerialType(request.getEncounterScheduledSerialType());
         dto.setReplyMail(request.getReplyMail());
+        dto.setPersonalText(request.getPersonalText());
 
         BundleDTO bundleDTO = new BundleDTO();
         bundleDTO.setId(request.getBundleId());
@@ -143,7 +144,7 @@ public class EncounterScheduledDTOMapper implements Function<EncounterScheduled,
         dto.setClinicDTO(clinicDTO);
         dto.setLocale(request.getLocale());
 
-        dto.setPersonalText(request.getPersonalText());
+        dto.setLocale(request.getLocale() != null ? request.getLocale() : Locale.getDefault());
 
         return dto;
     }
