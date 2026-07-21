@@ -20,7 +20,7 @@ import org.springframework.validation.Validator;
 @Component
 public class QuestionnaireDTOValidator implements Validator {
 
-    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 300;
+    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
 
     @Autowired
     private MessageSource messageSource;
@@ -59,11 +59,9 @@ public class QuestionnaireDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
+        // Check if the description text is too long
         int visibleDescpriptionLength = getVisibleText(questionnaireDTO.getDescription()).length();
-
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
-            System.out.println("\n\n" + getVisibleText(questionnaireDTO.getDescription()) + "\n\n");
-
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("question.error.questionTextTooLong",
@@ -160,6 +158,6 @@ public class QuestionnaireDTOValidator implements Validator {
         text = text.replace("&quot;", "\"");
         text = text.replace("&#39;", "'");
 
-        return text.replaceAll("\n{3,}", "\n\n");
+        return text.replaceAll("\n{3,}", "\n\n").trim();
     }
 }

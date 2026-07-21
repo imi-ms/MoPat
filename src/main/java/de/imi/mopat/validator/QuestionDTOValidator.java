@@ -262,6 +262,6 @@ public class QuestionDTOValidator implements Validator {
         text = text.replace("&quot;", "\"");
         text = text.replace("&#39;", "'");
 
-        return text.replaceAll("\n{3,}", "\n\n");
+        return text.replaceAll("\n{3,}", "\n\n").trim();
     }
 }
