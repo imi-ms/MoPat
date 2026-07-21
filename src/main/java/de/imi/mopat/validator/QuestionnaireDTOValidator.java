@@ -20,11 +20,14 @@ import org.springframework.validation.Validator;
 @Component
 public class QuestionnaireDTOValidator implements Validator {
 
+    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 300;
+
     @Autowired
     private MessageSource messageSource;
 
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -54,6 +57,17 @@ public class QuestionnaireDTOValidator implements Validator {
             errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage("questionnaire.error.nameInUse", new Object[]{},
                     LocaleContextHolder.getLocale()));
+        }
+
+        int visibleDescpriptionLength = getVisibleText(questionnaireDTO.getDescription()).length();
+
+        if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
+            System.out.println("\n\n" + getVisibleText(questionnaireDTO.getDescription()) + "\n\n");
+
+            errors.rejectValue("description",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("question.error.questionTextTooLong",
+                            new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
         }
 
         // [sw] Check if any added language contains an empty questionText
@@ -123,5 +137,29 @@ public class QuestionnaireDTOValidator implements Validator {
                 }
             }
         }
+    }
+
+    // A utility function to remove all HTML tags when counting the characters in a text
+    public static String getVisibleText(String html) {
+        if (html == null || html.isEmpty()) {
+            return "";
+        }
+
+        String text = html
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
+
+        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
+        text = text.replaceAll("(?i)</(?:div|p|li|h[1-6])\\s*>", "\n");
+        text = text.replaceAll("(?s)<[^>]+>", "");
+
+        text = text.replace("&nbsp;", " ");
+        text = text.replace("&amp;", "&");
+        text = text.replace("&lt;", "<");
+        text = text.replace("&gt;", ">");
+        text = text.replace("&quot;", "\"");
+        text = text.replace("&#39;", "'");
+
+        return text.replaceAll("\n{3,}", "\n\n");
     }
 }
