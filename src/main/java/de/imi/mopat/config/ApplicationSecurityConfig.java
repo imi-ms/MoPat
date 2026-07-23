@@ -1,16 +1,9 @@
 package de.imi.mopat.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import de.imi.mopat.auth.*;
 import de.imi.mopat.helper.controller.NoOpAclCache;
-import de.imi.mopat.auth.CustomAuthenticationFailureHandler;
-import de.imi.mopat.auth.CustomPostAuthenticationChecks;
-import de.imi.mopat.auth.CustomPreAuthenticationChecks;
-import de.imi.mopat.auth.LDAPUserDetailsService;
-import de.imi.mopat.auth.MoPatActiveDirectoryLdapAuthenticationProvider;
-import de.imi.mopat.auth.MoPatUserDetailService;
-import de.imi.mopat.auth.PinAuthorizationFilter;
-import de.imi.mopat.auth.PepperedBCryptPasswordEncoder;
-import de.imi.mopat.auth.RoleBasedAuthenticationSuccessHandler;
+
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import org.apache.groovy.util.Maps;
@@ -59,10 +52,12 @@ public class ApplicationSecurityConfig {
     CacheManager cacheManager;
 
     private final Environment environment;
+    private final ApiRateLimitFilter apiRateLimitFilter;
 
 
-    public ApplicationSecurityConfig(Environment environment) {
+    public ApplicationSecurityConfig(Environment environment, ApiRateLimitFilter apiRateLimitFilter) {
         this.environment = environment;
+        this.apiRateLimitFilter = apiRateLimitFilter;
     }
 
     /**
@@ -383,6 +378,10 @@ public class ApplicationSecurityConfig {
 
             // CSRF
             .csrf(csrf -> csrf.disable());
+
+
+        // Add custom filter before authentification
+        http.addFilterBefore(apiRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Add custom filter after authentication
         http.addFilterAfter(pinAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
