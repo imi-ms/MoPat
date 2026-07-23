@@ -3,7 +3,6 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
-import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.auth.PinAuthorizationService;
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.AuditEntryDao;
@@ -34,6 +33,9 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.AuthService;
+import de.imi.mopat.service.ClinicConfigurationMappingService;
+import de.imi.mopat.service.ClinicService;
 import de.imi.mopat.validator.MoPatValidator;
 
 import java.sql.Timestamp;
