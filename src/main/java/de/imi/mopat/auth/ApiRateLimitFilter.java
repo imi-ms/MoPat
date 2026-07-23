@@ -15,7 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
+/**
+ * Filter that enforces rate limiting on the API endpoint {@code POST /encounter/schedule/api}.
+ * Applies both a global limit and a per-IP limit using token buckets.
+ * Requests exceeding either limit are rejected with HTTP 429.
+ */
 public class ApiRateLimitFilter extends OncePerRequestFilter {
 
     private static final String API_PATH = "/encounter/schedule/api";
@@ -24,22 +28,32 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private final ApiRateLimitService apiRateLimitService;
 
     public ApiRateLimitFilter(ApiRateLimitService apiRateLimitService) {
-        System.out.println("ApiRateLimitFilter constructed");
         this.apiRateLimitService = apiRateLimitService;
     }
-
+    /**
+     * Skips filtering for all requests that do not target the rate-limited endpoint.
+     *
+     * @param request the incoming HTTP request
+     * @return {@code true} if the request should not be filtered
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !API_PATH.equals(request.getRequestURI())
+        return !API_PATH.equals(request.getServletPath())
                 || !HTTP_METHOD.equalsIgnoreCase(request.getMethod());
     }
-
+    /**
+     * Checks the global and per-IP rate limits. Forwards the request if both limits
+     * are satisfied, otherwise responds with HTTP 429.
+     *
+     * @param request     the incoming HTTP request
+     * @param response    the HTTP response
+     * @param filterChain the filter chain
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("ApiRateLimitFilter called: " + request.getRequestURI());
 
         ConsumptionProbe globalProbe =
                 apiRateLimitService.getGlobalBucket().tryConsumeAndReturnRemaining(1);
@@ -65,7 +79,14 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
+    /**
+     * Writes a {@code 429 Too Many Requests} response including a retry-after header
+     * and a JSON error message.
+     *
+     * @param response the HTTP response
+     * @param probe    the consumption probe containing refill timing information
+     * @param message  the error message to include in the response body
+     */
     private void writeTooManyRequestsResponse(HttpServletResponse response,
                                               ConsumptionProbe probe,
                                               String message) throws IOException {
