@@ -19,7 +19,7 @@
               data-bs-target="#questionnaireSelectionModal"
               th:disabled="${#bools.isFalse(isModifiable)}">
         <span class="bi bi-plus-lg" aria-hidden="true"></span>
-        <span th:text="${messages.get(#locale, 'bundle.button.addQuestionnaires', 'Add questionnaires')}">
+        <span th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')}">
                     Add questionnaires
                 </span>
       </button>
@@ -139,7 +139,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title h5"
-              th:text="${messages.get(#locale, 'bundle.heading.addQuestionnaires', 'Add questionnaires')}">
+              th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')}"> <!-- Translation key is for buttons, but this is the correct one here -->
             Add questionnaires
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -172,7 +172,7 @@
                        th:for="|select_questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|">
                   <span th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}">Questionnaire</span>
                   <span class="badge bg-secondary float-end"
-                        th:text="${messages.get(#locale, 'bundle.label.alreadyAdded', 'Already added')}">
+                        th:text="${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')}">
                                         Already added
                                     </span>
                 </label>
@@ -210,7 +210,7 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
                   th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}">Cancel</button>
           <button type="button" class="btn btn-primary" id="addSelectedQuestionnairesButton" disabled="disabled">
-            <span th:text="${messages.get(#locale, 'bundle.button.addSelected', 'Add selected')}">Add selected</span>
+            <span th:text="${messages.get(#locale, 'button.addSelection', 'Add selected')}">Add selected</span>
             <span id="selectedQuestionnaireCount">(0)</span>
           </button>
         </div>
