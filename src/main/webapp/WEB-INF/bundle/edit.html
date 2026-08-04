@@ -156,7 +156,7 @@
 				</div>
 
 
-				<div th:replace="~{fragments/questionnaireAssignment :: questionnaireAssignment(
+				<div th:replace="~{fragments/assignmentList :: assignmentList(
                     assignedQuestionnaires=${bundleDTO.bundleQuestionnaireDTOs},
                     availableQuestionnaires=${availableQuestionnaireDTOs},
                     fieldPrefix='bundleQuestionnaireDTOs',
@@ -201,5 +201,5 @@
 			Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/);
 		});
 	</script>
-	<script th:src="@{/js/questionnaireAssignment.js}"></script>
+	<script th:src="@{/js/helper/assignmentList.js}"></script>
 </th:block>
