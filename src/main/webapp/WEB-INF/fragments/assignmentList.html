@@ -1,6 +1,6 @@
-<!-- Reusable questionnaire assignment fragment for bundle editing. -->
-<th:block th:fragment="questionnaireAssignment(assignedQuestionnaires, availableQuestionnaires, fieldPrefix, isModifiable)">
-  <div id="questionnaireAssignment" th:attr="data-field-prefix=${fieldPrefix}">
+<!-- Reusable assignment list fragment for questionnaire bundle editing. -->
+<th:block th:fragment="assignmentList(assignedQuestionnaires, availableQuestionnaires, fieldPrefix, isModifiable)">
+  <div id="assignmentList" th:attr="data-field-prefix=${fieldPrefix}">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div>
         <h3 class="h5 mb-0"
@@ -14,9 +14,9 @@
       </div>
       <button type="button"
               class="btn btn-primary"
-              id="openQuestionnaireSelectionButton"
+              id="openItemSelectionButton"
               data-bs-toggle="modal"
-              data-bs-target="#questionnaireSelectionModal"
+              data-bs-target="#itemSelectionModal"
               th:disabled="${#bools.isFalse(isModifiable)}">
         <span class="bi bi-plus-lg" aria-hidden="true"></span>
         <span th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')}">
@@ -25,28 +25,28 @@
       </button>
     </div>
 
-    <div id="assignedQuestionnaireEmptyState"
+    <div id="assignedItemEmptyState"
          class="alert alert-light border"
          th:style="${#lists.isEmpty(assignedQuestionnaires)} ? '' : 'display:none;'"
          th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}">
       No questionnaires assigned
     </div>
 
-    <div id="assignedQuestionnaireList" class="list-group">
-      <div class="list-group-item questionnaire-assignment-item"
+    <div id="assignedItemList" class="list-group">
+      <div class="list-group-item assignment-list-item"
            th:each="bundleQuestionnaireDTO, status : ${assignedQuestionnaires}"
-           th:attr="data-questionnaire-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.questionnaireVersionGroupId}">
+           th:attr="data-item-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.questionnaireVersionGroupId}">
         <div class="row align-items-start g-2">
           <div class="col-auto pt-2">
             <button type="button"
-                    class="btn btn-sm btn-link text-body questionnaire-drag-handle"
+                    class="btn btn-sm btn-link text-body assignment-drag-handle"
                     th:disabled="${#bools.isFalse(isModifiable)}"
                     th:title="${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')}">
               <span class="bi bi-grip-vertical" aria-hidden="true"></span>
             </button>
           </div>
 
-          <div class="col-auto pt-2 questionnaire-position">
+          <div class="col-auto pt-2 assignment-item-position">
             <span th:text="|${status.index + 1}.|">1.</span>
             <input type="hidden"
                    data-field="position"
@@ -123,7 +123,7 @@
 
           <div class="col-auto pt-1">
             <button type="button"
-                    class="btn btn-sm btn-outline-danger remove-questionnaire-button"
+                    class="btn btn-sm btn-outline-danger remove-assignment-item-button"
                     th:disabled="${#bools.isFalse(isModifiable)}"
                     th:title="${messages.get(#locale, 'button.remove', 'Remove')}">
               <span class="bi bi-trash" aria-hidden="true"></span>
@@ -134,7 +134,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="questionnaireSelectionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="itemSelectionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
@@ -146,52 +146,52 @@
         </div>
 
         <div class="modal-body">
-          <input id="questionnaireSelectionFilter"
+          <input id="itemSelectionFilter"
                  class="form-control mb-3"
                  type="search"
                  th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}" />
 
-          <div id="questionnaireSelectionEmptyState"
+          <div id="itemSelectionEmptyState"
                class="alert alert-light border"
                style="display:none;"
                th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}">
             No matches
           </div>
 
-          <div id="questionnaireSelectionList" class="list-group">
+          <div id="itemSelectionList" class="list-group">
             <!-- Initially assigned questionnaires are shown but disabled. -->
-            <div class="list-group-item questionnaire-selection-row"
+            <div class="list-group-item assignment-selection-row"
                  th:each="bundleQuestionnaireDTO : ${assignedQuestionnaires}"
-                 th:attr="data-questionnaire-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-search-name=${#strings.toLowerCase(bundleQuestionnaireDTO.questionnaireDTO.name)}">
+                 th:attr="data-item-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-search-name=${#strings.toLowerCase(bundleQuestionnaireDTO.questionnaireDTO.name)}">
               <div class="form-check">
-                <input class="form-check-input questionnaire-selection-checkbox"
+                <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
                        disabled="disabled"
-                       th:id="|select_questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|" />
+                       th:id="|select_item_${bundleQuestionnaireDTO.questionnaireDTO.id}|" />
                 <label class="form-check-label w-100"
-                       th:for="|select_questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|">
+                       th:for="|select_item_${bundleQuestionnaireDTO.questionnaireDTO.id}|">
                   <span th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}">Questionnaire</span>
-                  <span class="badge bg-secondary float-end"
+                  <span class="badge bg-secondary float-end assignment-item-assigned-badge"
                         th:text="${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')}">
                                         Already added
                                     </span>
                 </label>
               </div>
 
-              <div class="questionnaire-assignment-template d-none">
-                <div th:replace="~{fragments/questionnaireAssignment :: availableQuestionnaireItemTemplate(questionnaire=${bundleQuestionnaireDTO.questionnaireDTO})}"></div>
+              <div class="assignment-item-template d-none">
+                <div th:replace="~{fragments/assignmentList :: availableQuestionnaireItemTemplate(questionnaire=${bundleQuestionnaireDTO.questionnaireDTO})}"></div>
               </div>
             </div>
 
-            <div class="list-group-item questionnaire-selection-row"
+            <div class="list-group-item assignment-selection-row"
                  th:each="questionnaire : ${availableQuestionnaires}"
-                 th:attr="data-questionnaire-id=${questionnaire.id},data-search-name=${#strings.toLowerCase(questionnaire.name)}">
+                 th:attr="data-item-id=${questionnaire.id},data-search-name=${#strings.toLowerCase(questionnaire.name)}">
               <div class="form-check">
-                <input class="form-check-input questionnaire-selection-checkbox"
+                <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
-                       th:id="|select_questionnaire_${questionnaire.id}|" />
+                       th:id="|select_item_${questionnaire.id}|" />
                 <label class="form-check-label w-100"
-                       th:for="|select_questionnaire_${questionnaire.id}|">
+                       th:for="|select_item_${questionnaire.id}|">
                   <span th:text="${questionnaire.name}">Questionnaire</span>
                   <small class="text-muted ms-2"
                          th:if="${questionnaire.version > 0}"
@@ -199,8 +199,8 @@
                 </label>
               </div>
 
-              <div class="questionnaire-assignment-template d-none">
-                <div th:replace="~{fragments/questionnaireAssignment :: availableQuestionnaireItemTemplate(questionnaire=${questionnaire})}"></div>
+              <div class="assignment-item-template d-none">
+                <div th:replace="~{fragments/assignmentList :: availableQuestionnaireItemTemplate(questionnaire=${questionnaire})}"></div>
               </div>
             </div>
           </div>
@@ -209,9 +209,9 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
                   th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}">Cancel</button>
-          <button type="button" class="btn btn-primary" id="addSelectedQuestionnairesButton" disabled="disabled">
+          <button type="button" class="btn btn-primary" id="addSelectedItemsButton" disabled="disabled">
             <span th:text="${messages.get(#locale, 'button.addSelection', 'Add selected')}">Add selected</span>
-            <span id="selectedQuestionnaireCount">(0)</span>
+            <span id="selectedItemCount">(0)</span>
           </button>
         </div>
       </div>
@@ -221,16 +221,16 @@
 
 <!-- Template used when an available questionnaire is added to the assigned list. -->
 <div th:fragment="availableQuestionnaireItemTemplate(questionnaire)"
-     class="list-group-item questionnaire-assignment-item"
-     th:attr="data-questionnaire-id=${questionnaire.id},data-version-group-id=${questionnaire.questionnaireVersionGroupId}">
+     class="list-group-item assignment-list-item"
+     th:attr="data-item-id=${questionnaire.id},data-version-group-id=${questionnaire.questionnaireVersionGroupId}">
   <div class="row align-items-start g-2">
     <div class="col-auto pt-2">
-      <button type="button" class="btn btn-sm btn-link text-body questionnaire-drag-handle"
+      <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
               th:title="${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')}">
         <span class="bi bi-grip-vertical" aria-hidden="true"></span>
       </button>
     </div>
-    <div class="col-auto pt-2 questionnaire-position">
+    <div class="col-auto pt-2 assignment-item-position">
       <span>0.</span>
       <input type="hidden" data-field="position" value="0" disabled="disabled" />
     </div>
@@ -276,7 +276,7 @@
       </div>
     </div>
     <div class="col-auto pt-1">
-      <button type="button" class="btn btn-sm btn-outline-danger remove-questionnaire-button"
+      <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-item-button"
               th:title="${messages.get(#locale, 'button.remove', 'Remove')}">
         <span class="bi bi-trash" aria-hidden="true"></span>
       </button>
