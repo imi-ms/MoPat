@@ -1,16 +1,22 @@
-<!-- Reusable assignment list fragment for questionnaire bundle editing. -->
-<th:block th:fragment="assignmentList(assignedQuestionnaires, availableQuestionnaires, fieldPrefix, isModifiable)">
-  <div id="assignmentList" th:attr="data-field-prefix=${fieldPrefix}">
+<!--/*
+    Reusable assignment list fragment.
+
+    Generischer Baustein, um "items" (Fragebögen, Kliniken, Benutzer, ...)
+    einem Elternobjekt (Bundle, Klinik, Einladung, ...) zuzuweisen.
+
+*/-->
+<th:block th:fragment="assignmentList(assignedItems, availableItems, fieldPrefix, itemDtoField, isModifiable,
+                                      headingText, headingInfoText, addButtonText, emptyStateText,
+                                      reorderText, alreadyAddedText, disableWhenEmptySelector,
+                                      itemMetaFragment, assignedDetailFragment, availableDetailFragment)">
+  <div id="assignmentList"
+       th:attr="data-field-prefix=${fieldPrefix},
+                data-disable-when-empty=${disableWhenEmptySelector},
+                data-already-added-text=${alreadyAddedText ?: 'Already added'}">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div>
-        <h3 class="h5 mb-0"
-            th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 'Assigned questionnaires')}">
-          Assigned questionnaires
-        </h3>
-        <small class="text-muted"
-               th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'Configure and reorder the questionnaires in this bundle.')}">
-          Configure and reorder the questionnaires in this bundle.
-        </small>
+        <h3 class="h5 mb-0" th:text="${headingText ?: 'Assigned items'}">Assigned items</h3>
+        <small class="text-muted" th:text="${headingInfoText}"></small>
       </div>
       <button type="button"
               class="btn btn-primary"
@@ -19,29 +25,28 @@
               data-bs-target="#itemSelectionModal"
               th:disabled="${#bools.isFalse(isModifiable)}">
         <span class="bi bi-plus-lg" aria-hidden="true"></span>
-        <span th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')}">
-                    Add questionnaires
-                </span>
+        <span th:text="${addButtonText ?: 'Add items'}">Add items</span>
       </button>
     </div>
 
     <div id="assignedItemEmptyState"
          class="alert alert-light border"
-         th:style="${#lists.isEmpty(assignedQuestionnaires)} ? '' : 'display:none;'"
-         th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}">
-      No questionnaires assigned
+         th:style="${#lists.isEmpty(assignedItems)} ? '' : 'display:none;'"
+         th:text="${emptyStateText ?: 'No items assigned'}">
+      No items assigned
     </div>
 
     <div id="assignedItemList" class="list-group">
       <div class="list-group-item assignment-list-item"
-           th:each="bundleQuestionnaireDTO, status : ${assignedQuestionnaires}"
-           th:attr="data-item-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.questionnaireVersionGroupId}">
+           th:each="assignment, status : ${assignedItems}"
+           th:with="itemDto=${assignment.__${itemDtoField}__}"
+           th:attr="data-item-id=${itemDto.id}">
         <div class="row align-items-start g-2">
           <div class="col-auto pt-2">
             <button type="button"
                     class="btn btn-sm btn-link text-body assignment-drag-handle"
                     th:disabled="${#bools.isFalse(isModifiable)}"
-                    th:title="${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')}">
+                    th:title="${reorderText ?: 'Change order'}">
               <span class="bi bi-grip-vertical" aria-hidden="true"></span>
             </button>
           </div>
@@ -55,71 +60,28 @@
           </div>
 
           <div class="col">
-            <div class="fw-semibold" th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}">Questionnaire</div>
-            <small class="text-muted"
-                   th:if="${bundleQuestionnaireDTO.questionnaireDTO.version > 0}"
-                   th:text="|Version ${bundleQuestionnaireDTO.questionnaireDTO.version}|">Version 1</small>
+            <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
+            <th:block th:if="${itemMetaFragment != null}">
+              <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+            </th:block>
 
             <input type="hidden"
-                   data-field="questionnaireDTO.name"
-                   th:name="|${fieldPrefix}[${status.index}].questionnaireDTO.name|"
-                   th:value="${bundleQuestionnaireDTO.questionnaireDTO.name}" />
+                   th:attr="data-field=${itemDtoField + '.name'}"
+                   th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.name|"
+                   th:value="${itemDto.name}" />
             <input type="hidden"
-                   data-field="questionnaireDTO.id"
-                   th:name="|${fieldPrefix}[${status.index}].questionnaireDTO.id|"
-                   th:value="${bundleQuestionnaireDTO.questionnaireDTO.id}" />
+                   th:attr="data-field=${itemDtoField + '.id'}"
+                   th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.id|"
+                   th:value="${itemDto.id}" />
           </div>
 
-          <div class="col-md-2" th:if="${bundleQuestionnaireDTO.questionnaireDTO.hasScores}">
-            <div class="form-check mt-2">
-              <input class="form-check-input"
-                     type="checkbox"
-                     data-field="showScores"
-                     th:name="|${fieldPrefix}[${status.index}].showScores|"
-                     th:checked="${bundleQuestionnaireDTO.showScores}"
-                     th:disabled="${#bools.isFalse(isModifiable)}" />
-              <label class="form-check-label"
-                     th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="small fw-semibold mb-1"
-                 th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-            <div class="form-check"
-                 th:each="exportTemplate, templateStatus : ${bundleQuestionnaireDTO.questionnaireDTO.exportTemplates}">
-              <input type="hidden"
-                     th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
-                     th:name="|${fieldPrefix}[${status.index}].questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
-                     th:value="${exportTemplate.id}" />
-              <input class="form-check-input"
-                     type="checkbox"
-                     data-field="exportTemplates"
-                     th:name="|${fieldPrefix}[${status.index}].exportTemplates|"
-                     th:value="${exportTemplate.id}"
-                     th:checked="${bundleQuestionnaireDTO.exportTemplates.contains(exportTemplate.id)}"
-                     th:disabled="${#bools.isFalse(isModifiable)}" />
-              <label class="form-check-label"
-                     th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
-                Export template
-              </label>
-            </div>
-            <span class="text-muted small"
-                  th:if="${#sets.isEmpty(bundleQuestionnaireDTO.questionnaireDTO.exportTemplates)}">–</span>
-          </div>
-
-          <div class="col-md-2">
-            <div class="form-check mt-2">
-              <input class="form-check-input"
-                     type="checkbox"
-                     data-field="isEnabled"
-                     th:name="|${fieldPrefix}[${status.index}].isEnabled|"
-                     th:checked="${bundleQuestionnaireDTO.isEnabled}"
-                     th:disabled="${#bools.isFalse(isModifiable)}" />
-              <label class="form-check-label"
-                     th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-            </div>
-          </div>
+          <th:block th:if="${assignedDetailFragment != null}">
+            <th:block th:replace="~{__${assignedDetailFragment}__ (assignment=${assignment},
+                                     itemDto=${itemDto},
+                                     index=${status.index},
+                                     fieldPrefix=${fieldPrefix},
+                                     isModifiable=${isModifiable})}"></th:block>
+          </th:block>
 
           <div class="col-auto pt-1">
             <button type="button"
@@ -138,9 +100,8 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title h5"
-              th:text="${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')}"> <!-- Translation key is for buttons, but this is the correct one here -->
-            Add questionnaires
+          <h2 class="modal-title h5" th:text="${addButtonText ?: 'Add items'}">
+            Add items
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -159,48 +120,59 @@
           </div>
 
           <div id="itemSelectionList" class="list-group">
-            <!-- Initially assigned questionnaires are shown but disabled. -->
+            <!-- Bereits zugewiesene Items werden angezeigt, aber deaktiviert. -->
             <div class="list-group-item assignment-selection-row"
-                 th:each="bundleQuestionnaireDTO : ${assignedQuestionnaires}"
-                 th:attr="data-item-id=${bundleQuestionnaireDTO.questionnaireDTO.id},data-search-name=${#strings.toLowerCase(bundleQuestionnaireDTO.questionnaireDTO.name)}">
+                 th:each="assignment : ${assignedItems}"
+                 th:with="itemDto=${assignment.__${itemDtoField}__}"
+                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
               <div class="form-check">
                 <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
                        disabled="disabled"
-                       th:id="|select_item_${bundleQuestionnaireDTO.questionnaireDTO.id}|" />
+                       th:id="|select_item_${itemDto.id}|" />
                 <label class="form-check-label w-100"
-                       th:for="|select_item_${bundleQuestionnaireDTO.questionnaireDTO.id}|">
-                  <span th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}">Questionnaire</span>
+                       th:for="|select_item_${itemDto.id}|">
+                  <span th:text="${itemDto.name}">Item</span>
                   <span class="badge bg-secondary float-end assignment-item-assigned-badge"
-                        th:text="${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')}">
-                                        Already added
-                                    </span>
+                        th:text="${alreadyAddedText ?: 'Already added'}">
+                    Already added
+                  </span>
                 </label>
               </div>
 
               <div class="assignment-item-template d-none">
-                <div th:replace="~{fragments/assignmentList :: availableQuestionnaireItemTemplate(questionnaire=${bundleQuestionnaireDTO.questionnaireDTO})}"></div>
+                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                        itemDto=${itemDto},
+                        itemDtoField=${itemDtoField},
+                        reorderText=${reorderText},
+                        itemMetaFragment=${itemMetaFragment},
+                        availableDetailFragment=${availableDetailFragment})}"></div>
               </div>
             </div>
 
             <div class="list-group-item assignment-selection-row"
-                 th:each="questionnaire : ${availableQuestionnaires}"
-                 th:attr="data-item-id=${questionnaire.id},data-search-name=${#strings.toLowerCase(questionnaire.name)}">
+                 th:each="itemDto : ${availableItems}"
+                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
               <div class="form-check">
                 <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
-                       th:id="|select_item_${questionnaire.id}|" />
+                       th:id="|select_item_${itemDto.id}|" />
                 <label class="form-check-label w-100"
-                       th:for="|select_item_${questionnaire.id}|">
-                  <span th:text="${questionnaire.name}">Questionnaire</span>
-                  <small class="text-muted ms-2"
-                         th:if="${questionnaire.version > 0}"
-                         th:text="|Version ${questionnaire.version}|">Version 1</small>
+                       th:for="|select_item_${itemDto.id}|">
+                  <span th:text="${itemDto.name}">Item</span>
+                  <th:block th:if="${itemMetaFragment != null}">
+                    <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+                  </th:block>
                 </label>
               </div>
 
               <div class="assignment-item-template d-none">
-                <div th:replace="~{fragments/assignmentList :: availableQuestionnaireItemTemplate(questionnaire=${questionnaire})}"></div>
+                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                        itemDto=${itemDto},
+                        itemDtoField=${itemDtoField},
+                        reorderText=${reorderText},
+                        itemMetaFragment=${itemMetaFragment},
+                        availableDetailFragment=${availableDetailFragment})}"></div>
               </div>
             </div>
           </div>
@@ -219,14 +191,14 @@
   </div>
 </th:block>
 
-<!-- Template used when an available questionnaire is added to the assigned list. -->
-<div th:fragment="availableQuestionnaireItemTemplate(questionnaire)"
+<!-- Template, das beim Hinzufuegen eines verfuegbaren Items in die Liste geklont wird. -->
+<div th:fragment="assignmentItemTemplate(itemDto, itemDtoField, reorderText, itemMetaFragment, availableDetailFragment)"
      class="list-group-item assignment-list-item"
-     th:attr="data-item-id=${questionnaire.id},data-version-group-id=${questionnaire.questionnaireVersionGroupId}">
+     th:attr="data-item-id=${itemDto.id}">
   <div class="row align-items-start g-2">
     <div class="col-auto pt-2">
       <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
-              th:title="${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')}">
+              th:title="${reorderText ?: 'Change order'}">
         <span class="bi bi-grip-vertical" aria-hidden="true"></span>
       </button>
     </div>
@@ -235,46 +207,18 @@
       <input type="hidden" data-field="position" value="0" disabled="disabled" />
     </div>
     <div class="col">
-      <div class="fw-semibold" th:text="${questionnaire.name}">Questionnaire</div>
-      <small class="text-muted" th:if="${questionnaire.version > 0}"
-             th:text="|Version ${questionnaire.version}|">Version 1</small>
-      <input type="hidden" data-field="questionnaireDTO.name" th:value="${questionnaire.name}" disabled="disabled" />
-      <input type="hidden" data-field="questionnaireDTO.id" th:value="${questionnaire.id}" disabled="disabled" />
+      <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
+      <th:block th:if="${itemMetaFragment != null}">
+        <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+      </th:block>
+      <input type="hidden" th:attr="data-field=${itemDtoField + '.name'}" th:value="${itemDto.name}" disabled="disabled" />
+      <input type="hidden" th:attr="data-field=${itemDtoField + '.id'}" th:value="${itemDto.id}" disabled="disabled" />
     </div>
-    <div class="col-md-2" th:if="${questionnaire.hasScores}">
-      <div class="form-check mt-2">
-        <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="small fw-semibold mb-1"
-           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-      <div class="form-check" th:each="exportTemplate, templateStatus : ${questionnaire.exportTemplates}">
-        <input type="hidden"
-               th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
-               th:value="${exportTemplate.id}"
-               disabled="disabled" />
-        <input class="form-check-input"
-               type="checkbox"
-               data-field="exportTemplates"
-               th:value="${exportTemplate.id}"
-               disabled="disabled" />
-        <label class="form-check-label"
-               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
-          Export template
-        </label>
-      </div>
-      <span class="text-muted small" th:if="${#sets.isEmpty(questionnaire.exportTemplates)}">–</span>
-    </div>
-    <div class="col-md-2">
-      <div class="form-check mt-2">
-        <input class="form-check-input" type="checkbox" data-field="isEnabled" checked="checked" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-      </div>
-    </div>
+
+    <th:block th:if="${availableDetailFragment != null}">
+      <th:block th:replace="~{__${availableDetailFragment}__ (itemDto=${itemDto})}"></th:block>
+    </th:block>
+
     <div class="col-auto pt-1">
       <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-item-button"
               th:title="${messages.get(#locale, 'button.remove', 'Remove')}">

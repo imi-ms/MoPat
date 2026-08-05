@@ -140,7 +140,7 @@
         reindexAssignedItems();
         synchronizeSelectionRows();
         updateAssignedEmptyState();
-        updatePublishingState();
+        updateDisableWhenEmptyTarget();
         updateSelectedCount();
     }
 
@@ -222,15 +222,16 @@
 
         if (assigned) {
             if (!assignedBadge.length) {
-                selectionRow
-                  .find('.form-check-label')
-                  .append(
-                    '<span class="' +
-                    'badge bg-secondary float-end ' +
-                    'assignment-item-assigned-badge">' +
-                    'Already added' +
-                    '</span>'
-                  );
+                const alreadyAddedText =
+                  $(selectors.root).data('already-added-text') ||
+                  'Already added';
+
+                const badge = $(
+                  '<span class="badge bg-secondary float-end ' +
+                  'assignment-item-assigned-badge"></span>'
+                ).text(alreadyAddedText);
+
+                selectionRow.find('.form-check-label').append(badge);
             }
         } else {
             selectionRow
@@ -260,21 +261,28 @@
           .toggle(hasNoAssignedItems);
     }
 
-    function updatePublishingState() {
+    function updateDisableWhenEmptyTarget() {
+        const selector = $(selectors.root).data('disable-when-empty');
+
+        if (!selector) {
+            return;
+        }
+
         const hasNoAssignedItems = $(
           `${selectors.assignedList} > ` +
           selectors.assignedItem
         ).length === 0;
 
-        const publishCheckbox = $('#isPublished1');
+        const target = $(selector);
 
-        publishCheckbox.prop(
-          'disabled',
-          hasNoAssignedItems
-        );
+        if (!target.length) {
+            return;
+        }
+
+        target.prop('disabled', hasNoAssignedItems);
 
         if (hasNoAssignedItems) {
-            publishCheckbox.prop('checked', false);
+            target.prop('checked', false);
         }
     }
 

@@ -2,204 +2,215 @@
     * View for bundles editing.
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'bundle.heading.editBundle', 'Edit bundle')}"
+  layout:decorate="~{layout/main}"
+  th:with="title=${messages.get(#locale, 'bundle.heading.editBundle', 'Edit bundle')}"
 >
-	<th:block layout:fragment="content">
-		<div class="panel-body">
-			<form
-				th:object="${bundleDTO}"
-				name="bundleDTO"
-				enctype="application/x-www-form-urlencoded"
-				method="POST"
-				action="edit"
-			>
-				<div
-					th:if="${not bundleDTO.getIsModifiable()}"
-					id="errors"
-					class="alert alert-danger"
-					style="width: 100%"
-					th:text="${messages.get(#locale, 'bundle.error.notModifiable',
+  <th:block layout:fragment="content">
+    <div class="panel-body">
+      <form
+        th:object="${bundleDTO}"
+        name="bundleDTO"
+        enctype="application/x-www-form-urlencoded"
+        method="POST"
+        action="edit"
+      >
+        <div
+          th:if="${not bundleDTO.getIsModifiable()}"
+          id="errors"
+          class="alert alert-danger"
+          style="width: 100%"
+          th:text="${messages.get(#locale, 'bundle.error.notModifiable',
                         'This bundle is not editable due to at least one unfinished encounter associated to this bundle.')}"
-				>
-				</div>
+        >
+        </div>
 
-				<input
-					hidden="true"
-					id="bundleId"
-					th:value="${bundleDTO.id}"
-				/>
+        <input
+          hidden="true"
+          id="bundleId"
+          th:value="${bundleDTO.id}"
+        />
 
-				<addVar
-					layout:replace="~{helper/var :: add(key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
-				/>
-				<th:block
-					th:if="${vars['currentLanguage'] eq null || #strings.isEmpty(vars['currentLanguage'])}"
-				>
-					<addVar
-						layout:replace="~{helper/var :: add(key='currentLanguage', value=${#locale.toString()})}"
-					/>
-				</th:block>
+        <addVar
+          layout:replace="~{helper/var :: add(key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
+        />
+        <th:block
+          th:if="${vars['currentLanguage'] eq null || #strings.isEmpty(vars['currentLanguage'])}"
+        >
+          <addVar
+            layout:replace="~{helper/var :: add(key='currentLanguage', value=${#locale.toString()})}"
+          />
+        </th:block>
 
-				<addVar
-					layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${not #strings.isEmpty(bundleDTO.id)})}"
-				/>
-				<th:block th:if="${#fields.hasErrors('*')}">
-					<addVar
-						layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${#bools.isTrue(true)})}"
-					/>
-				</th:block>
+        <addVar
+          layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${not #strings.isEmpty(bundleDTO.id)})}"
+        />
+        <th:block th:if="${#fields.hasErrors('*')}">
+          <addVar
+            layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${#bools.isTrue(true)})}"
+          />
+        </th:block>
 
-				<input
-					type="hidden"
-					name="id"
-					th:value="${bundleDTO.id}"
-				/>
+        <input
+          type="hidden"
+          name="id"
+          th:value="${bundleDTO.id}"
+        />
 
-				<languageDropdown
-					layout:replace="~{fragments/forms :: languageDropdown}"
-				/>
+        <languageDropdown
+          layout:replace="~{fragments/forms :: languageDropdown}"
+        />
 
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+        <div class="form-group">
+          <input
+            layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')},
 						errorId='validationError')}"
 
-					/>
-				</div>
-				<div class="form-group">
+          />
+        </div>
+        <div class="form-group">
 					<textarea
-						id="description"
-						layout:replace="~{fragments/forms :: textareaWithLabel(
+            id="description"
+            layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
                         clazz='wysiwyg', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.description', 'Description')},
 						errorId='validationError')}"
-					>
+          >
 					</textarea>
-				</div>
+        </div>
 
-				<div class="form-group">
-					<localableTextarea
-						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+        <div class="form-group">
+          <localableTextarea
+            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedWelcomeTextCollapsableText',
                         inputType='textarea',
                         inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedWelcomeText[#INDEXFIELD]',
                         firstRequiredLocalableElement=true)}"
-					>
-						<th:block layout:fragment="collapseLabel">
-							<label
-								for="welcomeText"
-								th:text="${messages.get(#locale, 'bundle.label.welcomeText', 'Welcometext')}"
-							>
-							</label>
-						</th:block>
-					</localableTextarea>
-				</div>
-				<div class="form-group">
-					<localableTextarea
-						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+          >
+            <th:block layout:fragment="collapseLabel">
+              <label
+                for="welcomeText"
+                th:text="${messages.get(#locale, 'bundle.label.welcomeText', 'Welcometext')}"
+              >
+              </label>
+            </th:block>
+          </localableTextarea>
+        </div>
+        <div class="form-group">
+          <localableTextarea
+            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedFinalTextCollapsableText',
                         inputType='textarea',
                         inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedFinalText[#INDEXFIELD]')}"
-					>
-						<th:block layout:fragment="collapseLabel">
-							<label
-								for="finalText"
-								th:text="${messages.get(#locale, 'bundle.label.finalText', 'Finaltext')}"
-							>
-							</label>
-						</th:block>
-					</localableTextarea>
-				</div>
-				<div class="form-group">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+          >
+            <th:block layout:fragment="collapseLabel">
+              <label
+                for="finalText"
+                th:text="${messages.get(#locale, 'bundle.label.finalText', 'Finaltext')}"
+              >
+              </label>
+            </th:block>
+          </localableTextarea>
+        </div>
+        <div class="form-group">
+          <checkbox
+            layout:replace="~{fragments/forms :: checkbox(
                         path='deactivateProgressAndNameDuringSurvey',
                         text=${messages.get(#locale, 'bundle.label.deactivateProgressAndNameDuringSurvey', 'The ad will be displayed')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
-				<div class="form-group">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+          >
+          </checkbox>
+        </div>
+        <div class="form-group">
+          <checkbox
+            layout:replace="~{fragments/forms :: checkbox(
                         path='showProgressPerBundle',
                         text=${messages.get(#locale, 'bundle.label.showProgressPerBundle', 'Display of the progress refers to the whole package')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
-				<div class="form-group" sec:authorize="hasRole('ROLE_ADMIN')">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+          >
+          </checkbox>
+        </div>
+        <div class="form-group" sec:authorize="hasRole('ROLE_ADMIN')">
+          <checkbox
+            layout:replace="~{fragments/forms :: checkbox(
                         path='isPublished',
                         text=${messages.get(#locale, 'bundle.label.isPublished', 'Released')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
+          >
+          </checkbox>
+        </div>
 
-				<th:block th:text="${counter.clear()}" />
+        <th:block th:text="${counter.clear()}" />
 
-				<div class="form-group">
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='bundleQuestionnaireDTOs')}"
-					/>
-				</div>
+        <div class="form-group">
+          <error
+            layout:replace="~{fragments/forms :: errorField(path='bundleQuestionnaireDTOs')}"
+          />
+        </div>
 
 
-				<div th:replace="~{fragments/assignmentList :: assignmentList(
-                    assignedQuestionnaires=${bundleDTO.bundleQuestionnaireDTOs},
-                    availableQuestionnaires=${availableQuestionnaireDTOs},
-                    fieldPrefix='bundleQuestionnaireDTOs',
-                    isModifiable=${bundleDTO.isModifiable}
-                )}"></div>
+        <div th:replace="~{fragments/assignmentList :: assignmentList(
+            assignedItems=${bundleDTO.bundleQuestionnaireDTOs},
+            availableItems=${availableQuestionnaireDTOs},
+            fieldPrefix='bundleQuestionnaireDTOs',
+            itemDtoField='questionnaireDTO',
+            isModifiable=${bundleDTO.isModifiable},
+            headingText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 'Assigned questionnaires')},
+            headingInfoText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'Configure and reorder the questionnaires in this bundle.')},
+            addButtonText=${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')},
+            emptyStateText=${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')},
+            reorderText=${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')},
+            alreadyAddedText=${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')},
+            disableWhenEmptySelector='#isPublished1',
+            itemMetaFragment='fragments/assignmentDetails/questionnaire :: questionnaireMeta',
+            assignedDetailFragment='fragments/assignmentDetails/questionnaire :: questionnaireAssignedDetail',
+            availableDetailFragment='fragments/assignmentDetails/questionnaire :: questionnaireAvailableDetail'
+        )}"></div>
 
-				<div
-					class="d-none"
-					id="draggableContainer"
-				></div>
+        <div
+          class="d-none"
+          id="draggableContainer"
+        ></div>
 
-				<button
-					type="submit"
-					th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
-					class="btn btn-primary"
-					value="save"
-					id="saveButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.save', 'Save')}"
-				>
-				</button>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="cancel"
-					id="cancelButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
-				>
-				</button>
+        <button
+          type="submit"
+          th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
+          class="btn btn-primary"
+          value="save"
+          id="saveButton"
+          name="action"
+          th:text="${messages.get(#locale, 'button.save', 'Save')}"
+        >
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          value="cancel"
+          id="cancelButton"
+          name="action"
+          th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+        >
+        </button>
 
-				<th:block layout:insert="~{helper/localeHelper/deleteLanguageModal}" />
-			</form>
-		</div>
-	</th:block>
+        <th:block layout:insert="~{helper/localeHelper/deleteLanguageModal}" />
+      </form>
+    </div>
+  </th:block>
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-	<script th:inline="javascript" type="text/javascript">
-		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
-		$(() => {
-			Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/);
-		});
-	</script>
-	<script th:src="@{/js/helper/assignmentList.js}"></script>
+  <script th:inline="javascript" type="text/javascript">
+    var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+    $(() => {
+      Localization.initShowLocalizedPage(currentLanguage /*[[${vars['persistedOrErrors']}]]*/);
+    });
+  </script>
+  <script th:src="@{/js/helper/assignmentList.js}"></script>
 </th:block>

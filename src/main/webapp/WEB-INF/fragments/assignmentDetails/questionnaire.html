@@ -1,0 +1,103 @@
+<!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
+<th:block>
+
+  <!-- additional info below the name: Versions -->
+  <small th:fragment="questionnaireMeta(itemDto)"
+         class="text-muted ms-1"
+         th:if="${itemDto.version > 0}"
+         th:text="|Version ${itemDto.version}|">Version 1</small>
+
+  <!-- additional column for assigned rows -->
+  <th:block th:fragment="questionnaireAssignedDetail(assignment, itemDto, index, fieldPrefix, isModifiable)">
+    <div class="col-md-2" th:if="${itemDto.hasScores}">
+      <div class="form-check mt-2">
+        <input class="form-check-input"
+               type="checkbox"
+               data-field="showScores"
+               th:name="|${fieldPrefix}[${index}].showScores|"
+               th:checked="${assignment.showScores}"
+               th:disabled="${#bools.isFalse(isModifiable)}" />
+        <label class="form-check-label"
+               th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="small fw-semibold mb-1"
+           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
+      <div class="form-check"
+           th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+        <input type="hidden"
+               th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
+               th:name="|${fieldPrefix}[${index}].questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
+               th:value="${exportTemplate.id}" />
+        <input class="form-check-input"
+               type="checkbox"
+               data-field="exportTemplates"
+               th:name="|${fieldPrefix}[${index}].exportTemplates|"
+               th:value="${exportTemplate.id}"
+               th:checked="${assignment.exportTemplates.contains(exportTemplate.id)}"
+               th:disabled="${#bools.isFalse(isModifiable)}" />
+        <label class="form-check-label"
+               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+          Export template
+        </label>
+      </div>
+      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-check mt-2">
+        <input class="form-check-input"
+               type="checkbox"
+               data-field="isEnabled"
+               th:name="|${fieldPrefix}[${index}].isEnabled|"
+               th:checked="${assignment.isEnabled}"
+               th:disabled="${#bools.isFalse(isModifiable)}" />
+        <label class="form-check-label"
+               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
+      </div>
+    </div>
+  </th:block>
+
+  <!-- Zusatzspalten der Template-Zeile (deaktiviert, Defaults; JS aktiviert + benennt beim Hinzufuegen) -->
+  <th:block th:fragment="questionnaireAvailableDetail(itemDto)">
+    <div class="col-md-2" th:if="${itemDto.hasScores}">
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
+        <label class="form-check-label"
+               th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="small fw-semibold mb-1"
+           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
+      <div class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+        <input type="hidden"
+               th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
+               th:value="${exportTemplate.id}"
+               disabled="disabled" />
+        <input class="form-check-input"
+               type="checkbox"
+               data-field="exportTemplates"
+               th:value="${exportTemplate.id}"
+               disabled="disabled" />
+        <label class="form-check-label"
+               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+          Export template
+        </label>
+      </div>
+      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" data-field="isEnabled" checked="checked" disabled="disabled" />
+        <label class="form-check-label"
+               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
+      </div>
+    </div>
+  </th:block>
+
+</th:block>
