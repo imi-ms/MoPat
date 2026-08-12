@@ -2,6 +2,7 @@ package de.imi.mopat.io.impl;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.io.importer.odm.ODMProcessingBean;
 import de.imi.mopat.model.BundleClinic;
@@ -42,8 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -74,6 +73,7 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     // Map to store ItemGroupDefs for the clinical data section (solution for
     // several ItemGroups)
     private HashMap<String, ODMcomplexTypeDefinitionItemGroupData> odmClinicalDataGroupDefs;
+    private final DocumentParser documentParser = new DocumentParser();
 
     /**
      * Constructor with given {@link ConfigurationDao} to get configuration informations within this
@@ -567,11 +567,8 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
 
     private String generateODMBlob() throws ParserConfigurationException, JAXBException {
         // This code is adapted from http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder;
-        dBuilder = dbFactory.newDocumentBuilder();
         // Load inputStream into w3c Document object..
-        Document document = dBuilder.newDocument();
+        Document document = documentParser.newDocument();
         document.setXmlStandalone(true);
 
         JAXBContext ctx = JAXBContext.newInstance(exportODM.getClass());

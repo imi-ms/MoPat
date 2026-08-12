@@ -1,5 +1,6 @@
 package de.imi.mopat.io.importer.odm;
 
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
@@ -12,8 +13,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -34,19 +33,15 @@ public class ODMProcessingBean {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         ODMProcessingBean.class);
     private final String namespace = "http://www.cdisc.org/ns/odm/v1.3";
-    private final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private Unmarshaller unmarshaller;
     private Marshaller marshaller;
-    private DocumentBuilder documentBuilder;
+    private final DocumentParser documentParser = new DocumentParser();
 
     /**
      * Initialize Bean with unmarshaller for ODM class
      */
     public ODMProcessingBean() {
         try {
-            documentBuilderFactory.setNamespaceAware(true);
-            this.documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
             JAXBContext context = JAXBContext.newInstance(ODM.class);
 
             unmarshaller = context.createUnmarshaller();
@@ -111,7 +106,7 @@ public class ODMProcessingBean {
      */
     private InputStream addNamespace(InputStream odmInputStream) {
         Document document = parseODMFile(odmInputStream);
-        Document newDocument = documentBuilder.newDocument(); // Create a new document for the new namespace
+        Document newDocument = documentParser.newDocument(); // Create a new document for the new namespace
 
         // Retrieve the root element from the original document
         Element oldRoot = document.getDocumentElement();
@@ -142,7 +137,7 @@ public class ODMProcessingBean {
     private Document parseODMFile(InputStream odmFileInputStream) {
         Document doc = null;
         try {
-            doc = documentBuilder.parse(odmFileInputStream);
+            doc = documentParser.parse(odmFileInputStream);
         } catch (Exception ex) {
 
         }
