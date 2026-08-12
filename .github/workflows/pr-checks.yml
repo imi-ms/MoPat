@@ -87,6 +87,9 @@ jobs:
       - name: Pull Selenoid Chrome Image
         run: docker pull selenoid/chrome:latest
 
+      - name: Pull Selenoid Video Image
+        run: docker pull selenoid/video-recorder:latest-release
+
       # Setup Docker-Compose
       - name: Docker Compose Action
         uses: hoverkraft-tech/compose-action@4894d2492015c1774ee5a13a95b1072093087ec3
@@ -117,6 +120,14 @@ jobs:
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
+
+      - name: Upload Selenoid videos
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: selenoid-videos
+          path: video/
+          if-no-files-found: ignore
 
       - name: Save results to env
         if: always() && github.event_name == 'pull_request'

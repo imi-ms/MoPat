@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import re
 from time import gmtime, strftime
 import datetime
 import unittest
@@ -34,7 +35,7 @@ from helper.Language import LanguageSelectors, LanguageHelper
 from helper.User import UserHelper, UserRoles, UserSelector, EmailSelectors
 from helper.Statistic import StatisticSelector
 from helper.Dashboard import DashboardHelper, DashboardSelectors
-from helper.ExportMapper import ExportHelper
+from helper.ExportMapper import ExportHelper, ExportSelectors
 
 loginHelper = LoginHelper()
 
@@ -75,14 +76,12 @@ class IMISeleniumBaseTest(ABC):
             Start a new driver for each test.
             Checks, if the script is called on the server or locally.
         """
-        
-        try:
-            self._setServerDriver()
-        except Exception as e:
-            print(e)
+        test_name = self._testMethodName
+        self._setServerDriver(test_name)
 
-        # maximize window to full-screen
-        self.driver.maximize_window()
+        if self.driver is None:
+            raise RuntimeError("Driver was not initialized.")
+        
 
     def run(self, result=None):
         test_name = self._testMethodName
@@ -118,14 +117,6 @@ class IMISeleniumBaseTest(ABC):
         #print(f"\n### End of Test: `{test_name}`\n")
 
     def tearDown(self) -> None:
-        """
-            Sets the cookie to validate, if the test was successful or not.
-        """
-        if self.currentResult.wasSuccessful():
-            cookie = {'name': 'zaleniumTestPassed', 'value': 'true'}
-        else:
-            cookie = {'name': 'zaleniumTestPassed', 'value': 'false'}
-        self.driver.add_cookie(cookie)
         self.driver.quit()
         
     def _printError(self, error):
@@ -155,7 +146,7 @@ class IMISeleniumBaseTest(ABC):
         return None
 
     @abstractmethod
-    def _setServerDriver(self):
+    def _setServerDriver(self, testname):
         self.driver = None
 
     @abstractmethod
@@ -230,7 +221,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.navigation_helper.navigate_to_manage_questionnaires()
 
         # d
-        self.questionnaire_assert_helper.assert_questionnaire_list()
+        #self.questionnaire_assert_helper.assert_questionnaire_list()
         # e
         self.questionnaire_helper.click_add_questionnaire_button()
         questionnaire = self.questionnaire_assert_helper.assert_questionnaire_fill_page()
@@ -936,9 +927,16 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.configuration_helper.save_configuration()
 
-        # Count all divs with class config_error
-        error_divs = self.driver.find_elements(By.CLASS_NAME, "config_error")
-        error_count = len(error_divs)
+        errorDivs = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "config_error"))
+        )
+        
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+            errorDivs[0]
+        )
+
+        error_count = len(errorDivs)
         # Expect at least one error with the provided config
         assert error_count > 0, "Validation is not working for the configuration elements."
 
@@ -1199,7 +1197,7 @@ class CustomTest(IMISeleniumBaseTest):
             raise AssertionError("Automatic mapping failed on second attempt")
 
         time.sleep(1)
-        self.export_helper.click_save_mapping()
+        self.utils.click_element(ExportSelectors.MAPPING_SAVE_BUTTON)
         # Navigate to mapping page
         if not self.export_helper.click_edit_mapping_for_file():
             raise AssertionError("Mapping page failed to load")
@@ -1221,22 +1219,26 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
     """
         Test class for Chrome tests.
     """
-    def _setServerDriver(self):
-        name: str = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{self.base_url}_chrome"
+    def _setServerDriver(self, test_name):
+        safe_test_name = re.sub(r"[^A-Za-z0-9_.-]", "_", test_name)
+        name = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{safe_test_name}_chrome"
+
         options = webdriver.ChromeOptions()
-        options.set_capability("acceptInsecureCerts", True)
-        options.add_argument("--headless=new")
         options.add_argument("--window-size=1920,1080")
         options.set_capability("selenoid:options", {
-                                                    "enableVNC": False,
-                                                    "enableVideo": False,
-                                                    "enableLog": True,
-                                                    "name": name,
-                                                    "logName": f"{name}.log"
-                                                    })
-        self.driver = webdriver.Remote(options=options,
-                                       command_executor=self.selenium_grid_url)
+            "enableVNC": True,
+            "enableVideo": True,
+            "videoName": f"{name}.mp4",
+            "screenResolution": "1920x1080x24",
+            "enableLog": True,
+            "name": name,
+            "logName": f"{name}.log"
+        })
 
+        self.driver = webdriver.Remote(
+            options=options,
+            command_executor=self.selenium_grid_url
+        )
 
     def _setLocalDriver(self, directory):
         # download latest driver

@@ -1,6 +1,7 @@
 from enum import Enum
+import time
 
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, ElementClickInterceptedException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -36,22 +37,33 @@ class SeleniumUtils:
         self.navigator = navigation_helper
 
     def click_element(self, selector, timeout=20):
-        """
-        :param timeout: timeout value to use
-        :param selector: A tuple representing the element locator (e.g., (By.ID, "element_id")).
-        """
         try:
-            element = WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(selector))
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
-            element.click()
-        except ElementClickInterceptedException:
+            element = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located(selector)
+            )
+
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                element
+            )
+
+            WebDriverWait(self.driver, timeout).until(
+                lambda d: d.find_element(*selector).is_displayed() and d.find_element(*selector).is_enabled()
+            )
+
+            element = self.driver.find_element(*selector)
+
             try:
+                element.click()
+            except (ElementClickInterceptedException, StaleElementReferenceException):
                 element = self.driver.find_element(*selector)
                 self.driver.execute_script("arguments[0].click();", element)
-            except Exception as e:
-                raise Exception(f"Failed to click element {selector} using JavaScript: {e}")
+
         except TimeoutException:
             raise Exception(f"Timeout while waiting for element {selector} to be clickable.")
+        except Exception as e:
+            raise Exception(f"Failed to click element {selector}: {e}")
+
 
     def fill_text_field(self, selector, text):
         """
@@ -61,6 +73,11 @@ class SeleniumUtils:
         try:
             text_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
                 selector))
+            
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                text_field
+            )
 
             text_field.clear()
             text_field.send_keys(text)
@@ -77,6 +94,11 @@ class SeleniumUtils:
         try:
             text_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
                 selector))
+            
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                text_field
+            )
 
             text_field.clear()
             text_field.send_keys(number)
@@ -92,6 +114,12 @@ class SeleniumUtils:
         try:
             text_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
                 selector))
+            
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                text_field
+            )
+            
             text_field.clear()
         except TimeoutException:
             raise Exception(f"Timeout while waiting for text field {selector} to be visible.")
@@ -105,24 +133,28 @@ class SeleniumUtils:
         :param text: The text to insert into the editable div.
         """
         try:
-            # Scroll to the visible area
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", editable_div)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                editable_div
+            )
 
-            # Wait until the element is clickable
-            WebDriverWait(self.driver, 10).until(EC.visibility_of(editable_div))
-            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(editable_div))
+            WebDriverWait(self.driver, 10).until(
+                lambda d: editable_div.is_displayed() and editable_div.is_enabled()
+            )
+            
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                editable_div
+            )
 
-            ActionChains(self.driver).move_to_element(editable_div).click().perform()
+            self.driver.execute_script("arguments[0].focus();", editable_div)
 
-            # Select all text and delete
             try:
-                editable_div.send_keys(Keys.CONTROL + "a")  # Select all (CTRL + A)
-                editable_div.send_keys(Keys.DELETE)  # Delete selected text
+                editable_div.send_keys(Keys.CONTROL, "a")
+                editable_div.send_keys(Keys.DELETE)
             except Exception:
-                # Fallback: Clear content using JavaScript
                 self.driver.execute_script("arguments[0].innerHTML = '';", editable_div)
 
-            # Enter new text
             editable_div.send_keys(text)
 
         except Exception as e:
@@ -132,8 +164,12 @@ class SeleniumUtils:
         # Scroll to element
         element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
             selector))
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-
+        
+        self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                element
+            )
+        
         # Wait until the element is clickable
         try:
             WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(selector)).click()
@@ -148,7 +184,7 @@ class SeleniumUtils:
         try:
             element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
                 selector))
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+            self.driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'nearest'});", element)
         except TimeoutException:
             raise Exception(f"Timeout while trying to scroll to element {selector}.")
         except Exception as e:
@@ -252,24 +288,31 @@ class SeleniumUtils:
             raise Exception(f"Error while selecting '{value}' in dropdown {selector} using method '{method}': {e}")
     
     def select_tab(self, selector, value):
-        """
-        :param selector: The locator tuple for the tab element.
-        :param value: The value, visible text, or index of the option to select.
-        """
+        tabs = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_all_elements_located(selector)
+        )
+
+        target = None
+        for tab in tabs:
+            if tab.get_attribute("data-value") == value:
+                target = tab
+                break
+
+        if target is None:
+            raise ValueError(f"Could not find value '{value}' in tab list {selector}.")
+
+        if "active" in target.get_attribute("class"):
+            return
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center', inline:'center'});", target
+        )
+        WebDriverWait(self.driver, 10).until(lambda d: target.is_displayed() and target.is_enabled())
+
         try:
-            tabs = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(
-                selector))
-
-            for tab in tabs:
-                if tab.get_attribute("data-value") == value:
-                    tab.click()
-                    return
-
-            raise ValueError(f"Could not find value '{value}'.")
-        except TimeoutException:
-            raise Exception(f"Timeout while selecting '{value}' in tab list {selector}.")
-        except Exception as e:
-            raise Exception(f"Error while selecting '{value}' in tab list {selector}.")
+            target.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", target)
 
     def get_visible_table_rows(self, by, value):
         """
@@ -420,9 +463,36 @@ class SeleniumUtils:
         :param error_message: The error message to display when the element is not visible.
         """
         try:
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(selector))
+            element = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(selector)
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                element
+            )
+            self.highlight_element(element)
+            return element
         except TimeoutException:
             raise Exception(error_message)
+
+        
+    def highlight_element(self, element, duration=0.25):
+        self.driver.execute_script("""
+            arguments[0].setAttribute(
+                'data-old-style',
+                arguments[0].getAttribute('style') || ''
+            );
+            arguments[0].style.outline = '4px solid red';
+            arguments[0].style.outlineOffset = '2px';
+            arguments[0].style.backgroundColor = 'rgba(255,255,0,0.2)';
+        """, element)
+        time.sleep(duration)
+        self.driver.execute_script("""
+            arguments[0].setAttribute(
+                'style',
+                arguments[0].getAttribute('data-old-style')
+            );
+        """, element)
         
     def check_presence_of_element(self, selector, error_message): 
         """
@@ -430,7 +500,15 @@ class SeleniumUtils:
         :param error_message: The error message to display when the element is not visible.
         """
         try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(selector))
+            element = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(selector)
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                element
+            )
+            self.highlight_element(element)
+            return element
         except TimeoutException:
             raise Exception(error_message)
         

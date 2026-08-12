@@ -316,9 +316,3 @@ class ExportHelper:
         except Exception as e:
             print(f"Error validating mapping state: {e}")
             return False
-
-    def click_save_mapping(self):
-        save_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable(ExportSelectors.MAPPING_SAVE_BUTTON)
-                )
-        save_button.click()

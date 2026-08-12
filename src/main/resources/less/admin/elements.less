@@ -530,3 +530,109 @@ legend {
     }
     
 }
+
+.question-type-panel {
+    position: relative;
+}
+
+.question-type-canvas-wrapper {
+    width: 100%;
+    padding-left: 4rem;
+    padding-right: 4rem;
+}
+
+.question-type-scroll {
+    gap: 1rem;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.question-type-scroll.dragging {
+    cursor: grabbing;
+}
+
+.question-type-scroll img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+.question-type-card {
+    width: 200px;
+    min-height: 170px;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: 0.75rem;
+}
+
+.question-type-card:hover {
+    transform: translateY(-2px);
+}
+
+.question-type-card.selected {
+    background: #e7f1ff;
+}
+
+.question-type-card-separator {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.question-type-card-icon {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.question-type-scroll-left,
+.question-type-scroll-right {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    .question-type-canvas-wrapper {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+
+    .question-type-card {
+        width: 160px;
+        min-height: 160px;
+    }
+
+    .question-type-card-icon {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+@media (max-width: 576px) {
+    .question-type-canvas-wrapper {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .question-type-card {
+        width: 140px;
+        min-height: 150px;
+    }
+
+    .question-type-card-icon {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+.question-type-description-toggle .question-type-description-toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.question-type-description-toggle[aria-expanded="true"] .question-type-description-toggle-icon {
+    transform: rotate(180deg);
+}
