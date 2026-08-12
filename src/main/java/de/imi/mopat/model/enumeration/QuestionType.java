@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Definition of question types supported within MoPat 2.0
+ * Definition of question types supported within MoPat
  */
 public enum QuestionType {
 
