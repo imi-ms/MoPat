@@ -1,16 +1,25 @@
 <!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
 <th:block>
 
-  <!-- additional info below the name: Versions -->
+  <!-- additional info below the name: version -->
   <small th:fragment="questionnaireMeta(itemDto)"
          class="text-muted ms-1"
          th:if="${itemDto.version > 0}"
          th:text="|Version ${itemDto.version}|">Version 1</small>
 
-  <!-- additional column for assigned rows -->
+  <!-- additional columns for assigned rows -->
   <th:block th:fragment="questionnaireAssignedDetail(assignment, itemDto, index, fieldPrefix, isModifiable)">
-    <div class="col-md-2" th:if="${itemDto.hasScores}">
-      <div class="form-check mt-2">
+    <div class="col-md-2">
+      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+        <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
+        <a class="small"
+           th:href="@{/score/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
+          (Manage scores)
+        </a>
+      </div>
+      <div class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input"
                type="checkbox"
                data-field="showScores"
@@ -18,8 +27,13 @@
                th:checked="${assignment.showScores}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
         <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
+               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
       </div>
+      <span class="text-muted small fst-italic"
+            th:unless="${itemDto.hasScores}"
+            th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
+        No scores available
+      </span>
     </div>
 
     <div class="col-md-4">
@@ -60,14 +74,28 @@
     </div>
   </th:block>
 
-  <!-- Zusatzspalten der Template-Zeile (deaktiviert, Defaults; JS aktiviert + benennt beim Hinzufuegen) -->
+  <!-- additional columns for the template row (disabled defaults; JS enables + names on add) -->
   <th:block th:fragment="questionnaireAvailableDetail(itemDto)">
-    <div class="col-md-2" th:if="${itemDto.hasScores}">
-      <div class="form-check mt-2">
+    <div class="col-md-2">
+      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+        <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
+        <a class="small"
+           th:href="@{/score/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
+          (Manage scores)
+        </a>
+      </div>
+      <div class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
         <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</label>
+               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
       </div>
+      <span class="text-muted small fst-italic"
+            th:unless="${itemDto.hasScores}"
+            th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
+        No scores available
+      </span>
     </div>
 
     <div class="col-md-4">
