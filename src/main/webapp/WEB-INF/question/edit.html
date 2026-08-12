@@ -124,18 +124,20 @@
                                 >
                                 </label>
                                 <selectOptions
-                                        layout:replace="~{fragments/tabOptions :: tabOptions(
-                                    clazz='nav nav-tabs nav-justified',
-                                    path='questionType',
-                                    items=${questionTypeList},
-                                    itemLabel='textValue',
-                                    itemValue='textValue',
-                                    itemIcon='iconPath',
-                                    localize=${#bools.isTrue(true)},
-                                    onChangeFunction='handleQuestionTypes(false)',
-                                    id='questionTypeTabsInput')}"
-                                >
-                                </selectOptions>
+                                    layout:replace="~{fragments/tabOptions :: tabOptions(
+                                        clazz='',
+                                        path='questionType',
+                                        items=${questionTypeList},
+                                        itemLabel='textValue',
+                                        itemValue='textValue',
+                                        itemIcon='iconPath',
+                                        localize=${#bools.isTrue(true)},
+                                        onChangeFunction='handleQuestionTypes(false)',
+                                        id='questionTypeTabsInput',
+                                        currentValue=*{questionType}
+                                    )}"
+                                ></selectOptions>
+
                                 <th:block
                                         layout:insert="~{fragments/forms :: errorField(path='questionType')}"
                                 />
