@@ -108,7 +108,7 @@ class QuestionSelectors:
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MIN = lambda language_code: (By.XPATH, f'//*[@id="localizedMinimumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MAX = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
 
-    TAB_QUESTION_TYPE = (By.CLASS_NAME, "questionTypeLink")
+    TAB_QUESTION_TYPE = (By.CLASS_NAME, "question-type-card")
 
     TEXTAREA_ANSWER_TEXT = lambda id_selector, index, language_code: (By.CSS_SELECTOR, f"#{id_selector} textarea[name='answers[{index}].localizedLabel[{language_code}]']")
 
