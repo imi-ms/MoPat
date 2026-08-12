@@ -208,7 +208,7 @@ public class QuestionController {
         }
 
         if(questionDTO.getQuestionType() == null) {
-            questionDTO.setQuestionType(QuestionType.SLIDER);
+            questionDTO.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         }
 
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
