@@ -1244,6 +1244,7 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
+	<script th:src="@{/js/helper/htmlUtilities.js}"></script>
 	<script
 		th:inline="javascript"
 		type="text/javascript"
@@ -1304,6 +1305,11 @@
 		var sliderIconValueErrors = [];
 		var sliderIconPositionErrors = [];
 
+		var maxQuestionTextLength = 2000;
+		var questionTextTooLongMessage =
+			/*[[${messages.get(#locale, 'question.error.questionTextTooLong', 'The question text is too long. Current length: {0}, maximum: {1}.')}]]*/ "The question text is too long. Current length: {0}, maximum: {1}.";
+
+
 		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
 		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
 		/*[- Add the error messages from the model to the javascript arrays -]*/
@@ -1317,6 +1323,40 @@
 		);
 
 		/*[/]*/
+
+		// Validates the visible text length of the question WYSIWYG editor.
+		function updateQuestionTextLengthValidation(noteEditable) {
+			var $editor = $(noteEditable).closest(".note-editor");
+			var $textarea = $editor
+				.parent()
+				.find("textarea[name^='localizedQuestionText[']")
+				.first();
+
+			if ($textarea.length === 0) {
+				return;
+			}
+
+			var currentLength = HtmlUtilities.getVisibleText($(noteEditable).html()).length;
+			var $errorLabel = $editor.prev(".question-text-length-error");
+
+			if ($errorLabel.length === 0) {
+				$errorLabel = $("<label/>", {
+					class: "question-text-length-error text-danger"
+				});
+				$editor.before($errorLabel);
+			}
+
+			if (currentLength > maxQuestionTextLength) {
+				$errorLabel.text(
+					questionTextTooLongMessage
+						.replace("{0}", currentLength)
+						.replace("{1}", maxQuestionTextLength)
+				);
+				$errorLabel.show();
+			} else {
+				$errorLabel.hide();
+			}
+		}
 
 		$(function () {
 			/*[- Init the multilingual language visualization of the question -]*/
@@ -1346,21 +1386,17 @@
 						$(this).attr("disabled", true);
 					}
 				});
-
-				// Überwachung der WYSIWYG-Editoren auf maximale Länge
-				$(document).on('keydown', '.note-editable', function(e) {
-					var currentLength = $(this).text().length;
-					if (currentLength >= 1500) {
-						// Verhindere die Eingabe, wenn 1500 Zeichen erreicht sind
-						// (Ausnahme: Backspace/Delete Taste erlauben)
-						console.log("Textlaenge ueberschritten")
-						if (e.keyCode !== 8 && e.keyCode !== 46) {
-							e.preventDefault();
-							alert("Maximale Länge von 1500 Zeichen erreicht!");
-						}
-					}
-				});
 			});
+
+			// Revalidate the question text while the user is typing or pasting content.
+			$(document).on("input keyup paste", ".note-editable", function () {
+				var noteEditable = this;
+
+				setTimeout(function () {
+					updateQuestionTextLengthValidation(noteEditable);
+				}, 0);
+			});
+
 
 			/*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/
 			$(".multipleChoiceAnswerPanel")
