@@ -1,5 +1,6 @@
 package de.imi.mopat.io.impl;
 
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.io.ExportTemplateImporter;
 import de.imi.mopat.model.Encounter;
 
@@ -8,9 +9,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +30,7 @@ public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
 
     private final String[] ignoreTagsArray = {"Document", "Instance", "Formname"};
     private final List<String> ignoreTags;
+    private final DocumentParser documentParser = new DocumentParser();
 
     /**
      * Constructor only initializes the ignore list for tags.
@@ -58,23 +57,18 @@ public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
      *                    jakarta.servlet.http.HttpServletRequest, org.springframework.ui.Model) }.
      *                    Must not be <code>null</code>.
      * @return A list of strings which represents the necessary information for given KIS.
-     * @throws ParserConfigurationException If something went wrong with parser configuration.
      * @throws SAXException                 If given file was a XML file and something during it's
      *                                      processing went wrong.
      * @throws IOException                  If given file couldn't be loaded and processed.
      */
     @Override
     public List<String> importFile(InputStream inputStream)
-        throws IOException, SAXException, ParserConfigurationException {
+        throws IOException, SAXException {
         List<String> xmlDoc = new ArrayList<String>();
         try {
             // This code is adapted from http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder;
-            dBuilder = dbFactory.newDocumentBuilder();
-
             // Load inputStream into w3c Document object..
-            Document doc = dBuilder.parse(inputStream);
+            Document doc = documentParser.parse(inputStream);
             doc.getDocumentElement().normalize();
 
             // iterate over its content
@@ -89,7 +83,7 @@ public class ExportTemplateImporterHL7 implements ExportTemplateImporter {
                 }
             }
 
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (SAXException | IOException e) {
             LOGGER.error("Loading the XML-File failed because of {}", e);
             throw e;
         }
