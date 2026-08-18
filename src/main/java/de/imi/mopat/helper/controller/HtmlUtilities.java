@@ -21,4 +21,34 @@ public class HtmlUtilities {
         }
         return htmlString.replaceAll("\\<[^>]*>", "");
     }
+
+    /*
+     * Converts HTML content to countable visible text for validation.
+     * Unlike getStringWithoutHtml(...), this also preserves visible line breaks
+     * from tags like <br>, </p> or </div> and decodes common HTML entities
+     * such as &nbsp; before counting the text.
+     */
+    public static String getVisibleText(String html) {
+        if (html == null || html.isEmpty()) {
+            return "";
+        }
+
+        String text = html
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
+
+        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
+        text = text.replaceAll("(?i)</(?:div|p|li|h[1-6])\\s*>", "\n");
+        text = text.replaceAll("(?s)<[^>]+>", "");
+
+        text = text.replace("&nbsp;", " ");
+        text = text.replace("&amp;", "&");
+        text = text.replace("&lt;", "<");
+        text = text.replace("&gt;", ">");
+        text = text.replace("&quot;", "\"");
+        text = text.replace("&#39;", "'");
+
+        return text.replaceAll("\n{3,}", "\n\n").trim();
+    }
+
 }

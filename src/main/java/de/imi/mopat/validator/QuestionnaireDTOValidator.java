@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -60,7 +61,7 @@ public class QuestionnaireDTOValidator implements Validator {
         }
 
         // Check if the description text is too long
-        int visibleDescpriptionLength = getVisibleText(questionnaireDTO.getDescription()).length();
+        int visibleDescpriptionLength = HtmlUtilities.getVisibleText(questionnaireDTO.getDescription()).length();
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
@@ -135,29 +136,5 @@ public class QuestionnaireDTOValidator implements Validator {
                 }
             }
         }
-    }
-
-    // A utility function to remove all HTML tags when counting the characters in a text
-    public static String getVisibleText(String html) {
-        if (html == null || html.isEmpty()) {
-            return "";
-        }
-
-        String text = html
-                .replace("\r\n", "\n")
-                .replace("\r", "\n");
-
-        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
-        text = text.replaceAll("(?i)</(?:div|p|li|h[1-6])\\s*>", "\n");
-        text = text.replaceAll("(?s)<[^>]+>", "");
-
-        text = text.replace("&nbsp;", " ");
-        text = text.replace("&amp;", "&");
-        text = text.replace("&lt;", "<");
-        text = text.replace("&gt;", ">");
-        text = text.replace("&quot;", "\"");
-        text = text.replace("&#39;", "'");
-
-        return text.replaceAll("\n{3,}", "\n\n").trim();
     }
 }

@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +74,11 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error" + ".questionTextIsNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
-            } else if(getVisibleText(entry.getValue()).length() > MAX_QUESTION_TEXT_LENGTH){
+            } else if(HtmlUtilities.getVisibleText(entry.getValue()).length() > MAX_QUESTION_TEXT_LENGTH){
                 errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
                         MoPatValidator.ERRORCODE_ERRORMESSAGE,
                         messageSource.getMessage("question.error.questionTextTooLong",
-                                new Object[]{getVisibleText(entry.getValue()).length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+                                new Object[]{HtmlUtilities.getVisibleText(entry.getValue()).length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
             }
         }
 
@@ -239,29 +240,5 @@ public class QuestionDTOValidator implements Validator {
             default:
                 break;
         }
-    }
-
-    // A utility function to remove all HTML tags when counting the characters in a text
-    public static String getVisibleText(String html) {
-        if (html == null || html.isEmpty()) {
-            return "";
-        }
-
-        String text = html
-                .replace("\r\n", "\n")
-                .replace("\r", "\n");
-
-        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
-        text = text.replaceAll("(?i)</(?:div|p|li|h[1-6])\\s*>", "\n");
-        text = text.replaceAll("(?s)<[^>]+>", "");
-
-        text = text.replace("&nbsp;", " ");
-        text = text.replace("&amp;", "&");
-        text = text.replace("&lt;", "<");
-        text = text.replace("&gt;", ">");
-        text = text.replace("&quot;", "\"");
-        text = text.replace("&#39;", "'");
-
-        return text.replaceAll("\n{3,}", "\n\n").trim();
     }
 }
