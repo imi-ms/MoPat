@@ -151,7 +151,7 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listQuestionnaires(final Model model) {
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
-        // This map contians a questionnaire id as key and a set with all
+        // This map contains a questionnaire id as key and a set with all
         // languages
         // which are available for all questions in this questionnaire.
         Map<Long, List<String>> availableLanguagesInQuestionForQuestionnaires = new HashMap<>();

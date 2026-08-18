@@ -8,7 +8,9 @@
 	th:with="title=#{admin.navigation.configuration}"
 >
 	<th:block layout:fragment="content">
-		<div class="panel-body">
+		<div class="panel-body"
+			th:unless="${isDemoInstance}"
+		>
 			<form
 				th:object="${configurationComponentDTO}"
 				enctype="multipart/form-data"
