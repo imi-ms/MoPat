@@ -1,6 +1,7 @@
 package de.imi.mopat.dao;
 
 import de.imi.mopat.model.Bundle;
+import jakarta.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -125,4 +126,12 @@ public interface EncounterDao extends MoPatDao<Encounter> {
      * @return If there exists a {@link Encounter encounters} for a clinic
      */
     Boolean checkEncountersExistsByClinicId(Long clinicId);
+
+    /**
+     * Deletes the associated {@link de.imi.mopat.model.EncounterExportTemplate}
+     * instances for the {@link Encounter}.
+     *
+     * @param encounter: The encounter to process
+     */
+    void removeEncounterExportTemplatesForEncounter(Encounter encounter);
 }
