@@ -65,7 +65,7 @@ public class QuestionnaireDTOValidator implements Validator {
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                    messageSource.getMessage("question.error.questionTextTooLong",
+                    messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
         }
 
