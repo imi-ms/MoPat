@@ -1324,39 +1324,6 @@
 
 		/*[/]*/
 
-		// Validates the visible text length of the question WYSIWYG editor.
-		function updateQuestionTextLengthValidation(noteEditable) {
-			var $editor = $(noteEditable).closest(".note-editor");
-			var $textarea = $editor
-				.parent()
-				.find("textarea[name^='localizedQuestionText[']")
-				.first();
-
-			if ($textarea.length === 0) {
-				return;
-			}
-
-			var currentLength = HtmlUtilities.getVisibleText($(noteEditable).html()).length;
-			var $errorLabel = $editor.prev(".question-text-length-error");
-
-			if ($errorLabel.length === 0) {
-				$errorLabel = $("<label/>", {
-					class: "question-text-length-error text-danger"
-				});
-				$editor.before($errorLabel);
-			}
-
-			if (currentLength > maxQuestionTextLength) {
-				$errorLabel.text(
-					questionTextTooLongMessage
-						.replace("{0}", currentLength)
-						.replace("{1}", maxQuestionTextLength)
-				);
-				$errorLabel.show();
-			} else {
-				$errorLabel.hide();
-			}
-		}
 
 		$(function () {
 			/*[- Init the multilingual language visualization of the question -]*/
@@ -1388,15 +1355,12 @@
 				});
 			});
 
-			// Revalidate the question text while the user is typing or pasting content.
-			$(document).on("input keyup paste", ".note-editable", function () {
-				var noteEditable = this;
-
-				setTimeout(function () {
-					updateQuestionTextLengthValidation(noteEditable);
-				}, 0);
+			// Checks the length of the question text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedQuestionText[",
+				maxLength: maxQuestionTextLength,
+				message: questionTextTooLongMessage
 			});
-
 
 			/*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/
 			$(".multipleChoiceAnswerPanel")

@@ -26,7 +26,7 @@ public class HtmlUtilities {
      * Converts HTML content to countable visible text for validation.
      * Unlike getStringWithoutHtml(...), this also preserves visible line breaks
      * from tags like <br>, </p> or </div> and decodes common HTML entities
-     * such as &nbsp; before counting the text.
+     * such as &nbsp.
      */
     public static String getVisibleText(String html) {
         if (html == null || html.isEmpty()) {
