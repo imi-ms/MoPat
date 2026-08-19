@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.model.dto.QuestionDTO;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class QuestionDTOValidator implements Validator {
 
     private static final String MIN_NUMBER_ANSWERS = "minNumberAnswers";
     private static final String MAX_NUMBER_ANSWERS = "maxNumberAnswers";
+    private static final int MAX_QUESTION_TEXT_LENGTH = 2_000;
     @Autowired
     private SelectAnswerDTOValidator selectAnswerDTOValidator;
     @Autowired
@@ -56,7 +58,7 @@ public class QuestionDTOValidator implements Validator {
         // [bt] now it's my time to validate the more complex stuff
         QuestionDTO questionDTO = (QuestionDTO) target;
 
-        // [sw] Check if any added language contains an empty questionText
+        // [sw] Check if any added language contains an empty or too long questionText
         for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText().entrySet()) {
             if (entry.getValue() == null || entry.getValue().trim().isEmpty() || Pattern.matches(
                 "<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
@@ -72,6 +74,11 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error" + ".questionTextIsNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
+            } else if(HtmlUtilities.getVisibleText(entry.getValue()).length() > MAX_QUESTION_TEXT_LENGTH){
+                errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
+                        MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                        messageSource.getMessage("question.error.questionTextTooLong",
+                                new Object[]{HtmlUtilities.getVisibleText(entry.getValue()).length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
             }
         }
 

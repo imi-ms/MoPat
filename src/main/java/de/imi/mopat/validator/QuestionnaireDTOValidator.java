@@ -3,6 +3,7 @@ package de.imi.mopat.validator;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -20,11 +21,14 @@ import org.springframework.validation.Validator;
 @Component
 public class QuestionnaireDTOValidator implements Validator {
 
+    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
+
     @Autowired
     private MessageSource messageSource;
 
     @Autowired
     private QuestionnaireDao questionnaireDao;
+
 
     @Override
     public boolean supports(final Class<?> type) {
@@ -54,6 +58,15 @@ public class QuestionnaireDTOValidator implements Validator {
             errors.rejectValue("name", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage("questionnaire.error.nameInUse", new Object[]{},
                     LocaleContextHolder.getLocale()));
+        }
+
+        // Check if the description text is too long
+        int visibleDescpriptionLength = HtmlUtilities.getVisibleText(questionnaireDTO.getDescription()).length();
+        if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
+            errors.rejectValue("description",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("questionnaire.error.descriptionTooLong",
+                            new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
         }
 
         // [sw] Check if any added language contains an empty questionText
