@@ -1306,9 +1306,8 @@
 		var sliderIconPositionErrors = [];
 
 		var maxQuestionTextLength = 2000;
-		var questionTextTooLongMessage =
-			/*[[${messages.get(#locale, 'question.error.questionTextTooLong', 'The question text is too long. Current length: {0}, maximum: {1}.')}]]*/ "The question text is too long. Current length: {0}, maximum: {1}.";
-
+		var textLengthExceededMessage =
+			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
 
 		var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
 		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
@@ -1359,7 +1358,7 @@
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "localizedQuestionText[",
 				maxLength: maxQuestionTextLength,
-				message: questionTextTooLongMessage
+				message: textLengthExceededMessage
 			});
 
 			/*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/

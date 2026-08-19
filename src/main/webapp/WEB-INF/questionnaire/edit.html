@@ -236,9 +236,8 @@
                         '']]*/ "";
 
 		var maxQuestionTextLength = 2000;
-		var questionTextTooLongMessage =
-			/*[[${messages.get(#locale, 'question.error.questionTextTooLong', 'The question text is too long. Current length: {0}, maximum: {1}.')}]]*/ "The question text is too long. Current length: {0}, maximum: {1}.";
-
+		var textLengthExceededMessage =
+			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
 
 		/*[- Initialize the logo upload field -]*/
 		$(document).ready(function () {
@@ -255,7 +254,7 @@
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "description",
 				maxLength: maxQuestionTextLength,
-				message: questionTextTooLongMessage
+				message: textLengthExceededMessage
 			});
 
 			$("#file").on("filecleared", function (event, key) {
