@@ -62,6 +62,7 @@ HtmlUtilities.updateWysiwygTextLengthValidation = function (noteEditable, option
     );
     $errorLabel.show();
   } else {
+    $errorLabel.text("");
     $errorLabel.hide();
   }
 };
