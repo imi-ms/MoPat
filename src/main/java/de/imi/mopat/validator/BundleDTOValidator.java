@@ -61,21 +61,17 @@ public class BundleDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
-        String bundleDescription = HtmlUtils.removeHtmlTags(bundleDTO.getDescription());
-
-        if (bundleDescription != null && bundleDescription.isEmpty()) {
-            errors.rejectValue("description", "errormessage",
-                messageSource.getMessage("bundle.description.notNull", new Object[]{},
-                    LocaleContextHolder.getLocale()));
-        }
-
-        // Check if description text is too long
+        // Check if description text is too long or empty
         int visibleDescpriptionLength = HtmlUtilities.getVisibleText(bundleDTO.getDescription()).length();
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+        } else if (visibleDescpriptionLength == 0) {
+            errors.rejectValue("description", "errormessage",
+                    messageSource.getMessage("bundle.description.notNull", new Object[]{},
+                            LocaleContextHolder.getLocale()));
         }
 
         // Check if at least the first questionnaire is enabled in this bundle
