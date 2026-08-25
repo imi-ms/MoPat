@@ -235,7 +235,7 @@
                         |<img src='@{/images/questionnaire/__${questionnaireDTO.id}__/__${questionnaireDTO.logo}__}' class='file-preview-image'>| : 
                         '']]*/ "";
 
-		const maxQuestionTextLength = 2000;
+		const maxDescriptionTextLength = 2000;
 		const maxWelcomeTextLength = 5000;
 		const maxFinalTextLength = 5000;
 		const textLengthExceededMessage =
@@ -255,7 +255,7 @@
 			// Checks the length of the description text
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "description",
-				maxLength: maxQuestionTextLength,
+				maxLength: maxDescriptionTextLength,
 				message: textLengthExceededMessage
 			});
 			// Checks the length of the welcome text
