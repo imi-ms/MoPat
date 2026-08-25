@@ -737,8 +737,10 @@
 	<script th:inline="javascript" type="text/javascript">
 		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
 
-		var maxQuestionTextLength = 2000;
-		var textLengthExceededMessage =
+		const maxDescriptionTextLength = 2000;
+		const maxWelcomeTextLength = 5000;
+		const maxFinalTextLength = 5000;
+		const textLengthExceededMessage =
 			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
 
 		var startTable, targetTable;
@@ -778,7 +780,17 @@
 			initializeQuestionnaireVersionGroupChevronAndSpacer();
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "description",
-				maxLength: maxQuestionTextLength,
+				maxLength: maxDescriptionTextLength,
+				message: textLengthExceededMessage
+			});
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedWelcomeText[",
+				maxLength: maxWelcomeTextLength,
+				message: textLengthExceededMessage
+			});
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedFinalText[",
+				maxLength: maxFinalTextLength,
 				message: textLengthExceededMessage
 			});
 		});
