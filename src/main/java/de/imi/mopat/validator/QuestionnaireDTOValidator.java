@@ -63,13 +63,17 @@ public class QuestionnaireDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
-        // Check if the description text is too long
+        // Check if the description text is too long or empty
         int visibleDescpriptionLength = HtmlUtilities.getVisibleText(questionnaireDTO.getDescription()).length();
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+        } else if (visibleDescpriptionLength == 0) {
+            errors.rejectValue("description", "errormessage",
+                    messageSource.getMessage("questionnaire.description.notNull", new Object[]{},
+                            LocaleContextHolder.getLocale()));
         }
 
         // [sw] Check if any added language contains an empty questionText
