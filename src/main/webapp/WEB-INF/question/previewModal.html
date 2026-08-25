@@ -1,288 +1,298 @@
 <div
-        id="previewModal"
-        class="modal fade"
+    layout:fragment="previewModal"
+    id="previewModal"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
 >
-    <div class="modal-dialog" id="modal-dialog">
-        <div class="modal-content" id="modal-content">
+    <div
+        class="modal-dialog"
+        id="previewModalDialog"
+    >
+        <div
+            class="modal-content"
+            id="previewModalContent"
+        >
             <div class="modal-header">
-                <a href="#" data-bs-dismiss="modal" aria-hidden="true" class="btn-close"></a>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
             </div>
+
             <div class="modal-body">
-                <div class="px-2 py-1 d-flex align-items-center justify-content-between">
-                    <div class="col-1"></div>
-
+                <div
+                    class="preview-viewport"
+                    id="previewViewport"
+                >
                     <div
-                            id="questionnaireTitle"
-                            class="col-10 questionnaireTitle d-flex justify-content-center"
-                            role="heading"
+                        class="preview-frame"
+                        id="previewFrame"
                     >
-                    </div>
-
-                    <div class="col-1">
-                        <a
-                                data-bs-toggle="offcanvas"
-                                href="#surveyMobileMenu"
-                        ><i class="bi bi-list d-block d-bp-none"></i
-                        ></a>
-                    </div>
-                </div>
-
-                <div class="questionnaireNavigation d-flex p-2 mx-0">
-                    <div class="d-flex justify-content-start align-items-center col-4">
-                        <div class="h-100">
-                            <button
-                                    class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 align-items-center justify-content-center d-flex"
-                                    id="buttonPrevious"
-                                    disabled="disabled"
+                        <div class="header stickyHeader">
+                            <div
+                                class="px-2 py-1 d-flex align-items-center justify-content-between"
                             >
-                                <div>
-                                    <i class="bi bi-arrow-bar-left me-sm-2"></i>
+                                <div class="col-1"></div>
+                                <div
+                                    class="col-10 questionnaireTitle d-flex justify-content-center"
+                                    id="previewQuestionnaireTitle"
+                                    role="heading"
+                                ></div>
+                                <div class="col-1">
+                                    <a><i class="bi bi-list d-block d-bp-none"></i></a>
+                                </div>
+                            </div>
+
+                            <div class="questionnaireNavigation d-flex p-2 mx-0">
+                                <div class="d-flex justify-content-start align-items-center col-4">
+                                    <div class="h-100">
+                                        <button
+                                            class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 align-items-center justify-content-center d-flex"
+                                            id="buttonPrevious"
+                                        >
+                                            <div><i class="bi bi-arrow-bar-left me-sm-2"></i></div>
+                                            <span
+                                                class="text"
+                                                th:text="${messages.get(#locale, 'survey.questionnaire.button.previousQuestion', 'vorherige Frage')}"
+                                            ></span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <span
-                                        id="buttonPreviousText"
-                                        class="text"
-                                >Vorherhige Frage</span
+                                <div class="col-4 d-flex align-items-center justify-content-center">
+                                    <div>
+                                        <span class="questionsAnswered">1</span>
+                                        <span class="questionsTotal">&nbsp;&#47;&nbsp;</span>
+                                        <span class="questionsTotal">1</span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="d-flex justify-content-end align-items-center col-4 buttonWrapper"
                                 >
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="col-4 d-flex align-items-center justify-content-center">
-                        <div
-                                id="progressText"
-                                class="d-none"
-                        >
-					<span
-                            class="questionsAnswered"
-                            id="questionsAnswered"
-                    ></span>
-                            <span class="questionsTotal">&nbsp;&#47;&nbsp;</span>
-                            <span
-                                    class="questionsTotal"
-                                    id="questionsTotal"
-                            ></span>
-                        </div>
-                    </div>
-
-                    <div
-                            class="d-flex justify-content-end align-items-center col-4 buttonWrapper"
-                    >
-                        <div class="h-100 mx-1">
-                            <button
-                                    id="fontSizeButton"
-                                    class="btn-lowEmphasis d-flex justify-content-center align-content-end h-100"
-                                    data-bs-toggle="offcanvas"
-                                    href="#fontSizeMenu"
-                                    disabled="disabled"
-                            >
-						<span class="d-flex align-items-center">
-							<span class="fontButtonSmall">A</span>
-							<span class="fontButtonLarge">A</span>
-						</span>
-                            </button>
+                                    <div class="h-100 mx-1">
+                                        <button
+                                            class="btn-lowEmphasis d-flex justify-content-center align-content-end h-100"
+                                        >
+                                            <span class="d-flex align-items-center">
+                                                <span class="fontButtonSmall">A</span>
+                                                <span class="fontButtonLarge">A</span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="questionnaireNavigationButtonRight h-100 mx-1">
+                                        <button
+                                            class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 d-flex align-items-center justify-content-center"
+                                            id="buttonNext"
+                                        >
+                                            <span
+                                                class="text"
+                                                th:text="${messages.get(#locale, 'survey.questionnaire.button.nextQuestion', 'nächste Frage')}"
+                                            ></span>
+                                            <div><i class="bi bi-arrow-bar-right ms-sm-2"></i></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div
-                                    class="offcanvas optionsMenu offcanvas-bottom"
-                                    tabindex="-1"
-                                    id="fontSizeMenu"
-                                    aria-labelledby="offcanvasBottomLabel"
+                                class="d-flex justify-content-between align-items-center flex-nowrap overflow-hidden px-2 py-2 border-bottom"
                             >
-                                <div class="offcanvas-header">
-                                    <h5
-                                            class="offcanvas-title"
-                                            id="offcanvasBottomLabel"
-                                            th:text="${messages.get(#locale, 'survey.title.fontSize', 'Select a font size')}"
-                                    >
-                                    </h5>
-                                    <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="offcanvas"
-                                            aria-label="Close"
-                                    ></button>
+                                <div class="progressElement active current fragmented"></div>
+                            </div>
+                        </div>
+
+                        <div class="layoutContainer">
+                            <div class="px-5 content">
+                                <div class="d-flex py-1 titleHeader d-none">
+                                    <div role="heading"><b class="titleContent"></b></div>
                                 </div>
-                                <div class="offcanvas-body">
+
+                                <div
+                                    id="questionTitle"
+                                    class="itemRow questionTitle resizable w-100 border-bottom resizable-1"
+                                ></div>
+                                <div
+                                    id="questionContent"
+                                    class="itemRow questionContent"
+                                ></div>
+                            </div>
+
+                            <div class="footer">
+                                <div class="d-flex align-items-center flex-column bottom-footer">
                                     <div
-                                            class="d-grid gap-0"
-                                            id="slider"
+                                        class="footer-bar d-flex align-items-center p-2 justify-content-center"
                                     >
-                                        <input
-                                                type="range"
-                                                min="0"
-                                                max="5"
-                                                step="1"
-                                                value="0"
-                                                onchange="setFontSize(this.value)"
-                                        />
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-0-fixed">A</span>
-                                            </div>
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-1-fixed">A</span>
-                                            </div>
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-2-fixed">A</span>
-                                            </div>
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-3-fixed">A</span>
-                                            </div>
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-4-fixed">A</span>
-                                            </div>
-                                            <div
-                                                    class="d-flex justify-content-center align-items-center iconContainer"
-                                            >
-                                                <span class="resizable-5-fixed">A</span>
-                                            </div>
-                                        </div>
+                                        <span
+                                            class="footer-text text-center justify-content-center"
+                                            th:text="${messages.get(#locale, 'layout.label.footer', '© Institut für Medizinische Informatik, Universität Münster')}"
+                                        ></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="questionnaireNavigationButtonRight h-100 mx-1">
-                            <button
-                                    class="btn btn-mobile btn-white btn-questionnaireNavigation h-100 d-flex align-items-center justify-content-center"
-                                    id="buttonNext"
-                                    disabled="disabled"
-                            >
-						<span
-                                id="buttonNextText"
-                                class="text"
-                        >Nächste Frage</span
-                        >
-                                <div>
-                                    <i class="bi bi-arrow-bar-right ms-sm-2"></i>
-                                </div>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
-            <div class="px-5 content">
-                <div
-                        id="questionTitle"
-                        class="itemRow questionTitle resizable w-100 border-bottom"
-                ></div>
-                <div
-                        id="questionContent"
-                        class="itemRow questionContent"
-                >
-                </div>
-            </div>
         </div>
-    </div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
+    </div>
 </div>
 
-<th:block
-        layout:insert="~{fragments/surveyMessages :: surveyMessages}"
-></th:block>
-<th:block layout:replace="~{fragments/resourceFragment :: additionalCSS}"></th:block>
-<script defer th:src="@{/js/mobile/survey/model/question.js?version=3.3.0}"></script>
-<th:block layout:fragment="scriptContainer">
+<th:block layout:fragment="previewModalDependencies">
+    <th:block layout:insert="~{fragments/surveyMessages :: surveyMessages}"></th:block>
+
+    <script type="text/javascript">
+        window.images = window.images || {};
+    </script>
+    <th:block layout:insert="~{fragments/bodyImages :: bodyImages}"></th:block>
+
+    <script th:src="@{/js/svg/svg.min.js?version=3.3.4}"></script>
+    <script th:src="@{/js/zxing/zxing.min.js?version=3.3.4}"></script>
+    <script th:src="@{/js/jQuery/jquery-barcode.min.js?version=3.3.4}"></script>
+    <script th:src="@{/js/mobile/helper/survey/questionStyleEnhancer.js?version=3.3.4}"></script>
+    <script th:src="@{/js/mobile/survey/model/question.js?version=3.3.4}"></script>
+</th:block>
+
+<th:block layout:fragment="previewModalScripts">
     <script
         th:inline="javascript"
         type="text/javascript"
     >
-        const images = {};
-    </script>
-</th:block>
-<th:block layout:insert="~{fragments/bodyImages :: bodyImages}"></th:block>
-<th:block layout:fragment="addScripts">
-    <script th:src="@{/js/svg/svg.min.js?version=3.3.0}"></script>
-    <script th:src="@{/js/zxing/zxing.min.js?version=3.3.0}"></script>
-    <script th:src="@{/js/jQuery/jquery-barcode.min.js?version=3.3.0}"></script>
-    <script th:src="@{/js/mobile/helper/survey/questionStyleEnhancer.js?version=3.3.0}"></script>
-</th:block>
+        /*<![CDATA[*/
+        var previewLanguage = /*[[${#locale.toString}]]*/ "de_DE";
 
-<th:block layout:fragment="scriptContainer">
-    <script
-            th:inline="javascript"
-            type="text/javascript"
-    >
-        var language = [[${#locale.toString}]];
+        window.images = window.images || {};
+        window.modalSettings = window.modalSettings || {};
 
-        const modalSettings = {};
+        var PREVIEW_MARGIN = 16;
+        var PREVIEW_BORDER = 2;
 
-        $('#previewModal').on('show.bs.modal', function (event) {
-            let form = document.getElementsByName("questionDTO")[0];
-            const formData = new FormData(form);
+        var PREVIEW_BP_ELEMENT_FALLBACK = 640; // 40rem
+        var PREVIEW_BP_PHONE_FALLBACK = 500;
 
-            fetch("/question/previewDTO", {
-                method: "POST",
-                body: formData
-            })
-            .then(res => res.json())
-            .then(updatedDTO => {
-                var question = new Question();
-                $.extend(question, updatedDTO);
-                question.init();
-                var content = $('#questionContent');
-                updateQuestionTitles(updatedDTO);
-                question.getHTML(content, true, language);
-                if(modalSettings.dimensions) scaleToSelectedRatio();
-            });
-        });
+        function previewBreakpointPx(el, prop, fallback) {
+            var raw = getComputedStyle(el).getPropertyValue(prop).trim();
+            if (!raw) return fallback;
+            var n = parseFloat(raw);
+            if (isNaN(n)) return fallback;
+            if (raw.indexOf("rem") > -1) {
+                return n * parseFloat(getComputedStyle(document.documentElement).fontSize);
+            }
+            return n;
+        }
 
-        $('#previewModal').on('hide.bs.modal', function (event) {
-            $(window).off("resize.question");
-            $('#questionContent').empty();
-            $('#questionTitle').empty();
-            $('#modal-dialog').attr("style", "");
-            delete modalSettings.dimensions
-        });
+        function applyPreviewSize() {
+            var modal = document.getElementById("previewModal");
+            var dialog = document.getElementById("previewModalDialog");
+            var content = document.getElementById("previewModalContent");
+            var viewport = document.getElementById("previewViewport");
+            var frame = document.getElementById("previewFrame");
+            if (!modal || !dialog || !content || !viewport || !frame) return;
+
+            var head = content.querySelector(".modal-header");
+            var headH = head ? head.offsetHeight : 0;
+
+            var availW = window.innerWidth - PREVIEW_MARGIN * 2 - PREVIEW_BORDER;
+            var availH = window.innerHeight - PREVIEW_MARGIN * 2 - PREVIEW_BORDER - headH;
+
+            var dims = modalSettings.dimensions || [availW, availH];
+            var w = dims[0],
+                h = dims[1];
+
+            var s = Math.min(1, availW / w, availH / h);
+            var vw = Math.round(w * s);
+            var vh = Math.round(h * s);
+
+            frame.style.width = w + "px";
+            frame.style.height = h + "px";
+            frame.style.transform = s === 1 ? "none" : "scale(" + s + ")";
+
+            viewport.style.width = vw + "px";
+            viewport.style.height = vh + "px";
+
+            dialog.style.width = vw + PREVIEW_BORDER + "px";
+            dialog.style.maxWidth = vw + PREVIEW_BORDER + "px";
+            dialog.style.margin = PREVIEW_MARGIN + "px auto";
+
+            /* Breakpoints resolve against the frame's own width, not the window. */
+            var bpElement = previewBreakpointPx(
+                modal,
+                "--preview-bp-element",
+                PREVIEW_BP_ELEMENT_FALLBACK,
+            );
+            var bpPhone = previewBreakpointPx(
+                modal,
+                "--preview-bp-phone",
+                PREVIEW_BP_PHONE_FALLBACK,
+            );
+
+            modal.classList.toggle("preview-sm", w <= bpElement);
+            modal.classList.toggle("preview-lg", w >= bpElement);
+            modal.classList.toggle("preview-phone", w <= bpPhone);
+        }
 
         function updateQuestionTitles(question) {
-            //Add title to the question title div
-            $("#questionTitle").append($("<span/>", {
-                "id": "questionTitleText",
-                "html": question.localizedQuestionText[language],
-            }));
-
-            //Add padding only to the question content for the scrolling question title
-            var scrollQuestionTitlePaddingDiv = $("<div/>", {
-                "class": "px-5",
-            });
+            $("#questionTitle")
+                .empty()
+                .append(
+                    $("<span/>", {
+                        id: "questionTitleText",
+                        html: question.localizedQuestionText[previewLanguage],
+                    }),
+                );
         }
 
-        const MAX_H = window.innerHeight * 3/4, MAX_W = window.innerWidth * 3/4;
+        $("#previewModal").on("show.bs.modal", function () {
+            applyPreviewSize();
+            $(window).on("resize.preview", applyPreviewSize);
 
-        function calcModalWidth() {
-            if(!modalSettings.dimensions) return MAX_W;
-            const [w, h] = modalSettings.dimensions;
-            if(w < MAX_W) return w;
-            const s = Math.min(MAX_H / h, MAX_W / w);
-            return Math.round(w * s);
+            var formData = new FormData(document.getElementsByName("questionDTO")[0]);
+
+            fetch("/question/previewDTO", { method: "POST", body: formData })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (updatedDTO) {
+                    var question = new Question();
+                    $.extend(question, updatedDTO);
+                    question.init();
+                    updateQuestionTitles(updatedDTO);
+                    question.getHTML($("#questionContent"), true, previewLanguage);
+                    applyPreviewSize();
+                });
+        });
+
+        $("#previewModal").on("shown.bs.modal", applyPreviewSize);
+
+        $("#previewModal").on("hidden.bs.modal", function () {
+            $(window).off("resize.preview");
+            $(window).off("resize.question");
+
+            $("#questionContent").empty();
+            $("#questionTitle").empty();
+
+            $("#previewModalDialog").removeAttr("style");
+            $("#previewViewport").removeAttr("style");
+            $("#previewFrame").removeAttr("style");
+
+            document
+                .getElementById("previewModal")
+                .classList.remove("preview-sm", "preview-lg", "preview-phone");
+
+            delete modalSettings.dimensions;
+        });
+
+        function showModal(dimensions) {
+            if (dimensions) {
+                modalSettings.dimensions = dimensions;
+            } else {
+                delete modalSettings.dimensions;
+            }
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("previewModal")).show();
         }
-
-        function calcModalHeight() {
-            if(!modalSettings.dimensions) return MAX_H;
-            const [w, h] = modalSettings.dimensions;
-            if(h < MAX_H) return h;
-            const s = Math.min(MAX_H / h, MAX_W / w);
-            return Math.round(h * s);
-        }
-
-        function scaleToSelectedRatio() {
-            const w = calcModalWidth();
-            const h = calcModalHeight();
-            const outer = document.getElementById('modal-dialog');
-            outer.style.width = w + 'px';
-            outer.style.height = h + 'px';
-            return;
-        }
-
+        /*]]>*/
     </script>
 </th:block>

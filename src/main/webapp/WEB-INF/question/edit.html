@@ -6,6 +6,12 @@
         th:with="title=${messages.get(#locale, 'question.heading.editQuestion', 'Edit question')},
                 onLoad='handleQuestionTypes(true);'"
 >
+    <th:block layout:fragment="links">
+        <th:block
+            layout:replace="~{fragments/resourceFragment :: previewCSS}"
+        ></th:block>
+    </th:block>
+
     <th:block layout:fragment="content">
         <div class="panel-body">
             <form
@@ -1273,7 +1279,13 @@
                         layout:insert="~{helper/localeHelper/deleteLanguageModal}"
                 ></th:block>
                 <th:block
-                        layout:insert="~{question/previewModal}"
+                    layout:insert="~{question/previewModal :: previewModal}"
+                ></th:block>
+                <th:block
+                    layout:insert="~{question/previewModal :: previewModalDependencies}"
+                ></th:block>
+                <th:block
+                    layout:insert="~{question/previewModal :: previewModalScripts}"
                 ></th:block>
             </form>
         </div>
