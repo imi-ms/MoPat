@@ -22,6 +22,9 @@ import org.springframework.validation.Validator;
 public class QuestionnaireDTOValidator implements Validator {
 
     private static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
+    private static final int MAX_WELCOME_TEXT_LENGTH = 5_000;
+    private static final int MAX_FINAL_TEXT_LENGTH = 5_000;
+
 
     @Autowired
     private MessageSource messageSource;
@@ -106,6 +109,17 @@ public class QuestionnaireDTOValidator implements Validator {
                             "questionnaire.validator" + ".welcomeText" + ".notNull", new Object[]{},
                             LocaleContextHolder.getLocale()));
                 }
+                // Check if current welcome text is too long
+                else {
+                    int visibleWelcomeTextLength = HtmlUtilities.getVisibleText(entry.getValue()).length();
+                    if (visibleWelcomeTextLength > MAX_WELCOME_TEXT_LENGTH){
+                        errors.rejectValue("localizedWelcomeText[" + entry.getKey() + "]",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("questionnaire.error.welcomeTextTooLong",
+                                        new Object[]{visibleWelcomeTextLength, MAX_WELCOME_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+
+                    }
+                }
             }
         }
 
@@ -133,6 +147,17 @@ public class QuestionnaireDTOValidator implements Validator {
                         MoPatValidator.ERRORCODE_NOT_NULL, messageSource.getMessage(
                             "questionnaire.validator" + ".finalText" + ".notNull", new Object[]{},
                             LocaleContextHolder.getLocale()));
+                }
+                // Check if current final text is too long
+                else {
+                    int visibleFinalTextLength = HtmlUtilities.getVisibleText(entry.getValue()).length();
+                    if (visibleFinalTextLength > MAX_FINAL_TEXT_LENGTH){
+                        errors.rejectValue("localizedFinalText[" + entry.getKey() + "]",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("questionnaire.error.finalTextTooLong",
+                                        new Object[]{visibleFinalTextLength, MAX_FINAL_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+
+                    }
                 }
             }
         }

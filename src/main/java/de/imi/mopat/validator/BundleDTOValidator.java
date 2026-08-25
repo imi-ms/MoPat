@@ -158,7 +158,7 @@ public class BundleDTOValidator implements Validator {
                 // Check if current final text is too long
                 else {
                     int visibleFinalTextLength = HtmlUtilities.getVisibleText(entry.getValue()).length();
-                    if (visibleFinalTextLength > MAX_WELCOME_TEXT_LENGTH){
+                    if (visibleFinalTextLength > MAX_FINAL_TEXT_LENGTH){
                         errors.rejectValue("localizedFinalText[" + entry.getKey() + "]",
                                 MoPatValidator.ERRORCODE_ERRORMESSAGE,
                                 messageSource.getMessage("questionnaire.error.finalTextTooLong",
