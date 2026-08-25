@@ -57,14 +57,20 @@ public class ClinicDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
-        // Check if description text is too long
-        int visibleDescpriptionLength = HtmlUtilities.getVisibleText(clinicDTO.getDescription()).length();
+        // Check if description text is too long or empty
+        String visibleDescpription = HtmlUtilities.getVisibleText(clinicDTO.getDescription());
+        int visibleDescpriptionLength = visibleDescpription.length();
         if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
             errors.rejectValue("description",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+        } else if (visibleDescpription.isEmpty()) {
+            errors.rejectValue("description", "errormessage",
+                    messageSource.getMessage("clinic.description.notNull", new Object[]{},
+                            LocaleContextHolder.getLocale()));
         }
+
 
 
         if (!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)) {
