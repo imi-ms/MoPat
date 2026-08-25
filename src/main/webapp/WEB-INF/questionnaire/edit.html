@@ -235,8 +235,10 @@
                         |<img src='@{/images/questionnaire/__${questionnaireDTO.id}__/__${questionnaireDTO.logo}__}' class='file-preview-image'>| : 
                         '']]*/ "";
 
-		var maxQuestionTextLength = 2000;
-		var textLengthExceededMessage =
+		const maxQuestionTextLength = 2000;
+		const maxWelcomeTextLength = 5000;
+		const maxFinalTextLength = 5000;
+		const textLengthExceededMessage =
 			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
 
 		/*[- Initialize the logo upload field -]*/
@@ -254,6 +256,18 @@
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "description",
 				maxLength: maxQuestionTextLength,
+				message: textLengthExceededMessage
+			});
+			// Checks the length of the welcome text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedWelcomeText[",
+				maxLength: maxWelcomeTextLength,
+				message: textLengthExceededMessage
+			});
+			// Checks the length of the final text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedFinalText[",
+				maxLength: maxFinalTextLength,
 				message: textLengthExceededMessage
 			});
 

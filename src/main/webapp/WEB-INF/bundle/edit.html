@@ -778,16 +778,19 @@
 			checkPublishingState();
 			initBundleVisibility();
 			initializeQuestionnaireVersionGroupChevronAndSpacer();
+			// Checks length of the description text
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "description",
 				maxLength: maxDescriptionTextLength,
 				message: textLengthExceededMessage
 			});
+			// Checks length of the welcome text
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "localizedWelcomeText[",
 				maxLength: maxWelcomeTextLength,
 				message: textLengthExceededMessage
 			});
+			// Checks length of the final text
 			HtmlUtilities.bindWysiwygTextLengthValidation({
 				textareaNamePrefix: "localizedFinalText[",
 				maxLength: maxFinalTextLength,
