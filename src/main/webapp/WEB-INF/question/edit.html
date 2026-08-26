@@ -1867,6 +1867,7 @@
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
                         .parent()
+                        .attr("disabled", "disabled")
                         .addClass("d-none");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
@@ -1890,6 +1891,7 @@
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
                         .parent()
+                        .removeAttr("disabled")
                         .removeClass("d-none");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
