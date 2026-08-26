@@ -71,7 +71,6 @@ public class InvitationDTOValidator implements Validator {
         // Checks if message is too long (message is named personalText in DTO)
         int personalTextLength = HtmlUtilities.getVisibleText(invitationDTO.getPersonalText()).length();
         if (personalTextLength > MAX_PERSONAL_TEXT_LENGTH){
-            System.out.println("message zu lang!!!");
             errors.rejectValue("personalText",
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("invitation.message.tooLong",
