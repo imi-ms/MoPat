@@ -123,8 +123,8 @@ jobs:
 
       - name: Show Selenoid logs
         if: always()
-        run: docker logs selenoid
-        
+        run: docker logs selenium-selenoid-1
+
       - name: Upload Selenoid videos
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
