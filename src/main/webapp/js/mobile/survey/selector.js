@@ -94,10 +94,10 @@ Selector.normalizeNumberInput = function (answer, value) {
         return { value: "", rounded: false };
     }
     if (answer.minValue !== null && value < answer.minValue) {
-        return { value: answer.minValue, rounded: false };
+        return { value: answer.minValue, rounded: true };
     }
     if (answer.maxValue !== null && value > answer.maxValue) {
-        return { value: answer.maxValue, rounded: false };
+        return { value: answer.maxValue, rounded: true };
     }
     if (answer.stepsize !== null) {
         var snapped = stepsizeRounding(answer.minValue, value, answer.stepsize);
@@ -118,11 +118,8 @@ Selector.renderNumberInput = function (answer, value, inputEl, tooltipEl) {
     var tooltip = tooltipEl ? $(tooltipEl) : $("#toolTipText");
 
     input.val(result.value);
-
     if (result.rounded) {
-        //TODO:Change to message here. Also fix.
-        tooltip.html("Zahl wurde gerundet auf " + result.value);
-        tooltip.css("opacity", "100");
+        tooltip.css("opacity", "1");
         setTimeout(function () {
             tooltip.css("opacity", "0");
         }, 2000);

@@ -865,9 +865,13 @@ function Question() {
                     "id": "numberInput"
                 });
 
-                 var tooltipSpan = $("<span/>", {
-                    "id": "toolTipText"
+                var tooltipSpan = $("<span/>", {
+                    "id": "toolTipText",
+                    "style": "opacity: 0",
                 });
+                tooltipSpan.html(
+                    strings["survey.questionnaire.label.numberInput.roundingTooltip"]
+                );
 
                 if (isPreview) {
                     numberInput.on("change", function () {
@@ -882,9 +886,7 @@ function Question() {
 
                 inputDiv.append(numberInput);
 
-                inputDiv.append($("<span/>", {
-                    "id": "toolTipText"
-                }));
+                inputDiv.append(tooltipSpan);
 
                 row.append(inputLabel);
                 row.append(inputDiv);
