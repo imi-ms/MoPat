@@ -528,6 +528,7 @@ function Question() {
                     var datamatrixReader = new ZXing.BrowserDatamatrixCodeReader();
                     var videoDeviceIndex = "";
                     var videoDeviceIndex = 0;
+                    var videoModalEl = null; 
 
                     var switchCamera = function(event) {
                         /*[- Reset to clear all existing instances -]*/
@@ -549,9 +550,10 @@ function Question() {
 
                     var loadVideoDiv = function() {
                         // Check if the scan was successful and fill in the result
+                        videoModalEl = $("#videoModal")[0];
                         barcodeReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
@@ -561,7 +563,7 @@ function Question() {
                         .catch(function (err) {});
                         qrcodeReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
@@ -571,7 +573,7 @@ function Question() {
                         .catch(function (err) {});
                         datamatrixReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
@@ -607,10 +609,9 @@ function Question() {
                             // Add a button to begin scanning
                             var scanButton = $("<button/>", {
                                 "id": "scanButton",
+                                "type": "button",
                                 "class": "btn btn-mobile btn-question me-1 mb-2",
                                 "title": strings['survey.question.barcode.scanButton'],
-                                "data-bs-toggle": "modal",
-                                "data-bs-target": "#videoModal"
                             });
 
                             var scanLabel = $("<span/>", {
@@ -622,6 +623,7 @@ function Question() {
 
                             var clearButton = $("<button/>", {
                                 "id": "clearButton",
+                                "type": "button",
                                 "class": "btn btn-mobile btn-question ms-1 mb-2",
                                 "title": strings['survey.question.barcode.clearButton'],
                             });
@@ -650,6 +652,14 @@ function Question() {
                                 "aria-labeledby": "staticBackdrop",
                                 "aria-hidden": "true"
                             }); 
+
+                            var videoModalEl = videoModal[0];
+
+                            scanButton.on("click", function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                bootstrap.Modal.getOrCreateInstance(videoModalEl).show();
+                            });
 
                             var modalDialog = $("<div/>", {
                                 "class": "modal-dialog modal-dialog-centered"
@@ -744,15 +754,20 @@ function Question() {
 
                             videoModal.append(modalDialog); 
 
+                            questionContent.prepend(buttonDiv);
 
-                            questionContent.prepend(videoModal);
+                            if (isPreview) {
+                                $("body").append(videoModal);
+                            } else {
+                                questionContent.prepend(videoModal);
+                            }
+
                             questionContent.prepend(buttonDiv);
                             
                             if(!isPreview) setFontSize(fontSizeClass);
 
-                            $("#videoModal").on("hidden.bs.modal", closeModal);
-
-                            $("#videoModal").on("shown.bs.modal", openModal);
+                            $(videoModalEl).on("hidden.bs.modal", closeModal);
+                            $(videoModalEl).on("shown.bs.modal", openModal);    
                             // Add the EventListener for the click event to the scan button
                             document.getElementById('clearButton').addEventListener('click', function () {
                                 $('#textarea').val('');
@@ -767,41 +782,44 @@ function Question() {
                 }
 
                 break;
-                // NUMBER INPUT
+
+            // NUMBER INPUT
             case Questiontypes.NUMBER_INPUT:
+                var numberAnswer = this.answers[0];
+
                 // Get the appropriate message for the number input. Could be either a decimal or a integer.
-                if (this.answers[0].stepsize != null) {
-                    var topicLabelHtml = this.answers[0].stepsize % 1 != 0 ? 
-                    strings['survey.questionnaire.label.numberInput.wrongInputDecimal'] : 
+                if (numberAnswer.stepsize != null) {
+                    var topicLabelHtml = numberAnswer.stepsize % 1 != 0 ?
+                    strings['survey.questionnaire.label.numberInput.wrongInputDecimal'] :
                     strings['survey.questionnaire.label.numberInput.wrongInputInteger'];
                 } else {
-                    //If no stepsize is given, any input is allowed 
+                    //If no stepsize is given, any input is allowed
                     var topicLabelHtml = strings['survey.questionnaire.label.numberInput.wrongInputDecimal'];
                 }
                 var roundNoteHtml = strings['survey.questionnaire.label.numberInput.roundingNote'];
                 // If the number input has a min and a max value, only a min value or only a max get the additional message.
-                if (this.answers[0].minValue !== null && this.answers[0].maxValue !== null) {
+                if (numberAnswer.minValue !== null && numberAnswer.maxValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.minMax'];
-                } else if (this.answers[0].maxValue !== null) {
+                } else if (numberAnswer.maxValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.max'];
-                } else if (this.answers[0].minValue !== null) {
+                } else if (numberAnswer.minValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.min'];
-                } 
+                }
                 //Always append stepsize message if a value was given
-                if (this.answers[0].stepsize !== null) {
+                if (numberAnswer.stepsize !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.stepSize'];
                 }
                 // Replace the placeholders.
-                topicLabelHtml = topicLabelHtml.replace('{min}', this.answers[0].minValue);
-                topicLabelHtml = topicLabelHtml.replace('{max}', this.answers[0].maxValue);
-                
-                if (this.answers[0].stepsize != null) {
-                    var numStr = this.answers[0].stepsize;
-                    if (this.answers[0].stepsize.includes('.') && this.answers[0].stepsize.endsWith('.0')) {
+                topicLabelHtml = topicLabelHtml.replace('{min}', numberAnswer.minValue);
+                topicLabelHtml = topicLabelHtml.replace('{max}', numberAnswer.maxValue);
+
+                if (numberAnswer.stepsize != null) {
+                    var numStr = numberAnswer.stepsize;
+                    if (numberAnswer.stepsize.includes('.') && numberAnswer.stepsize.endsWith('.0')) {
                         // Remove the decimal point and trailing zero
-                        numStr = this.answers[0].stepsize.slice(0, -2);
+                        numStr = numberAnswer.stepsize.slice(0, -2);
                     }
-                    topicLabelHtml = topicLabelHtml.replace("{stepSize}",numStr);
+                    topicLabelHtml = topicLabelHtml.replace("{stepSize}", numStr);
                 }
 
                 var topicLabel = $("<label/>", {
@@ -811,7 +829,7 @@ function Question() {
 
                 questionContent.append(topicLabel);
 
-                if (this.answers[0].stepsize != null) {
+                if (numberAnswer.stepsize != null) {
                     var roundingNoteLabel = $("<p/>", {
                         "html": roundNoteHtml,
                         "class": "mb-5"
@@ -821,43 +839,60 @@ function Question() {
 
                 var row = $("<div/>", {
                     "class": "row mt-5 d-flex align-items-center"
-                }); 
+                });
 
                 var inputLabel = $("<div/>", {
                     "class": "col-12 col-bp-4 d-flex align-items-center"
-                }); 
+                });
 
                 inputLabel.append($("<span/>", {
                     "id": "freetextLabel",
                     "class": "resizable",
-                    "html": this.answers[0].stepsize % 1 != 0 ? strings['survey.questionnaire.label.numberInput.decimal'] + ":" : strings['survey.questionnaire.label.numberInput.integer'] + ":"
-                })); 
+                    "html": numberAnswer.stepsize % 1 != 0 ? strings['survey.questionnaire.label.numberInput.decimal'] + ":" : strings['survey.questionnaire.label.numberInput.integer'] + ":"
+                }));
 
                 var inputDiv = $("<div/>", {
                     "class": "tooltipC col-12 col-bp-8"
-                }); 
+                });
 
-                inputDiv.append($("<input/>", {
+                var numberInput = $("<input/>", {
                     "type": "number",
                     "class": "resizable form-control gray",
-                    "min": this.answers[0].minValue,
-                    "max": this.answers[0].maxValue,
-                    "step": this.answers[0].stepsize,
+                    "min": numberAnswer.minValue,
+                    "max": numberAnswer.maxValue,
+                    "step": numberAnswer.stepsize,
                     "name": "numberInput",
-                    "id": "numberInput",
-                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", this.value, '', '', true)"
-                }));
+                    "id": "numberInput"
+                });
+
+                 var tooltipSpan = $("<span/>", {
+                    "id": "toolTipText"
+                });
+
+                if (isPreview) {
+                    numberInput.on("change", function () {
+                        Selector.renderNumberInput(numberAnswer, this.value, this, tooltipSpan);
+                    });
+                } else {
+                    numberInput.attr(
+                        "onChange",
+                        "Selector.selectElement(" + question.id + ", " + numberAnswer.id + ", this.value, '', '', true)"
+                    );
+                }
+
+                inputDiv.append(numberInput);
 
                 inputDiv.append($("<span/>", {
                     "id": "toolTipText"
                 }));
 
-                row.append(inputLabel); 
-                row.append(inputDiv); 
+                row.append(inputLabel);
+                row.append(inputDiv);
 
                 questionContent.append(row);
                 break;
-                // NUMBER CHECKBOX TEXT
+
+            // NUMBER CHECKBOX TEXT
             case Questiontypes.NUMBER_CHECKBOX_TEXT:
                 createNumberCheckboxes(this, questionContent, isPreview, language);
 
@@ -957,13 +992,17 @@ function Question() {
                 break;
                 // IMAGE
             case Questiontypes.IMAGE:
-                // Create a div which centers the canvas
+                var imageAnswer = this.answers[0];
+
+                // Preview has no encounter: keep marks in a local store.
+                question.previewPointsOnImage = [];
+                question.previewPointsPosition = -1;
+
                 var canvasDiv = $("<div/>", {
                     "id": "canvasDiv",
                     "style": "text-align:center; width:100%;"
                 });
 
-                // Create a div which cointains the undo/redo buttons and the color picker
                 var toolbarDiv = $("<div/>", {
                     "id": "toolbarDiv",
                     "class": "d-flex justify-content-center mb-3"
@@ -971,10 +1010,11 @@ function Question() {
 
                 var buttonDiv = $("<div/>", {
                     "class": "d-flex"
-                }); 
+                });
 
                 var undoButton = $("<button/>", {
                     "id": "undoButton",
+                    "type": "button",
                     "class": "btn btn-mobile me-1",
                     "title": strings['survey.question.image.button.undo'],
                     "disabled": "true"
@@ -986,6 +1026,7 @@ function Question() {
 
                 var redoButton = $("<button/>", {
                     "id": "redoButton",
+                    "type": "button",
                     "class": "btn btn-mobile ms-1",
                     "title": strings['survey.question.image.button.redo'],
                     "disabled": "true"
@@ -997,84 +1038,136 @@ function Question() {
 
                 var colorButtonGroup = $("<div/>", {
                     "class": "btn-group align-items-center ms-1 me-1 h-100"
-                }); 
+                });
 
                 colorButtonGroup.append($("<input/>", {
                     "name": "colorCheckbox",
-                    "id": "checkboxBlack", 
+                    "id": "checkboxBlack",
                     "class": "btn-check",
-                    "value": "#000000", 
+                    "value": "#000000",
                     "type": "radio",
                     "checked": "checked"
-                })); 
+                }));
 
                 colorButtonGroup.append($("<label/>", {
-                    "for": "checkboxBlack", 
+                    "for": "checkboxBlack",
                     "class": "btn btn-outline-primary h-100 d-flex align-items-center z-0",
                     "html": strings['survey.question.image.flipswitch.black']
-                })); 
+                }));
 
                 colorButtonGroup.append($("<input/>", {
                     "name": "colorCheckbox",
-                    "id": "checkboxWhite", 
+                    "id": "checkboxWhite",
                     "class": "btn-check",
-                    "value": "#ffffff", 
-                    "type": "radio",
-                })); 
+                    "value": "#ffffff",
+                    "type": "radio"
+                }));
 
                 colorButtonGroup.append($("<label/>", {
-                    "for": "checkboxWhite", 
+                    "for": "checkboxWhite",
                     "class": "btn btn-outline-primary h-100 d-flex align-items-center z-0",
                     "html": strings['survey.question.image.flipswitch.white']
-                })); 
+                }));
 
-                buttonDiv.append(undoButton); 
+                buttonDiv.append(undoButton);
                 buttonDiv.append(colorButtonGroup);
-                buttonDiv.append(redoButton); 
+                buttonDiv.append(redoButton);
 
-                // Append all tools to the toolbar div
                 toolbarDiv.append(buttonDiv);
-                // Create an empty canvas element and set its context to 2d
+
                 var canvas = document.createElement("canvas");
                 canvas.setAttribute("id", "canvas");
+                question.canvasElement = canvas;
 
+                canvasDiv.append(canvas);
+
+                // Toolbar first so it renders above the image.
+                if (!this.isJustInfo) {
+                    questionContent.append(toolbarDiv);
+                }
+                questionContent.append(canvasDiv);
+
+                // Only size the canvas once it is in the document.
                 this.rearrange(isPreview);
 
-                var rearrangeEvent = ()=> {
-                    this.rearrange(isPreview);
-                }
+                var rearrangeEvent = () => {
+                    question.rearrange(isPreview);
+                };
 
                 $(window).on("resize.question", rearrangeEvent);
 
-                // Enable the undo button if there are already points on th image
-                if (!isPreview && encounter.getResponse(question.answers[0].id) !== null && encounter.getResponse(question.answers[0].id).pointsOnImage.length > 0) {
-                    undoButton.removeAttr("disabled");
-                }
-                // Append the divs to the question content
-                canvasDiv.append(canvas);
-                questionContent.append(canvasDiv);
                 if (this.isJustInfo) {
                     break;
                 }
-                questionContent.append(toolbarDiv);
 
-                // Bind mouse actions on canvas and buttons
+                if (!isPreview
+                        && encounter.getResponse(imageAnswer.id) !== null
+                        && encounter.getResponse(imageAnswer.id).pointsOnImage.length > 0) {
+                    undoButton.removeAttr("disabled");
+                }
+
+                var syncPreviewButtons = function () {
+                    if (question.previewPointsPosition >= 0) {
+                        undoButton.removeAttr("disabled");
+                    } else {
+                        undoButton.attr("disabled", "disabled");
+                    }
+                    if (question.previewPointsPosition < question.previewPointsOnImage.length - 1) {
+                        redoButton.removeAttr("disabled");
+                    } else {
+                        redoButton.attr("disabled", "disabled");
+                    }
+                };
+
                 canvas.addEventListener('click', function (e) {
-                    var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
-                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, mouseClickPosition, '', '', true);
+                    if (isPreview) {
+                        // getBoundingClientRect accounts for the preview frame's
+                        // CSS transform; offsetLeft/pageX do not.
+                        var rect = this.getBoundingClientRect();
+                        var relativeX = (e.clientX - rect.left) / rect.width;
+                        var relativeY = (e.clientY - rect.top) / rect.height;
+
+                        // Drop anything redone-past, then append.
+                        question.previewPointsOnImage.length = question.previewPointsPosition + 1;
+                        question.previewPointsOnImage.push({
+                            xCoordinate: relativeX,
+                            yCoordinate: relativeY,
+                            color: colorButtonGroup.find("input[name='colorCheckbox']:checked").val()
+                        });
+                        question.previewPointsPosition = question.previewPointsOnImage.length - 1;
+                        syncPreviewButtons();
+                    } else {
+                        var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
+                        Selector.selectElement(question.id, imageAnswer.id, mouseClickPosition, '', '', true);
+                    }
                     question.redraw(image, isPreview);
                 });
 
-                document.getElementById("undoButton").onclick = function () {
-                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, 'undo', null, null, true);
+                undoButton.on("click", function () {
+                    if (isPreview) {
+                        if (question.previewPointsPosition >= 0) {
+                            question.previewPointsPosition--;
+                        }
+                        syncPreviewButtons();
+                    } else {
+                        Selector.selectElement(question.id, imageAnswer.id, 'undo', null, null, true);
+                    }
                     question.redraw(image, isPreview);
-                };
+                });
 
-                document.getElementById("redoButton").onclick = function () {
-                    if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, 'redo', null, null, true);
+                redoButton.on("click", function () {
+                    if (isPreview) {
+                        if (question.previewPointsPosition < question.previewPointsOnImage.length - 1) {
+                            question.previewPointsPosition++;
+                        }
+                        syncPreviewButtons();
+                    } else {
+                        Selector.selectElement(question.id, imageAnswer.id, 'redo', null, null, true);
+                    }
                     question.redraw(image, isPreview);
-                };
+                });
                 break;
+
             case Questiontypes.BODY_PART:
                 questionContent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
                 questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
@@ -1832,56 +1925,49 @@ function Question() {
                 };
 
                 // Set the image source after the onload function to get sure that it's fired
-                if(isPreview) {
-                    var reader = new FileReader();
-                    reader.onload = function(event) {
-                        var base64Data = event.target.result;
-                        image.src = base64Data;
-                    }
-                    var imageFile = $("#imageFile")[0];
-                    var blob = imageFile.files[0];
-                    if(blob) reader.readAsDataURL(blob); // Image was uploaded in this session
-                    else image.src = imageFile.dataset.path; // Image was uploaded previously
-                } else {
-                    image.src = this.answers[0].imageBase64;
-                }
+                image.src = this.answers[0].imageBase64;
 
                 break;
         }
     };
 
     this.redraw = function (image, isPreview) {
-        // Get the context from the existing canvas
-        var context = $('#canvas')[0].getContext("2d");
-        // Clear the canvas
+        var canvasEl = this.canvasElement || $('#canvas')[0];
+        if (!canvasEl || !image) { return; }
+
+        var context = canvasEl.getContext("2d");
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        // Draw the image
-        context.drawImage(image, 0, 0, image.width, image.height, 0, 0, $('#canvas')[0].width, $('#canvas')[0].height);
-        // Set the linetype and linewidth
+        context.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasEl.width, canvasEl.height);
         context.lineJoin = "round";
         context.lineWidth = 2;
 
-        // If the encounter has already a response
-        if (!isPreview && encounter.getResponse(this.answers[0].id) !== null) {
-            // Draw every point that must be shown
-            for (var i = 0; i <= encounter.getResponse(this.answers[0].id).currentPointsPosition; i++) {
-                // Get the current point and calculate its x and y coordinates depending on the canvas size
-                var currentPoint = encounter.getResponse(this.answers[0].id).pointsOnImage[i];
-                var xCoordinate = currentPoint.xCoordinate * $('#canvas')[0].width;
-                var yCoordinate = currentPoint.yCoordinate * $('#canvas')[0].height;
+        var points = null;
+        var lastIndex = -1;
 
-                // Set the right color of the current point
-                context.strokeStyle = currentPoint.color;
+        if (isPreview) {
+            points = this.previewPointsOnImage || [];
+            lastIndex = (this.previewPointsPosition === undefined) ? -1 : this.previewPointsPosition;
+        } else if (encounter.getResponse(this.answers[0].id) !== null) {
+            points = encounter.getResponse(this.answers[0].id).pointsOnImage;
+            lastIndex = encounter.getResponse(this.answers[0].id).currentPointsPosition;
+        }
 
-                // Draw an X on the calculated point
-                context.beginPath();
-                context.moveTo(xCoordinate - 5, yCoordinate - 5);
-                context.lineTo(xCoordinate + 5, yCoordinate + 5);
-                context.moveTo(xCoordinate + 5, yCoordinate - 5);
-                context.lineTo(xCoordinate - 5, yCoordinate + 5);
-                context.closePath();
-                context.stroke();
-            }
+        if (!points) { return; }
+
+        for (var i = 0; i <= lastIndex && i < points.length; i++) {
+            var currentPoint = points[i];
+            var xCoordinate = currentPoint.xCoordinate * canvasEl.width;
+            var yCoordinate = currentPoint.yCoordinate * canvasEl.height;
+
+            context.strokeStyle = currentPoint.color;
+
+            context.beginPath();
+            context.moveTo(xCoordinate - 5, yCoordinate - 5);
+            context.lineTo(xCoordinate + 5, yCoordinate + 5);
+            context.moveTo(xCoordinate + 5, yCoordinate - 5);
+            context.lineTo(xCoordinate - 5, yCoordinate + 5);
+            context.closePath();
+            context.stroke();
         }
     };
 

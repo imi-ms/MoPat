@@ -87,6 +87,51 @@ Selector.selectElement = function (questionId, answerId, value, customtext, date
 };
 
 /**
+ * Normalizes the number input value according to the answer's minValue, maxValue, and stepsize.
+ */
+Selector.normalizeNumberInput = function (answer, value) {
+    if (value === "" || value === null || isNaN(value)) {
+        return { value: "", rounded: false };
+    }
+    if (answer.minValue !== null && value < answer.minValue) {
+        return { value: answer.minValue, rounded: false };
+    }
+    if (answer.maxValue !== null && value > answer.maxValue) {
+        return { value: answer.maxValue, rounded: false };
+    }
+    if (answer.stepsize !== null) {
+        var snapped = stepsizeRounding(answer.minValue, value, answer.stepsize);
+        if (value != snapped) {
+            return { value: snapped, rounded: true };
+        }
+    }
+    return { value: value, rounded: false };
+};
+
+/**
+ * Renders the number input with the provided value and shows a tooltip if the value was rounded.
+ */
+Selector.renderNumberInput = function (answer, value, inputEl, tooltipEl) {
+    var result = Selector.normalizeNumberInput(answer, value);
+
+    var input = inputEl ? $(inputEl) : $("#numberInput");
+    var tooltip = tooltipEl ? $(tooltipEl) : $("#toolTipText");
+
+    input.val(result.value);
+
+    if (result.rounded) {
+        //TODO:Change to message here. Also fix.
+        tooltip.html("Zahl wurde gerundet auf " + result.value);
+        tooltip.css("opacity", "100");
+        setTimeout(function () {
+            tooltip.css("opacity", "0");
+        }, 2000);
+    }
+
+    return result.value;
+};
+
+/**
  * Updates the input with the provided value and updates the ecounter.
  */
 Selector.setInput = function (question, value, manual) {
@@ -94,45 +139,28 @@ Selector.setInput = function (question, value, manual) {
     var response = encounter.getResponse(answer.id);
     var isSelected = true;
 
-    if (response === null) {
-        response = new Response();
-    }
-
-    var input = $("#numberInput");
-    var tooltip = $("#toolTipText");
-
-    // If the given value is not an Integer empty the input field
     if (isNaN(value)) {
         value = "";
         isSelected = false;
     }
-    // Handle the condition if the the answer was given manually
+
+    if (response === null) {
+        response = new Response();
+    }
+
     if (manual === true) {
         this.handleConditions(question, answer, value, isSelected);
     }
-    // If the given response is out of range move it into the range
+
+    value = Selector.renderNumberInput(answer, value);
+
     if (value === "") {
         encounter.removeResponse(response);
-        input.val("");
         return;
-    } else if (answer.minValue !== null && value < answer.minValue) {
-        value = answer.minValue;
-    } else if (answer.maxValue !== null && value > answer.maxValue) {
-        value = answer.maxValue;
-    } else if (answer.stepsize !== null) {
-        if ( value != stepsizeRounding(answer.minValue, value, answer.stepsize) ) {
-            value = stepsizeRounding(answer.minValue, value, answer.stepsize);
-            tooltip.html("Zahl wurde gerundet auf "+ value);
-            tooltip.css("opacity","100");
-        }
     }
 
     response.answerId = answer.id;
     response.value = value;
-    input.val(value);
-    setTimeout(()=>{
-     tooltip.css("opacity","0");
-    },2000)
     encounter.mergeResponse(response);
 };
 
