@@ -207,6 +207,43 @@
             return true;
         }
 
+        function updateQuestionTypeScrollShadows(scrollContainer) {
+            var wrapper = scrollContainer.closest(".question-type-canvas-wrapper");
+            if (!wrapper) return;
+
+            var maxScroll = Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth);
+
+            var isScrollable = maxScroll > 1;
+            var isAtStart = scrollContainer.scrollLeft <= 1;
+            var isAtEnd = scrollContainer.scrollLeft >= maxScroll - 1;
+
+            wrapper.classList.toggle("has-left-shadow", isScrollable && !isAtStart);
+
+            // Visible initially because the right side is still available to scroll.
+            wrapper.classList.toggle("has-right-shadow", isScrollable && !isAtEnd);
+        }
+
+        function initializeQuestionTypeScrollShadows() {
+            document.querySelectorAll(".question-type-scroll").forEach(function (scrollContainer) {
+                scrollContainer.addEventListener("scroll", function () {
+                    updateQuestionTypeScrollShadows(scrollContainer);
+                });
+
+                // Wait until dimensions are available.
+                requestAnimationFrame(function () {
+                    updateQuestionTypeScrollShadows(scrollContainer);
+                });
+            });
+        }
+
+        window.addEventListener("resize", initializeQuestionTypeScrollShadows);
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initializeQuestionTypeScrollShadows);
+        } else {
+            initializeQuestionTypeScrollShadows();
+        }
+
         document.addEventListener("mousemove", function (e) {
             if (questionTypeActiveDragElement) {
                 questionTypeDragMove(e, questionTypeActiveDragElement);
