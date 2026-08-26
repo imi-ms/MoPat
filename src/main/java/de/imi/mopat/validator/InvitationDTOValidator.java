@@ -73,7 +73,7 @@ public class InvitationDTOValidator implements Validator {
         if (personalTextLength > MAX_PERSONAL_TEXT_LENGTH){
             System.out.println("message zu lang!!!");
             errors.rejectValue("personalText",
-                    MoPatValidator.ERRORCODE_ERRORMESSAGE,     // searchs in "validationMessages" - for searching in "messages" file use MoPatValidator.ERRORCODE_ERRORMESSAGE instead of "errormessage"
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("invitation.message.tooLong",
                             new Object[]{personalTextLength, MAX_PERSONAL_TEXT_LENGTH},
                             LocaleContextHolder.getLocale()));
