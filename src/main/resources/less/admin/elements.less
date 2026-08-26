@@ -536,6 +536,69 @@ legend {
 }
 
 .question-type-canvas-wrapper {
+    --scroll-inset-x: 4rem;
+    --scroll-shadow-size: 1.5rem;
+}
+
+.question-type-canvas-wrapper::before,
+.question-type-canvas-wrapper::after {
+    margin-top: -0.5rem !important;
+    margin-bottom: -0.5rem !important;
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--scroll-shadow-size);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 160ms ease;
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+}
+
+
+.question-type-canvas-wrapper::before {
+    left: var(--scroll-inset-x);
+
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.18),
+        rgba(0, 0, 0, 0.06) 45%,
+        transparent
+    );
+}
+
+.question-type-canvas-wrapper::after {
+    right: var(--scroll-inset-x);
+
+    background: linear-gradient(
+        to left,
+        rgba(0, 0, 0, 0.18),
+        rgba(0, 0, 0, 0.06) 45%,
+        transparent
+    );
+}
+
+.question-type-canvas-wrapper.has-left-shadow::before,
+.question-type-canvas-wrapper.has-right-shadow::after {
+    opacity: 1;
+}
+
+.question-type-canvas-wrapper {
     width: 100%;
     padding-left: 4rem;
     padding-right: 4rem;
@@ -597,6 +660,7 @@ legend {
 
 @media (max-width: 768px) {
     .question-type-canvas-wrapper {
+        --scroll-inset-x: 2.5rem;
         padding-left: 2.5rem;
         padding-right: 2.5rem;
     }
@@ -614,6 +678,7 @@ legend {
 
 @media (max-width: 576px) {
     .question-type-canvas-wrapper {
+        --scroll-inset-x: 2rem;
         padding-left: 2rem;
         padding-right: 2rem;
     }

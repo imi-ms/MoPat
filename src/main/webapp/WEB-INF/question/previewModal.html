@@ -1,4 +1,70 @@
 <div
+    class="btn-group"
+    layout:fragment="previewModalButton"
+>
+    <button
+        type="button"
+        class="btn btn-primary"
+        value="preview"
+        disabled="disabled"
+        id="previewButton"
+        th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
+        th:attr="onclick=|showModal('tablet-landscape');|"
+    ></button>
+    <button
+        type="button"
+        id="previewSizesToggle"
+        class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+        disabled="disabled"
+        data-bs-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+    >
+        <span class="sr-only"></span>
+    </button>
+    <div
+        class="dropdown-menu"
+        id="preview-sizes-dropdown"
+    >
+        <a
+            class="dropdown-item"
+            onclick="showModal('phone-portrait')"
+            th:text="${messages.get(#locale, 'preview.phone.portrait', 'Phone (portrait) · 390 × 844')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal('phone-landscape')"
+            th:text="${messages.get(#locale, 'preview.phone.landscape', 'Phone (landscape) · 844 × 390')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal('tablet-portrait')"
+            th:text="${messages.get(#locale, 'preview.tablet.portrait', 'Tablet (portrait) · 810 × 1080')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal('tablet-landscape')"
+            th:text="${messages.get(#locale, 'preview.tablet.landscape', 'Tablet (landscape) · 1080 × 810')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal('laptop')"
+            th:text="${messages.get(#locale, 'preview.laptop', 'Laptop · 1366 × 768')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal('desktop')"
+            th:text="${messages.get(#locale, 'preview.desktop', 'Desktop · 2560 × 1080')}"
+        ></a>
+        <a
+            class="dropdown-item"
+            onclick="showModal()"
+            th:text="${messages.get(#locale, 'preview.unscaled', 'Scale to screen size')}"
+        ></a>
+    </div>
+</div>
+
+<div
     layout:fragment="previewModal"
     id="previewModal"
     class="modal fade"
@@ -14,6 +80,10 @@
             id="previewModalContent"
         >
             <div class="modal-header">
+                <span
+                    class="preview-meta"
+                    id="previewMeta"
+                ></span>
                 <button
                     type="button"
                     class="btn-close"
@@ -150,6 +220,10 @@
     <th:block layout:insert="~{fragments/bodyImages :: bodyImages}"></th:block>
 
     <script th:src="@{/js/svg/svg.min.js?version=3.3.4}"></script>
+    <script th:src="@{/js/modernizr/modernizr-custom.js?version=3.3.4}"></script>
+    <script th:src="@{/js/mobile/helper/survey/stepsizeRounding.js?version=3.3.4}"></script>
+    <script th:src="@{/js/mobile/helper/selector/freeTextCleaner.js?version=3.3.4}"></script>
+    <script th:src="@{/js/mobile/survey/selector.js?version=3.3.4}"></script>
     <script th:src="@{/js/zxing/zxing.min.js?version=3.3.4}"></script>
     <script th:src="@{/js/jQuery/jquery-barcode.min.js?version=3.3.4}"></script>
     <script th:src="@{/js/mobile/helper/survey/questionStyleEnhancer.js?version=3.3.4}"></script>
@@ -162,7 +236,7 @@
         type="text/javascript"
     >
         /*<![CDATA[*/
-        var previewLanguage = /*[[${#locale.toString}]]*/ "de_DE";
+        var previewLanguageFallback = /*[[${#locale.toString}]]*/ "de_DE";
 
         window.images = window.images || {};
         window.modalSettings = window.modalSettings || {};
@@ -173,16 +247,16 @@
         var PREVIEW_BP_ELEMENT_FALLBACK = 640; // 40rem
         var PREVIEW_BP_PHONE_FALLBACK = 500;
 
-        function previewBreakpointPx(el, prop, fallback) {
-            var raw = getComputedStyle(el).getPropertyValue(prop).trim();
-            if (!raw) return fallback;
-            var n = parseFloat(raw);
-            if (isNaN(n)) return fallback;
-            if (raw.indexOf("rem") > -1) {
-                return n * parseFloat(getComputedStyle(document.documentElement).fontSize);
-            }
-            return n;
-        }
+        var PREVIEW_SCALE = 0.9;
+
+        var PREVIEW_PRESETS = {
+            "phone-portrait": [390, 844],
+            "phone-landscape": [844, 390],
+            "tablet-portrait": [810, 1080],
+            "tablet-landscape": [1080, 810],
+            laptop: [1920, 1080],
+            desktop: [2560, 1080],
+        };
 
         function applyPreviewSize() {
             var modal = document.getElementById("previewModal");
@@ -198,11 +272,19 @@
             var availW = window.innerWidth - PREVIEW_MARGIN * 2 - PREVIEW_BORDER;
             var availH = window.innerHeight - PREVIEW_MARGIN * 2 - PREVIEW_BORDER - headH;
 
-            var dims = modalSettings.dimensions || [availW, availH];
-            var w = dims[0],
-                h = dims[1];
+            var w, h, s;
 
-            var s = Math.min(1, availW / w, availH / h);
+            if (modalSettings.dimensions) {
+                w = modalSettings.dimensions[0];
+                h = modalSettings.dimensions[1];
+                /* Fixed scale. Only clamped if the result genuinely cannot fit. */
+                s = Math.min(PREVIEW_SCALE, availW / w, availH / h);
+            } else {
+                w = availW;
+                h = availH;
+                s = 1;
+            }
+
             var vw = Math.round(w * s);
             var vh = Math.round(h * s);
 
@@ -217,7 +299,6 @@
             dialog.style.maxWidth = vw + PREVIEW_BORDER + "px";
             dialog.style.margin = PREVIEW_MARGIN + "px auto";
 
-            /* Breakpoints resolve against the frame's own width, not the window. */
             var bpElement = previewBreakpointPx(
                 modal,
                 "--preview-bp-element",
@@ -232,15 +313,87 @@
             modal.classList.toggle("preview-sm", w <= bpElement);
             modal.classList.toggle("preview-lg", w >= bpElement);
             modal.classList.toggle("preview-phone", w <= bpPhone);
+
+            var meta = document.getElementById("previewMeta");
+            if (meta) {
+                meta.textContent = modalSettings.dimensions
+                    ? w + " × " + h + " px · " + Math.round(s * 100) + "%"
+                    : "";
+            }
         }
 
-        function updateQuestionTitles(question) {
+        function previewBreakpointPx(el, prop, fallback) {
+            var raw = getComputedStyle(el).getPropertyValue(prop).trim();
+            if (!raw) return fallback;
+            var n = parseFloat(raw);
+            if (isNaN(n)) return fallback;
+            if (raw.indexOf("rem") > -1) {
+                return n * parseFloat(getComputedStyle(document.documentElement).fontSize);
+            }
+            return n;
+        }
+
+        function resolvePreviewLanguage(dto) {
+            var candidates = [];
+
+            var first = $("#addedLanguages").children().first();
+            if (first.length) {
+                var id = first.attr("id") || "";
+                var sep = id.lastIndexOf("_");
+                if (sep > 0) {
+                    candidates.push(id.substring(0, sep));
+                }
+            }
+
+            candidates.push(previewLanguageFallback);
+
+            var texts = (dto && dto.localizedQuestionText) || {};
+            for (var i = 0; i < candidates.length; i++) {
+                if (Object.prototype.hasOwnProperty.call(texts, candidates[i])) {
+                    return candidates[i];
+                }
+            }
+
+            for (var key in texts) {
+                if (Object.prototype.hasOwnProperty.call(texts, key)) {
+                    return key;
+                }
+            }
+
+            return candidates[0];
+        }
+
+        function showModal(preset) {
+            if (previewValidationErrors().length > 0) {
+                refreshPreviewAvailability();
+                return;
+            }
+
+            var dims = typeof preset === "string" ? PREVIEW_PRESETS[preset] : preset;
+            if (dims) {
+                modalSettings.dimensions = dims;
+            } else {
+                delete modalSettings.dimensions;
+            }
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("previewModal")).show();
+        }
+
+        function destroyBarcodeModal() {
+            var videoModal = document.getElementById('videoModal');
+            if (videoModal) {
+                var instance = bootstrap.Modal.getInstance(videoModal);
+                if (instance) { instance.hide(); }
+                videoModal.remove();
+            }
+        }
+
+        function updateQuestionTitles(question, lang) {
             $("#questionTitle")
                 .empty()
                 .append(
                     $("<span/>", {
                         id: "questionTitleText",
-                        html: question.localizedQuestionText[previewLanguage],
+                        html: question.localizedQuestionText[lang],
                     }),
                 );
         }
@@ -256,16 +409,27 @@
                     return res.json();
                 })
                 .then(function (updatedDTO) {
+                    var lang = resolvePreviewLanguage(updatedDTO);
+
                     var question = new Question();
                     $.extend(question, updatedDTO);
                     question.init();
-                    updateQuestionTitles(updatedDTO);
-                    question.getHTML($("#questionContent"), true, previewLanguage);
+                    updateQuestionTitles(updatedDTO, lang);
+                    question.getHTML($("#questionContent"), true, lang);
                     applyPreviewSize();
+
+                    /* question.js binds its resize handler on a 100 ms timeout,
+                    so anything earlier than that is a no-op. */
+                    setTimeout(function () {
+                        $(window).trigger("resize");
+                    }, 150);
                 });
         });
 
-        $("#previewModal").on("shown.bs.modal", applyPreviewSize);
+        $("#previewModal").on("shown.bs.modal", function () {
+            applyPreviewSize();
+            $(window).trigger("resize");
+        });
 
         $("#previewModal").on("hidden.bs.modal", function () {
             $(window).off("resize.preview");
@@ -278,6 +442,8 @@
             $("#previewViewport").removeAttr("style");
             $("#previewFrame").removeAttr("style");
 
+            destroyBarcodeModal();
+
             document
                 .getElementById("previewModal")
                 .classList.remove("preview-sm", "preview-lg", "preview-phone");
@@ -285,14 +451,192 @@
             delete modalSettings.dimensions;
         });
 
-        function showModal(dimensions) {
-            if (dimensions) {
-                modalSettings.dimensions = dimensions;
-            } else {
-                delete modalSettings.dimensions;
+        /* ---------- preview availability ---------- */
+
+        var PREVIEW_FORM_NAME = 'questionDTO';
+
+        var PREVIEW_TYPE_SECTIONS = {
+            MULTIPLE_CHOICE:      'multipleChoice',
+            DROP_DOWN:            'multipleChoice',
+            FREE_TEXT:            'freeText',
+            INFO_TEXT:            'infoText',
+            BARCODE:              'barcode',
+            SLIDER:               'slider',
+            NUMBER_CHECKBOX:      'slider',
+            NUMBER_CHECKBOX_TEXT: 'sliderFreeText',
+            DATE:                 'date',
+            NUMBER_INPUT:         'numberInput',
+            IMAGE:                'image',
+            BODY_PART:            'bodyPart'
+        };
+
+        var PREVIEW_SECTION_SELECTOR = (function () {
+            var seen = {}, parts = [], key;
+            for (key in PREVIEW_TYPE_SECTIONS) {
+                if (!PREVIEW_TYPE_SECTIONS.hasOwnProperty(key)) { continue; }
+                var id = PREVIEW_TYPE_SECTIONS[key];
+                if (seen[id]) { continue; }
+                seen[id] = true;
+                parts.push('#' + id);
             }
-            bootstrap.Modal.getOrCreateInstance(document.getElementById("previewModal")).show();
+            return parts.join(', ');
+        })();
+
+        function previewForm() {
+            return document.getElementsByName(PREVIEW_FORM_NAME)[0];
         }
+
+        function previewSelectedType() {
+            var typeInput = document.getElementById('questionTypeTabsInput');
+            return typeInput ? typeInput.value : '';
+        }
+
+        function previewActiveSection(form) {
+            var id = PREVIEW_TYPE_SECTIONS[previewSelectedType()];
+            if (!id) { return null; }
+            // Scoped to the form: #slider also exists inside the preview frame.
+            return form.querySelector('#' + id) || document.getElementById(id);
+        }
+
+        function previewFieldValue(el) {
+            var $el = $(el);
+            if ($el.hasClass('wysiwyg') && $el.summernote) {
+                try {
+                    return $el.summernote('code')
+                        .replace(/&nbsp;/g, '')
+                        .replace(/<br\s*\/?>/g, '')
+                        .replace(/<p>\s*<\/p>/g, '')
+                        .replace(/<[^>]+>/g, '')
+                        .trim();
+                } catch (e) { }
+            }
+            return (el.value || '').trim();
+        }
+
+        function previewIsCandidateControl(el) {
+            if (el.type === 'hidden' || el.type === 'button'
+                    || el.type === 'submit' || el.type === 'reset') { return false; }
+            // Spring's companion field for checkboxes: name="_answers[0].isEnabled"
+            if (el.name && el.name.charAt(0) === '_') { return false; }
+            if ($(el).closest('.note-editor, .note-modal').length) { return false; }
+            if ($(el).is(':disabled')) { return false; }
+            return true;
+        }
+
+        /* The `for` attributes are unreliable (for="answertext", for="codedValue"
+           and for="minValue" resolve to nothing), so walk up from the label until
+           an ancestor contains a usable control. */
+        function previewControlsNear(label) {
+            var stop = label.closest('fieldset, .panel-body, form');
+            var node = label.parentElement;
+
+            while (node) {
+                var found = $(node).find('input, select, textarea').filter(function () {
+                    return previewIsCandidateControl(this);
+                }).get();
+
+                if (found.length) { return found; }
+                if (node === stop) { break; }
+                node = node.parentElement;
+            }
+            return [];
+        }
+
+        function previewControlIsFilled(controls) {
+            for (var i = 0; i < controls.length; i++) {
+                var control = controls[i];
+
+                if (control.type === 'checkbox' || control.type === 'radio') {
+                    if (control.checked) { return true; }
+                    continue;
+                }
+                if (control.type === 'file') {
+                    if (control.files && control.files.length > 0) { return true; }
+                    continue;
+                }
+                if (previewFieldValue(control)) { return true; }
+            }
+            return false;
+        }
+
+        function previewValidationErrors() {
+            var form = previewForm();
+            if (!form) { return ['form not found']; }
+
+            var errors = [];
+
+            if (!previewSelectedType()) {
+                errors.push('question type not selected');
+                return errors;
+            }
+
+            var active = previewActiveSection(form);
+            var lang = resolvePreviewLanguage(null);
+
+            $(form).find('label.required').each(function () {
+                var label = this;
+
+                // Skip labels that belong to a different question type.
+                var section = label.closest(PREVIEW_SECTION_SELECTOR);
+                if (section && section !== active) { return; }
+
+                // Only enforce the language the preview will actually render.
+                var localable = label.closest('[class*="localable-form-group-"]');
+                if (localable) {
+                    var match = /localable-form-group-(\S+)/.exec(localable.className);
+                    if (match && match[1] !== lang) { return; }
+                }
+
+                var controls = previewControlsNear(label);
+                if (!controls.length) { return; }
+                if (previewControlIsFilled(controls)) { return; }
+
+                var text = (label.textContent || '').replace(/\s+/g, ' ').trim();
+                var message = text || label.getAttribute('for') || 'unnamed field';
+
+                if (errors.indexOf(message) === -1) {
+                    errors.push(message);
+                }
+            });
+
+            return errors;
+        }
+
+        function refreshPreviewAvailability() {
+            var button = document.getElementById('previewButton');
+            var toggle = document.getElementById('previewSizesToggle');
+            if (!button) { return; }
+
+            var errors = previewValidationErrors();
+            var blocked = errors.length > 0;
+
+            button.disabled = blocked;
+            if (toggle) { toggle.disabled = blocked; }
+
+            var hint = blocked
+            button.setAttribute('title', hint);
+            if (toggle) { toggle.setAttribute('title', hint); }
+        }
+
+        $(function () {
+            var form = previewForm();
+            if (!form) { return; }
+
+            $(form).on('input change', 'input, select, textarea', refreshPreviewAvailability);
+            $(form).on('summernote.change', refreshPreviewAvailability);
+
+            $(document).on('shown.bs.tab click', '.question-type-card', function () {
+                setTimeout(refreshPreviewAvailability, 0);
+            });
+
+            // Answer panels and language blocks are added/removed dynamically.
+            new MutationObserver(function () {
+                refreshPreviewAvailability();
+            }).observe(form, { childList: true, subtree: true });
+
+            setTimeout(refreshPreviewAvailability, 250);
+        });
+
         /*]]>*/
     </script>
 </th:block>

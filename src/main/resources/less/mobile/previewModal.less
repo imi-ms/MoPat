@@ -24,6 +24,14 @@
   font-size: 1% * (@standard-survey-text-size * (1 + (@f * @fontsize-stepsize))) !important;
 }
 
+.preview-col-bp(@i) when (@i > 0) {
+  .col-bp-@{i} {
+    flex: 0 0 auto;
+    width: percentage((@i / 12));
+  }
+  .preview-col-bp(@i - 1);
+}
+
 @previewSliderThumbHeightSM: 24px;
 @previewSliderThumbWidthSM: 24px;
 @previewSliderThumbHeight: 40px;
@@ -81,6 +89,64 @@
   }
   40% {
     .preview-scale(1);
+  }
+}
+
+.btn-styles() {
+  .btn-mobile {
+    color: @color-black;
+    background-color: @color-gray-background;
+    border-radius: @border-radius-sm !important;
+    border-width: @border-width !important;
+    border-color: @color-gray-border !important;
+    box-shadow: @box-shadow-material-sm;
+    transition: @transition-value;
+    overflow: hidden;
+
+    &:active,
+    &:focus {
+      box-shadow: @box-shadow-highlight;
+    }
+
+    &.hyphenate {
+      hyphens: auto;
+    }
+
+    &:hover {
+      background-color: @color-blue-tinted;
+      color: @color-blue-light;
+      border-color: @color-blue-light;
+      box-shadow: @box-shadow-material-md;
+    }
+
+    &:disabled {
+      border-color: @color-gray-border !important;
+    }
+
+    &.btn-question {
+      font-size: 100% !important;
+    }
+  }
+
+  .btn-white {
+    background-color: @color-white !important;
+    &:hover {
+      background-color: @color-blue-tinted !important;
+    }
+  }
+
+  .btn-lowEmphasis {
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent;
+    color: @color-black;
+    border-radius: @border-radius-sm !important;
+    transition: @transition-value;
+
+    &:hover {
+      background-color: @color-blue-tinted;
+      color: @color-blue-light;
+    }
   }
 }
 
@@ -295,6 +361,22 @@
     display: none !important;
   }
 
+  .preview-col-bp(12);
+
+  .header {
+    padding-top: 10px;
+  }
+
+  .d-bp-block {
+    display: block !important;
+  }
+  .d-bp-flex {
+    display: flex !important;
+  }
+  .d-bp-none {
+    display: none !important;
+  }
+
   .questionnaireTitle {
     font-size: 140% !important;
   }
@@ -494,6 +576,16 @@
   }
 }
 
+#videoModal {
+  z-index: 1070;
+  .btn-styles();
+}
+
+#videoModal + .modal-backdrop,
+.modal-backdrop.show ~ .modal-backdrop.show {
+  z-index: 1065;
+}
+
 #previewModal {
   /* Read by applyPreviewSize(); delete both lines if the compiler
        chokes on custom properties and rely on the JS fallbacks. */
@@ -516,6 +608,15 @@
   .modal-header {
     border-bottom-color: @color-gray-border;
     background-color: @color-gray-background;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .preview-meta {
+    margin-right: auto;
+    font-size: 0.8rem;
+    color: @color-gray;
+    font-family: Consolas, monaco, monospace;
   }
 
   .preview-viewport {
@@ -560,6 +661,24 @@
     color: @color-blue-dark;
     font-size: 2rem;
   }
+
+  .bi-mirror-horizontal {
+    &::before {
+        -moz-transform:    scale(-1, 1); 
+        -o-transform:      scale(-1, 1);
+        -webkit-transform: scale(-1, 1); 
+        transform:         scale(-1, 1);
+    }
+}
+
+.bi-mirror-vertical {
+    &::before {
+        -moz-transform:    scale(-1);
+        -o-transform:      scale(-1);
+        -webkit-transform: scale(-1);
+        transform:         scale(-1);
+    }
+}
 
   .questionnaireTitle {
     font-weight: 700;
@@ -621,61 +740,7 @@
     }
   }
 
-  .btn-mobile {
-    color: @color-black;
-    background-color: @color-gray-background;
-    border-radius: @border-radius-sm !important;
-    border-width: @border-width !important;
-    border-color: @color-gray-border !important;
-    box-shadow: @box-shadow-material-sm;
-    transition: @transition-value;
-    overflow: hidden;
-
-    &:active,
-    &:focus {
-      box-shadow: @box-shadow-highlight;
-    }
-
-    &.hyphenate {
-      hyphens: auto;
-    }
-
-    &:hover {
-      background-color: @color-blue-tinted;
-      color: @color-blue-light;
-      border-color: @color-blue-light;
-      box-shadow: @box-shadow-material-md;
-    }
-
-    &:disabled {
-      border-color: @color-gray-border !important;
-    }
-
-    &.btn-question {
-      font-size: 100% !important !important;
-    }
-  }
-
-  .btn-white {
-    background-color: @color-white !important;
-    &:hover {
-      background-color: @color-blue-tinted !important;
-    }
-  }
-
-  .btn-lowEmphasis {
-    text-decoration: none;
-    background-color: transparent;
-    border-color: transparent;
-    color: @color-black;
-    border-radius: @border-radius-sm !important;
-    transition: @transition-value;
-
-    &:hover {
-      background-color: @color-blue-tinted;
-      color: @color-blue-light;
-    }
-  }
+  .btn-styles(); 
 
   .questionnaireNavigation {
     height: auto;
