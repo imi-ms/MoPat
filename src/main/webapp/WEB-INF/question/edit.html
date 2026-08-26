@@ -1255,38 +1255,24 @@
                         th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
                 >
                 </button>
-                <div class="btn-group">
-                    <button type="button"
-                            class="btn btn-primary"
-                            value="preview"
-                            id="previewButton"
-                            th:text="${messages.get(#locale, 'question.button.preview', 'Preview Question')}"
-                            th:attr="onclick=|showModal();|"
-                    ></button>
-                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span class="sr-only"></span>
-                    </button>
-                    <div class="dropdown-menu" id="preview-sizes-dropdown">
-                        <a class="dropdown-item" onclick="showModal([444, 962])" th:text="${messages.get(#locale, 'preview.phone.portrait', 'Phone (portrait): 9:19.5')}"></a>
-                        <a class="dropdown-item" onclick="showModal([962, 444])" th:text="${messages.get(#locale, 'preview.phone.landscape', 'Phone (landscape): 19.5:9')}"></a>
-                        <a class="dropdown-item" onclick="showModal([500, 800])" th:text="${messages.get(#locale, 'preview.tablet.portrait', 'Tablet (portrait): 3:4')}"></a>
-                        <a class="dropdown-item" onclick="showModal([800, 500])" th:text="${messages.get(#locale, 'preview.tablet.landscape', 'Tablet (landscape): 4:3')}"></a>
-                        <a class="dropdown-item" onclick="showModal([1280, 720])" th:text="${messages.get(#locale, 'preview.laptop', 'Laptop: 16:9')}"></a>
-                        <a class="dropdown-item" onclick="showModal([1680, 720])" th:text="${messages.get(#locale, 'preview.desktop', 'Desktop: 21:9')}"></a>
-                    </div>
-                </div>
-                <th:block
-                        layout:insert="~{helper/localeHelper/deleteLanguageModal}"
-                ></th:block>
-                <th:block
-                    layout:insert="~{question/previewModal :: previewModal}"
-                ></th:block>
-                <th:block
-                    layout:insert="~{question/previewModal :: previewModalDependencies}"
-                ></th:block>
-                <th:block
-                    layout:insert="~{question/previewModal :: previewModalScripts}"
-                ></th:block>
+
+                <previewModalButton
+                    layout:replace="~{question/previewModal :: previewModalButton}"
+                ></previewModalButton>
+                <previewModal
+                    layout:replace="~{question/previewModal :: previewModal}"
+                ></previewModal>
+                <previewModalDependencies
+                    layout:replace="~{question/previewModal :: previewModalDependencies}"
+                ></previewModalDependencies>
+                <previewModalScripts
+                    layout:replace="~{question/previewModal :: previewModalScripts}"
+                ></previewModalScripts>
+
+                <languageModal
+                        layout:replace="~{helper/localeHelper/deleteLanguageModal}"
+                ></languageModal>
+
             </form>
         </div>
     </th:block>
@@ -1784,17 +1770,6 @@
             }
         });
 
-
-
-        function showModal(dimensions) {
-            if(dimensions) {
-                modalSettings.dimensions = dimensions;
-            } else {
-                delete modalSettings.dimensions;
-            }
-            $('#previewModal').modal('show');
-        }
-
         const questionFormTypes = {
             multipleChoice: {id: "#multipleChoice", fieldId: "#answerField"},
             slider: {id: "#slider", fieldId: "#sliderField"},
@@ -1891,7 +1866,8 @@
                         .attr("contenteditable", "true");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
-                        .attr("disabled", "disabled");
+                        .parent()
+                        .addClass("d-none");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
                         .parent()
@@ -1913,7 +1889,8 @@
                     $("#slider").children().removeAttr("disabled");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
-                        .removeAttr("disabled");
+                        .parent()
+                        .removeClass("d-none");
                     $("#sliderField")
                         .find('input[name$=".vertical"]')
                         .parent()
