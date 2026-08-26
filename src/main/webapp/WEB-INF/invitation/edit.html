@@ -565,10 +565,15 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
+	<script th:src="@{/js/helper/htmlUtilities.js}"></script>
 	<script
 		th:inline="javascript"
 		type="text/javascript"
 	>
+		const maxPersonalTextLength = 2000;
+		const textLengthExceededMessage =
+			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
+
 		if ($("#invitationId").val() > 0) {
 			$(".collapsable").hide();
 		} else {
@@ -736,5 +741,28 @@
 		function getLastNumberInString(string) {
 			return string.match(/[0-9]+(?!.*[0-9])/);
 		}
+
+		/*
+ * Live character-count validation for the plain "personalText" textarea.
+ * bindWysiwygTextLengthValidation is not used here because it only works with
+ * WYSIWYG editors (Summernote / .note-editable). This field is a plain textarea,
+ * so we just read its value directly and reuse getVisibleText for identical
+ * counting as the backend.
+ */
+		$(function () {
+		$(function () {
+			const $textarea = $("textarea[name='personalText']");
+			const $error = $("<label class='text-danger d-block'></label>");
+			$textarea.before($error);
+
+			$textarea.on("input", function () {
+				const len = HtmlUtilities.getVisibleText($textarea.val()).length;
+				if (len > maxPersonalTextLength) {
+					$error.text(textLengthExceededMessage.replace("{0}", len).replace("{1}", maxPersonalTextLength)).show();
+				} else {
+					$error.hide();
+				}
+			});
+		});
 	</script>
 </th:block>
