@@ -116,6 +116,12 @@ jobs:
             sleep 5
           done
 
+      - name: Verify Selenoid configuration
+        run: |
+          docker inspect selenium-selenoid-1 \
+            --format '{{range .Config.Env}}{{println .}}{{end}}' \
+            | grep -E 'VIDEO|DOCKER_API'
+
       # Set up Python and run Selenium tests
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
