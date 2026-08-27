@@ -116,12 +116,6 @@ jobs:
             sleep 5
           done
 
-      - name: Verify Selenoid configuration
-        run: |
-          docker inspect selenium-selenoid-1 \
-            --format '{{range .Config.Env}}{{println .}}{{end}}' \
-            | grep -E 'VIDEO|DOCKER_API'
-
       # Set up Python and run Selenium tests
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -131,28 +125,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
 
-      - name: Verify video mount
-        if: always()
-        run: |
-          docker inspect selenium-selenoid-1 \
-            --format '{{.State.Status}}'
-
-          docker exec selenium-selenoid-1 sh -c \
-            'touch /opt/selenoid/video/mount-test.txt && ls -la /opt/selenoid/video'
-
-          echo "Host directory:"
-          ls -la "$VIDEO_DIR"
-
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
-
-      - name: Inspect Selenoid
-        if: always()
-        run: |
-          docker logs selenium-selenoid-1 || true
-          docker inspect selenium-selenoid-1 \
-            --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}'
 
       - name: Wait for video recording to finish
         if: always()
@@ -173,16 +148,6 @@ jobs:
       
           echo "Videos:"
           find "$VIDEO_DIR" -maxdepth 1 -type f -ls
-      
-          echo "Selenoid logs:"
-          docker logs selenium-selenoid-1 || true
-
-      - name: Inspect videos
-        if: always()
-        run: |
-          echo "Workspace: $GITHUB_WORKSPACE"
-          echo "VIDEO_DIR: $VIDEO_DIR"
-          find "$GITHUB_WORKSPACE" -type f -name "*.mp4" -print
 
       - name: Upload videos
         if: always()
