@@ -137,16 +137,39 @@ jobs:
           echo "Host directory:"
           ls -la "$VIDEO_DIR"
 
-      - name: Show Compose configuration
-        run: docker compose config
-
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
 
-      - name: Show Selenoid logs
+      - name: Inspect Selenoid
         if: always()
-        run: docker logs selenium-selenoid-1
+        run: |
+          docker logs selenium-selenoid-1 || true
+          docker inspect selenium-selenoid-1 \
+            --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}'
+
+      - name: Wait for video recording to finish
+        if: always()
+        run: |
+          for i in {1..60}; do
+            recorder_ids="$(docker ps -q --filter ancestor=selenoid/video-recorder:latest-release)"
+      
+            if [ -z "$recorder_ids" ]; then
+              echo "No active video recorder containers."
+              break
+            fi
+      
+            echo "Waiting for recorder containers: $recorder_ids"
+            sleep 1
+          done
+      
+          sleep 2
+      
+          echo "Videos:"
+          find "$VIDEO_DIR" -maxdepth 1 -type f -ls
+      
+          echo "Selenoid logs:"
+          docker logs selenium-selenoid-1 || true
 
       - name: Inspect videos
         if: always()
@@ -155,35 +178,13 @@ jobs:
           echo "VIDEO_DIR: $VIDEO_DIR"
           find "$GITHUB_WORKSPACE" -type f -name "*.mp4" -print
 
-      - name: Inspect video containers
+      - name: Upload videos
         if: always()
-        run: |
-          echo "Docker containers:"
-          docker ps -a --no-trunc
-
-          echo "Host video directory:"
-          mkdir -p "$VIDEO_DIR"
-          find "$VIDEO_DIR" -maxdepth 1 -type f -ls
-
-          echo "Selenoid logs:"
-          docker logs selenium-selenoid-1 || true
-
-          echo "Selenoid mounts:"
-          docker inspect selenium-selenoid-1 \
-            --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' || true
-
-          echo "Video recorder containers:"
-          docker ps -a \
-            --filter ancestor=selenoid/video-recorder:latest-release \
-            --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}'
-
-      - name: Upload Selenoid videos
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@v4
         with:
-          name: selenoid-videos
-          path: video/
-          if-no-files-found: ignore
+          name: selenium-videos
+          path: ${{ github.workspace }}/video/
+          if-no-files-found: warn
 
       - name: Save results to env
         if: always() && github.event_name == 'pull_request'
