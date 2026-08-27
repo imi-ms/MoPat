@@ -1,4 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 18L8 5H7L3 18M4.23077 14H10.7692M14.5 10C16 9 20 8 20 11.5C20 15 20 18 20 18M20 12.5C18.5 13 14 13 14 16C14 19 18.5 18 20 15.5" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="585" height="296" viewBox="0 0 585 296" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect y="76" width="469" height="48" rx="20" fill="#C7C7C7"/>
+<rect width="443" height="48" rx="20" fill="#C7C7C7"/>
+<rect y="152" width="364" height="48" rx="20" fill="#C7C7C7"/>
+<rect y="228" width="406" height="48" rx="20" fill="#C7C7C7"/>
+<path d="M393.5 170.625V148.5H511.5V170.625M430.375 266.5H474.625M452.5 148.5V266.5" stroke="#3E3E3B" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 211.75V199H568V211.75M521.25 267H546.75M534 199V267" stroke="#3E3E3B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

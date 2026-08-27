@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta
 from enum import Enum
 
-from selenium.common import TimeoutException
+from selenium.common import ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -108,7 +108,7 @@ class QuestionSelectors:
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MIN = lambda language_code: (By.XPATH, f'//*[@id="localizedMinimumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
     INPUT_WYSIWYG_NUMERIC_CHECKBOX_FREETEXT_MAX = lambda language_code: (By.XPATH, f'//*[@id="localizedMaximumTextNumberCheckboxCollapsableText_{language_code}"]/div/div[2]/div[2]')
 
-    TAB_QUESTION_TYPE = (By.CLASS_NAME, "questionTypeLink")
+    TAB_QUESTION_TYPE = (By.CLASS_NAME, "question-type-card")
 
     TEXTAREA_ANSWER_TEXT = lambda id_selector, index, language_code: (By.CSS_SELECTOR, f"#{id_selector} textarea[name='answers[{index}].localizedLabel[{language_code}]']")
 
@@ -577,61 +577,64 @@ class QuestionHelper:
         }
 
     def initialize_question(self, question_type, language_code=None, is_required=False, question_text=None):
-        """
-        :param question_type: The type of the question (e.g., QuestionType.MULTIPLE_CHOICE).
-        :param language_code: The language code for localized labels (default: self.DEFAULT_LANGUAGE_CODE).
-        :param is_required: Indicates if the question is required (default: False).
-        :param question_text: The text content for the question.
-        :return: A dictionary containing common question details.
-        """
         question_text = question_text or f"{self.DEFAULT_QUESTION_TEXT} - {question_type.value}"
         language_code = language_code or self.DEFAULT_LANGUAGE_CODE
 
-        # Wait for the dropdown to be visible and select the question type
-        WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
-            QuestionSelectors.TAB_QUESTION_TYPE))
-
+        WebDriverWait(self.driver, 30).until(
+            EC.visibility_of_element_located(QuestionSelectors.TAB_QUESTION_TYPE)
+        )
 
         self.utils.select_tab(QuestionSelectors.TAB_QUESTION_TYPE, question_type.value)
 
-        # Wait until the page is fully loaded
-        WebDriverWait(self.driver, 30).until(lambda d: d.execute_script("return document.readyState") == "complete")
+        WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_element(By.ID, "questionTypeTabsInput").get_attribute("value") == question_type.value
+        )
 
-        # Fill the editable div for the question text (info text uses the same text field)
-        question_div = self.driver.find_element(*QuestionSelectors.INPUT_WYSIWYG_QUESTION_TEXT(language_code))
+        question_div = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.INPUT_WYSIWYG_QUESTION_TEXT(language_code)
+            )
+        )
         self.utils.fill_editable_div(question_div, question_text)
 
-        # Set required checkbox if needed
         if is_required:
             self.utils.toggle_checkbox(QuestionSelectors.CHECKBOX_IS_REQUIRED)
 
         return question_text
 
     def ensure_section_visible(self, section_selector):
-        """
-        :param section_selector: The selector for the section container.
-        """
-        # Wait for the page to fully load
-        WebDriverWait(self.driver, 30).until(lambda driver: driver.execute_script("return document.readyState") == "complete")
+        section = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(section_selector)
+        )
 
-        # Locate the section container
-        section = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-            section_selector))
+        form_group = WebDriverWait(section, 10).until(
+            lambda s: s.find_element(By.CSS_SELECTOR, ".form-group")
+        )
 
-        # Check if the section is hidden
         is_hidden = self.driver.execute_script(
-            "return arguments[0].querySelector('.form-group').style.display === 'none';", section
+            "return window.getComputedStyle(arguments[0]).display === 'none';",
+            form_group
         )
 
         if is_hidden:
-            # Click the legend to expand the section
-            legend = section.find_element(By.TAG_NAME, "legend")
-            legend.click()
+            legend = WebDriverWait(section, 10).until(
+                lambda s: s.find_element(By.TAG_NAME, "legend")
+            )
 
-            # Wait until the section becomes visible
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                legend
+            )
+
+            try:
+                legend.click()
+            except ElementClickInterceptedException:
+                self.driver.execute_script("arguments[0].click();", legend)
+
             WebDriverWait(self.driver, 10).until(
-                lambda d: self.driver.execute_script(
-                    "return arguments[0].querySelector('.form-group').style.display !== 'none';", section
+                lambda d: d.execute_script(
+                    "return window.getComputedStyle(arguments[0]).display !== 'none';",
+                    form_group
                 )
             )
 
@@ -1347,59 +1350,121 @@ class QuestionAssertHelper(QuestionHelper):
         assert wysiwyg_max_text.is_displayed(), "WYSIWYG editor for text at maximum position is not displayed."
 
     def assert_mc_dd_common_validations(self, question_type):
-        try:
-            language_code = self.DEFAULT_LANGUAGE_CODE
-            id_selector = self.get_selector_for(question_type)
+        language_code = self.DEFAULT_LANGUAGE_CODE
+        id_selector = self.get_selector_for(question_type)
 
-            # Validate min and max answers
-            input_min_answers = self.driver.find_element(*QuestionSelectors.INPUT_MIN_NUMBER_ANSWERS(id_selector))
-            input_max_answers = self.driver.find_element(*QuestionSelectors.INPUT_MAX_NUMBER_ANSWERS(id_selector))
-            assert input_min_answers.is_displayed(), "Input for min answers is not displayed."
-            assert input_max_answers.is_displayed(), "Input for max answers is not displayed."
+        input_min_answers = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.INPUT_MIN_NUMBER_ANSWERS(id_selector)
+            )
+        )
+        input_max_answers = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.INPUT_MAX_NUMBER_ANSWERS(id_selector)
+            )
+        )
 
-            # Shows select for type of identification
-            dropdown_type_of_identification = self.driver.find_element(
-                *QuestionSelectors.DROPDOWN_TYPE_OF_IDENTIFICATION)
-            assert dropdown_type_of_identification.is_displayed(), "Dropdown for type of identification is not displayed."
+        assert input_min_answers.is_displayed(), "Input for min answers is not displayed."
+        assert input_max_answers.is_displayed(), "Input for max answers is not displayed."
 
-            # Answer text
-            input_answer_text = self.driver.find_element(
-                *QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code))
-            assert input_answer_text.is_displayed(), "Input for answer text is not displayed."
+        dropdown_type_of_identification = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.DROPDOWN_TYPE_OF_IDENTIFICATION
+            )
+        )
+        assert dropdown_type_of_identification.is_displayed(), "Dropdown for type of identification is not displayed."
 
-            # Initially activated and free text
-            checkbox_initial_active = self.driver.find_element(
-                *QuestionSelectors.CHECKBOX_ANSWER_INITIAL_ACTIVATION(id_selector, 0))
-            checkbox_free_text = self.driver.find_element(*QuestionSelectors.CHECKBOX_FREE_TEXT(id_selector, 0))
-            assert checkbox_initial_active.is_displayed(), "Checkbox to make answer initially active is not displayed."
-            assert checkbox_free_text.is_displayed(), "Checkbox to activate free text field is not displayed."
+        input_answer_text = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code)
+            )
+        )
+        assert input_answer_text.is_displayed(), "Input for answer text is not displayed."
 
-            # Identification code and score
-            input_identification = self.driver.find_element(*QuestionSelectors.INPUT_IDENTIFICATION(id_selector, 0))
-            input_score = self.driver.find_element(*QuestionSelectors.INPUT_SCORE(id_selector, 0))
-            assert input_identification.is_displayed(), "Input for identification is not displayed."
-            assert input_score.is_displayed(), "Input for score is not displayed."
+        checkbox_initial_active = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.CHECKBOX_ANSWER_INITIAL_ACTIVATION(id_selector, 0)
+            )
+        )
+        checkbox_free_text = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.CHECKBOX_FREE_TEXT(id_selector, 0)
+            )
+        )
+        assert checkbox_initial_active.is_displayed(), "Checkbox to make answer initially active is not displayed."
+        assert checkbox_free_text.is_displayed(), "Checkbox to activate free text field is not displayed."
 
-            # Validate add and delete answer buttons
-            add_button = self.driver.find_element(*QuestionSelectors.BUTTON_ADD_ANSWER)
-            assert add_button.is_displayed(), "Button to add an answer is not displayed."
+        input_identification = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.INPUT_IDENTIFICATION(id_selector, 0)
+            )
+        )
+        input_score = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.INPUT_SCORE(id_selector, 0)
+            )
+        )
+        assert input_identification.is_displayed(), "Input for identification is not displayed."
+        assert input_score.is_displayed(), "Input for score is not displayed."
 
-            text = 'Text to duplicate'
-            self.utils.fill_text_field(QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code), text)
-            self.utils.scroll_and_click(QuestionSelectors.BUTTON_ADD_ANSWER)
-            second_answer_text = self.driver.find_element(
-                *QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 1, language_code))
-            second_answer_text_value = second_answer_text.get_attribute("value")
-            assert second_answer_text_value == text, f"Text in the second answer field does not match. Expected: '{text}', Found: '{second_answer_text_value}'"
+        add_button = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.BUTTON_ADD_ANSWER
+            )
+        )
+        assert add_button.is_displayed(), "Button to add an answer is not displayed."
 
-            panels = self.driver.find_elements(*QuestionSelectors.MULTIPLE_CHOICE_ANSWER_PANELS)
-            second_panel = panels[1]
-            delete_button = second_panel.find_element(*QuestionSelectors.DELETE_BUTTON_WITHIN_PANEL)
-            assert delete_button.is_displayed(), "Button to delete an answer is not displayed."
-            self.driver.execute_script("arguments[0].click();", delete_button)
-            self.utils.clear_text_field(QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code))
-        except AssertionError as e:
-            raise e
+        text = "Text to duplicate"
+        self.utils.fill_text_field(
+            QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code),
+            text
+        )
+
+        initial_panel_count = len(
+            self.driver.find_elements(*QuestionSelectors.MULTIPLE_CHOICE_ANSWER_PANELS)
+        )
+
+        self.utils.scroll_and_click(QuestionSelectors.BUTTON_ADD_ANSWER)
+
+        WebDriverWait(self.driver, 10).until(
+            lambda d: len(d.find_elements(*QuestionSelectors.MULTIPLE_CHOICE_ANSWER_PANELS)) > initial_panel_count
+        )
+
+        second_answer_text = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(
+                QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 1, language_code)
+            )
+        )
+
+        WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_element(
+                *QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 1, language_code)
+            ).get_attribute("value") == text
+        )
+
+        second_answer_text_value = second_answer_text.get_attribute("value")
+        assert second_answer_text_value == text, (
+            f"Text in the second answer field does not match. "
+            f"Expected: '{text}', Found: '{second_answer_text_value}'"
+        )
+
+        panels = WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_elements(*QuestionSelectors.MULTIPLE_CHOICE_ANSWER_PANELS)
+        )
+        second_panel = panels[1]
+        delete_button = second_panel.find_element(*QuestionSelectors.DELETE_BUTTON_WITHIN_PANEL)
+        assert delete_button.is_displayed(), "Button to delete an answer is not displayed."
+
+        panel_count_before_delete = len(panels)
+        self.driver.execute_script("arguments[0].click();", delete_button)
+
+        WebDriverWait(self.driver, 10).until(
+            lambda d: len(d.find_elements(*QuestionSelectors.MULTIPLE_CHOICE_ANSWER_PANELS)) == panel_count_before_delete - 1
+        )
+
+        self.utils.clear_text_field(
+            QuestionSelectors.TEXTAREA_ANSWER_TEXT(id_selector, 0, language_code)
+        )
 
     def assert_question_inputs(self, allowed_ids_of_visible_inputs):
         try:

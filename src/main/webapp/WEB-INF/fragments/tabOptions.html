@@ -1,64 +1,259 @@
 <!--/*
-    * Thymeleaf fragment that shows all values of a map with
-    * optional support for localization     
+    * Thymeleaf fragment that renders a horizontally scrollable question type selector
+    * with drag-to-scroll, arrow navigation and collapsible description.
 */-->
 <th:block
-        layout:fragment="tabOptions(path, items, itemValue, itemLabel, itemIcon, localize, onChangeFunction, id, clazz)"
+    layout:fragment="tabOptions(path, items, itemValue, itemLabel, itemIcon, localize, onChangeFunction, id, clazz, currentValue)"
 >
-    <!-- Hidden input replaces the <select> binding -->
     <input
-            type="hidden"
-            th:field="*{__${path}__}"
-            th:onchange="[(${onChangeFunction})]"
-            th:id="${id}"
+        type="hidden"
+        th:field="*{__${path}__}"
+        th:onchange="[(${onChangeFunction})]"
+        th:id="${id}"
     />
 
-    <ul th:class="${clazz}" role="tablist">
-        <th:block th:each="i: ${items}">
-            <li class="nav-item">
-                <a class="nav-link questionTypeLink"
-                   href="#"
-                   th:data-value="${i[itemValue]}"
-                   th:data-target-id="${id}"
-                   th:title="${localize ? messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__') : i[itemLabel]}"
-                   th:attr="data-bs-target=|#${i[itemValue]}_TAB|"
-                   onclick="var input = document.getElementById(this.getAttribute('data-target-id'));
-                   input.value = this.getAttribute('data-value');
-                   input.onchange();
-                   this.parentElement.parentElement.querySelectorAll('.nav-link').forEach((link) => {link.classList.remove('active');link.setAttribute('aria-selected', 'false');});
-                   this.classList.add('active');
-                   this.setAttribute('aria-selected', 'true');
-                   return false;"
-                   role="tab"
-                   data-bs-toggle="tab"
+    <div
+        class="question-type-selector w-100"
+        th:classappend="${clazz}"
+    >
+        <div class="bg-white p-3 question-type-panel">
+            <div class="position-relative question-type-canvas-wrapper">
+                <button
+                    type="button"
+                    class="btn btn-light border position-absolute top-50 start-0 translate-middle-y z-3 question-type-scroll-left"
+                    th:attr="data-scroll-target=|${id}_scroll|"
+                    aria-label="Scroll left"
+                    onclick="
+                        var c = document.getElementById(this.getAttribute('data-scroll-target'));
+                        var maxScroll = c.scrollWidth - c.clientWidth;
+                        var step = Math.ceil(maxScroll / 2);
+                        var target = Math.max(0, c.scrollLeft - step);
+                        c.scrollTo({ left: target, behavior: 'smooth' });
+                    "
                 >
+                    <i class="bi bi-chevron-left"></i>
+                </button>
 
-                    <img th:src="@{${i[itemIcon]}}" width="64" height="25"
-                         th:title="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"/>
-                </a>
-                <div class="tab-hover-text">
-                    <th:block th:text="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"></th:block>
+                <div
+                    class="question-type-scroll d-flex overflow-auto py-2"
+                    th:id="|${id}_scroll|"
+                    onmousedown="questionTypeDragStart(event, this)"
+                >
+                    <th:block th:each="i : ${items}">
+                        <button
+                            type="button"
+                            class="card question-type-card flex-shrink-0 text-center p-3 border"
+                            th:classappend="${currentValue != null and i[itemValue] != null and i[itemValue].toString() == currentValue.toString()} ? ' border-primary shadow-sm selected' : ''"
+                            th:data-value="${i[itemValue]}"
+                            th:data-target-id="${id}"
+                            th:data-scroll-target="|${id}_scroll|"
+                            th:data-description-target="|${id}_description|"
+                            th:data-label="${localize ? messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__') : i[itemLabel]}"
+                            th:data-icon="@{${i[itemIcon]}}"
+                            onclick="
+                                var scrollContainer = this.closest('.question-type-scroll');
+                                if (!questionTypePreventClickAfterDrag(event, scrollContainer))
+                                    return false;
+
+                                var input = document.getElementById(
+                                    this.getAttribute('data-target-id'),
+                                );
+                                input.value = this.getAttribute('data-value');
+                                input.dispatchEvent(new Event('change', { bubbles: true }));
+
+                                document
+                                    .querySelectorAll(
+                                        '#' +
+                                            this.getAttribute('data-scroll-target') +
+                                            ' .question-type-card',
+                                    )
+                                    .forEach(function (el) {
+                                        el.classList.remove(
+                                            'border-primary',
+                                            'shadow-sm',
+                                            'selected',
+                                        );
+                                    });
+                                this.classList.add('border-primary', 'shadow-sm', 'selected');
+
+                                var desc = document.getElementById(
+                                    this.getAttribute('data-description-target'),
+                                );
+                                if (desc) {
+                                    desc.innerHTML =
+                                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+                                }
+                            "
+                        >
+                            <div class="question-type-card-separator pb-3 mb-3">
+                                <img
+                                    th:src="@{${i[itemIcon]}}"
+                                    class="question-type-card-icon"
+                                    alt=""
+                                    draggable="false"
+                                />
+                            </div>
+                            <div
+                                class="fw-semibold small"
+                                th:text="${localize ? messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__') : i[itemLabel]}"
+                            ></div>
+                        </button>
+                    </th:block>
                 </div>
-            </li>
-        </th:block>
-    </ul>
 
-    <div class="tab-content">
-        <th:block th:each="i: ${items}">
-            <div class="tab-pane fade tabLegend" role="tabpanel" th:attr="id=|${i[itemValue]}_TAB|">
-                <legend>
-                    <th:block th:if="${localize}">
-                        <th:block
-                                th:text="${messages.get(#locale, '__${i[itemLabel]}__', '__${i[itemLabel]}__')}"
-                        />
-                    </th:block>
-                    <th:block th:unless="${localize}">
-                        <th:block th:text="${i[itemLabel]}"/>
-                    </th:block>
-                </legend>
+                <button
+                    type="button"
+                    class="btn btn-light border position-absolute top-50 end-0 translate-middle-y z-3 question-type-scroll-right"
+                    th:attr="data-scroll-target=|${id}_scroll|"
+                    aria-label="Scroll right"
+                    onclick="
+                        var c = document.getElementById(this.getAttribute('data-scroll-target'));
+                        var maxScroll = c.scrollWidth - c.clientWidth;
+                        var step = Math.ceil(maxScroll / 2);
+                        var target = Math.min(maxScroll, c.scrollLeft + step);
+                        c.scrollTo({ left: target, behavior: 'smooth' });
+                    "
+                >
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
-        </th:block>
+
+            <!--/*
+            <div class="mt-4">
+                <button
+                    type="button"
+                    class="btn link btn-sm w-100 d-inline-flex align-items-center gap-2 question-type-description-toggle"
+                    data-bs-toggle="collapse"
+                    th:data-bs-target="|#${id}_description_wrapper|"
+                    aria-expanded="false"
+                    th:aria-controls="|${id}_description_wrapper|"
+                >
+                    <i class="bi bi-chevron-down question-type-description-toggle-icon"></i>
+                    <span
+                        th:text="${messages.get(#locale, 'layout.label.moreInformation', 'Show More Information')}"
+                    ></span>
+                </button>
+
+                <div
+                    class="collapse mt-3"
+                    th:id="|${id}_description_wrapper|"
+                >
+                    <div class="p-3 border rounded bg-light">
+                        <div class="fw-semibold mb-2">Description</div>
+                        <div
+                            class="text-muted small"
+                            th:id="|${id}_description|"
+                        >
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+                            tempor incididunt ut labore et dolore magna aliqua.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            */-->
+        </div>
     </div>
+
+    <script th:inline="javascript">
+        var questionTypeActiveDragElement = null;
+
+        function questionTypeDragStart(e, el) {
+            questionTypeActiveDragElement = el;
+            el.dataset.dragging = "true";
+            el.dataset.moved = "false";
+            el.dataset.startX = e.clientX;
+            el.dataset.scrollLeft = el.scrollLeft;
+            el.classList.add("dragging");
+            el.style.scrollBehavior = "auto";
+        }
+
+        function questionTypeDragEnd(el) {
+            var target = el || questionTypeActiveDragElement;
+            if (!target) return;
+
+            setTimeout(function () {
+                target.dataset.dragging = "false";
+                target.classList.remove("dragging");
+                target.style.scrollBehavior = "smooth";
+                questionTypeActiveDragElement = null;
+            }, 0);
+        }
+
+        function questionTypeDragMove(e, el) {
+            var target = questionTypeActiveDragElement || el;
+            if (!target || target.dataset.dragging !== "true") {
+                return;
+            }
+
+            e.preventDefault();
+
+            var startX = parseInt(target.dataset.startX || "0", 10);
+            var scrollLeft = parseInt(target.dataset.scrollLeft || "0", 10);
+            var walk = e.clientX - startX;
+
+            if (Math.abs(walk) > 3) {
+                target.dataset.moved = "true";
+            }
+
+            target.scrollLeft = scrollLeft - walk;
+        }
+
+        function questionTypePreventClickAfterDrag(e, el) {
+            if (el && el.dataset.moved === "true") {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            return true;
+        }
+
+        function updateQuestionTypeScrollShadows(scrollContainer) {
+            var wrapper = scrollContainer.closest(".question-type-canvas-wrapper");
+            if (!wrapper) return;
+
+            var maxScroll = Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth);
+
+            var isScrollable = maxScroll > 1;
+            var isAtStart = scrollContainer.scrollLeft <= 1;
+            var isAtEnd = scrollContainer.scrollLeft >= maxScroll - 1;
+
+            wrapper.classList.toggle("has-left-shadow", isScrollable && !isAtStart);
+
+            // Visible initially because the right side is still available to scroll.
+            wrapper.classList.toggle("has-right-shadow", isScrollable && !isAtEnd);
+        }
+
+        function initializeQuestionTypeScrollShadows() {
+            document.querySelectorAll(".question-type-scroll").forEach(function (scrollContainer) {
+                scrollContainer.addEventListener("scroll", function () {
+                    updateQuestionTypeScrollShadows(scrollContainer);
+                });
+
+                // Wait until dimensions are available.
+                requestAnimationFrame(function () {
+                    updateQuestionTypeScrollShadows(scrollContainer);
+                });
+            });
+        }
+
+        window.addEventListener("resize", initializeQuestionTypeScrollShadows);
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initializeQuestionTypeScrollShadows);
+        } else {
+            initializeQuestionTypeScrollShadows();
+        }
+
+        document.addEventListener("mousemove", function (e) {
+            if (questionTypeActiveDragElement) {
+                questionTypeDragMove(e, questionTypeActiveDragElement);
+            }
+        });
+
+        document.addEventListener("mouseup", function () {
+            if (questionTypeActiveDragElement) {
+                questionTypeDragEnd(questionTypeActiveDragElement);
+            }
+        });
+    </script>
 </th:block>
-
-
