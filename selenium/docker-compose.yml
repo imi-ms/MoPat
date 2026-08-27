@@ -36,6 +36,8 @@ services:
       - selenoid-network
 
   webapp-container:
+    image: "${WEBAPP_IMAGE:-mopat-webapp:test}"
+
     build:
       context: ..
       dockerfile: .github/docker_testenv/Dockerfile
