@@ -27,6 +27,8 @@ docker-build-push:
   stage: docker
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+    - when: never
   image: docker:latest
   services:
     - docker:dind

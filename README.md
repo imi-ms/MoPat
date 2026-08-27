@@ -5,7 +5,7 @@ MoPat is a web-based platform designed to transform conventional paper-based que
 Currently MoPat supports the automatic export to the following data formats or systems: 
 
 - [CDISC ODM v1.3.2](https://www.cdisc.org/standards/data-exchange/odm) 
-- [HL7 FHIR R3](https://hl7.org/fhir/) (R4B coming soon) 
+- [HL7 FHIR (STU3, R4B, R5)](https://hl7.org/fhir/) 
 - [HL7 v2.3](https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185) 
 - [REDCap v14+](https://www.project-redcap.org/) 
 

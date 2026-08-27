@@ -11,6 +11,7 @@ import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.helper.controller.AuthService;
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
@@ -58,8 +59,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,6 +138,8 @@ public class QuestionnaireController {
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
 
+    private final DocumentParser documentParser = new DocumentParser();
+
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
      * questionnaires.
@@ -150,7 +151,7 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listQuestionnaires(final Model model) {
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
-        // This map contians a questionnaire id as key and a set with all
+        // This map contains a questionnaire id as key and a set with all
         // languages
         // which are available for all questions in this questionnaire.
         Map<Long, List<String>> availableLanguagesInQuestionForQuestionnaires = new HashMap<>();
@@ -609,11 +610,7 @@ public class QuestionnaireController {
     private boolean checkValidOdmFile(MultipartFile file) {
         if (Objects.requireNonNull(file.getOriginalFilename()).contains(".xml")) {
             try {
-                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-                documentBuilderFactory.setNamespaceAware(true);
-
-                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                Document document = documentBuilder.parse(file.getInputStream());
+                Document document = documentParser.parse(file);
 
                 NodeList standardNodes = document.getElementsByTagName("ODM");
                 NodeList customNodes = document.getElementsByTagName("odm:ODM");
@@ -622,6 +619,7 @@ public class QuestionnaireController {
                     (customNodes != null && customNodes.getLength() > 0);
 
             } catch (Exception e) {
+                LOGGER.error("Could not parse file as ODM", e);
                 return false;
             }
         } else {
