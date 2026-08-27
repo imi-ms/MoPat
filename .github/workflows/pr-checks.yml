@@ -90,6 +90,11 @@ jobs:
       - name: Pull Selenoid Video Image
         run: docker pull selenoid/video-recorder:latest-release
 
+      - name: Prepare video directory
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/video"
+          echo "VIDEO_DIR=$GITHUB_WORKSPACE/video" >> "$GITHUB_ENV"
+
       # Setup Docker-Compose
       - name: Docker Compose Action
         uses: hoverkraft-tech/compose-action@4894d2492015c1774ee5a13a95b1072093087ec3
@@ -124,6 +129,13 @@ jobs:
       - name: Show Selenoid logs
         if: always()
         run: docker logs selenium-selenoid-1
+
+      - name: Inspect videos
+        if: always()
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "VIDEO_DIR: $VIDEO_DIR"
+          find "$GITHUB_WORKSPACE" -type f -name "*.mp4" -print
 
       - name: Upload Selenoid videos
         if: always()

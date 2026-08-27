@@ -6,11 +6,11 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock" # Required to communicate with the Docker daemon
       - "./config/:/etc/selenoid/:ro" # Configuration files for Selenoid
-      - "./video/:/opt/selenoid/video/"
+      - "${VIDEO_DIR}:/opt/selenoid/video"
       - "./logs/:/opt/selenoid/logs/"
     environment:
       - DOCKER_API_VERSION=1.44
-      - OVERRIDE_VIDEO_OUTPUT_DIR=${PWD}/video
+      - OVERRIDE_VIDEO_OUTPUT_DIR:"${VIDEO_DIR:-${PWD}/video}"
     networks: 
       - selenoid-network
     command: [
