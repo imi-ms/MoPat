@@ -6,12 +6,19 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock" # Required to communicate with the Docker daemon
       - "./config/:/etc/selenoid/:ro" # Configuration files for Selenoid
+      - "${VIDEO_DIR:-${PWD}/video}:/opt/selenoid/video"
       - "./logs/:/opt/selenoid/logs/"
     environment:
-      - DOCKER_API_VERSION=1.44
+      DOCKER_API_VERSION: 1.44
+      OVERRIDE_VIDEO_OUTPUT_DIR: "${VIDEO_DIR:-${PWD}/video}"
     networks: 
       - selenoid-network
-    command: ["-container-network", "selenium_selenoid-network"]
+    command: [
+      "-container-network", 
+      "selenium_selenoid-network",
+      "-video-output-dir", "/opt/selenoid/video",
+      "-video-recorder-image", "selenoid/video-recorder:latest-release"
+    ]
 
   db-container:
     image: mariadb
