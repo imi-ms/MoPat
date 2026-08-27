@@ -74,6 +74,9 @@ jobs:
     outputs:
       selenium-results: ${{ steps.decode-results.outputs.content }}
 
+    env:
+      VIDEO_DIR: ${{ github.workspace }}/video
+
     steps:
       # Checkout the repository
       - name: Check out the repository
@@ -122,6 +125,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r selenium/requirements.txt  # Ensure your Selenium and other dependencies are listed here
 
+      - name: Verify video mount
+        run: |
+          mkdir -p "$VIDEO_DIR"
+
+          docker compose exec -T selenium-selenoid-1 sh -c \
+            'echo "inside Selenoid"; touch /opt/selenoid/video/mount-test.txt; ls -la /opt/selenoid/video'
+
+          echo "on host"
+          ls -la "$VIDEO_DIR"
+
+      - name: Show Compose configuration
+        run: docker compose config
+
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
@@ -136,6 +152,13 @@ jobs:
           echo "Workspace: $GITHUB_WORKSPACE"
           echo "VIDEO_DIR: $VIDEO_DIR"
           find "$GITHUB_WORKSPACE" -type f -name "*.mp4" -print
+
+      - name: Inspect video containers
+        if: always()
+        run: |
+          docker ps -a --no-trunc
+          find "$VIDEO_DIR" -maxdepth 1 -type f -ls
+          docker logs "$(docker compose ps -q selenium-selenoid-1)" || true
 
       - name: Upload Selenoid videos
         if: always()
