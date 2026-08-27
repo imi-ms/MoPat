@@ -125,7 +125,8 @@ jobs:
 
     permissions:
       checks: write
-      pull-requests: write
+      packages: read
+      contents: read
 
     runs-on: ubuntu-latest
 
