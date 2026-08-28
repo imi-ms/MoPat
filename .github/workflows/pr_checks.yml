@@ -162,7 +162,7 @@ jobs:
 
     env:
       VIDEO_DIR: ${{ github.workspace }}/video
-      WEBAPP_IMAGE: ghcr.io/imi-ms/mopat-testenv:${{ github.event.pull_request.number }}
+      WEBAPP_IMAGE: ghcr.io/imi-ms/mopat-testenv:pr-${{ github.event.pull_request.number }}
 
     steps:
       - name: Check out the repository
