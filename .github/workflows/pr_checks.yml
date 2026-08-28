@@ -115,8 +115,8 @@ jobs:
           file: .github/docker_testenv/Dockerfile
           push: true
           tags: ghcr.io/imi-ms/mopat-testenv:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache
-          cache-to: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2
+          cache-to: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2,mode=max
 
   selenium-tests:
     name: Selenium - ${{ matrix.test_file }}
