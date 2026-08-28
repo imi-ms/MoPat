@@ -168,12 +168,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
 
-      - name: Pull Selenoid Chrome Image
-        run: docker pull selenoid/chrome:latest
-
-      - name: Pull Selenoid Video Image
-        run: docker pull selenoid/video-recorder:latest-release
-
       - name: Prepare video directory
         run: |
           mkdir -p "$VIDEO_DIR"
@@ -188,6 +182,13 @@ jobs:
 
       - name: Pull prebuilt webapp image
         run: docker pull "$WEBAPP_IMAGE"
+
+      - name: Pull Compose images
+        run: |
+          docker pull aerokube/selenoid:latest-release
+          docker pull mariadb:latest
+          docker pull selenoid/video-recorder:latest-release
+          docker pull selenoid/chrome:latest
 
       - name: Start Docker Compose without building
         run: |
