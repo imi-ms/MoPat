@@ -121,6 +121,9 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2
           cache-to: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2,mode=max
 
+          provenance: false
+          sbom: false
+
   selenium-tests:
     name: Selenium - ${{ matrix.test_file }}
 
