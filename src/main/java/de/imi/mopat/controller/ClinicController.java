@@ -1,5 +1,6 @@
 package de.imi.mopat.controller;
 
+import de.imi.mopat.controller.util.SaveAndEditNextInOrderUtil;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
@@ -432,7 +433,8 @@ public class ClinicController {
         }
         clinicDao.updateUserRights(clinic, deletedBundles, clinicDTO.getAssignedUserDTOs());
 
-        return "redirect:/clinic/list";
+        String defaultSaveRoute = "redirect:/clinic/list";
+        return SaveAndEditNextInOrderUtil.determineNextRoute("clinic", action, defaultSaveRoute);
     }
 
     /**

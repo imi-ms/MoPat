@@ -2,1088 +2,1106 @@
     * View for bundles editing.
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'bundle.heading.editBundle', 'Edit bundle')}"
+        layout:decorate="~{layout/main}"
+        th:with="title=${messages.get(#locale, 'bundle.heading.editBundle', 'Edit bundle')}"
 >
-	<th:block layout:fragment="content">
-		<div class="panel-body">
-			<form
-				th:object="${bundleDTO}"
-				name="bundleDTO"
-				enctype="application/x-www-form-urlencoded"
-				method="POST"
-				action="edit"
-			>
-				<div
-					th:if="${not bundleDTO.getIsModifiable()}"
-					id="errors"
-					class="alert alert-danger"
-					style="width: 100%"
-					th:text="${messages.get(#locale, 'bundle.error.notModifiable',
+    <th:block layout:fragment="content">
+        <div class="panel-body">
+            <form
+                    th:object="${bundleDTO}"
+                    name="bundleDTO"
+                    enctype="application/x-www-form-urlencoded"
+                    method="POST"
+                    action="edit"
+            >
+                <div
+                        th:if="${not bundleDTO.getIsModifiable()}"
+                        id="errors"
+                        class="alert alert-danger"
+                        style="width: 100%"
+                        th:text="${messages.get(#locale, 'bundle.error.notModifiable',
                         'This bundle is not editable due to at least one unfinished encounter associated to this bundle.')}"
-				>
-				</div>
+                >
+                </div>
 
-				<input
-					hidden="true"
-					id="bundleId"
-					th:value="${bundleDTO.id}"
-				/>
+                <input
+                        hidden="true"
+                        id="bundleId"
+                        th:value="${bundleDTO.id}"
+                />
 
-				<addVar
-					layout:replace="~{helper/var :: add(key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
-				/>
-				<th:block
-					th:if="${vars['currentLanguage'] eq null || #strings.isEmpty(vars['currentLanguage'])}"
-				>
-					<addVar
-						layout:replace="~{helper/var :: add(key='currentLanguage', value=${#locale.toString()})}"
-					/>
-				</th:block>
+                <addVar
+                        layout:replace="~{helper/var :: add(key='currentLanguage', value=${configurationDao.defaultLanguage?.toString()})}"
+                />
+                <th:block
+                        th:if="${vars['currentLanguage'] eq null || #strings.isEmpty(vars['currentLanguage'])}"
+                >
+                    <addVar
+                            layout:replace="~{helper/var :: add(key='currentLanguage', value=${#locale.toString()})}"
+                    />
+                </th:block>
 
-				<addVar
-					layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${not #strings.isEmpty(bundleDTO.id)})}"
-				/>
-				<th:block th:if="${#fields.hasErrors('*')}">
-					<addVar
-						layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${#bools.isTrue(true)})}"
-					/>
-				</th:block>
+                <addVar
+                        layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${not #strings.isEmpty(bundleDTO.id)})}"
+                />
+                <th:block th:if="${#fields.hasErrors('*')}">
+                    <addVar
+                            layout:replace="~{helper/var :: add(key='persistedOrErrors', value=${#bools.isTrue(true)})}"
+                    />
+                </th:block>
 
-				<input
-					type="hidden"
-					name="id"
-					th:value="${bundleDTO.id}"
-				/>
+                <input
+                        type="hidden"
+                        name="id"
+                        th:value="${bundleDTO.id}"
+                />
 
-				<languageDropdown
-					layout:replace="~{fragments/forms :: languageDropdown}"
-				/>
+                <languageDropdown
+                        layout:replace="~{fragments/forms :: languageDropdown}"
+                />
 
-				<div class="form-group">
-					<input
-						layout:replace="~{fragments/forms :: inputWithLabel(
+                <div class="form-group">
+                    <input
+                            layout:replace="~{fragments/forms :: inputWithLabel(
                         for='name', required=true, path='name',
                         clazz='form-control', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.bundleName', 'Name')},
 						errorId='validationError')}"
 
-					/>
-				</div>
-				<div class="form-group">
+                    />
+                </div>
+                <div class="form-group">
 					<textarea
-						id="description"
-						layout:replace="~{fragments/forms :: textareaWithLabel(
+                            id="description"
+                            layout:replace="~{fragments/forms :: textareaWithLabel(
                         for='description', required=true, path='description',
                         clazz='wysiwyg', showErrors=true,
                         text=${messages.get(#locale, 'bundle.label.description', 'Description')},
 						errorId='validationError')}"
-					>
+                    >
 					</textarea>
-				</div>
+                </div>
 
-				<div class="form-group">
-					<localableTextarea
-						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                <div class="form-group">
+                    <localableTextarea
+                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedWelcomeTextCollapsableText',
                         inputType='textarea',
                         inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedWelcomeText[#INDEXFIELD]',
                         firstRequiredLocalableElement=true)}"
-					>
-						<th:block layout:fragment="collapseLabel">
-							<label
-								for="welcomeText"
-								th:text="${messages.get(#locale, 'bundle.label.welcomeText', 'Welcometext')}"
-							>
-							</label>
-						</th:block>
-					</localableTextarea>
-				</div>
-				<div class="form-group">
-					<localableTextarea
-						layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
+                    >
+                        <th:block layout:fragment="collapseLabel">
+                            <label
+                                    for="welcomeText"
+                                    th:text="${messages.get(#locale, 'bundle.label.welcomeText', 'Welcometext')}"
+                            >
+                            </label>
+                        </th:block>
+                    </localableTextarea>
+                </div>
+                <div class="form-group">
+                    <localableTextarea
+                            layout:replace="~{fragments/structures :: newOrPersistedLocalableBlock(
                         collection=${bundleDTO.localizedWelcomeText},
                         collapsableId='localizedFinalTextCollapsableText',
                         inputType='textarea',
                         inputClazz='form-control wysiwyg localablePostElement',
                         path='localizedFinalText[#INDEXFIELD]')}"
-					>
-						<th:block layout:fragment="collapseLabel">
-							<label
-								for="finalText"
-								th:text="${messages.get(#locale, 'bundle.label.finalText', 'Finaltext')}"
-							>
-							</label>
-						</th:block>
-					</localableTextarea>
-				</div>
-				<div class="form-group">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+                    >
+                        <th:block layout:fragment="collapseLabel">
+                            <label
+                                    for="finalText"
+                                    th:text="${messages.get(#locale, 'bundle.label.finalText', 'Finaltext')}"
+                            >
+                            </label>
+                        </th:block>
+                    </localableTextarea>
+                </div>
+                <div class="form-group">
+                    <checkbox
+                            layout:replace="~{fragments/forms :: checkbox(
                         path='deactivateProgressAndNameDuringSurvey',
                         text=${messages.get(#locale, 'bundle.label.deactivateProgressAndNameDuringSurvey', 'The ad will be displayed')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
-				<div class="form-group">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+                    >
+                    </checkbox>
+                </div>
+                <div class="form-group">
+                    <checkbox
+                            layout:replace="~{fragments/forms :: checkbox(
                         path='showProgressPerBundle',
                         text=${messages.get(#locale, 'bundle.label.showProgressPerBundle', 'Display of the progress refers to the whole package')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
-				<div class="form-group" sec:authorize="hasRole('ROLE_ADMIN')">
-					<checkbox
-						layout:replace="~{fragments/forms :: checkbox(
+                    >
+                    </checkbox>
+                </div>
+                <div class="form-group" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <checkbox
+                            layout:replace="~{fragments/forms :: checkbox(
                         path='isPublished',
                         text=${messages.get(#locale, 'bundle.label.isPublished', 'Released')},
                         showErrors=false)}"
-					>
-					</checkbox>
-				</div>
+                    >
+                    </checkbox>
+                </div>
 
-				<th:block th:text="${counter.clear()}" />
+                <th:block th:text="${counter.clear()}"/>
 
-				<div class="form-group">
-					<error
-						layout:replace="~{fragments/forms :: errorField(path='bundleQuestionnaireDTOs')}"
-					/>
-				</div>
+                <div class="form-group">
+                    <error
+                            layout:replace="~{fragments/forms :: errorField(path='bundleQuestionnaireDTOs')}"
+                    />
+                </div>
 
-				<div class="container-fluid doubleList">
-					<div class="row removableFlex toggleCollapseTable">
-						<div class="col-lg-5">
-							<div class="list-group mb-2">
-								<!--/* Title of the table */-->
-								<div class="row removableFlex list-group-item">
-									<div class="col-7 drag-n-drop-header-item">
-										<th:block
-											th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires',
+                <div class="container-fluid doubleList">
+                    <div class="row removableFlex toggleCollapseTable">
+                        <div class="col-lg-5">
+                            <div class="list-group mb-2">
+                                <!--/* Title of the table */-->
+                                <div class="row removableFlex list-group-item">
+                                    <div class="col-7 drag-n-drop-header-item">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'bundle.heading.assignedQuestionnaires',
                                             'Assigned questionnaires')}"
-										>
-										</th:block>
-										<span
-											class="bi bi-info-circle-fill"
-											style="display: inline-block"
-											th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo',
+                                        >
+                                        </th:block>
+                                        <span
+                                                class="bi bi-info-circle-fill"
+                                                style="display: inline-block"
+                                                th:title="${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo',
                                             'For each questionnaire it is possible to enable the export templates to be exported')}"
-										>
+                                        >
 										</span>
-									</div>
-									<div class="col-4">
-										<input
-											class="form-control input-sm"
-											id="assignedQuestionnairesFilter"
-											onkeyup="DragNDropList.filter($(this), '#assignedQuestionnairesTable')"
-											type="text"
-											th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
-										/>
-									</div>
-									<div class="col-1 drag-n-drop-header-item">
-										<a
-											data-bs-toggle="collapse"
-											class="bi bi-plus-lg"
-											id="moreQuestionnaire"
-											onclick="DragNDropList.toggleCollapseTable(this)"
-										>
-										</a>
-										<a
-											data-bs-toggle="collapse"
-											class="bi bi-dash-lg"
-											onclick="DragNDropList.toggleCollapseTable(this)"
-											style="display: none"
-										>
-										</a>
-									</div>
-								</div>
-								<!--/* Header of the table */-->
-								<div class="row removableFlex list-group-item active">
-									<div class="col-1">
-										<th:block
-											th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
-										/>
-									</div>
-									<div class="col-3">
-										<th:block
-											th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
-										/>
-									</div>
-									<div class="col-2">
-										<th:block
-											th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}"
-										/>
-									</div>
-									<div class="col-3">
-										<th:block
-											th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}"
-										/>
-									</div>
-									<div class="col-2">
-										<th:block
-											th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}"
-										/>
-									</div>
-									<div class="col-1"></div>
-								</div>
-								<!--/* Body of the table */-->
-								<div
-									id="assignedQuestionnairesTable"
-									class="sortable collapsable assignedTable"
-								>
-									<div
-										class="row removableFlex list-group-item placeholderRow notDraggable"
-										style="display: none"
-									>
-										<div class="col-12"> &nbsp; </div>
-									</div>
-									<div
-										class="row removableFlex list-group-item notDraggable"
-										id="filterEmptyRow"
-										style="display: none"
-									>
-										<div class="col-12">
-											<th:block
-												th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
-											/>
-										</div>
-									</div>
-									<th:block
-										th:if="${#lists.isEmpty(bundleDTO.bundleQuestionnaireDTOs)}"
-									>
-										<div
-											class="row removableFlex list-group-item notDraggable"
-											id="emptyRow"
-										>
-											<div class="col-12">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}"
-												/>
-											</div>
-										</div>
-										<div
-											class="row removableFlex list-group-item"
-											style="display: none"
-										>
-											<div class="col-1">
-												<th:block
-													th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
-												/>
-											</div>
-											<div class="col-3">
-												<th:block
-													th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
-												/>
-											</div>
-											<div class="col-2">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}"
-												/>
-											</div>
-											<div class="col-3">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}"
-												/>
-											</div>
-											<div class="col-2">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}"
-												/>
-											</div>
-										</div>
-									</th:block>
+                                    </div>
+                                    <div class="col-4">
+                                        <input
+                                                class="form-control input-sm"
+                                                id="assignedQuestionnairesFilter"
+                                                onkeyup="DragNDropList.filter($(this), '#assignedQuestionnairesTable')"
+                                                type="text"
+                                                th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+                                        />
+                                    </div>
+                                    <div class="col-1 drag-n-drop-header-item">
+                                        <a
+                                                data-bs-toggle="collapse"
+                                                class="bi bi-plus-lg"
+                                                id="moreQuestionnaire"
+                                                onclick="DragNDropList.toggleCollapseTable(this)"
+                                        >
+                                        </a>
+                                        <a
+                                                data-bs-toggle="collapse"
+                                                class="bi bi-dash-lg"
+                                                onclick="DragNDropList.toggleCollapseTable(this)"
+                                                style="display: none"
+                                        >
+                                        </a>
+                                    </div>
+                                </div>
+                                <!--/* Header of the table */-->
+                                <div class="row removableFlex list-group-item active">
+                                    <div class="col-1">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+                                        />
+                                    </div>
+                                    <div class="col-3">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+                                        />
+                                    </div>
+                                    <div class="col-2">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}"
+                                        />
+                                    </div>
+                                    <div class="col-3">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}"
+                                        />
+                                    </div>
+                                    <div class="col-2">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}"
+                                        />
+                                    </div>
+                                    <div class="col-1"></div>
+                                </div>
+                                <!--/* Body of the table */-->
+                                <div
+                                        id="assignedQuestionnairesTable"
+                                        class="sortable collapsable assignedTable"
+                                >
+                                    <div
+                                            class="row removableFlex list-group-item placeholderRow notDraggable"
+                                            style="display: none"
+                                    >
+                                        <div class="col-12"> &nbsp;</div>
+                                    </div>
+                                    <div
+                                            class="row removableFlex list-group-item notDraggable"
+                                            id="filterEmptyRow"
+                                            style="display: none"
+                                    >
+                                        <div class="col-12">
+                                            <th:block
+                                                    th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+                                            />
+                                        </div>
+                                    </div>
+                                    <th:block
+                                            th:if="${#lists.isEmpty(bundleDTO.bundleQuestionnaireDTOs)}"
+                                    >
+                                        <div
+                                                class="row removableFlex list-group-item notDraggable"
+                                                id="emptyRow"
+                                        >
+                                            <div class="col-12">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div
+                                                class="row removableFlex list-group-item"
+                                                style="display: none"
+                                        >
+                                            <div class="col-1">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+                                                />
+                                            </div>
+                                            <div class="col-3">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+                                                />
+                                            </div>
+                                            <div class="col-2">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}"
+                                                />
+                                            </div>
+                                            <div class="col-3">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}"
+                                                />
+                                            </div>
+                                            <div class="col-2">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}"
+                                                />
+                                            </div>
+                                        </div>
+                                    </th:block>
 
-									<th:block
-										th:if="${not #lists.isEmpty(bundleDTO.bundleQuestionnaireDTOs)}"
-									>
-										<div
-											class="row removableFlex list-group-item notDraggable"
-											id="emptyRow"
-											style="display: none"
-										>
-											<div class="col-12">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}"
-												/>
-											</div>
-										</div>
-										<!--/* iterating through the assigned bundles, giving each bundle a table row */-->
-										<th:block
-											th:each="bundleQuestionnaireDTO: ${bundleDTO.bundleQuestionnaireDTOs}"
-										>
-											<div class="row removableFlex list-group-item draggable questionnaire-element" th:attr="data-questionnaire-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.getQuestionnaireVersionGroupId()}">
-												<div class="col-1 position">
+                                    <th:block
+                                            th:if="${not #lists.isEmpty(bundleDTO.bundleQuestionnaireDTOs)}"
+                                    >
+                                        <div
+                                                class="row removableFlex list-group-item notDraggable"
+                                                id="emptyRow"
+                                                style="display: none"
+                                        >
+                                            <div class="col-12">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')}"
+                                                />
+                                            </div>
+                                        </div>
+                                        <!--/* iterating through the assigned bundles, giving each bundle a table row */-->
+                                        <th:block
+                                                th:each="bundleQuestionnaireDTO: ${bundleDTO.bundleQuestionnaireDTOs}"
+                                        >
+                                            <div class="row removableFlex list-group-item draggable questionnaire-element"
+                                                 th:attr="data-questionnaire-version-group-id=${bundleQuestionnaireDTO.questionnaireDTO.getQuestionnaireVersionGroupId()}">
+                                                <div class="col-1 position">
 													<span
-														th:text="|${bundleQuestionnaireDTO.position}.|"
-													></span>
-													<input
-														type="hidden"
-														th:name="|bundleQuestionnaireDTOs[${counter.get()}].position|"
-														th:value="${bundleQuestionnaireDTO.position}"
-													/>
-												</div>
+                                                            th:text="|${bundleQuestionnaireDTO.position}.|"
+                                                    ></span>
+                                                    <input
+                                                            type="hidden"
+                                                            th:name="|bundleQuestionnaireDTOs[${counter.get()}].position|"
+                                                            th:value="${bundleQuestionnaireDTO.position}"
+                                                    />
+                                                </div>
 
-												<div class="col-3">
-													<th:block
-														th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}"
-													/>
-													<input
-														type="hidden"
-														th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.name|"
-														th:value="${bundleQuestionnaireDTO.questionnaireDTO.name}"
-														class="filterName"
-													/>
-												</div>
-												<div class="col-2 scores">
-													<th:block
-														th:if="${bundleQuestionnaireDTO.questionnaireDTO.hasScores}"
-													>
-														<th:block
-															th:if="${bundleQuestionnaireDTO.showScores}"
-														>
-															<input
-																type="checkbox"
-																th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
-																checked="checked"
-															/>
-														</th:block>
-														<th:block
-															th:unless="${bundleQuestionnaireDTO.showScores}"
-														>
-															<input
-																type="checkbox"
-																th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
-															/>
-														</th:block>
-													</th:block>
-												</div>
-												<div class="col-3 templateTypes">
-													<th:block
-														th:each="exportTemplate, status: ${bundleQuestionnaireDTO.questionnaireDTO.exportTemplates}"
-													>
-														<input
-															type="hidden"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.exportTemplate[${status.index}].id|"
-															th:value="${exportTemplate.id}"
-														/>
-														<th:block
-															th:if="${bundleQuestionnaireDTO.exportTemplates.contains(exportTemplate.id)}"
-														>
-															<input
-																type="checkbox"
-																th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
-																th:value="${exportTemplate.id}"
-																checked="checked"
-															/>
-														</th:block>
-														<th:block
-															th:unless="${bundleQuestionnaireDTO.exportTemplates.contains(exportTemplate.id)}"
-														>
-															<input
-																type="checkbox"
-																th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
-																th:value="${exportTemplate.id}"
-															/>
-														</th:block>
-														<th:block
-															th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|"
-														/>
-														<br />
-													</th:block>
-												</div>
-												<div class="col-2 enable">
-													<th:block
-														th:if="${#bools.isTrue(bundleQuestionnaireDTO.isEnabled)}"
-													>
-														<input
-															type="checkbox"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
-															checked="checked"
-														/>
-													</th:block>
-													<th:block
-														th:unless="${#bools.isTrue(bundleQuestionnaireDTO.isEnabled)}"
-													>
-														<input
-															type="checkbox"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
-														/>
-													</th:block>
-												</div>
-												<div class="col-1">
-													<a
-															th:id="|move_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
-															data-bs-toggle="collapse"
-															onClick="moveItem($(this))"
-													>
-														<span class="bi bi-chevron-right"></span>
-													</a>
-												</div>
-												<div class="col-5 toggle-questionnaire-version-group">
-													<i onClick="toggleGroupItems($(this))"
-													   class="bi bi-chevron-down chevron-icon-down"
-													   style="cursor: pointer;"
-													   th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
-													</i>
-													<i onClick="toggleGroupItems($(this))"
-													   class="bi bi-chevron-up chevron-icon-up"
-													   style="cursor: pointer;"
-													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
-													</i>
-												</div>
-												<input
-													type="hidden"
-													th:id="|questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
-													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
-													th:value="${bundleQuestionnaireDTO.questionnaireDTO.id}"
-												/>
-											</div>
-											<!--/* Increment the index */-->
-											<th:block th:text="${counter.increment()}" />
-										</th:block>
-									</th:block>
-								</div>
-							</div>
-						</div>
-						<!--/* Icons */-->
-						<div class="col-lg-1 d-lg-block d-none doubleListIcon">
+                                                <div class="col-3">
+                                                    <th:block
+                                                            th:text="${bundleQuestionnaireDTO.questionnaireDTO.name}"
+                                                    />
+                                                    <input
+                                                            type="hidden"
+                                                            th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.name|"
+                                                            th:value="${bundleQuestionnaireDTO.questionnaireDTO.name}"
+                                                            class="filterName"
+                                                    />
+                                                </div>
+                                                <div class="col-2 scores">
+                                                    <th:block
+                                                            th:if="${bundleQuestionnaireDTO.questionnaireDTO.hasScores}"
+                                                    >
+                                                        <th:block
+                                                                th:if="${bundleQuestionnaireDTO.showScores}"
+                                                        >
+                                                            <input
+                                                                    type="checkbox"
+                                                                    th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
+                                                                    checked="checked"
+                                                            />
+                                                        </th:block>
+                                                        <th:block
+                                                                th:unless="${bundleQuestionnaireDTO.showScores}"
+                                                        >
+                                                            <input
+                                                                    type="checkbox"
+                                                                    th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
+                                                            />
+                                                        </th:block>
+                                                    </th:block>
+                                                </div>
+                                                <div class="col-3 templateTypes">
+                                                    <th:block
+                                                            th:each="exportTemplate, status: ${bundleQuestionnaireDTO.questionnaireDTO.exportTemplates}"
+                                                    >
+                                                        <input
+                                                                type="hidden"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.exportTemplate[${status.index}].id|"
+                                                                th:value="${exportTemplate.id}"
+                                                        />
+                                                        <th:block
+                                                                th:if="${bundleQuestionnaireDTO.exportTemplates.contains(exportTemplate.id)}"
+                                                        >
+                                                            <input
+                                                                    type="checkbox"
+                                                                    th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
+                                                                    th:value="${exportTemplate.id}"
+                                                                    checked="checked"
+                                                            />
+                                                        </th:block>
+                                                        <th:block
+                                                                th:unless="${bundleQuestionnaireDTO.exportTemplates.contains(exportTemplate.id)}"
+                                                        >
+                                                            <input
+                                                                    type="checkbox"
+                                                                    th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
+                                                                    th:value="${exportTemplate.id}"
+                                                            />
+                                                        </th:block>
+                                                        <th:block
+                                                                th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|"
+                                                        />
+                                                        <br/>
+                                                    </th:block>
+                                                </div>
+                                                <div class="col-2 enable">
+                                                    <th:block
+                                                            th:if="${#bools.isTrue(bundleQuestionnaireDTO.isEnabled)}"
+                                                    >
+                                                        <input
+                                                                type="checkbox"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
+                                                                checked="checked"
+                                                        />
+                                                    </th:block>
+                                                    <th:block
+                                                            th:unless="${#bools.isTrue(bundleQuestionnaireDTO.isEnabled)}"
+                                                    >
+                                                        <input
+                                                                type="checkbox"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
+                                                        />
+                                                    </th:block>
+                                                </div>
+                                                <div class="col-1">
+                                                    <a
+                                                            th:id="|move_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
+                                                            data-bs-toggle="collapse"
+                                                            onClick="moveItem($(this))"
+                                                    >
+                                                        <span class="bi bi-chevron-right"></span>
+                                                    </a>
+                                                </div>
+                                                <div class="col-5 toggle-questionnaire-version-group">
+                                                    <i onClick="toggleGroupItems($(this))"
+                                                       class="bi bi-chevron-down chevron-icon-down"
+                                                       style="cursor: pointer;"
+                                                       th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
+                                                    </i>
+                                                    <i onClick="toggleGroupItems($(this))"
+                                                       class="bi bi-chevron-up chevron-icon-up"
+                                                       style="cursor: pointer;"
+                                                       th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
+                                                    </i>
+                                                </div>
+                                                <input
+                                                        type="hidden"
+                                                        th:id="|questionnaire_${bundleQuestionnaireDTO.questionnaireDTO.id}|"
+                                                        th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
+                                                        th:value="${bundleQuestionnaireDTO.questionnaireDTO.id}"
+                                                />
+                                            </div>
+                                            <!--/* Increment the index */-->
+                                            <th:block th:text="${counter.increment()}"/>
+                                        </th:block>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/* Icons */-->
+                        <div class="col-lg-1 d-lg-block d-none doubleListIcon">
 							<span
-								style="float: right"
-								class="bi bi-chevron-left"
-							></span>
-						</div>
-						<div class="col-lg-1 d-lg-block d-none doubleListIcon">
-							<span class="bi bi-chevron-right"></span>
-						</div>
+                                    style="float: right"
+                                    class="bi bi-chevron-left"
+                            ></span>
+                        </div>
+                        <div class="col-lg-1 d-lg-block d-none doubleListIcon">
+                            <span class="bi bi-chevron-right"></span>
+                        </div>
 
-						<div class="col-lg-5">
-							<div class="list-group">
-								<!--/* Title of the table */-->
-								<div class="row removableFlex list-group-item">
-									<div class="col-7 drag-n-drop-header-item">
-										<th:block
-											th:text="${messages.get(#locale, 'bundle.heading.availableQuestionnaire', 'Available questionnaires')}"
-										/>
-										<span
-											class="bi bi-info-circle-fill"
-											style="display: inline-block"
-											th:title="${messages.get(#locale, 'bundle.heading.availableQuestionnaireInfo', 'Only questionnaires which contain questions are displayed')}"
-										>
+                        <div class="col-lg-5">
+                            <div class="list-group">
+                                <!--/* Title of the table */-->
+                                <div class="row removableFlex list-group-item">
+                                    <div class="col-7 drag-n-drop-header-item">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'bundle.heading.availableQuestionnaire', 'Available questionnaires')}"
+                                        />
+                                        <span
+                                                class="bi bi-info-circle-fill"
+                                                style="display: inline-block"
+                                                th:title="${messages.get(#locale, 'bundle.heading.availableQuestionnaireInfo', 'Only questionnaires which contain questions are displayed')}"
+                                        >
 										</span>
-									</div>
-									<div class="col-4">
-										<input
-											class="form-control input-sm"
-											id="availableQuestionnairesFilter"
-											onkeyup="filterTable($(this), '#availableQuestionnairesTable')"
-											type="text"
-											th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
-										/>
-									</div>
-									<div class="col-1 drag-n-drop-header-item">
-										<a
-											data-bs-toggle="collapse"
-											class="bi bi-plus-lg"
-											onclick="DragNDropList.toggleCollapseTable(this)"
-										></a>
-										<a
-											data-bs-toggle="collapse"
-											class="bi bi-dash-lg"
-											onclick="DragNDropList.toggleCollapseTable(this)"
-											style="display: none"
-										></a>
-									</div>
-								</div>
-								<!--/* Header of the table */-->
-								<div class="row removableFlex list-group-item active">
-									<div class="col-1"></div>
-									<div class="col-2">
-										<th:block
-											th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
-										/>
-										<input
-											type="hidden"
-											th:name="|bundleQuestionnaires[0].position|"
-										/>
-									</div>
-									<div class="col-5">
-										<th:block
-											th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
-										/>
-									</div>
-								</div>
-								<!--/* Body of the table */-->
-								<div
-									id="availableQuestionnairesTable"
-									class="sortable collapsable availableTable"
-								>
-									<div
-										class="row removableFlex list-group-item placeholderRow notDraggable"
-										style="display: none"
-									>
-										<div class="col-12"> &nbsp; </div>
-									</div>
-									<div
-										class="row removableFlex list-group-item notDraggable"
-										id="filterEmptyRow"
-										style="display: none"
-									>
-										<div class="col-12">
-											<th:block
-												th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
-											/>
-										</div>
-									</div>
-									<th:block
-										th:if="${#lists.isEmpty(availableQuestionnaireDTOs)}"
-									>
-										<div
-											class="row removableFlex list-group-item notDraggable"
-											id="emptyRow"
-										>
-											<div class="col-12">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.noMoreQuestionnaires', 'There are no more questionnaires available')}"
-												/>
-											</div>
-										</div>
-										<div
-											class="row removableFlex list-group-item"
-											style="display: none"
-										>
-											<div class="col-2">
-												<th:block
-													th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
-												/>
-											</div>
-											<div class="col-5">
-												<th:block
-													th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
-												/>
-											</div>
-										</div>
-									</th:block>
-									<th:block
-										th:if="${not #lists.isEmpty(availableQuestionnaireDTOs)}"
-									>
-										<div
-											class="row removableFlex list-group-item notDraggable"
-											id="emptyRow"
-											style="display: none"
-										>
-											<div class="col-12">
-												<th:block
-													th:text="${messages.get(#locale, 'bundle.table.noMoreQuestionnaires', 'No questionnaires assigned')}"
-												/>
-											</div>
-										</div>
-										<th:block
-											th:each="availableQuestionnaireDTO, index: ${availableQuestionnaireDTOs}"
-										>
-											<th:block th:if="${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()}">
-												<div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="display: none"></div>
-											</th:block>
-											<div class="row removableFlex list-group-item draggable questionnaire-element" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="cursor: pointer;"
-												 th:classappend="	${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? 'default-item' : ''"
-												 th:style="			${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? '' : 'display:none;'">
-												<div class="col-1">
-													<a
-														th:id="|move_${availableQuestionnaireDTO.id}|"
-														data-bs-toggle="collapse"
-														onClick="moveItem($(this))"
-													>
-														<span class="bi bi-chevron-left"></span>
-													</a>
-												</div>
-												<div class="col-1 position">
-													<span th:text="|${index.index+1}.|"></span>
-													<input
-														type="hidden"
-														th:name="|bundleQuestionnaireDTOs[${counter.get()}].position|"
-														th:value="${index.index+1}"
-													/>
-												</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <input
+                                                class="form-control input-sm"
+                                                id="availableQuestionnairesFilter"
+                                                onkeyup="filterTable($(this), '#availableQuestionnairesTable')"
+                                                type="text"
+                                                th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+                                        />
+                                    </div>
+                                    <div class="col-1 drag-n-drop-header-item">
+                                        <a
+                                                data-bs-toggle="collapse"
+                                                class="bi bi-plus-lg"
+                                                onclick="DragNDropList.toggleCollapseTable(this)"
+                                        ></a>
+                                        <a
+                                                data-bs-toggle="collapse"
+                                                class="bi bi-dash-lg"
+                                                onclick="DragNDropList.toggleCollapseTable(this)"
+                                                style="display: none"
+                                        ></a>
+                                    </div>
+                                </div>
+                                <!--/* Header of the table */-->
+                                <div class="row removableFlex list-group-item active">
+                                    <div class="col-1"></div>
+                                    <div class="col-2">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+                                        />
+                                        <input
+                                                type="hidden"
+                                                th:name="|bundleQuestionnaires[0].position|"
+                                        />
+                                    </div>
+                                    <div class="col-5">
+                                        <th:block
+                                                th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+                                        />
+                                    </div>
+                                </div>
+                                <!--/* Body of the table */-->
+                                <div
+                                        id="availableQuestionnairesTable"
+                                        class="sortable collapsable availableTable"
+                                >
+                                    <div
+                                            class="row removableFlex list-group-item placeholderRow notDraggable"
+                                            style="display: none"
+                                    >
+                                        <div class="col-12"> &nbsp;</div>
+                                    </div>
+                                    <div
+                                            class="row removableFlex list-group-item notDraggable"
+                                            id="filterEmptyRow"
+                                            style="display: none"
+                                    >
+                                        <div class="col-12">
+                                            <th:block
+                                                    th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+                                            />
+                                        </div>
+                                    </div>
+                                    <th:block
+                                            th:if="${#lists.isEmpty(availableQuestionnaireDTOs)}"
+                                    >
+                                        <div
+                                                class="row removableFlex list-group-item notDraggable"
+                                                id="emptyRow"
+                                        >
+                                            <div class="col-12">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.noMoreQuestionnaires', 'There are no more questionnaires available')}"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div
+                                                class="row removableFlex list-group-item"
+                                                style="display: none"
+                                        >
+                                            <div class="col-2">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'clinic.table.bundlePosition', 'Position')}"
+                                                />
+                                            </div>
+                                            <div class="col-5">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'clinic.table.bundleName', 'Name')}"
+                                                />
+                                            </div>
+                                        </div>
+                                    </th:block>
+                                    <th:block
+                                            th:if="${not #lists.isEmpty(availableQuestionnaireDTOs)}"
+                                    >
+                                        <div
+                                                class="row removableFlex list-group-item notDraggable"
+                                                id="emptyRow"
+                                                style="display: none"
+                                        >
+                                            <div class="col-12">
+                                                <th:block
+                                                        th:text="${messages.get(#locale, 'bundle.table.noMoreQuestionnaires', 'No questionnaires assigned')}"
+                                                />
+                                            </div>
+                                        </div>
+                                        <th:block
+                                                th:each="availableQuestionnaireDTO, index: ${availableQuestionnaireDTOs}"
+                                        >
+                                            <th:block
+                                                    th:if="${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()}">
+                                                <div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer"
+                                                     th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}"
+                                                     style="display: none"></div>
+                                            </th:block>
+                                            <div class="row removableFlex list-group-item draggable questionnaire-element"
+                                                 th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}"
+                                                 style="cursor: pointer;"
+                                                 th:classappend="	${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? 'default-item' : ''"
+                                                 th:style="			${index.index == 0 || availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index - 1].getQuestionnaireVersionGroupId()} ? '' : 'display:none;'">
+                                                <div class="col-1">
+                                                    <a
+                                                            th:id="|move_${availableQuestionnaireDTO.id}|"
+                                                            data-bs-toggle="collapse"
+                                                            onClick="moveItem($(this))"
+                                                    >
+                                                        <span class="bi bi-chevron-left"></span>
+                                                    </a>
+                                                </div>
+                                                <div class="col-1 position">
+                                                    <span th:text="|${index.index+1}.|"></span>
+                                                    <input
+                                                            type="hidden"
+                                                            th:name="|bundleQuestionnaireDTOs[${counter.get()}].position|"
+                                                            th:value="${index.index+1}"
+                                                    />
+                                                </div>
 
-												<div class="col-3">
-													<th:block
-														th:text="${availableQuestionnaireDTO.name}"
-													/>
-													<input
-														type="hidden"
-														disabled="true"
-														th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.name|"
-														th:value="${availableQuestionnaireDTO.name}"
-														class="filterName"
-													/>
-												</div>
-												<div
-													class="col-2 scores"
-													style="display: none"
-												>
-													<th:block
-														th:if="${availableQuestionnaireDTO.hasScores}"
-													>
-														<input
-															type="checkbox"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
-														/>
-													</th:block>
-												</div>
-												<div
-													class="col-3 templateTypes"
-													style="display: none"
-												>
-													<th:block
-														th:each="exportTemplate, status: ${availableQuestionnaireDTO.exportTemplates}"
-													>
-														<input
-															type="hidden"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.exportTemplate[${status.index}].id|"
-															th:value="${exportTemplate.id}"
-														/>
-														<input
-															disabled="true"
-															th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
-															type="checkbox"
-															th:value="${exportTemplate.id}"
-														/>
-														<th:block
-															th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|"
-														/>
-														<br />
-													</th:block>
-												</div>
-												<div
-													class="col-2 enable"
-													style="display: none"
-												>
-													<input
-														disabled="true"
-														th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
-														type="checkbox"
-														checked="checked"
-													/>
-												</div>
-												<input
-													type="hidden"
-													th:id="|questionnaire_${availableQuestionnaireDTO.id}|"
-													disabled="true"
-													th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
-													th:value="${availableQuestionnaireDTO.id}"
-												/>
-												<div class="col-5 toggle-questionnaire-version-group">
-													<i onClick="toggleGroupItems($(this))"
-													   class="bi bi-chevron-down chevron-icon-down"
-													   style="cursor: pointer;"
-													   th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
-													</i>
-													<i onClick="toggleGroupItems($(this))"
-													   class="bi bi-chevron-up chevron-icon-up"
-													   style="cursor: pointer;"
-													   th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
-													</i>
-												</div>
-											</div>
-											<th:block th:if="${index.index == availableQuestionnaireDTOs.size() - 1 || (availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index + 1].getQuestionnaireVersionGroupId())}">
-												<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}" style="display: none"></div>
-											</th:block>
-											<!--/* Increment the index */-->
-											<th:block th:text="${counter.increment()}" />
-										</th:block>
-									</th:block>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                                                <div class="col-3">
+                                                    <th:block
+                                                            th:text="${availableQuestionnaireDTO.name}"
+                                                    />
+                                                    <input
+                                                            type="hidden"
+                                                            disabled="true"
+                                                            th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.name|"
+                                                            th:value="${availableQuestionnaireDTO.name}"
+                                                            class="filterName"
+                                                    />
+                                                </div>
+                                                <div
+                                                        class="col-2 scores"
+                                                        style="display: none"
+                                                >
+                                                    <th:block
+                                                            th:if="${availableQuestionnaireDTO.hasScores}"
+                                                    >
+                                                        <input
+                                                                type="checkbox"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].showScores|"
+                                                        />
+                                                    </th:block>
+                                                </div>
+                                                <div
+                                                        class="col-3 templateTypes"
+                                                        style="display: none"
+                                                >
+                                                    <th:block
+                                                            th:each="exportTemplate, status: ${availableQuestionnaireDTO.exportTemplates}"
+                                                    >
+                                                        <input
+                                                                type="hidden"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.exportTemplate[${status.index}].id|"
+                                                                th:value="${exportTemplate.id}"
+                                                        />
+                                                        <input
+                                                                disabled="true"
+                                                                th:name="|bundleQuestionnaireDTOs[${counter.get()}].exportTemplates|"
+                                                                type="checkbox"
+                                                                th:value="${exportTemplate.id}"
+                                                        />
+                                                        <th:block
+                                                                th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|"
+                                                        />
+                                                        <br/>
+                                                    </th:block>
+                                                </div>
+                                                <div
+                                                        class="col-2 enable"
+                                                        style="display: none"
+                                                >
+                                                    <input
+                                                            disabled="true"
+                                                            th:name="|bundleQuestionnaireDTOs[${counter.get()}].isEnabled|"
+                                                            type="checkbox"
+                                                            checked="checked"
+                                                    />
+                                                </div>
+                                                <input
+                                                        type="hidden"
+                                                        th:id="|questionnaire_${availableQuestionnaireDTO.id}|"
+                                                        disabled="true"
+                                                        th:name="|bundleQuestionnaireDTOs[${counter.get()}].questionnaireDTO.id|"
+                                                        th:value="${availableQuestionnaireDTO.id}"
+                                                />
+                                                <div class="col-5 toggle-questionnaire-version-group">
+                                                    <i onClick="toggleGroupItems($(this))"
+                                                       class="bi bi-chevron-down chevron-icon-down"
+                                                       style="cursor: pointer;"
+                                                       th:title="${messages.get(#locale, 'bundle.table.showQuestionnaireVersions', 'Show Versions')}">
+                                                    </i>
+                                                    <i onClick="toggleGroupItems($(this))"
+                                                       class="bi bi-chevron-up chevron-icon-up"
+                                                       style="cursor: pointer;"
+                                                       th:title="${messages.get(#locale, 'bundle.table.hideQuestionnaireVersions', 'Hide Versions')}">
+                                                    </i>
+                                                </div>
+                                            </div>
+                                            <th:block
+                                                    th:if="${index.index == availableQuestionnaireDTOs.size() - 1 || (availableQuestionnaireDTO.getQuestionnaireVersionGroupId() != availableQuestionnaireDTOs[index.index + 1].getQuestionnaireVersionGroupId())}">
+                                                <div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer"
+                                                     th:attr="data-questionnaire-version-group-id=${availableQuestionnaireDTO.getQuestionnaireVersionGroupId()}"
+                                                     style="display: none"></div>
+                                            </th:block>
+                                            <!--/* Increment the index */-->
+                                            <th:block th:text="${counter.increment()}"/>
+                                        </th:block>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				<div
-					class="d-none"
-					id="draggableContainer"
-				></div>
+                <div
+                        class="d-none"
+                        id="draggableContainer"
+                ></div>
 
-				<button
-					type="submit"
-					th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
-					class="btn btn-primary"
-					value="save"
-					id="saveButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.save', 'Save')}"
-				>
-				</button>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="cancel"
-					id="cancelButton"
-					name="action"
-					th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
-				>
-				</button>
+                <button
+                        type="submit"
+                        th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
+                        class="btn btn-primary"
+                        value="save"
+                        id="saveButton"
+                        name="action"
+                        th:text="${messages.get(#locale, 'button.save', 'Save')}"
+                >
+                </button>
+                <button
+                        type="submit"
+                        th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
+                        class="btn btn-primary"
+                        value="saveAndEdit"
+                        id="saveAndEdit"
+                        name="action"
+                        th:text="${messages.get(#locale, 'bundle.button.saveAndEdit', 'Save and edit clinics')}"
+                ></button>
+                <button
+                        type="submit"
+                        class="btn btn-primary"
+                        value="cancel"
+                        id="cancelButton"
+                        name="action"
+                        th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+                >
+                </button>
 
-				<th:block layout:insert="~{helper/localeHelper/deleteLanguageModal}" />
-			</form>
-		</div>
-	</th:block>
+                <th:block layout:insert="~{helper/localeHelper/deleteLanguageModal}"/>
+            </form>
+        </div>
+    </th:block>
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-	<script th:inline="javascript" type="text/javascript">
-		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
-		var startTable, targetTable;
-		let wasElementRemoved = false, isAssignedFormat = false;
-		let debouncedSearchTimeout;
+    <script th:inline="javascript" type="text/javascript">
+        var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+        var startTable, targetTable;
+        let wasElementRemoved = false, isAssignedFormat = false;
+        let debouncedSearchTimeout;
 
-		const ACTIONS = {
-			EXPAND: 'expand',
-			MINIMIZE: 'minimize',
-			HIDE: 'hide'
-		};
+        const ACTIONS = {
+            EXPAND: 'expand',
+            MINIMIZE: 'minimize',
+            HIDE: 'hide'
+        };
 
-		const filter = {
-			availableQuestionnaires: $('#availableQuestionnairesFilter')
-		};
+        const filter = {
+            availableQuestionnaires: $('#availableQuestionnairesFilter')
+        };
 
-		const tables = {
-			availableTable: $('#availableQuestionnairesTable'),
-			assignedTable: $('#assignedQuestionnairesTable')
-		};
+        const tables = {
+            availableTable: $('#availableQuestionnairesTable'),
+            assignedTable: $('#assignedQuestionnairesTable')
+        };
 
-		const commonSortableOptions = {
-			group: { name: 'shared', put: 'shared'},
-			animation: 150,
-			easing: "cubic-bezier(1, 0, 0, 1)",
-			draggable: ".list-group-item",
-			filter: ".notDraggable",
-		};
+        const commonSortableOptions = {
+            group: { name: 'shared', put: 'shared'},
+            animation: 150,
+            easing: "cubic-bezier(1, 0, 0, 1)",
+            draggable: ".list-group-item",
+            filter: ".notDraggable",
+        };
 
-		// Document ready initialization
-		$(() => {
-			Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/);
-			initializeSortableTable(tables.availableTable);
-			initializeSortableTable(tables.assignedTable);
-			checkPublishingState();
-			initBundleVisibility();
-			initializeQuestionnaireVersionGroupChevronAndSpacer();
-		});
+        // Document ready initialization
+        $(() => {
+            Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/);
+            initializeSortableTable(tables.availableTable);
+            initializeSortableTable(tables.assignedTable);
+            checkPublishingState();
+            initBundleVisibility();
+            initializeQuestionnaireVersionGroupChevronAndSpacer();
+        });
 
-		/** ---------------------------------------
-		 * 1. INITIALIZATION FUNCTIONS
-		 * --------------------------------------- */
+        /** ---------------------------------------
+         * 1. INITIALIZATION FUNCTIONS
+         * --------------------------------------- */
 
-		/** Initializes sortable functionality for the table. */
-		function initializeSortableTable(table) {
-			const isAssignedTable = table.is(tables.assignedTable);
-			const sortableOptions = {
-				...commonSortableOptions,
-				sort: isAssignedTable,  // Allow sorting for the assigned table only.
-				onStart: (e) => onDragStart(e, isAssignedTable),
-				onChange: (e) => onDragChange(e, isAssignedTable),
-				onEnd: (e) => onDragEnd(e),
-				onRemove: () => wasElementRemoved = true
-			};
+        /** Initializes sortable functionality for the table. */
+        function initializeSortableTable(table) {
+            const isAssignedTable = table.is(tables.assignedTable);
+            const sortableOptions = {
+                ...commonSortableOptions,
+                sort: isAssignedTable,  // Allow sorting for the assigned table only.
+                onStart: (e) => onDragStart(e, isAssignedTable),
+                onChange: (e) => onDragChange(e, isAssignedTable),
+                onEnd: (e) => onDragEnd(e),
+                onRemove: () => wasElementRemoved = true
+            };
 
-			Sortable.create(table[0], sortableOptions);
-		}
+            Sortable.create(table[0], sortableOptions);
+        }
 
-		/** Initializes bundle visibility based on the bundleId value. */
-		function initBundleVisibility() {
-			if ($("#bundleId").val() > 0) {
-				$(".collapsable").hide();
-			} else {
-				$(".bi-plus-lg").hide();
-				$(".bi-dash-lg").show();
-			}
-		}
+        /** Initializes bundle visibility based on the bundleId value. */
+        function initBundleVisibility() {
+            if ($("#bundleId").val() > 0) {
+                $(".collapsable").hide();
+            } else {
+                $(".bi-plus-lg").hide();
+                $(".bi-dash-lg").show();
+            }
+        }
 
-		/** Initializes group chevron and spacer based on the assigned and available tables. */
-		function initializeQuestionnaireVersionGroupChevronAndSpacer() {
-			const assignedGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.assignedTable);
-			const availableGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable);
+        /** Initializes group chevron and spacer based on the assigned and available tables. */
+        function initializeQuestionnaireVersionGroupChevronAndSpacer() {
+            const assignedGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.assignedTable);
+            const availableGroupIds = fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable);
 
-			// Add missing group gaps to available table
-			assignedGroupIds.forEach(groupId => {
-				if (!availableGroupIds.has(groupId)) {
-					const spacerHtml = generateQuestionnaireVersionGroupSpacerHtml(groupId);
-					tables.availableTable.append(spacerHtml);
-				}
-			});
+            // Add missing group gaps to available table
+            assignedGroupIds.forEach(groupId => {
+                if (!availableGroupIds.has(groupId)) {
+                    const spacerHtml = generateQuestionnaireVersionGroupSpacerHtml(groupId);
+                    tables.availableTable.append(spacerHtml);
+                }
+            });
 
-			// If the group has only one item, hide chevrons, otherwise set to minimize
-			availableGroupIds.forEach(groupId => {
-				const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
-				const firstItem = groupElements.first();
-				const isSingleElement = groupElements.length === 1;
-				updateGroupChevronAndSpacer(groupId, firstItem, isSingleElement ? ACTIONS.HIDE : ACTIONS.MINIMIZE, false);
-				toggleGroupItems(firstItem); 
-			});
-		}
+            // If the group has only one item, hide chevrons, otherwise set to minimize
+            availableGroupIds.forEach(groupId => {
+                const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
+                const firstItem = groupElements.first();
+                const isSingleElement = groupElements.length === 1;
+                updateGroupChevronAndSpacer(groupId, firstItem, isSingleElement ? ACTIONS.HIDE : ACTIONS.MINIMIZE, false);
+                toggleGroupItems(firstItem);
+            });
+        }
 
-		/** ---------------------------------------
-		 * 2. DRAG-AND-DROP FUNCTIONS
-		 * --------------------------------------- */
+        /** ---------------------------------------
+         * 2. DRAG-AND-DROP FUNCTIONS
+         * --------------------------------------- */
 
-		/** Handles the start of a drag event. */
-		function onDragStart(e, isStartAssignedTable) {
-			wasElementRemoved = false;
-			isAssignedFormat = isStartAssignedTable;
-			startTable = $(e.from);
-			targetTable = startTable;
-		}
+        /** Handles the start of a drag event. */
+        function onDragStart(e, isStartAssignedTable) {
+            wasElementRemoved = false;
+            isAssignedFormat = isStartAssignedTable;
+            startTable = $(e.from);
+            targetTable = startTable;
+        }
 
-		/** Handles the drag event when an item is moved between or within tables. */
-		function onDragChange(e, isAssignedTable) {
-			const draggedItem = $(e.item);
-			if (isAssignedTable && !isAssignedFormat) {
-				targetTable = tables.assignedTable;
-				updateQuestionnaireElementUI(draggedItem, targetTable);
-				isAssignedFormat = true;
-			}
-			if (isAssignedTable) refreshTableUI();
-		}
+        /** Handles the drag event when an item is moved between or within tables. */
+        function onDragChange(e, isAssignedTable) {
+            const draggedItem = $(e.item);
+            if (isAssignedTable && !isAssignedFormat) {
+                targetTable = tables.assignedTable;
+                updateQuestionnaireElementUI(draggedItem, targetTable);
+                isAssignedFormat = true;
+            }
+            if (isAssignedTable) refreshTableUI();
+        }
 
-		/** Handles the end of a drag event. */
-		function onDragEnd(e) {
-			const draggedItem = $(e.item);
-			if (wasElementRemoved) {
-				if (startTable.is(tables.availableTable)) {
-					targetTable = tables.assignedTable;
-				} else {
-					targetTable = tables.availableTable;
-				}
-			} else {
-				targetTable = startTable;
-			}
+        /** Handles the end of a drag event. */
+        function onDragEnd(e) {
+            const draggedItem = $(e.item);
+            if (wasElementRemoved) {
+                if (startTable.is(tables.availableTable)) {
+                    targetTable = tables.assignedTable;
+                } else {
+                    targetTable = tables.availableTable;
+                }
+            } else {
+                targetTable = startTable;
+            }
 
-			// Move to correct Position if target is available Table
-			if (targetTable === tables.availableTable) moveElementToTargetTable(draggedItem, targetTable);
+            // Move to correct Position if target is available Table
+            if (targetTable === tables.availableTable) moveElementToTargetTable(draggedItem, targetTable);
 
-			updateQuestionnaireElementUI(draggedItem, targetTable);
-			refreshTableUI(true);
-		}
+            updateQuestionnaireElementUI(draggedItem, targetTable);
+            refreshTableUI(true);
+        }
 
-		/** Moves an item between available and assigned tables when clicked. */
-		function moveItem(element) {
-			const questionnaireElement = $(element).closest(".questionnaire-element");
-			const isInAvailableTable = tables.availableTable.has(questionnaireElement).length;
-			startTable = isInAvailableTable ? tables.availableTable : tables.assignedTable;
-			targetTable = isInAvailableTable ? tables.assignedTable : tables.availableTable;
+        /** Moves an item between available and assigned tables when clicked. */
+        function moveItem(element) {
+            const questionnaireElement = $(element).closest(".questionnaire-element");
+            const isInAvailableTable = tables.availableTable.has(questionnaireElement).length;
+            startTable = isInAvailableTable ? tables.availableTable : tables.assignedTable;
+            targetTable = isInAvailableTable ? tables.assignedTable : tables.availableTable;
 
-			moveElementToTargetTable(questionnaireElement, targetTable);
-			updateQuestionnaireElementUI(questionnaireElement, targetTable);
-			refreshTableUI(true);
-		}
+            moveElementToTargetTable(questionnaireElement, targetTable);
+            updateQuestionnaireElementUI(questionnaireElement, targetTable);
+            refreshTableUI(true);
+        }
 
-		/** ---------------------------------------
-		 * 3. UI AND TABLE STATE FUNCTIONS
-		 * --------------------------------------- */
+        /** ---------------------------------------
+         * 3. UI AND TABLE STATE FUNCTIONS
+         * --------------------------------------- */
 
-		/** Moves an element to the target table and updates its state accordingly. */
-		function moveElementToTargetTable(questionnaireElement, targetTable) {
-			const questionnaireVersionGroupId = questionnaireElement.closest('.questionnaire-element').data('questionnaire-version-group-id');
-			if (targetTable.is(tables.assignedTable)) {
-				questionnaireElement.remove();
-				tables.assignedTable.append(questionnaireElement);
-			} else {
-				if (questionnaireElement.hasClass('default-item')) {
-					const groupHeader = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-header-spacer').first();
-					questionnaireElement.insertAfter(groupHeader);
-				} else {
-					const groupFooter = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-footer-spacer').first();
-					questionnaireElement.insertBefore(groupFooter);
-				}
-			}
-		}
+        /** Moves an element to the target table and updates its state accordingly. */
+        function moveElementToTargetTable(questionnaireElement, targetTable) {
+            const questionnaireVersionGroupId = questionnaireElement.closest('.questionnaire-element').data('questionnaire-version-group-id');
+            if (targetTable.is(tables.assignedTable)) {
+                questionnaireElement.remove();
+                tables.assignedTable.append(questionnaireElement);
+            } else {
+                if (questionnaireElement.hasClass('default-item')) {
+                    const groupHeader = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-header-spacer').first();
+                    questionnaireElement.insertAfter(groupHeader);
+                } else {
+                    const groupFooter = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, questionnaireVersionGroupId, 'questionnaire-version-group-footer-spacer').first();
+                    questionnaireElement.insertBefore(groupFooter);
+                }
+            }
+        }
 
-		/** Updates the UI elements of a group based on its assigned or available state. */
-		function updateQuestionnaireElementUI(questionnaireElement, targetTable) {
-			const $moveIcon = questionnaireElement.find('.bi-chevron-left, .bi-chevron-right').first();
-			const $toggleGroup = questionnaireElement.find(".toggle-questionnaire-version-group");
-			const isAssigned = targetTable.is(tables.assignedTable);
+        /** Updates the UI elements of a group based on its assigned or available state. */
+        function updateQuestionnaireElementUI(questionnaireElement, targetTable) {
+            const $moveIcon = questionnaireElement.find('.bi-chevron-left, .bi-chevron-right').first();
+            const $toggleGroup = questionnaireElement.find(".toggle-questionnaire-version-group");
+            const isAssigned = targetTable.is(tables.assignedTable);
 
-			// Update move icon direction
-			$moveIcon.toggleClass("bi-chevron-left", !isAssigned);
-			$moveIcon.toggleClass("bi-chevron-right", isAssigned);
+            // Update move icon direction
+            $moveIcon.toggleClass("bi-chevron-left", !isAssigned);
+            $moveIcon.toggleClass("bi-chevron-right", isAssigned);
 
-			if (isAssigned) {
-				$toggleGroup.hide();  // Hide toggle questionnaire version group in ASSIGNED_TABLE
-				questionnaireElement.append($moveIcon.parent().parent());
-				// Remove 'show' class from chevrons in ASSIGNED_TABLE
-				const chevronDown = questionnaireElement.find(".chevron-icon-down");
-				const chevronUp = questionnaireElement.find(".chevron-icon-up");
-				chevronDown.removeClass("show");
-				chevronUp.removeClass("show")
-			} else {
-				$toggleGroup.show();  // Show toggle questionnaire version group in AVAILABLE_TABLE
-				questionnaireElement.prepend($moveIcon.parent().parent());
-			}
-		}
+            if (isAssigned) {
+                $toggleGroup.hide();  // Hide toggle questionnaire version group in ASSIGNED_TABLE
+                questionnaireElement.append($moveIcon.parent().parent());
+                // Remove 'show' class from chevrons in ASSIGNED_TABLE
+                const chevronDown = questionnaireElement.find(".chevron-icon-down");
+                const chevronUp = questionnaireElement.find(".chevron-icon-up");
+                chevronDown.removeClass("show");
+                chevronUp.removeClass("show")
+            } else {
+                $toggleGroup.show();  // Show toggle questionnaire version group in AVAILABLE_TABLE
+                questionnaireElement.prepend($moveIcon.parent().parent());
+            }
+        }
 
-		/** Updates both tables' state and sorts the items. */
-		function refreshTableUI(shouldRefreshGroupVisibility = false) {
-			$('.placeholderRow').hide();
+        /** Updates both tables' state and sorts the items. */
+        function refreshTableUI(shouldRefreshGroupVisibility = false) {
+            $('.placeholderRow').hide();
 
-			tables.assignedTable.find(":input").removeAttr("disabled");
-			const assignedFields = tables.assignedTable.find(".scores, .templateTypes, .enable");
-			assignedFields.css('display', 'block');
+            tables.assignedTable.find(":input").removeAttr("disabled");
+            const assignedFields = tables.assignedTable.find(".scores, .templateTypes, .enable");
+            assignedFields.css('display', 'block');
 
-			tables.availableTable.find(":input").attr("disabled", true);
-			const availableFields = tables.availableTable.find(".scores, .templateTypes, .enable");
-			availableFields.css('display', 'none');
+            tables.availableTable.find(":input").attr("disabled", true);
+            const availableFields = tables.availableTable.find(".scores, .templateTypes, .enable");
+            availableFields.css('display', 'none');
 
-			const isSearchEmpty = filter.availableQuestionnaires.val().trim() === '';
-			if (shouldRefreshGroupVisibility && isSearchEmpty) {
-				fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable).forEach(groupId => {
-					const groupExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
-					applyQuestionnaireVersionGroupVisibilityAction(groupId, groupExpanded ? ACTIONS.EXPAND : ACTIONS.MINIMIZE, true);
-				});
-			}
+            const isSearchEmpty = filter.availableQuestionnaires.val().trim() === '';
+            if (shouldRefreshGroupVisibility && isSearchEmpty) {
+                fetchUniqueQuestionnaireVersionGroupIds(tables.availableTable).forEach(groupId => {
+                    const groupExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
+                    applyQuestionnaireVersionGroupVisibilityAction(groupId, groupExpanded ? ACTIONS.EXPAND : ACTIONS.MINIMIZE, true);
+                });
+            }
 
-			DragNDropList.checkIfTablesAreEmptyAndShowPlaceholder();
-			checkPublishingState();
-			DragNDropList.sortEntries();
-		}
+            DragNDropList.checkIfTablesAreEmptyAndShowPlaceholder();
+            checkPublishingState();
+            DragNDropList.sortEntries();
+        }
 
-		/** Checks the publishing state and updates the publish button. */
-		function checkPublishingState() {
-			if (tables.assignedTable.children(".draggable").length === 0) {
-				$("#isPublished1").attr("disabled", "disabled").attr("checked", false);
-			} else {
-				$("#isPublished1").removeAttr("disabled");
-			}
-		}
+        /** Checks the publishing state and updates the publish button. */
+        function checkPublishingState() {
+            if (tables.assignedTable.children(".draggable").length === 0) {
+                $("#isPublished1").attr("disabled", "disabled").attr("checked", false);
+            } else {
+                $("#isPublished1").removeAttr("disabled");
+            }
+        }
 
-		/** ---------------------------------------------------
-		 * 4. QUESTIONNAIRE VERSION GROUP MANAGEMENT FUNCTIONS
-		 * ---------------------------------------------------- */
+        /** ---------------------------------------------------
+         * 4. QUESTIONNAIRE VERSION GROUP MANAGEMENT FUNCTIONS
+         * ---------------------------------------------------- */
 
-		/** Generates HTML for a group spacer. */
-		function generateQuestionnaireVersionGroupSpacerHtml(groupId) {
-			return `
-				<div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>
-				<div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>`;
-		}
+        /** Generates HTML for a group spacer. */
+        function generateQuestionnaireVersionGroupSpacerHtml(groupId) {
+            return `
+                <div class="questionnaire-version-group-spacer questionnaire-version-group-header-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>
+                <div class="questionnaire-version-group-spacer questionnaire-version-group-footer-spacer" data-questionnaire-version-group-id="${groupId}" style="display: none"></div>`;
+        }
 
-		/** Toggles the visibility of group items between expanded and minimized states. */
-		function toggleGroupItems(element) {
-			const groupId  = $(element).closest('.questionnaire-element').data('questionnaire-version-group-id');
-			const isExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
-			applyQuestionnaireVersionGroupVisibilityAction(groupId, isExpanded ? ACTIONS.MINIMIZE : ACTIONS.EXPAND, true);
-		}
+        /** Toggles the visibility of group items between expanded and minimized states. */
+        function toggleGroupItems(element) {
+            const groupId  = $(element).closest('.questionnaire-element').data('questionnaire-version-group-id');
+            const isExpanded = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer').is(':visible');
+            applyQuestionnaireVersionGroupVisibilityAction(groupId, isExpanded ? ACTIONS.MINIMIZE : ACTIONS.EXPAND, true);
+        }
 
-		/** Applies the visibility action (expand, minimize, hide) to a group. */
-		function applyQuestionnaireVersionGroupVisibilityAction(groupId, action, useSlide = false) {
-			const questionnaireVersionGroupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
-			const firstItem = questionnaireVersionGroupElements.first();
-			const otherItems = questionnaireVersionGroupElements.not(firstItem);
+        /** Applies the visibility action (expand, minimize, hide) to a group. */
+        function applyQuestionnaireVersionGroupVisibilityAction(groupId, action, useSlide = false) {
+            const questionnaireVersionGroupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-element');
+            const firstItem = questionnaireVersionGroupElements.first();
+            const otherItems = questionnaireVersionGroupElements.not(firstItem);
 
-			if (questionnaireVersionGroupElements.length === 1) { // is single Element
-				updateGroupChevronAndSpacer(groupId, firstItem, ACTIONS.HIDE, useSlide);
-			} else {
-				updateGroupChevronAndSpacer(groupId, firstItem, action, useSlide);
-			}
+            if (questionnaireVersionGroupElements.length === 1) { // is single Element
+                updateGroupChevronAndSpacer(groupId, firstItem, ACTIONS.HIDE, useSlide);
+            } else {
+                updateGroupChevronAndSpacer(groupId, firstItem, action, useSlide);
+            }
 
-			if (action === ACTIONS.EXPAND) {
-				useSlide ? questionnaireVersionGroupElements.slideDown() : questionnaireVersionGroupElements.show();
-			} else if (action === ACTIONS.MINIMIZE) {
-				useSlide ? otherItems.slideUp() : otherItems.hide();
-				firstItem.show(); // Ensure the first element is always shown
-			} else if (action === ACTIONS.HIDE) {
-				useSlide ? questionnaireVersionGroupElements.slideUp() : questionnaireVersionGroupElements.hide();
-			}
-		}
+            if (action === ACTIONS.EXPAND) {
+                useSlide ? questionnaireVersionGroupElements.slideDown() : questionnaireVersionGroupElements.show();
+            } else if (action === ACTIONS.MINIMIZE) {
+                useSlide ? otherItems.slideUp() : otherItems.hide();
+                firstItem.show(); // Ensure the first element is always shown
+            } else if (action === ACTIONS.HIDE) {
+                useSlide ? questionnaireVersionGroupElements.slideUp() : questionnaireVersionGroupElements.hide();
+            }
+        }
 
-		/** Updates the group chevron and spacer based on the visibility action. */
-		function updateGroupChevronAndSpacer(groupId, firstElement, action, useSlide = false) {
-			const chevronDown = $(firstElement).find(".chevron-icon-down");
-			const chevronUp = $(firstElement).find(".chevron-icon-up");
-			const groupSpacer = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer');
+        /** Updates the group chevron and spacer based on the visibility action. */
+        function updateGroupChevronAndSpacer(groupId, firstElement, action, useSlide = false) {
+            const chevronDown = $(firstElement).find(".chevron-icon-down");
+            const chevronUp = $(firstElement).find(".chevron-icon-up");
+            const groupSpacer = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupId, 'questionnaire-version-group-spacer');
 
-			if (action === ACTIONS.HIDE) {
-				chevronDown.removeClass("show");
-				chevronUp.removeClass("show");
-				useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
-			} else if (action === ACTIONS.MINIMIZE) {
-				chevronUp.removeClass("show");
-				chevronDown.addClass("show");
-				useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
-			} else if (action === ACTIONS.EXPAND) {
-				chevronDown.removeClass("show");
-				chevronUp.addClass("show");
-				useSlide ? groupSpacer.slideDown() : groupSpacer.show();
-			}
-		}
+            if (action === ACTIONS.HIDE) {
+                chevronDown.removeClass("show");
+                chevronUp.removeClass("show");
+                useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
+            } else if (action === ACTIONS.MINIMIZE) {
+                chevronUp.removeClass("show");
+                chevronDown.addClass("show");
+                useSlide ? groupSpacer.slideUp() : groupSpacer.hide();
+            } else if (action === ACTIONS.EXPAND) {
+                chevronDown.removeClass("show");
+                chevronUp.addClass("show");
+                useSlide ? groupSpacer.slideDown() : groupSpacer.show();
+            }
+        }
 
-		/** ---------------------------------------
-		 * 5. FILTER AND SEARCH FUNCTIONS
-		 * --------------------------------------- */
+        /** ---------------------------------------
+         * 5. FILTER AND SEARCH FUNCTIONS
+         * --------------------------------------- */
 
-		/** Filters the table based on the search input. */
-		function filterTable(input, tableId) {
-			clearTimeout(debouncedSearchTimeout);
-			debouncedSearchTimeout = setTimeout(() => {
-				const searchTerm = input.val().toUpperCase();
-				const table = $(tableId);
-				const nameFields = table.find('.filterName');
+        /** Filters the table based on the search input. */
+        function filterTable(input, tableId) {
+            clearTimeout(debouncedSearchTimeout);
+            debouncedSearchTimeout = setTimeout(() => {
+                const searchTerm = input.val().toUpperCase();
+                const table = $(tableId);
+                const nameFields = table.find('.filterName');
 
-				if (searchTerm === "") {
-					fetchUniqueQuestionnaireVersionGroupIds(table).forEach(groupId => applyQuestionnaireVersionGroupVisibilityAction(groupId, ACTIONS.MINIMIZE, true));
-					table.find('#filterEmptyRow').toggle(false);
-					return;
-				}
+                if (searchTerm === "") {
+                    fetchUniqueQuestionnaireVersionGroupIds(table).forEach(groupId => applyQuestionnaireVersionGroupVisibilityAction(groupId, ACTIONS.MINIMIZE, true));
+                    table.find('#filterEmptyRow').toggle(false);
+                    return;
+                }
 
-				table.find('.questionnaire-element, .questionnaire-version-group-spacer').hide();
-				const hiddenCounter = filterTableEntries(nameFields, searchTerm);
-				table.find('#filterEmptyRow').toggle(hiddenCounter === nameFields.length);
-			}, 200); // Debounce delay
-		}
+                table.find('.questionnaire-element, .questionnaire-version-group-spacer').hide();
+                const hiddenCounter = filterTableEntries(nameFields, searchTerm);
+                table.find('#filterEmptyRow').toggle(hiddenCounter === nameFields.length);
+            }, 200); // Debounce delay
+        }
 
-		/** Filters table entries based on the search term. */
-		function filterTableEntries(nameFields, searchTerm) {
-			let hiddenCounter = 0;
-			const matchingGroups = {};
+        /** Filters table entries based on the search term. */
+        function filterTableEntries(nameFields, searchTerm) {
+            let hiddenCounter = 0;
+            const matchingGroups = {};
 
-			nameFields.each((_, field) => {
-				const $this = $(field);
-				const groupId = $this.closest('.questionnaire-element').data('questionnaire-version-group-id');
-				matchingGroups[groupId] = matchingGroups[groupId] || $this.val().toUpperCase().includes(searchTerm);
-			});
+            nameFields.each((_, field) => {
+                const $this = $(field);
+                const groupId = $this.closest('.questionnaire-element').data('questionnaire-version-group-id');
+                matchingGroups[groupId] = matchingGroups[groupId] || $this.val().toUpperCase().includes(searchTerm);
+            });
 
-			$.each(matchingGroups, function (groupId, isMatched) {
-				const groupIdAsNumber = Number(groupId);
-				applyQuestionnaireVersionGroupVisibilityAction(groupIdAsNumber, isMatched ? ACTIONS.EXPAND : ACTIONS.HIDE, false);
+            $.each(matchingGroups, function (groupId, isMatched) {
+                const groupIdAsNumber = Number(groupId);
+                applyQuestionnaireVersionGroupVisibilityAction(groupIdAsNumber, isMatched ? ACTIONS.EXPAND : ACTIONS.HIDE, false);
 
-				if (!isMatched) {
-					const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupIdAsNumber, 'questionnaire-element');
-					hiddenCounter += groupElements.length;
-				}
-			});
-			return hiddenCounter;
-		}
+                if (!isMatched) {
+                    const groupElements = fetchQuestionnaireVersionGroupElementsById(tables.availableTable, groupIdAsNumber, 'questionnaire-element');
+                    hiddenCounter += groupElements.length;
+                }
+            });
+            return hiddenCounter;
+        }
 
-		/** ---------------------------------------
-		 * 6. HELPER FUNCTIONS
-		 * --------------------------------------- */
+        /** ---------------------------------------
+         * 6. HELPER FUNCTIONS
+         * --------------------------------------- */
 
-		/** Fetch all unique group IDs from the specified table. */
-		function fetchUniqueQuestionnaireVersionGroupIds(table) {
-			const uniqueGroupIds = new Set();
-			table.find('.questionnaire-element').each(function () {
-				uniqueGroupIds.add($(this).data('questionnaire-version-group-id'));
-			});
-			return uniqueGroupIds;
-		}
+        /** Fetch all unique group IDs from the specified table. */
+        function fetchUniqueQuestionnaireVersionGroupIds(table) {
+            const uniqueGroupIds = new Set();
+            table.find('.questionnaire-element').each(function () {
+                uniqueGroupIds.add($(this).data('questionnaire-version-group-id'));
+            });
+            return uniqueGroupIds;
+        }
 
-		/** Fetches group elements by ID and class name. */
-		function fetchQuestionnaireVersionGroupElementsById(table, groupId, className) {
-			return table.find(`.${className}`).filter(function () {
-				return $(this).data('questionnaire-version-group-id') === groupId;
-			});
-		}
-	</script>
+        /** Fetches group elements by ID and class name. */
+        function fetchQuestionnaireVersionGroupElementsById(table, groupId, className) {
+            return table.find(`.${className}`).filter(function () {
+                return $(this).data('questionnaire-version-group-id') === groupId;
+            });
+        }
+    </script>
 </th:block>

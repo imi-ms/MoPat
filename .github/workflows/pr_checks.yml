@@ -1,0 +1,305 @@
+name: test
+
+on: pull_request
+concurrency:
+  group: test-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    permissions:
+      checks: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      unittest-results: ${{ steps.decode-results.outputs.content }}
+
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh
+          --connect
+          --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install MySQL client and Load Database Schema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+
+          mysql -h 127.0.0.1 -u root --password=root \
+            -e "CREATE USER IF NOT EXISTS 'mopat'@'%' IDENTIFIED BY 'mopat';"
+
+          mysql -h 127.0.0.1 -u root --password=root \
+            -e "GRANT ALL PRIVILEGES ON *.* TO 'mopat'@'%'; FLUSH PRIVILEGES;"
+
+          mysql -h 127.0.0.1 -u root --password=root \
+            < db/installationInitTest.sql
+
+      - name: Test with Maven
+        run: mvn -B test --file pom.xml
+
+      - name: Publish Test Report
+        id: testReport
+        uses: mikepenz/action-junit-report@bccf2e31636835cf0874589931c4116687171386
+        if: success() || failure()
+        with:
+          report_paths: '**/target/surefire-reports/*.xml'
+
+      - name: Decode results
+        id: decode-results
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          echo "<details><summary>🧪 Unit Test Results</summary>" >> unit-results.md
+          echo "${{ steps.testReport.outputs.summary }}" >> unit-results.md
+          echo "</details>" >> unit-results.md
+
+          echo "content<<EOF" >> "$GITHUB_OUTPUT"
+          cat unit-results.md >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+
+
+  build-webapp-image:
+    name: Build webapp test image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Define image name
+        id: image
+        shell: bash
+        run: |
+          IMAGE="ghcr.io/imi-ms/mopat-testenv:pr-${{ github.event.pull_request.number }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push webapp image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+        with:
+          context: .
+          file: .github/docker_testenv/Dockerfile
+          push: true
+          tags: ${{ steps.image.outputs.image }}
+          cache-from: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2
+          cache-to: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2,mode=max
+
+          provenance: false
+          sbom: false
+
+  selenium-tests:
+    name: Selenium - ${{ matrix.test_file }}
+
+    needs: build-webapp-image
+
+    permissions:
+      checks: write
+      packages: read
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      max-parallel: 21
+      matrix:
+        test_file:
+          - test_login_admin.py
+          - test_admin_interface_login.py
+          - test_admin_interface_index.py
+          - test_admin_interface_questionnaire_question_types_score.py
+          - test_admin_interface_conditions.py
+          - test_bundle_list.py
+          - test_bundle_fill.py
+          - test_clinic_list.py
+          - test_clinic_fill.py
+          - test_encounter_list.py
+          - test_encounter_schedule.py
+          - test_user_list.py
+          - test_invitation_edit.py
+          - test_user_mail_to_all.py
+          - test_invitation_list.py
+          - test_configuration_edit.py
+          - test_one_time_statistic.py
+          - test_mobile_encounter_interface_test.py
+          - test_git_info.py
+          - test_question_preview_modal.py
+          - test_questionnaire_export_automatic_mapping.py
+
+    env:
+      VIDEO_DIR: ${{ github.workspace }}/video
+      WEBAPP_IMAGE: ghcr.io/imi-ms/mopat-testenv:pr-${{ github.event.pull_request.number }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+
+      - name: Prepare video directory
+        run: |
+          mkdir -p "$VIDEO_DIR"
+          echo "VIDEO_DIR=$VIDEO_DIR" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull prebuilt webapp image
+        run: docker pull "$WEBAPP_IMAGE"
+
+      - name: Pull Compose images
+        run: |
+          docker pull aerokube/selenoid:latest-release
+          docker pull mariadb:latest
+          docker pull selenoid/video-recorder:latest-release
+          docker pull selenoid/chrome:latest
+
+      - name: Start Docker Compose without building
+        run: |
+          docker compose \
+            -f selenium/docker-compose.yml \
+            up \
+            -d \
+            --no-build \
+            --pull never
+
+      - name: Wait for the application to be ready
+        run: |
+          until curl \
+            --output /dev/null \
+            --silent \
+            --head \
+            --fail \
+            http://localhost:8080; do
+              echo "Waiting for the application to be ready..."
+              sleep 5
+          done
+
+      - name: Wait for Selenoid to be ready
+        run: |
+          until curl \
+            --output /dev/null \
+            --silent \
+            --fail \
+            http://localhost:4444/status; do
+              echo "Waiting for Selenoid to be ready..."
+              sleep 5
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.13'
+
+      - name: Install Selenium dependencies
+        run: |
+          pip install -r selenium/requirements.txt
+
+      - name: Run Selenium test
+        id: selenium-test
+        run: |
+          python3 "selenium/${{ matrix.test_file }}" \
+            > "test-results-${{ matrix.test_file }}.log"
+
+      - name: Wait for video recording to finish
+        if: always()
+        run: |
+          for i in {1..60}; do
+            recorder_ids="$(
+              docker ps -q \
+                --filter ancestor=selenoid/video-recorder:latest-release
+            )"
+
+            if [ -z "$recorder_ids" ]; then
+              echo "No active video recorder containers."
+              break
+            fi
+
+            echo "Waiting for recorder containers: $recorder_ids"
+            sleep 1
+          done
+
+          sleep 2
+
+          echo "Videos:"
+          find "$VIDEO_DIR" -maxdepth 1 -type f -ls || true
+
+      - name: Upload Selenium test result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-result-${{ matrix.test_file }}
+          path: test-results-${{ matrix.test_file }}.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Selenium videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-videos-${{ matrix.test_file }}
+          path: ${{ env.VIDEO_DIR }}/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Selenium logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-logs-${{ matrix.test_file }}
+          path: |
+            ${{ env.VIDEO_DIR }}/*.log
+            test-results-${{ matrix.test_file }}.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose \
+            -f selenium/docker-compose.yml \
+            down \
+            --volumes \
+            --remove-orphans

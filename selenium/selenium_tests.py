@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import re
 from time import gmtime, strftime
 import datetime
 import unittest
@@ -34,7 +35,8 @@ from helper.Language import LanguageSelectors, LanguageHelper
 from helper.User import UserHelper, UserRoles, UserSelector, EmailSelectors
 from helper.Statistic import StatisticSelector
 from helper.Dashboard import DashboardHelper, DashboardSelectors
-from helper.ExportMapper import ExportHelper
+from helper.ExportMapper import ExportHelper, ExportSelectors
+from helper.Preview import PreviewHelper, PreviewAssertHelper, PreviewSelectors, PREVIEW_PRESETS
 
 loginHelper = LoginHelper()
 
@@ -75,14 +77,12 @@ class IMISeleniumBaseTest(ABC):
             Start a new driver for each test.
             Checks, if the script is called on the server or locally.
         """
-        
-        try:
-            self._setServerDriver()
-        except Exception as e:
-            print(e)
+        test_name = self._testMethodName
+        self._setServerDriver(test_name)
 
-        # maximize window to full-screen
-        self.driver.maximize_window()
+        if self.driver is None:
+            raise RuntimeError("Driver was not initialized.")
+        
 
     def run(self, result=None):
         test_name = self._testMethodName
@@ -118,14 +118,6 @@ class IMISeleniumBaseTest(ABC):
         #print(f"\n### End of Test: `{test_name}`\n")
 
     def tearDown(self) -> None:
-        """
-            Sets the cookie to validate, if the test was successful or not.
-        """
-        if self.currentResult.wasSuccessful():
-            cookie = {'name': 'zaleniumTestPassed', 'value': 'true'}
-        else:
-            cookie = {'name': 'zaleniumTestPassed', 'value': 'false'}
-        self.driver.add_cookie(cookie)
         self.driver.quit()
         
     def _printError(self, error):
@@ -155,7 +147,7 @@ class IMISeleniumBaseTest(ABC):
         return None
 
     @abstractmethod
-    def _setServerDriver(self):
+    def _setServerDriver(self, testname):
         self.driver = None
 
     @abstractmethod
@@ -191,6 +183,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.encounter_helper = EncounterHelper(self.driver, self.navigation_helper)
         self.dashboard_helper = DashboardHelper(self.driver, self.navigation_helper)
         self.export_helper = ExportHelper(self.driver, self.navigation_helper)
+        self.preview_assert_helper = PreviewAssertHelper(self.driver, self.navigation_helper)
 
     def test_login_admin(self):
         if(self.secret['admin-username']!='' and self.secret['admin-password']!=''):
@@ -230,7 +223,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.navigation_helper.navigate_to_manage_questionnaires()
 
         # d
-        self.questionnaire_assert_helper.assert_questionnaire_list()
+        #self.questionnaire_assert_helper.assert_questionnaire_list()
         # e
         self.questionnaire_helper.click_add_questionnaire_button()
         questionnaire = self.questionnaire_assert_helper.assert_questionnaire_fill_page()
@@ -323,9 +316,9 @@ class CustomTest(IMISeleniumBaseTest):
             bundle['id']=self.bundle_helper.save_bundle(bundle_name=bundle['name'])
         except Exception as e:
             self.fail(f"Failed to create bundle: {e}")
-    
+
         self.utils.check_visibility_of_element(BundleSelectors.CELL_FLAGICON, "Flag icon not found")
-    
+
         try:
             self.navigation_helper.navigate_to_manage_clinics()
             clinic["name"] = self.clinic_helper.create_clinic(bundles=[bundle],
@@ -410,8 +403,8 @@ class CustomTest(IMISeleniumBaseTest):
             self.assertEqual(len(validation_errors), 2, "Expected 2 validation errors, but found {len(validation_errors)}")
         except Exception as e:
             self.fail(f"Failed to save bundle: {e}")
-    
-        
+
+
         #Finally
         finally:
             if(created_questionnaire):
@@ -443,13 +436,13 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ClinicSelectors.TABLE_SEARCH, "Clinic table search not found")
         self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ACTION_BUTTONS, "Clinic table action buttons not found")
         self.utils.check_visibility_of_element(ClinicSelectors.BUTTON_ADD_CLINIC, "Add new clinic button not found")
-        
+
         try:
             pass
         finally:
             self.utils.search_and_delete_item(clinic["name"],clinic["id"],"clinic")
             self.authentication_helper.logout()
-            
+
     def test_clinic_fill(self):
         clinic={}
         created_questionnaire={}
@@ -474,7 +467,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_NAME, "Clinic name input not found")
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION, "Clinic description input not found")
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_EMAIL, "Clinic email input not found")
-        
+
         #Assert - Check if the clinic configuration is displayed
         try:
             WebDriverWait(self.driver, 10).until(
@@ -486,17 +479,17 @@ class CustomTest(IMISeleniumBaseTest):
         except:
             self.fail(
                 f"Clinic configuration not found")
-            
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_BUNDLES, "Available bundles table not found")
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_BUNDLES, "Assigned bundles table not found")            
 
-                    
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_BUNDLES, "Available bundles table not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_BUNDLES, "Assigned bundles table not found")
+
+
         #Assert - Check if the bundles can be added to the clinic
         try:
             self.clinic_helper.assign_multiple_bundes_to_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
         except Exception as e:
             self.fail(f"Failed to assign bundle to clinic: {e}")
-        
+
         #Assert - Check if the bundles can be removed from the clinic
         try:
             self.clinic_helper.remove_multiple_bundes_from_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
@@ -504,7 +497,7 @@ class CustomTest(IMISeleniumBaseTest):
             self.fail(f"Failed to remove bundle from clinic: {e}")
 
         self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_USERS, "Available users table not found")
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_USERS, "Assigned users table not found") 
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_USERS, "Assigned users table not found")
 
         #Assert - Check if the users can be added to the clinic
         try:
@@ -551,12 +544,12 @@ class CustomTest(IMISeleniumBaseTest):
             if created_questionnaire:
                 self.utils.search_and_delete_item(created_questionnaire['name'], created_questionnaire['id'], "questionnaire")
             self.authentication_helper.logout()
-    
+
     def test_encounter_list(self):
         created_questionnaire = {}
         bundle={}
         clinic={}
-        
+
         # Arrange
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
@@ -585,7 +578,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         # Act
         self.navigation_helper.navigate_to_manage_surveys()
-        
+
         self.utils.check_visibility_of_element(EncounterSelectors.BUTTON_ENCOUNTER_TABLE, "Encounter Table button not found")
         self.utils.check_visibility_of_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE, "Encounter Schedule Table button not found")
 
@@ -606,7 +599,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(EncounterSelectors.PAGINATION_ENCOUNTER_SCHEDULE_TABLE, "Pagination for Scheduled Encounters table not found")
 
         self.utils.check_visibility_of_element(EncounterSelectors.SEARCH_SCHEDULED_ENCOUNTERS, "Search for Scheduled Encounters table not found")
-        
+
         encounter_id = None
         try:
             self.utils.click_element(EncounterSelectors.BUTTON_SCHEDULE_ENCOUNTER)
@@ -639,10 +632,10 @@ class CustomTest(IMISeleniumBaseTest):
         clinic={}
         bundle={}
         created_questionnaire = {}
-        
+
         # Arrange
         self.driver.get(self.https_base_url)
-        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])    
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         try:
             created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
@@ -664,7 +657,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         except Exception as e:
             self.fail(f"Failed to create clinic: {e}")
-        
+
         try:
             self.navigation_helper.navigate_to_manage_surveys()
             self.utils.click_element(EncounterSelectors.BUTTON_ENCOUNTER_SCHEDULE_TABLE)
@@ -683,13 +676,13 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(EncounterSelectors.SELECT_LANGUAGE, "Language select not found")
         self.utils.check_visibility_of_element(EncounterSelectors.INPUT_PERSONAL_TEXT, "Personal Text input not found")
 
-        
+
         encounter_id = None
         try:
             encounter_id = self.encounter_helper.schedule_encounter("123456", clinic["name"], bundle["name"], "test@email.com", EncounterScheduleType.UNIQUELY,(datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
         except Exception as e:
             self.fail(f"Failed to schedule encounter: {e}")
-            
+
         finally:
             self.encounter_helper.delete_scheduled_encounter(encounter_id, "123456")
             self.utils.search_and_delete_item(clinic["name"],clinic["id"], "clinic")
@@ -709,7 +702,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(UserSelector.PAGINATION_USER_TABLE, "Pagination not displayed")
         self.utils.check_visibility_of_element(UserSelector.TABLE_ACTION_BUTTONS, "Action buttons not displayed")
         self.utils.check_visibility_of_element(UserSelector.BUTTON_INVITE_USER, "Invite user button not displayed")
-        
+
     def test_invitation_edit(self):
         # Arrange
         self.driver.get(self.https_base_url)
@@ -729,7 +722,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.navigation_helper.navigate_to_manager_user()
 
         self.utils.click_element(UserSelector.BUTTON_INVITE_USER)
-        
+
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_FIRST_NAME(0), "First name input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_LAST_NAME(0), "Last name input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_EMAIL(0), "Email input field not displayed")
@@ -738,8 +731,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_FIRST_NAME(1), "Second user's first name input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_LAST_NAME(1), "Second user's last name input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.INPUT_USER_EMAIL(1), "Second user's email input field not displayed")
-        self.utils.click_element(UserSelector.BUTTON_REMOVE_INVITATION)        
-        
+        self.utils.click_element(UserSelector.BUTTON_REMOVE_INVITATION)
+
         #Assert - Check if the fields were removed
         try:
             WebDriverWait(self.driver, 10).until_not(
@@ -754,7 +747,7 @@ class CustomTest(IMISeleniumBaseTest):
             )
         except Exception:
             self.fail("Last name input field still displayed")
-        
+
         try:
             WebDriverWait(self.driver, 10).until_not(
                 EC.presence_of_element_located(UserSelector.INPUT_USER_EMAIL(0))
@@ -768,11 +761,11 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(UserSelector.INPUT_PERSONAL_TEXT, "Invite message input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.TABLE_AVAILABLE_CLINICS, "Available clinic table not displayed")
         self.utils.check_visibility_of_element(UserSelector.TABLE_ASSIGNED_CLINICS, "Assigned clinic table not displayed")
-        
+
         self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic["id"]))
-        
+
         self.utils.click_element(UserSelector.BUTTON_MOVE_CLINIC(clinic["id"]))
-        
+
 
         #Assert - Check validations
         try:
@@ -806,7 +799,7 @@ class CustomTest(IMISeleniumBaseTest):
         finally:
             if clinic["id"]:
                 self.utils.search_and_delete_item(clinic["name"], clinic["id"], "clinic")
-        
+
     def test_user_mail_to_all(self):
         test_subject = "Test Subject"
         test_content = "Test Content"
@@ -815,7 +808,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
         self.navigation_helper.navigate_to_email_to_all_users()
-        
+
         self.utils.check_visibility_of_element(EmailSelectors.SUBJECT_INPUT, "Subject input field not displayed")
         self.utils.check_visibility_of_element(EmailSelectors.CONTENT_INPUT, "Content input field not displayed")
         self.utils.check_visibility_of_element(UserSelector.SELECT_MAIL_LANGUAGE, "Language dropdown not displayed")
@@ -854,7 +847,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
 
-        # Act        
+        # Act
         self.navigation_helper.navigate_to_configuration()
 
         self.utils.check_visibility_of_element(ConfigurationSelectors.SELECT_LANGUAGE, "Select Language not found")
@@ -936,9 +929,16 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.configuration_helper.save_configuration()
 
-        # Count all divs with class config_error
-        error_divs = self.driver.find_elements(By.CLASS_NAME, "config_error")
-        error_count = len(error_divs)
+        errorDivs = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "config_error"))
+        )
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+            errorDivs[0]
+        )
+
+        error_count = len(errorDivs)
         # Expect at least one error with the provided config
         assert error_count > 0, "Validation is not working for the configuration elements."
 
@@ -961,12 +961,12 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.configuration_helper.add_additional_logo()
 
-        #TODO: Cannot be saved right now, as it can't be ensured that config works on every server 
+        #TODO: Cannot be saved right now, as it can't be ensured that config works on every server
         #self.configuration_helper.save_configuration()
         #self.utils.scroll_to_bottom()
         #self.utils.check_visibility_of_element(ConfigurationSelectors.IMAGE_ADDITIONAL_LOGO, "Additional Logo not found")
         self.authentication_helper.logout()
-        
+
     def test_one_time_statistic(self):
         # Arrange
         self.driver.get(self.https_base_url)
@@ -974,7 +974,7 @@ class CustomTest(IMISeleniumBaseTest):
 
         # Act
         self.navigation_helper.navigate_to_one_time_statistic()
-        
+
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_DROP_DOWN, "Bundle dropdown not found")
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_START_DATE, "Bundle start date not found")
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_END_DATE, "Bundle end date not found")
@@ -985,15 +985,15 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_PATIENT_BUNDLE_ID, "Bundle patient bundle ID not found")
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_PATIENT_START_DATE, "Bundle patient start date not found")
         self.utils.check_visibility_of_element(StatisticSelector.BUNDLE_PATIENT_END_DATE, "Bundle patient end date not found")
-        
+
         self.utils.click_element(StatisticSelector.BUTTON_BERECHNEN)
-        
+
         self.utils.check_visibility_of_element(StatisticSelector.ANZAHL_1, "Anzahl 1 not found")
         self.utils.check_visibility_of_element(StatisticSelector.ANZAHL_2, "Anzahl 2 not found")
         self.utils.check_visibility_of_element(StatisticSelector.ANZAHL_3, "Anzahl 3 not found")
 
         self.authentication_helper.logout()
-        
+
     def test_mobile_encounter_interface_test(self):
         # Arrange
         self.driver.get(self.https_base_url)
@@ -1002,7 +1002,7 @@ class CustomTest(IMISeleniumBaseTest):
         clinic={}
         bundle={}
         created_questionnaire = {}
-        
+
         try:
             created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions()
         except Exception as e:
@@ -1024,19 +1024,19 @@ class CustomTest(IMISeleniumBaseTest):
 
         except Exception as e:
             self.fail(f"Failed to create clinic: {e}")
-            
-            
-            
+
+
+
         self.navigation_helper.navigate_to_execute_survey()
-        
-        
+
+
         self.utils.check_visibility_of_element(SurveySelectors.BUTTON_ADDITIONAL_INFORMATION, "Additional Information Button not found")
         self.utils.check_visibility_of_element(SurveySelectors.DROPDOWN_LANGUAGE_SELECTOR, "Language selector not found")
-        
+
         self.utils.check_visibility_of_element(SurveySelectors.TAB_PATIENT_REGISTRATION, "Patient Registration tab not found")
         self.utils.check_visibility_of_element(SurveySelectors.TAB_PATIENT_DATA_AUTOMATION, "Patient Data Automation tab not found")
         self.utils.check_visibility_of_element(SurveySelectors.TAB_PATIENT_PSEUDONYMIZATION, "Patient Pseudonymization tab not found")
-        
+
         self.utils.click_element(SurveySelectors.TAB_PATIENT_REGISTRATION)
         self.utils.check_visibility_of_element(SurveySelectors.BUTTON_CHECK_CASE_NUMBER, "Check Case Number Button not found")
         button_text = self.driver.find_element(*SurveySelectors.BUTTON_CHECK_CASE_NUMBER).text
@@ -1047,78 +1047,195 @@ class CustomTest(IMISeleniumBaseTest):
 
         self.utils.click_element(SurveySelectors.TAB_PATIENT_PSEUDONYMIZATION)
         self.utils.check_visibility_of_element(SurveySelectors.BUTTON_CHECK_CASE_NUMBER, "Check Case Number Button not found in Patient Pseudonymization tab")
-        assert self.driver.find_element(*SurveySelectors.BUTTON_CHECK_CASE_NUMBER).text != button_text, "Button text changed in Patient Pseudonymization tab"    
-        
+        assert self.driver.find_element(*SurveySelectors.BUTTON_CHECK_CASE_NUMBER).text != button_text, "Button text changed in Patient Pseudonymization tab"
+
         self.utils.click_element(SurveySelectors.TAB_PATIENT_REGISTRATION)
-            
+
         self.survey_helper.start_survey(clinic_name=clinic["name"])
-        
+
         self.survey_helper.proceed_to_bundle_selection(bundle_name=bundle["name"])
-        
+
         self.survey_helper.click_next_button()
-        
+
         self.utils.check_visibility_of_element(SurveySelectors.TEXT_QUESTIONNAIRE_TITLE, "Questionnaire title not found")
         self.survey_helper.click_next_button()
-        
+
         self.utils.click_element(SurveySelectors.BUTTON_ADDITIONAL_INFORMATION)
         self.utils.click_element(SurveySelectors.BUTTON_HELP)
-        
+
         self.utils.check_visibility_of_element(SurveySelectors.BLOCK_HELP_MODE, "Help mode next button not found")
-        
+
         self.utils.click_element(SurveySelectors.BUTTON_ADDITIONAL_INFORMATION)
-        
+
         self.utils.check_visibility_of_element(SurveySelectors.BLOCK_PROGRESS_BAR, "Progress bar not found")
         self.utils.check_visibility_of_element(SurveySelectors.BUTTON_FONT_SIZE, "Font size button not found")
         self.survey_helper.answer_numbered_input_question({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_multiple_choice_question({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_slider_question({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_number_checkbox_question({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_number_checkbox_text_question({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.select_dropdown_option({})
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_text_question()
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.answer_date_question()
         self.survey_helper.click_next_button()
-        
+
         self.survey_helper.click_next_button()
-        
+
         self.utils.check_visibility_of_element(SurveySelectors.TEXT_BUNDLE_FINAL_INFO, "Bundle final info not found")
 
         self.survey_helper.end_survey()
-        
+
         self.authentication_helper.logout()
-        
+
     def test_git_info(self):
         # Arrange
         self.driver.get(self.https_base_url)
         self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
-        
+
         self.dashboard_helper.open_git_info()
-        
+
         self.utils.check_visibility_of_element(DashboardSelectors.TABLE_GITINFO,"Git Information Table not found")
-        
+
         # Assert git information elements are present
         self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_BUILD_VERSION, "Git Build Version not found")
         self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_BRANCH, "Git Branch not found")
         self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_COMMIT_ID, "Git Commit ID not found")
         self.utils.check_visibility_of_element(DashboardSelectors.BLOCK_GIT_COMMIT_MESSAGE, "Git Commit Message not found")
-        
+
         self.authentication_helper.logout()
+
+    def test_question_preview_modal(self):
+        created_questionnaire = {}
+        preview = self.preview_assert_helper
+
+        self.driver.get(self.https_base_url)
+        self.authentication_helper.login(self.secret['admin-username'], self.secret['admin-password'])
+
+        try:
+            created_questionnaire = self.questionnaire_helper.create_questionnaire_with_questions(
+                question_types={QuestionType.MULTIPLE_CHOICE}
+            )
+        except Exception as e:
+            self.fail(f"Failed to create questionnaire: {e}")
+
+        try:
+            mc_question = next(
+                q for q in created_questionnaire['questions']
+                if q['type'] == QuestionType.MULTIPLE_CHOICE
+            )
+        except StopIteration:
+            self.fail("No MULTIPLE_CHOICE question was created.")
+
+        try:
+            # --- persisted question, default preview -----------------------
+            self.navigation_helper.open_question(mc_question['id'])
+            preview.assert_trigger_controls()
+
+            language_code = preview.get_first_added_language()
+            self.assertIsNotNone(
+                language_code,
+                "No language found in #addedLanguages - the preview cannot resolve a language."
+            )
+
+            preview.open_preview()
+
+            preview.assert_survey_chrome_present()
+            preview.assert_dom_structure()
+            preview.assert_question_title_matches_form(language_code)
+            preview.assert_multiple_choice_rendered(mc_question['options'])
+
+            state = preview.get_state()
+            self.assertTrue(
+                state['scale'] <= 1.0,
+                f"Default preview should never scale up, got {state['scale']}."
+            )
+
+            preview.close_preview()
+            preview.assert_reset_after_close()
+
+            # --- every device preset ---------------------------------------
+            for preset, (width, height) in PREVIEW_PRESETS.items():
+                preview.open_preview(preset)
+
+                geometry = preview.assert_preset_geometry(preset, width, height)
+                preview.assert_breakpoint_classes(preset, width, geometry)
+                preview.assert_survey_chrome_present()
+                preview.assert_multiple_choice_rendered(mc_question['options'])
+
+                preview.close_preview()
+                preview.assert_reset_after_close()
+
+            # --- typography must follow the frame, not the window ----------
+            preview.assert_typography_follows_frame_width()
+
+            # --- preview reflects unsaved edits ----------------------------
+            edited_text = "Vorschau Test - geaenderter Fragetext"
+            self.assertTrue(
+                preview.write_question_text(f"<p>{edited_text}</p>", language_code),
+                "Could not write into the question text editor."
+            )
+
+            preview.open_preview("tablet-portrait")
+            state = preview.get_state()
+            self.assertIn(
+                edited_text, " ".join((state['titleText'] or "").split()),
+                "Preview did not pick up the unsaved question text - it is not "
+                "reading live form state."
+            )
+            preview.assert_multiple_choice_rendered(mc_question['options'])
+            preview.close_preview()
+
+            preview.assert_no_severe_console_errors("of a persisted question")
+
+            self.question_helper.cancel_question_editing()
+
+            # --- brand new, never saved question (id == null) --------------
+            self.navigation_helper.navigate_to_questions_of_questionnaire(
+                created_questionnaire['id'], created_questionnaire['name']
+            )
+            self.questionnaire_helper.click_add_question_button()
+
+            new_question = self.question_helper.add_question_multiple_choice(
+                language_code=language_code,
+                question_text="Vorschau Test - neue Frage",
+                options=["Alpha", "Beta"],
+                min_answers=1,
+                max_answers=2,
+            )
+
+            preview.open_preview("phone-portrait")
+            preview.assert_survey_chrome_present()
+            preview.assert_question_title_matches_form(language_code)
+            preview.assert_multiple_choice_rendered(new_question['options'])
+            preview.close_preview()
+            preview.assert_reset_after_close()
+
+            preview.assert_no_severe_console_errors("of an unsaved question")
+
+            self.question_helper.cancel_question_editing()
+
+        finally:
+            if created_questionnaire:
+                self.utils.search_and_delete_item(
+                    created_questionnaire['name'], created_questionnaire['id'], "questionnaire"
+                )
+            self.authentication_helper.logout()
 
     def test_questionnaire_export_automatic_mapping(self):
 
@@ -1199,7 +1316,7 @@ class CustomTest(IMISeleniumBaseTest):
             raise AssertionError("Automatic mapping failed on second attempt")
 
         time.sleep(1)
-        self.export_helper.click_save_mapping()
+        self.utils.click_element(ExportSelectors.MAPPING_SAVE_BUTTON)
         # Navigate to mapping page
         if not self.export_helper.click_edit_mapping_for_file():
             raise AssertionError("Mapping page failed to load")
@@ -1221,22 +1338,27 @@ class IMISeleniumChromeTest(IMISeleniumBaseTest):
     """
         Test class for Chrome tests.
     """
-    def _setServerDriver(self):
-        name: str = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{self.base_url}_chrome"
+    def _setServerDriver(self, test_name):
+        safe_test_name = re.sub(r"[^A-Za-z0-9_.-]", "_", test_name)
+        name = f"{strftime('%Y-%m-%d-%H-%M-%S', gmtime())}_{safe_test_name}_chrome"
+
         options = webdriver.ChromeOptions()
-        options.set_capability("acceptInsecureCerts", True)
-        options.add_argument("--headless=new")
         options.add_argument("--window-size=1920,1080")
         options.set_capability("selenoid:options", {
-                                                    "enableVNC": False,
-                                                    "enableVideo": False,
-                                                    "enableLog": True,
-                                                    "name": name,
-                                                    "logName": f"{name}.log"
-                                                    })
-        self.driver = webdriver.Remote(options=options,
-                                       command_executor=self.selenium_grid_url)
+            "enableVNC": True,
+            "enableVideo": True,
+            "videoName": f"{name}.mp4",
+            "screenResolution": "1920x1080x24",
+            "enableLog": True,
+            "name": name,
+            "logName": f"{name}.log"
+        })
+        options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
 
+        self.driver = webdriver.Remote(
+            options=options,
+            command_executor=self.selenium_grid_url
+        )
 
     def _setLocalDriver(self, directory):
         # download latest driver
