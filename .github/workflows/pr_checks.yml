@@ -1,6 +1,9 @@
 name: test
 
 on: pull_request
+concurrency:
+  group: test-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   unit-tests:
@@ -105,7 +108,7 @@ jobs:
         id: image
         shell: bash
         run: |
-          IMAGE="ghcr.io/imi-ms/mopat-testenv:${GITHUB_SHA}"
+          IMAGE="ghcr.io/imi-ms/mopat-testenv:pr-${{ github.event.pull_request.number }}"
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push webapp image
@@ -114,7 +117,7 @@ jobs:
           context: .
           file: .github/docker_testenv/Dockerfile
           push: true
-          tags: ghcr.io/imi-ms/mopat-testenv:${{ github.sha }}
+          tags: ${{ steps.image.outputs.image }}
           cache-from: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2
           cache-to: type=registry,ref=ghcr.io/imi-ms/mopat-testenv:buildcache-v2,mode=max
 
