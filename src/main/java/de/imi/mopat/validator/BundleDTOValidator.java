@@ -68,7 +68,7 @@ public class BundleDTOValidator implements Validator {
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
-        } else if (visibleDescpriptionLength == 0) {
+        } else if (!bundleDTO.getDescription().isEmpty() && visibleDescpriptionLength == 0) {
             errors.rejectValue("description", "errormessage",
                     messageSource.getMessage("bundle.description.notNull", new Object[]{},
                             LocaleContextHolder.getLocale()));

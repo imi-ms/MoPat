@@ -8,7 +8,6 @@ import de.imi.mopat.helper.controller.HtmlUtilities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -60,8 +59,8 @@ public class QuestionDTOValidator implements Validator {
 
         // [sw] Check if any added language contains an empty or too long questionText
         for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText().entrySet()) {
-            if (entry.getValue() == null || entry.getValue().trim().isEmpty() || Pattern.matches(
-                "<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>", entry.getValue())) {
+            String visibleQuestionText = HtmlUtilities.getVisibleText(entry.getValue());
+            if (visibleQuestionText.isEmpty()) {
                 questionDTO.getLocalizedQuestionText().put(entry.getKey(), "");
                 if (questionDTO.getQuestionType() == QuestionType.INFO_TEXT) {
                     errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
@@ -74,11 +73,11 @@ public class QuestionDTOValidator implements Validator {
                         messageSource.getMessage("question.error" + ".questionTextIsNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
-            } else if(HtmlUtilities.getVisibleText(entry.getValue()).length() > MAX_QUESTION_TEXT_LENGTH){
+            } else if(visibleQuestionText.length() > MAX_QUESTION_TEXT_LENGTH){
                 errors.rejectValue("localizedQuestionText[" + entry.getKey() + "]",
                         MoPatValidator.ERRORCODE_ERRORMESSAGE,
                         messageSource.getMessage("question.error.questionTextTooLong",
-                                new Object[]{HtmlUtilities.getVisibleText(entry.getValue()).length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+                                new Object[]{visibleQuestionText.length(),MAX_QUESTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
             }
         }
 
