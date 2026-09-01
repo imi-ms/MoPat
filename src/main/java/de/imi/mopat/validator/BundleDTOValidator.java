@@ -22,9 +22,10 @@ import org.springframework.validation.Validator;
 @Component
 public class BundleDTOValidator implements Validator {
 
-    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
-    private static final int MAX_WELCOME_TEXT_LENGTH = 5_000;
-    private static final int MAX_FINAL_TEXT_LENGTH = 5_000;
+    // Needs to be public because it's used in BundleDto
+    public static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
+    public static final int MAX_WELCOME_TEXT_LENGTH = 5_000;
+    public static final int MAX_FINAL_TEXT_LENGTH = 5_000;
 
     @Autowired
     private MessageSource messageSource;
