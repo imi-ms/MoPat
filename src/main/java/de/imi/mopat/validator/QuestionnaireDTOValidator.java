@@ -70,7 +70,7 @@ public class QuestionnaireDTOValidator implements Validator {
                     MoPatValidator.ERRORCODE_ERRORMESSAGE,
                     messageSource.getMessage("questionnaire.error.descriptionTooLong",
                             new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
-        } else if ((!questionnaireDTO.getDescription().isEmpty()) && visibleDescpriptionLength == 0) {
+        } else if (questionnaireDTO.getDescription() != null && !questionnaireDTO.getDescription().isEmpty() && visibleDescpriptionLength == 0) {
             errors.rejectValue("description", "errormessage",
                     messageSource.getMessage("questionnaire.description.notNull", new Object[]{},
                             LocaleContextHolder.getLocale()));
