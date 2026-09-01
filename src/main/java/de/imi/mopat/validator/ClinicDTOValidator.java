@@ -1,6 +1,7 @@
 package de.imi.mopat.validator;
 
 import de.imi.mopat.dao.ClinicDao;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 import de.imi.mopat.model.dto.ClinicConfigurationMappingDTO;
 import de.imi.mopat.model.dto.ClinicDTO;
 
@@ -17,6 +18,8 @@ import org.springframework.validation.Validator;
  */
 @Component
 public class ClinicDTOValidator implements Validator {
+
+    private static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
 
     @Autowired
     private MessageSource messageSource;
@@ -53,6 +56,22 @@ public class ClinicDTOValidator implements Validator {
                 messageSource.getMessage("clinic.error.nameInUse", new Object[]{},
                     LocaleContextHolder.getLocale()));
         }
+
+        // Check if description text is too long or empty
+        int visibleDescpriptionLength = HtmlUtilities.getVisibleText(clinicDTO.getDescription()).length();
+        if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
+            errors.rejectValue("description",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("questionnaire.error.descriptionTooLong",
+                            new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+        } else if (visibleDescpriptionLength == 0) {
+            errors.rejectValue("description", "errormessage",
+                    messageSource.getMessage("clinic.description.notNull", new Object[]{},
+                            LocaleContextHolder.getLocale()));
+        }
+
+
+
         if (!checkIfAnyOnePatientRetrieverIsEnabled(clinicDTO)) {
             errors.rejectValue("clinicConfigurationMappingDTOS[0].value", MoPatValidator.ERRORCODE_ERRORMESSAGE,
                 messageSource.getMessage("clinic.error.noConfiguration",

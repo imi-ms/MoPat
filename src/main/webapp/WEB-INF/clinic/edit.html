@@ -823,15 +823,27 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
+    <script th:src="@{/js/helper/htmlUtilities.js}"></script>
     <script
         th:inline="javascript"
         type="text/javascript"
     >
+        const maxDescriptionTextLength = 2000;
+        const textLengthExceededMessage =
+          /*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
+
         $(document).ready(function () {
             /*[- Initial state check for all checkboxes -]*/
 
             $("input[triggerid]").each(function () {
                 toggleChildrenVisibility(this);
+            });
+
+            // Checks length of the description text
+            HtmlUtilities.bindWysiwygTextLengthValidation({
+                textareaNamePrefix: "description",
+                maxLength: maxDescriptionTextLength,
+                message: textLengthExceededMessage
             });
         });
 

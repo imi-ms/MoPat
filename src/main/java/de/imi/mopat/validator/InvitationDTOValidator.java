@@ -1,5 +1,6 @@
 package de.imi.mopat.validator;
 
+import de.imi.mopat.helper.controller.HtmlUtilities;
 import de.imi.mopat.model.dto.InvitationDTO;
 import de.imi.mopat.model.dto.InvitationUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.validation.Validator;
  */
 @Component
 public class InvitationDTOValidator implements Validator {
+
+    private static final int MAX_PERSONAL_TEXT_LENGTH = 2000;
 
     @Autowired
     private MessageSource messageSource;
@@ -63,6 +66,16 @@ public class InvitationDTOValidator implements Validator {
                     messageSource.getMessage("global.datatype.email" + ".notValid", new Object[]{},
                         LocaleContextHolder.getLocale()));
             }
+        }
+
+        // Checks if message is too long (message is named personalText in DTO)
+        int personalTextLength = HtmlUtilities.getVisibleText(invitationDTO.getPersonalText()).length();
+        if (personalTextLength > MAX_PERSONAL_TEXT_LENGTH){
+            errors.rejectValue("personalText",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("invitation.message.tooLong",
+                            new Object[]{personalTextLength, MAX_PERSONAL_TEXT_LENGTH},
+                            LocaleContextHolder.getLocale()));
         }
 
     }

@@ -1,6 +1,7 @@
 package de.imi.mopat.validator;
 
 import de.imi.mopat.dao.BundleDao;
+import de.imi.mopat.helper.controller.HtmlUtilities;
 import de.imi.mopat.helper.controller.HtmlUtils;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.dto.BundleDTO;
@@ -20,6 +21,11 @@ import org.springframework.validation.Validator;
  */
 @Component
 public class BundleDTOValidator implements Validator {
+
+    // Needs to be public because it's used in BundleDto
+    public static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
+    public static final int MAX_WELCOME_TEXT_LENGTH = 5_000;
+    public static final int MAX_FINAL_TEXT_LENGTH = 5_000;
 
     @Autowired
     private MessageSource messageSource;
@@ -56,12 +62,17 @@ public class BundleDTOValidator implements Validator {
                     LocaleContextHolder.getLocale()));
         }
 
-        String bundleDescription = HtmlUtils.removeHtmlTags(bundleDTO.getDescription());
-
-        if (bundleDescription != null && bundleDescription.isEmpty()) {
+        // Check if description text is too long or empty
+        int visibleDescpriptionLength = HtmlUtilities.getVisibleText(bundleDTO.getDescription()).length();
+        if(visibleDescpriptionLength > MAX_DESCRIPTION_TEXT_LENGTH){
+            errors.rejectValue("description",
+                    MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                    messageSource.getMessage("questionnaire.error.descriptionTooLong",
+                            new Object[]{visibleDescpriptionLength, MAX_DESCRIPTION_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+        } else if (bundleDTO.getDescription() != null && !bundleDTO.getDescription().isEmpty() && visibleDescpriptionLength == 0) {
             errors.rejectValue("description", "errormessage",
-                messageSource.getMessage("bundle.description.notNull", new Object[]{},
-                    LocaleContextHolder.getLocale()));
+                    messageSource.getMessage("bundle.description.notNull", new Object[]{},
+                            LocaleContextHolder.getLocale()));
         }
 
         // Check if at least the first questionnaire is enabled in this bundle
@@ -104,6 +115,17 @@ public class BundleDTOValidator implements Validator {
                         messageSource.getMessage("bundle.validator" + ".welcomeText" + ".notNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
                 }
+                // Check if current welcome text is too long
+                else {
+                    int visibleWelcomeTextLength = HtmlUtilities.getVisibleText(entry.getValue()).length();
+                    if (visibleWelcomeTextLength > MAX_WELCOME_TEXT_LENGTH){
+                        errors.rejectValue("localizedWelcomeText[" + entry.getKey() + "]",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("questionnaire.error.welcomeTextTooLong",
+                                        new Object[]{visibleWelcomeTextLength, MAX_WELCOME_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+
+                    }
+                }
             }
         }
 
@@ -129,6 +151,17 @@ public class BundleDTOValidator implements Validator {
                         MoPatValidator.ERRORCODE_NOT_NULL,
                         messageSource.getMessage("bundle.validator" + ".finalText" + ".notNull",
                             new Object[]{}, LocaleContextHolder.getLocale()));
+                }
+                // Check if current final text is too long
+                else {
+                    int visibleFinalTextLength = HtmlUtilities.getVisibleText(entry.getValue()).length();
+                    if (visibleFinalTextLength > MAX_FINAL_TEXT_LENGTH){
+                        errors.rejectValue("localizedFinalText[" + entry.getKey() + "]",
+                                MoPatValidator.ERRORCODE_ERRORMESSAGE,
+                                messageSource.getMessage("questionnaire.error.finalTextTooLong",
+                                        new Object[]{visibleFinalTextLength, MAX_FINAL_TEXT_LENGTH}, LocaleContextHolder.getLocale()));
+
+                    }
                 }
             }
         }

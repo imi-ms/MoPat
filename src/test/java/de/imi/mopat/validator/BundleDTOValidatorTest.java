@@ -63,6 +63,17 @@ public class BundleDTOValidatorTest {
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
 
+    // Creates a valid Bundle Instance which can be used in different tests
+    private BundleDTO createValidBundleDTO() {
+        BundleDTO bundleDTO = new BundleDTO();
+        bundleDTO.setId(Math.abs(random.nextLong()));
+        bundleDTO.setName(Helper.getRandomAlphabeticString(random.nextInt(23) + 3));
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(10)); // valid length
+        bundleDTO.setLocalizedWelcomeText(new TreeMap<>());
+        bundleDTO.setLocalizedFinalText(new TreeMap<>());
+        return bundleDTO;
+    }
+
     /**
      * Test of {@link BundleDTOValidator#supports(java.lang.Class)} Valid input:
      * {@link BundleDTO#class} Invalid input: Other class than {@link BundleDTO#class}
@@ -290,4 +301,45 @@ public class BundleDTOValidatorTest {
             message, testErrorMessage);
         bundleDao.remove(bundle);
     }
+
+
+    @Test
+    public void testValidateDescriptionLength() {
+        int maxDescriptionLength = BundleDTOValidator.MAX_DESCRIPTION_TEXT_LENGTH;
+
+        // Case 1: description exactly at the limit -> no error expected
+        BundleDTO bundleDTO = createValidBundleDTO();
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(maxDescriptionLength));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertFalse(
+                "Description at the limit should not raise an error.",
+                result.hasFieldErrors("description"));
+
+        // Case 2: description one character over the limit -> error expected
+        int tooLongLength = maxDescriptionLength + 1;
+        bundleDTO = createValidBundleDTO();
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(tooLongLength));
+
+        result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertTrue(
+                "Too long description should raise an error.",
+                result.hasFieldErrors("description"));
+
+        // Verify the concrete error message (built dynamically from the constant)
+        String expectedMessage = messageSource.getMessage(
+                "questionnaire.error.descriptionTooLong",
+                new Object[]{tooLongLength, maxDescriptionLength},
+                LocaleContextHolder.getLocale());
+        String actualMessage = result.getFieldError("description").getDefaultMessage();
+
+        assertEquals(
+                "The returned error message for a too long description didn't match the expected one.",
+                expectedMessage, actualMessage);
+    }
+
 }
