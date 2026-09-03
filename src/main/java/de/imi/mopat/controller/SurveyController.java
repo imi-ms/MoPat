@@ -3,6 +3,7 @@ package de.imi.mopat.controller;
 import de.imi.mopat.dao.*;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.UserDao;
+import de.imi.mopat.error.EncounterSubmitException;
 import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.auth.PinAuthorizationService;
 import de.imi.mopat.dao.AnswerDao;
@@ -25,6 +26,7 @@ import de.imi.mopat.helper.controller.PatientDataRetriever;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.model.*;
 import de.imi.mopat.model.dto.ClinicDTO;
+import de.imi.mopat.model.dto.EncounterSubmitResponseDTO;
 import de.imi.mopat.model.enumeration.*;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
@@ -34,6 +36,7 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.EncounterSubmitService;
 import de.imi.mopat.service.SurveyService;
 import de.imi.mopat.validator.MoPatValidator;
 
@@ -126,6 +129,8 @@ public class SurveyController {
     private Validator validator;
     @Autowired
     private SurveyService surveyService;
+    @Autowired
+    private EncounterSubmitService encounterSubmitService;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
@@ -864,275 +869,24 @@ public class SurveyController {
      * @return Returns an empty String.
      */
     @RequestMapping(value = "/mobile/survey/encounter", method = RequestMethod.POST)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public @ResponseBody String updateEncounter(@RequestBody final EncounterDTO encounterDTO) {
-        // If the encounter was sent from the client as isTest or
-        // the given encounter Id is null
-        if (encounterDTO.getIsTest() || encounterDTO.getId() == null) {
-            // Do nothing
-            return "";
-        } else {
-            Encounter encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-            // If the attached bundle is not in test mode write the changes
-            if (encounter != null && encounter.getBundle().getIsPublished()) {
-                // Set the last seen question and the isCompleted flag from
-                // the dto to the model
-                encounter.setLastSeenQuestionId(encounterDTO.getLastSeenQuestionId());
-                // Set active questionnaires
-                encounter.setActiveQuestionnaires(encounterDTO.getActiveQuestionnaireIds());
+    public @ResponseBody ResponseEntity<EncounterSubmitResponseDTO> updateEncounter(
+        @RequestBody final EncounterDTO encounterDTO) {
 
-                // Get all already existing responses
-                Set<Response> existingResponses = new HashSet<>(encounter.getResponses());
+        try {
+            EncounterSubmitResponseDTO response = encounterSubmitService.updateEncounter(encounterDTO);
+            return ResponseEntity.ok(response);
 
-                //Get a list with all existing answer IDs
-                Set<Long> existingAnswerIds = new HashSet<>();
-                for (Response response : existingResponses) {
-                    existingAnswerIds.add(response.getAnswer().getId());
-                }
+        } catch (EncounterSubmitException ex) {
+            return ResponseEntity
+                .status(ex.getStatus())
+                .body(EncounterSubmitResponseDTO.failed(ex.getMessage()));
 
-                // Get a list with all new given answer IDs and fill it in
-                // every step of the loop
-                Set<Long> givenAnswerIds = new HashSet<>();
+        } catch (Exception ex) {
+            LOGGER.error("Could not update encounter.", ex);
 
-                // If there are any changes in the responses
-                if (!existingResponses.equals(encounterDTO.getResponses())) {
-                    for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
-                        // Add the AnswerId to the list of all given AnswerIds
-                        givenAnswerIds.add(responseDTO.getAnswerId());
-
-                        // Set the current answer
-                        Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
-
-                        // If response is not enabled
-                        if (!responseDTO.isEnabled()) {
-                            // And response exists
-                            if (existingAnswerIds.contains(responseDTO.getAnswerId())) {
-                                // Delete it from answer and existing
-                                // responses list
-                                Response responseToDelete = responseDao.getResponseByAnswerInEncounter(
-                                    responseDTO.getAnswerId(), encounter.getId());
-                                currentAnswer.removeResponse(responseToDelete);
-                                existingResponses.remove(responseToDelete);
-                            }
-                            questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
-                            continue;
-                        }
-
-                        // If the response already exists it must be updated
-                        if (existingAnswerIds.contains(responseDTO.getAnswerId())) {
-                            // Get current response from the existing responses
-                            Response currentResponse = null;
-                            for (Response response : existingResponses) {
-                                if (response.getAnswer().getId()
-                                    .equals(responseDTO.getAnswerId())) {
-                                    currentResponse = response;
-                                    break;
-                                }
-                            }
-                            // Check to which type of question this response
-                            // belongs and update the values if necessary
-                            switch (currentAnswer.getQuestion().getQuestionType()) {
-                                case SLIDER:
-                                case NUMBER_CHECKBOX:
-                                case NUMBER_INPUT:
-                                    if (responseDTO.getValue() == null) {
-                                        givenAnswerIds.remove(responseDTO.getAnswerId());
-                                    } else if (currentResponse.getValue() == null
-                                        || !currentResponse.getValue()
-                                        .equals(responseDTO.getValue())) {
-                                        currentResponse.setValue(responseDTO.getValue());
-                                    }
-                                    break;
-                                case NUMBER_CHECKBOX_TEXT:
-                                    if (responseDTO.getValue() == null && (
-                                        responseDTO.getCustomtext() == null
-                                            || responseDTO.getCustomtext().equals(""))) {
-                                        givenAnswerIds.remove(responseDTO.getAnswerId());
-                                    } else {
-                                        // If new response is not null and
-                                        // the existing response is null or
-                                        // is not equal to the new one, set it
-                                        if (responseDTO.getValue() != null && (
-                                            currentResponse.getValue() == null
-                                                || !currentResponse.getValue()
-                                                .equals(responseDTO.getValue()))) {
-                                            currentResponse.setValue(responseDTO.getValue());
-                                            // If the new repsonse is null,
-                                            // set the existing to null
-                                        } else if (responseDTO.getValue() == null) {
-                                            currentResponse.setValue(null);
-                                        }
-                                        // If the new customtext is not null
-                                        // or empty and the existing
-                                        // customtext is null or not equal to
-                                        // the new one, set the new one
-                                        if ((responseDTO.getCustomtext() != null
-                                            && !responseDTO.getCustomtext().equals("")) && (
-                                            currentResponse.getCustomtext() == null
-                                                || currentResponse.getCustomtext().equals("")
-                                                || !currentResponse.getCustomtext()
-                                                .equals(responseDTO.getCustomtext()))) {
-                                            currentResponse.setCustomtext(
-                                                responseDTO.getCustomtext());
-                                            // If the new custom text is null
-                                            // or empty, set the existing
-                                            // custom text to null
-                                        } else if (responseDTO.getCustomtext() == null
-                                            || responseDTO.getCustomtext().equals("")) {
-                                            currentResponse.setCustomtext("");
-                                        }
-                                    }
-                                    break;
-                                case FREE_TEXT:
-                                    if (responseDTO.getCustomtext() == null
-                                        || responseDTO.getCustomtext().equals("")) {
-                                        givenAnswerIds.remove(responseDTO.getAnswerId());
-                                    } else if (currentResponse.getCustomtext() == null
-                                        || !currentResponse.getCustomtext()
-                                        .equals(responseDTO.getCustomtext())) {
-                                        currentResponse.setCustomtext(responseDTO.getCustomtext());
-                                    }
-                                    break;
-                                case DATE:
-                                    if (responseDTO.getDate() == null) {
-                                        givenAnswerIds.remove(responseDTO.getAnswerId());
-                                    } else if (currentResponse.getDate() == null
-                                        || !currentResponse.getDate()
-                                        .equals(responseDTO.getDate())) {
-                                        currentResponse.setDate(responseDTO.getDate());
-                                    }
-                                    break;
-                                case IMAGE:
-                                    if (responseDTO.getPointsOnImage() == null
-                                        || responseDTO.getPointsOnImage().isEmpty()) {
-                                        givenAnswerIds.remove(responseDTO.getAnswerId());
-                                    } else {
-                                        List<PointOnImage> pointsOnImage = new ArrayList<>();
-                                        for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
-                                            PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
-                                            pointOnImage.setResponse(currentResponse);
-                                            pointsOnImage.add(pointOnImage);
-                                        }
-                                        currentResponse.setPointsOnImage(pointsOnImage);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } else {
-                            // If the response does not exist create a new one
-                            Response response = createResponseObject(responseDTO, encounter, currentAnswer);
-                            existingResponses.add(response);
-                        }
-                        questionnaireDao.merge(currentAnswer.getQuestion().getQuestionnaire());
-                    }
-
-                    // Get all existing responses that were not in the DTO
-                    existingAnswerIds.removeAll(givenAnswerIds);
-                    // And remove them from the answer and the list of
-                    // existing responses
-                    for (Long id : existingAnswerIds) {
-                        Answer answer = answerDao.getElementById(id);
-                        Response responseToDelete = responseDao.getResponseByAnswerInEncounter(id,
-                            encounter.getId());
-                        answer.removeResponse(responseToDelete);
-                        existingResponses.remove(responseToDelete);
-                        questionnaireDao.merge(answer.getQuestion().getQuestionnaire());
-                    }
-
-                    // Update the response list of the encounter and merge it
-                    encounter.setResponses(existingResponses);
-                    encounterDao.merge(encounter);
-                }
-
-                // If the encounter is finished
-                if (encounterDTO.getIsCompleted()) {
-                    // Wait initially 5 seconds for a possibly runnig export
-                    try {
-                        Thread.sleep(5000L);
-                    } catch (InterruptedException ex) {
-                        LOGGER.debug(
-                            "The waiting of the exporting thread " + "was" + " interrupted");
-                    }
-
-                    // Get all export templates that should be done
-                    Set<ExportTemplate> remainingExportTemplates = new HashSet<>();
-                    for (BundleQuestionnaire bundleQuestionnaire : encounter.getBundle()
-                        .getBundleQuestionnaires()) {
-                        remainingExportTemplates.addAll(bundleQuestionnaire.getExportTemplates());
-                    }
-                    int loopCounter = 0;
-
-                    // If the loop counter reaches 15 the exports has waited
-                    // the maximum time of 30 seconds
-                    while (loopCounter <= 15) {
-                        // Renew the encounter from database to get the newly
-                        // exported templates
-                        encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-                        // Remove all (successfully) exported templates from
-                        // remaining templates
-                        for (EncounterExportTemplate encounterExportTemplate : encounter.getEncounterExportTemplates()) {
-                            if (!(
-                                encounterExportTemplate.getExportTemplate().getExportTemplateType()
-                                    == ExportTemplateType.ODM) || !(
-                                encounterExportTemplate.getExportStatus()
-                                    == ExportStatus.FAILURE)) {
-                                remainingExportTemplates.remove(
-                                    encounterExportTemplate.getExportTemplate());
-                            }
-                        }
-                        // If there are remaining export templates wait 2
-                        // seconds (maximal 15 times) for a possibly running
-                        // export (connection timeout is 30 seconds)
-                        if (!remainingExportTemplates.isEmpty()) {
-                            try {
-                                Thread.sleep(2000L);
-                                loopCounter++;
-                            } catch (InterruptedException ex) {
-                                LOGGER.debug(
-                                    "The waiting of the exporting " + "thread was interrupted");
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                    // Update the encounter from database
-                    encounter = encounterDao.getElementByUUID(encounterDTO.getUuid());
-                    encounter.setEndTime(new Timestamp(System.currentTimeMillis()));
-                    // Remove all (successfully) exported templates from
-                    // remaining templates
-                    for (EncounterExportTemplate encounterExportTemplate : encounter.getEncounterExportTemplates()) {
-                        if (!(encounterExportTemplate.getExportTemplate().getExportTemplateType()
-                            == ExportTemplateType.ODM) || !(
-                            encounterExportTemplate.getExportStatus() == ExportStatus.FAILURE)) {
-                            remainingExportTemplates.remove(
-                                encounterExportTemplate.getExportTemplate());
-                        }
-                    }
-
-                    // And export the templates which were not yet exported
-                    for (ExportTemplate exportTemplate : remainingExportTemplates) {
-                        if (encounter.getActiveQuestionnaires()
-                            .contains(exportTemplate.getQuestionnaire().getId())) {
-                            encounterExporter.export(encounter, exportTemplate);
-                        }
-                    }
-                    encounterDao.merge(encounter);
-                }
-
-                Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
-                if (encounter.getPatientID() != null) {
-                    patientAttributes.add(AuditPatientAttribute.PATIENT_ID);
-                }
-                if (encounter.getResponses() != null && !encounter.getResponses().isEmpty()) {
-                    patientAttributes.add(AuditPatientAttribute.TREATMENT_DATA);
-                }
-                auditEntryDao.writeAuditEntry(this.getClass().getSimpleName(),
-                    "updateEncounter(EncounterDTO)", encounter.getCaseNumber(), patientAttributes,
-                    AuditEntryActionType.WRITE);
-            }
-            return "";
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(EncounterSubmitResponseDTO.failed("Could not store encounter."));
         }
     }
 
@@ -1227,39 +981,10 @@ public class SurveyController {
         @RequestBody final EncounterDTO encounterDTO) {
         if (encounterDTO.getIsTest()) {
             encounterDTO.setCaseNumber(caseNumber);
-            finishQuestionnaireTest(questionnaireId, encounterDTO, true);
+            encounterSubmitService.finishQuestionnaireTest(questionnaireId, encounterDTO, true);
         }
     }
 
-    private void finishQuestionnaireTest(final Long questionnaireId,
-        final EncounterDTO encounterDTO, final Boolean performExportTest) {
-
-        Bundle bundle = bundleDao.getElementById(encounterDTO.getBundleDTO().getId());
-
-        if (bundle != null && !bundle.getIsPublished()) {
-
-            Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
-            if (encounterDTO.getActiveQuestionnaireIds().contains(questionnaire.getId())) {
-                Encounter encounter = new Encounter();
-                encounter.setCaseNumber(encounterDTO.getCaseNumber());
-                encounter.setBundleLanguage(encounterDTO.getBundleLanguage());
-                encounter.setBundle(bundle);
-                Set<Response> responses = new HashSet<>();
-                for (ResponseDTO responseDTO : encounterDTO.getResponses()) {
-
-                    Answer currentAnswer = answerDao.getElementById(responseDTO.getAnswerId());
-
-                    Response response = createResponseObject(responseDTO, encounter, currentAnswer);
-                    responses.add(response);
-
-                }
-                encounter.setResponses(responses);
-                if(performExportTest) {
-                    encounterExporter.export(encounter, questionnaire, true);
-                }
-            }
-        }
-    }
 
     /**
      * @param pseudonym The generated pseudonym.
@@ -1375,35 +1100,6 @@ public class SurveyController {
         }
         return "";
 
-    }
-
-    private Response createResponseObject(ResponseDTO responseDTO, Encounter encounter, Answer currentAnswer) {
-
-        Response response = new Response(currentAnswer, encounter);
-
-        if (responseDTO.getCustomtext() != null) {
-            response.setCustomtext(responseDTO.getCustomtext());
-        }
-
-        if (responseDTO.getValue() != null) {
-            response.setValue(responseDTO.getValue());
-        }
-
-        if (responseDTO.getDate() != null) {
-            response.setDate(responseDTO.getDate());
-        }
-
-        if (responseDTO.getPointsOnImage() != null) {
-
-            List<PointOnImage> pointsOnImage = new ArrayList<>();
-            for (PointOnImageDTO currentPointOnImageDTO : responseDTO.getPointsOnImage()) {
-                PointOnImage pointOnImage = currentPointOnImageDTO.toPointOnImage();
-                pointOnImage.setResponse(response);
-                pointsOnImage.add(pointOnImage);
-            }
-            response.setPointsOnImage(pointsOnImage);
-        }
-        return response;
     }
 
 }
