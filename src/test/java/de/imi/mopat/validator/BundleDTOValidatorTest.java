@@ -19,11 +19,9 @@ import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.utils.Helper;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeMap;
+
+import java.util.*;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
