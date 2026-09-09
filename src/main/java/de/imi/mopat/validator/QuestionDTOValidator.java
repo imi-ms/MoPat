@@ -25,7 +25,8 @@ public class QuestionDTOValidator implements Validator {
 
     private static final String MIN_NUMBER_ANSWERS = "minNumberAnswers";
     private static final String MAX_NUMBER_ANSWERS = "maxNumberAnswers";
-    private static final int MAX_QUESTION_TEXT_LENGTH = 2_000;
+    // Needs to be public because it's used in QuestionDtoValidatorTest
+    public static final int MAX_QUESTION_TEXT_LENGTH = 2_000;
     @Autowired
     private SelectAnswerDTOValidator selectAnswerDTOValidator;
     @Autowired

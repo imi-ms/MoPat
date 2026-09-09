@@ -21,7 +21,7 @@ import org.springframework.validation.Validator;
 @Component
 public class QuestionnaireDTOValidator implements Validator {
 
-    // Needs to be public because it's used in BundleDtoValidatorTest
+    // Needs to be public because it's used in QuestionnaireDtoValidatorTest
     public static final int MAX_DESCRIPTION_TEXT_LENGTH = 2_000;
     public static final int MAX_WELCOME_TEXT_LENGTH = 5_000;
     public static final int MAX_FINAL_TEXT_LENGTH = 5_000;
