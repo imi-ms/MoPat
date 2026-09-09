@@ -19,11 +19,10 @@ import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.BundleQuestionnaireDTO;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.utils.Helper;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeMap;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -62,6 +61,17 @@ public class BundleDTOValidatorTest {
 
     @Autowired
     private QuestionnaireDTOMapper questionnaireDTOMapper;
+
+    // Creates a valid Bundle Instance which can be used in different tests
+    private BundleDTO createValidBundleDTO() {
+        BundleDTO bundleDTO = new BundleDTO();
+        bundleDTO.setId(Math.abs(random.nextLong()));
+        bundleDTO.setName(Helper.getRandomAlphabeticString(random.nextInt(23) + 3));
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(10)); // valid length
+        bundleDTO.setLocalizedWelcomeText(new TreeMap<>());
+        bundleDTO.setLocalizedFinalText(new TreeMap<>());
+        return bundleDTO;
+    }
 
     /**
      * Test of {@link BundleDTOValidator#supports(java.lang.Class)} Valid input:
@@ -289,5 +299,110 @@ public class BundleDTOValidatorTest {
             "The validation of the name failed. The returned error message didn't match the expected one.",
             message, testErrorMessage);
         bundleDao.remove(bundle);
+    }
+
+
+    @Test
+    public void testValidateDescriptionLength() {
+        int maxDescriptionLength = BundleDTOValidator.MAX_DESCRIPTION_TEXT_LENGTH;
+
+        // Case 1: description exactly at the limit -> no error expected
+        BundleDTO bundleDTO = createValidBundleDTO();
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(maxDescriptionLength));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertFalse(
+                "Description at the limit should not raise an error.",
+                result.hasFieldErrors("description"));
+
+        // Case 2: description one character over the limit -> error expected
+        int tooLongLength = maxDescriptionLength + 1;
+        bundleDTO = createValidBundleDTO();
+        bundleDTO.setDescription(Helper.getRandomAlphabeticString(tooLongLength));
+
+        result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertTrue(
+                "Too long description should raise an error.",
+                result.hasFieldErrors("description"));
+
+        // Verify the concrete error message (built dynamically from the constant)
+        String expectedMessage = messageSource.getMessage(
+                "questionnaire.error.descriptionTooLong",
+                new Object[]{tooLongLength, maxDescriptionLength},
+                LocaleContextHolder.getLocale());
+        String actualMessage = result.getFieldError("description").getDefaultMessage();
+
+        assertEquals(
+                "The returned error message for a too long description didn't match the expected one.",
+                expectedMessage, actualMessage);
+    }
+
+    @Test
+    public void testValidateWelcomeTextLength() {
+        assertLocalizedTextLengthValidation(
+                "localizedWelcomeText",
+                BundleDTOValidator.MAX_WELCOME_TEXT_LENGTH,
+                "questionnaire.error.welcomeTextTooLong",
+                BundleDTO::setLocalizedWelcomeText);
+    }
+
+    @Test
+    public void testValidateFinalTextLength() {
+        assertLocalizedTextLengthValidation(
+                "localizedFinalText",
+                BundleDTOValidator.MAX_FINAL_TEXT_LENGTH,
+                "questionnaire.error.finalTextTooLong",
+                BundleDTO::setLocalizedFinalText);
+    }
+
+    /**
+     * Verifies that a localized text field is accepted at the maximum length and
+     * rejected with the expected message one character above it.
+     */
+    private void assertLocalizedTextLengthValidation(String fieldName, int maxLength,
+                                                     String messageKey, BiConsumer<BundleDTO, SortedMap<String, String>> setter) {
+
+        String errorField = fieldName + "[de_DE]";
+
+        // Case 1: exactly at the limit -> no error expected
+        BundleDTO bundleDTO = createValidBundleDTO();
+        setter.accept(bundleDTO, localizedText(Helper.getRandomAlphabeticString(maxLength)));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertFalse(fieldName + " at the limit should not raise an error.",
+                result.hasFieldErrors(errorField));
+
+        // Case 2: one character over the limit -> error expected
+        int tooLongLength = maxLength + 1;
+        bundleDTO = createValidBundleDTO();
+        setter.accept(bundleDTO, localizedText(Helper.getRandomAlphabeticString(tooLongLength)));
+
+        result = new MapBindingResult(new HashMap<>(), "bundleDTO");
+        bundleDTOValidator.validate(bundleDTO, result);
+
+        assertTrue("Too long " + fieldName + " should raise an error.",
+                result.hasFieldErrors(errorField));
+
+        // Verify the concrete error message
+        String expectedMessage = messageSource.getMessage(messageKey,
+                new Object[]{tooLongLength, maxLength},
+                LocaleContextHolder.getLocale());
+
+        assertEquals("The returned error message for a too long " + fieldName
+                        + " didn't match the expected one.",
+                expectedMessage,
+                result.getFieldError(errorField).getDefaultMessage());
+    }
+
+    private SortedMap<String, String> localizedText(String text) {
+        SortedMap<String, String> map = new TreeMap<>();
+        map.put("de_DE", text);
+        return map;
     }
 }

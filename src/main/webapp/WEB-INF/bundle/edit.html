@@ -733,8 +733,16 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
+	<script th:src="@{/js/helper/htmlUtilities.js}"></script>
 	<script th:inline="javascript" type="text/javascript">
 		var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
+
+		const maxDescriptionTextLength = 2000;
+		const maxWelcomeTextLength = 5000;
+		const maxFinalTextLength = 5000;
+		const textLengthExceededMessage =
+			/*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
+
 		var startTable, targetTable;
 		let wasElementRemoved = false, isAssignedFormat = false;
 		let debouncedSearchTimeout;
@@ -770,6 +778,24 @@
 			checkPublishingState();
 			initBundleVisibility();
 			initializeQuestionnaireVersionGroupChevronAndSpacer();
+			// Checks length of the description text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "description",
+				maxLength: maxDescriptionTextLength,
+				message: textLengthExceededMessage
+			});
+			// Checks length of the welcome text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedWelcomeText[",
+				maxLength: maxWelcomeTextLength,
+				message: textLengthExceededMessage
+			});
+			// Checks length of the final text
+			HtmlUtilities.bindWysiwygTextLengthValidation({
+				textareaNamePrefix: "localizedFinalText[",
+				maxLength: maxFinalTextLength,
+				message: textLengthExceededMessage
+			});
 		});
 
 		/** ---------------------------------------
