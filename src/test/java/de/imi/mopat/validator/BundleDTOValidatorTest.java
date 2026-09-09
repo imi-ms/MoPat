@@ -386,10 +386,10 @@ public class BundleDTOValidatorTest {
         result = new MapBindingResult(new HashMap<>(), "bundleDTO");
         bundleDTOValidator.validate(bundleDTO, result);
 
-
         assertTrue("Too long " + fieldName + " should raise an error.",
                 result.hasFieldErrors(errorField));
 
+        // Verify the concrete error message
         String expectedMessage = messageSource.getMessage(messageKey,
                 new Object[]{tooLongLength, maxLength},
                 LocaleContextHolder.getLocale());
