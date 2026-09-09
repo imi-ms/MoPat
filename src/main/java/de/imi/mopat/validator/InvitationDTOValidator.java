@@ -16,7 +16,8 @@ import org.springframework.validation.Validator;
 @Component
 public class InvitationDTOValidator implements Validator {
 
-    private static final int MAX_PERSONAL_TEXT_LENGTH = 2000;
+    // public bc it is used in Test Class
+    public static final int MAX_PERSONAL_TEXT_LENGTH = 2000;
 
     @Autowired
     private MessageSource messageSource;
