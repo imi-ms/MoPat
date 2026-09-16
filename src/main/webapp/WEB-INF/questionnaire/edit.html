@@ -176,14 +176,6 @@
 							name="action"
 							th:text="${messages.get(#locale, 'button.save', 'Save')}"
 					></button>
-					<button
-							type="submit"
-							class="btn btn-primary"
-							value="saveEditButton"
-							id="saveEditButton"
-							name="action"
-							th:text="${messages.get(#locale, 'questionnaire.button.saveAndEdit', 'Save and edit questions')}"
-					></button>
 				</th:block>
 				<th:block th:unless="${isEditableState}">
 					<button
@@ -193,14 +185,6 @@
 							id="duplicateButton"
 							name="action"
 							th:text="${messages.get(#locale, 'button.duplicate', 'Duplicate')}"
-					></button>
-					<button
-							type="submit"
-							class="btn btn-primary"
-							value="duplicateEditButton"
-							id="duplicateEditButton"
-							name="action"
-							th:text="${messages.get(#locale, 'questionnaire.button.duplicateAndEdit', 'Duplicate and edit questions')}"
 					></button>
 				</th:block>
 

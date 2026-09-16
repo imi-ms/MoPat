@@ -1230,22 +1230,26 @@
                         </div>
                     </div>
                 </div>
-                <input
-                        id="saveButton"
-                        name="action"
-                        type="submit"
-                        th:disabled="${#bools.isFalse(questionDTO.isModifiable())}"
-                        class="btn btn-primary"
-                        th:value="${messages.get(#locale, 'button.save', 'Save')}"
-                />
+
+
                 <button
-                        type="submit"
-                        class="btn btn-primary"
-                        value="saveAndEdit"
-                        id="saveAndEdit"
-                        name="action"
-                        th:text="${messages.get(#locale, 'question.button.saveAndEdit', 'Save and edit bundles')}"
-                ></button>
+                    type="submit"
+                    class="btn btn-primary"
+                    value="saveAndAdd"
+                    id="saveAndAdd"
+                    name="action"
+                    th:text="${messages.get(#locale, 'question.button.saveAndAdd', 'Save & add another Question')}"
+                >
+                </button>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    value="save"
+                    id="saveButton"
+                    name="action"
+                    th:text="${messages.get(#locale, 'question.button.saveAndReturn', 'Save & return to Questionnaire')}"
+                >
+                </button>
                 <button
                         type="submit"
                         class="btn btn-primary"

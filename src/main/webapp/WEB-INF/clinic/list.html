@@ -65,12 +65,9 @@
                         <tr>
                             <td>
                                 <th:block th:if="not ${#strings.isEmpty(clinic.name)}">
-                                    <a
-                                        class="link"
-                                        th:href="@{edit?id=__${clinic.id}__}"
-                                    >
-                                        <th:block th:text="${clinic.name}" />
-                                    </a>
+                                    <span
+                                        th:text="${clinic.name}"
+                                    ></span>
                                 </th:block>
                             </td>
                             <td class="actionColumn">

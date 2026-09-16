@@ -727,15 +727,6 @@
                 </button>
                 <button
                         type="submit"
-                        th:disabled="${#bools.isFalse(bundleDTO.getIsModifiable())}"
-                        class="btn btn-primary"
-                        value="saveAndEdit"
-                        id="saveAndEdit"
-                        name="action"
-                        th:text="${messages.get(#locale, 'bundle.button.saveAndEdit', 'Save and edit clinics')}"
-                ></button>
-                <button
-                        type="submit"
                         class="btn btn-primary"
                         value="cancel"
                         id="cancelButton"

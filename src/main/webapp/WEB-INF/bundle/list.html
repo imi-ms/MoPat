@@ -68,13 +68,11 @@
 					<th:block th:if="${not #lists.isEmpty(allBundles)}">
 						<tr th:each="item: ${allBundles}">
 							<td>
-								<a
+								<span
 									th:if="${not #strings.isEmpty(item.name)}"
-									class="link"
-									th:href="@{fill?id=__${item.id}__}"
 									th:text="${item.name}"
 								>
-								</a>
+								</span>
 							</td>
 							<td style="text-align: left">
 								<addVar
@@ -154,7 +152,7 @@
                                                 th:classappend="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false && item.isPublished == false} ? '' : 'btn-crossed'"
                                             >
                                                 <i
-                                                    class="bi-lab-icon bi-list-icon"
+                                                    class="bi-file-earmark-arrow-up-fill bi-list-icon"
                                                     th:title="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
                                                 >
                                                 </i>
