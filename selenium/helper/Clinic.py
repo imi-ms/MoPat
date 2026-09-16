@@ -56,6 +56,8 @@ class ClinicSelectors:
     TABLE_ASSIGNED_USERS = (By.ID, "assignedUsersTable")
 
     PAGINATION_CLINIC_TABLE = (By.ID, "clinicTable_paginate")
+    
+    EDIT_BUTTON = (By.CLASS_NAME, "btn btn-sm btn-primary-list link")
 
 class ClinicHelper:
 
@@ -126,10 +128,11 @@ class ClinicHelper:
             self.utils.fill_text_field(SearchBoxSelectors.CLINIC, clinic_name)
 
             # Extract the bundle ID from the link
-            clinic_link = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-                (By.LINK_TEXT, clinic_name)))
+            clinic_edit = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                ClinicSelectors.EDIT_BUTTON
+            ))
 
-            return clinic_link.get_attribute("href").split("id=")[1]
+            return clinic_edit.get_attribute("href").split("id=")[1]
         except Exception as e:
             raise Exception(f"Error while saving clinic '{clinic_name}': {e}")
 
