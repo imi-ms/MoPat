@@ -1,10 +1,10 @@
 package de.imi.mopat.controller;
 
-import de.imi.mopat.controller.util.SaveAndEditNextInOrderUtil;
-import de.imi.mopat.cron.FrequentEncounterDeletor;
 import de.imi.mopat.dao.*;
+import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
@@ -29,6 +29,7 @@ import java.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -78,6 +79,9 @@ public class QuestionController {
     @Autowired
     private QuestionDTOMapper questionDTOMapper;
 
+    @Autowired
+    private QuestionnaireService questionnaireService;
+
     private final QuestionType[] equalQuestionTypesSlider = {QuestionType.SLIDER,
             QuestionType.NUMBER_CHECKBOX};
     private final QuestionType[] equalQuestionTypesSelect = {QuestionType.MULTIPLE_CHOICE,
@@ -86,6 +90,8 @@ public class QuestionController {
             equalQuestionTypesSlider);
     private final List<QuestionType> equalQuestiontypesSelectList = Arrays.asList(
             equalQuestionTypesSelect);
+    @Autowired
+    private BundleService bundleService;
 
     public ConditionDao getConditionDao() {
         return this.conditionDao;
@@ -171,6 +177,15 @@ public class QuestionController {
             // Check if the question has any scores and set the boolean
             question.setHasScores(scoreDao.hasScore(question));
         }
+
+        Pair<Map<String, Long>, Map<String, Long>> availableBundlesSplitIntoAssignedAndUnassigned =
+            bundleService.getAvailableBundlesSplitIntoAssignedAndUnassigned(questionnaire);
+
+        model.addAttribute("assignedBundles",
+            availableBundlesSplitIntoAssignedAndUnassigned.getLeft());
+        model.addAttribute("unassignedBundles",
+            availableBundlesSplitIntoAssignedAndUnassigned.getRight());
+        model.addAttribute("languages", questionnaire.getAvailableQuestionLanguages());
         model.addAttribute("localizedQuestionTextsForQuestion", localizedQuestionTextsForQuestion);
         model.addAttribute("questionnaire", questionnaire);
         return "question/list";
@@ -380,8 +395,7 @@ public class QuestionController {
         // not part
         // of the URL
         model.asMap().clear();
-        String defaultSaveRoute = "redirect:/question/list?id=" + question.getQuestionnaire().getId();
-        return SaveAndEditNextInOrderUtil.determineNextRoute("question", action, defaultSaveRoute);
+        return "redirect:/question/list?id=" + question.getQuestionnaire().getId();
     }
 
     @PostMapping(value = "/question/previewDTO")
