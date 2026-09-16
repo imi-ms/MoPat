@@ -147,8 +147,6 @@
           </checkbox>
         </div>
 
-        <th:block th:text="${counter.clear()}" />
-
         <div class="form-group">
           <error
             layout:replace="~{fragments/forms :: errorField(path='bundleQuestionnaireDTOs')}"
@@ -173,11 +171,6 @@
             assignedDetailFragment='fragments/assignmentDetails/questionnaire :: questionnaireAssignedDetail',
             availableDetailFragment='fragments/assignmentDetails/questionnaire :: questionnaireAvailableDetail'
         )}"></div>
-
-        <div
-          class="d-none"
-          id="draggableContainer"
-        ></div>
 
         <button
           type="submit"
@@ -212,5 +205,5 @@
       Localization.initShowLocalizedPage(currentLanguage /*[[${vars['persistedOrErrors']}]]*/);
     });
   </script>
-  <script th:src="@{/js/helper/assignmentList.js}"></script>
+  <script th:src="@{/js/helper/assignmentList.js?version=3.4.0}"></script>
 </th:block>

@@ -174,8 +174,6 @@
                     `${fieldPrefix}[${index}].` +
                     input.data('field')
                   );
-
-                  input.prop('disabled', false);
               });
         });
     }
