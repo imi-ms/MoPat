@@ -415,22 +415,25 @@ class SeleniumUtils:
 
     def drag_and_drop(self, source_selector, target_selector):
         """
-        :param source_selector: A tuple (By, value) identifying the source element to be dragged.
-        :param target_selector: A tuple (By, value) identifying the target element where the source should be dropped.
-        :raises TimeoutException: If either the source or target element is not found within the timeout.
+        :param source_selector: A tuple representing the source element locator (e.g., (By.ID, "source_id")).
+        :param target_selector: A tuple representing the target element locator (e.g., (By.ID, "target_id")).
         """
-        # Wait for the source and target elements to be present
-        source_element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-            source_selector))
-        target_element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-            target_selector))
+        source_element = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(source_selector)
+        )
+        target_element = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(target_selector)
+        )
 
-        # Scroll the elements into view to ensure they are interactable
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", source_element)
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_element)
+        time.sleep(0.5)
 
-        # Perform the drag-and-drop action
-        ActionChains(self.driver).drag_and_drop(source_element, target_element).perform()
+        actions = ActionChains(self.driver)
+        actions.click_and_hold(source_element)
+        actions.move_to_element(target_element)
+        actions.release()
+        actions.perform()
 
     def search_item(self, item_name, item_type):
         """

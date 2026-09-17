@@ -59,6 +59,7 @@ class QuestionSelectors:
 
     BUTTON_ADD_QUESTION = (By.ID, "addQuestion")
     BUTTON_SAVE = (By.ID, "saveButton")
+    BUTTON_SAVE_AND_ADD = (By.ID, "saveAndAdd")
     BUTTON_CANCEL = (By.ID, "cancelButton")
     BUTTON_ADD_ANSWER = (By.ID, "addAnswerButton")
     BUTTON_SELECT_ALL_BODY_PARTS = lambda FRONT_or_BACK: (By.ID, f"selectAllBodyPartsButton-{FRONT_or_BACK}") # "FRONT" or "BACK"
@@ -890,6 +891,7 @@ class QuestionAssertHelper(QuestionHelper):
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
+                QuestionSelectors.BUTTON_SAVE_AND_ADD[1],
             }
             self.assert_question_inputs(allowed_ids)
         except AssertionError as e:
@@ -901,6 +903,7 @@ class QuestionAssertHelper(QuestionHelper):
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
+                QuestionSelectors.BUTTON_SAVE_AND_ADD[1],
             }
             self.assert_question_inputs(allowed_ids)
         except AssertionError as e:
@@ -912,6 +915,7 @@ class QuestionAssertHelper(QuestionHelper):
                 QuestionSelectors.CHECKBOX_IS_REQUIRED[1],
                 QuestionSelectors.CHECKBOX_QUESTION_INITIAL_ACTIVATION[1],
                 QuestionSelectors.BUTTON_SAVE[1],
+                QuestionSelectors.BUTTON_SAVE_AND_ADD[1],
             }
             self.assert_question_inputs(allowed_ids)
         except AssertionError as e:
