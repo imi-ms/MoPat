@@ -606,55 +606,129 @@
                         ></button>
                     </div>
                     <div class="modal-body">
-                        <input
-                            type="text"
-                            class="form-control mb-3"
-                            id="bundleSearch"
-                            th:placeholder="${messages.get(#locale, 'admin.navigation.header.bundle', 'Bundles')}"
-                            autocomplete="off"
-                        />
-
-                        <div th:if="${!#maps.isEmpty(assignedBundles)}">
-                            <span
-                                class="mb-1"
-                                th:text="${messages.get(#locale, 'question.label.assignedBundles', 'Assigned bundles')}"
-                            ></span>
-
-                            <ul
-                                class="list-group mb-3"
-                                id="assignedBundleList"
+                        <div
+                            class="accordion"
+                            id="bundleAccordion"
+                        >
+                            <!-- Assigned Bundles (Always Open) -->
+                            <div
+                                class="accordion-item"
+                                th:if="${!#maps.isEmpty(assignedBundles)}"
                             >
-                                <li
-                                    class="list-group-item"
-                                    th:each="bundle : ${assignedBundles}"
+                                <h2
+                                    class="accordion-header"
+                                    id="assignedBundles-heading"
                                 >
-                                    <span th:text="${bundle.key}"> </span>
-                                </li>
-                            </ul>
-                        </div>
+                                    <button
+                                        class="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#assignedBundles-collapse"
+                                        aria-expanded="true"
+                                        aria-controls="assignedBundles-collapse"
+                                        th:text="${messages.get(#locale, 'question.label.assignedBundles', 'Assigned bundles')}"
+                                    ></button>
+                                </h2>
+                                <div
+                                    id="assignedBundles-collapse"
+                                    class="accordion-collapse collapse"
+                                    aria-labelledby="assignedBundles-heading"
+                                >
+                                    <div class="accordion-body">
+                                        <ul
+                                            class="list-group mb-0"
+                                            id="assignedBundleList"
+                                        >
+                                            <li
+                                                class="list-group-item"
+                                                th:each="bundle : ${assignedBundles}"
+                                            >
+                                                <a
+                                                    class="link"
+                                                    th:href="@{/bundle/fill(id=${bundle.value})}"
+                                                    th:text="${bundle.key}"
+                                                >
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div th:if="${!#maps.isEmpty(unassignedBundles)}">
-                            <span
-                                class="mb-1"
-                                th:text="${messages.get(#locale, 'question.label.unassignedBundles', 'Unassigned bundles')}"
-                            ></span>
-
-                            <ul
-                                class="list-group mb-1"
-                                id="unassignedBundleList"
+                            <!-- Unassigned Bundles (Collapsed by Default) -->
+                            <div
+                                class="accordion-item"
+                                th:if="${!#maps.isEmpty(unassignedBundles)}"
                             >
-                                <li
-                                    class="list-group-item"
-                                    th:each="bundle : ${unassignedBundles}"
+                                <h2
+                                    class="accordion-header"
+                                    id="unassignedBundles-heading"
                                 >
-                                    <a
-                                        class="link"
-                                        th:href="@{/bundle/fill(id=${bundle.value})}"
-                                        th:text="${bundle.key}"
-                                    >
-                                    </a>
-                                </li>
-                            </ul>
+                                    <button
+                                        class="accordion-button"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#unassignedBundles-collapse"
+                                        aria-expanded="false"
+                                        aria-controls="unassignedBundles-collapse"
+                                        th:text="${messages.get(#locale, 'question.label.unassignedBundles', 'Unassigned bundles')}"
+                                    ></button>
+                                </h2>
+                                <div
+                                    id="unassignedBundles-collapse"
+                                    class="accordion-collapse collapse show"
+                                    aria-labelledby="unassignedBundles-heading"
+                                >
+                                    <div class="accordion-body">
+                                        <div class="position-relative mb-3">
+                                            <span
+                                                class="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"
+                                            >
+                                                <i class="bi bi-search"></i>
+                                            </span>
+                                            <input
+                                                type="text"
+                                                class="form-control ps-5"
+                                                id="bundleSearch"
+                                                th:placeholder="${messages.get(#locale, 'question.label.search', 'Search...')}"
+                                                autocomplete="off"
+                                            />
+                                        </div>
+
+                                        <div class="my-2">
+                                            <form
+                                                method="GET"
+                                                th:action="@{/bundle/fill}"
+                                            >
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary w-100"
+                                                    id="addBundle"
+                                                    th:text="${messages.get(#locale, 'bundle.button.add', 'Add bundle')}"
+                                                >
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <ul
+                                            class="list-group mb-0"
+                                            id="unassignedBundleList"
+                                        >
+                                            <li
+                                                class="list-group-item"
+                                                th:each="bundle : ${unassignedBundles}"
+                                            >
+                                                <a
+                                                    class="link"
+                                                    th:href="@{/bundle/fill(id=${bundle.value})}"
+                                                    th:text="${bundle.key}"
+                                                >
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
