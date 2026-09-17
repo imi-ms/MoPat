@@ -56,7 +56,7 @@ table.dataTable tbody td {
 .link {
     color: @color-blue-links;
     text-decoration: none;
-    font-size: 16px; 
+    //font-size: 16px; 
     a {
         &:link, &:visited {
             color: @color-blue-links;
@@ -172,4 +172,21 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control::befor
     }
 }
 
+.glassy .table-responsive {
+    margin: 0 !important; 
+    margin-top: 10px !important; 
+}
 
+#questionTable thead {
+    box-shadow: none;
+    transition: box-shadow 0.2s ease;
+}
+
+#questionTable thead.scrolled {
+    box-shadow: 0 3px 6px -2px rgba(0, 0, 0, 0.16), 
+                0 3px 6px -2px rgba(0, 0, 0, 0.23);
+}
+
+#questionTable thead th {
+    border-bottom-width: 0px !important;
+}

@@ -236,7 +236,13 @@ public class QuestionnaireController {
         final BindingResult result, final Model model, final HttpServletRequest request,
         RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
-            return "redirect:/questionnaire/list";
+            if (questionnaireDTO.getId() != null) {
+                //Exists; return to questionnaire hub (question/list)
+                return "redirect:/question/list?id=" + questionnaireDTO.getId();
+            } else {
+                // Is new; return to questionnaire list
+                return "redirect:/questionnaire/list";
+            }
         }
 
         questionnaireService.processLocalizedText(questionnaireDTO);
@@ -254,11 +260,8 @@ public class QuestionnaireController {
             questionnaireDao.getElementById(questionnaireDTO.getId()));
         redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
             hasQuestionnaireConditions);
-        if (action.equals("saveEditButton")) {
-            return "redirect:/question/list?id=" + questionnaire.getId();
-        } else {
-            return "redirect:/questionnaire/list";
-        }
+
+        return "redirect:/question/list?id=" + questionnaire.getId();
     }
 
     /**
