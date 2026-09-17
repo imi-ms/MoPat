@@ -388,8 +388,8 @@ public class BundleService {
     public Pair<Map<String, Long>, Map<String, Long>> getAvailableBundlesSplitIntoAssignedAndUnassigned(
         Questionnaire questionnaire
     ) {
-        Map<String, Long> assignedBundles = new HashMap<>();
-        Map<String, Long> unassignedBundles = new HashMap<>();
+        Map<String, Long> assignedBundles = new TreeMap<>();
+        Map<String, Long> unassignedBundles = new TreeMap<>();
 
         List<Bundle> bundles = bundleDao.getAllElements();
 
