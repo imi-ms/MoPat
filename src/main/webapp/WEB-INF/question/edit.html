@@ -1231,34 +1231,32 @@
                     </div>
                 </div>
 
-
-                <button
+                <input
                     type="submit"
                     class="btn btn-primary"
                     value="saveAndAdd"
                     id="saveAndAdd"
                     name="action"
-                    th:text="${messages.get(#locale, 'question.button.saveAndAdd', 'Save & add another Question')}"
-                >
-                </button>
-                <button
+                    th:disabled="${#bools.isFalse(questionDTO.isModifiable())}"
+                    th:value="${messages.get(#locale, 'question.button.saveAndAdd', 'Save & add another Question')}"
+                />
+                <input
                     type="submit"
                     class="btn btn-primary"
                     value="save"
                     id="saveButton"
+                    th:disabled="${#bools.isFalse(questionDTO.isModifiable())}"
                     name="action"
-                    th:text="${messages.get(#locale, 'question.button.saveAndReturn', 'Save & return to Questionnaire')}"
-                >
-                </button>
+                    th:value="${messages.get(#locale, 'question.button.saveAndReturn', 'Save & return to Questionnaire')}"
+                />
                 <button
-                        type="submit"
-                        class="btn btn-primary"
-                        value="cancel"
-                        id="cancelButton"
-                        name="action"
-                        th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
-                >
-                </button>
+                    type="submit"
+                    class="btn btn-primary"
+                    value="cancel"
+                    id="cancelButton"
+                    name="action"
+                    th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+                ></button>
 
                 <previewModalButton
                     layout:replace="~{question/previewModal :: previewModalButton}"
