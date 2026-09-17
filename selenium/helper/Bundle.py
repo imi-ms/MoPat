@@ -40,7 +40,7 @@ class BundleSelectors:
     CELL_FLAGICON=(By.CSS_SELECTOR, "#bundleTable > tbody > tr > td:nth-child(2) > img")
     PAGINATION_BUNDLE = (By.CSS_SELECTOR, "#bundleTable_paginate")
     
-    EDIT_BUTTON = (By.CLASS_NAME, "btn btn-sm btn-primary-list link")
+    EDIT_BUTTON = (By.CLASS_NAME, "editButton")
 
 class BundleHelper:
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):

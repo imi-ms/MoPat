@@ -57,7 +57,7 @@ class ClinicSelectors:
 
     PAGINATION_CLINIC_TABLE = (By.ID, "clinicTable_paginate")
     
-    EDIT_BUTTON = (By.CLASS_NAME, "btn btn-sm btn-primary-list link")
+    EDIT_BUTTON = (By.CLASS_NAME, "editButton")
 
 class ClinicHelper:
 
