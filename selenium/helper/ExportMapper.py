@@ -25,7 +25,7 @@ class ExportSelectors:
     PAGINATION = (By.ID, "questionnaireTable_paginate")
     SEARCH_BOX = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
 
-    EDIT_EXPORT_BUTTON_FIRST_ROW = (By.XPATH, "//table[@id='questionnaireTable']//tbody//tr[not(@id='emptyRow')][1]//td[contains(@class, 'actionColumn')]//a[3]")
+    EDIT_EXPORT_BUTTON_FIRST_ROW = (By.XPATH, "//table[@id='questionnaireTable']//tbody//tr[not(@id='emptyRow')][1]//td[contains(@class, 'actionColumn')]//a[2]")
 
     UPLOAD_TEMPLATE_BUTTON = (By.ID, "uploadtemplate")
 
