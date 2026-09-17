@@ -239,7 +239,7 @@ select.btn-lowEmphasis {
         }
     }
 
-    &:disabled {
+    &:disabled, &.disabled {
         background-color: @color-gray-lighter-darker !important;
         color: @color-gray !important; 
         box-shadow: none !important;
@@ -1051,6 +1051,6 @@ textarea {
     position: absolute;
     z-index: 1;
     top: 125%; 
+    font-size: 1.25rem;
     transition: opacity 0.3s;
-    opacity: 0;
 }

@@ -151,7 +151,7 @@ public class QuestionnaireController {
     @PreAuthorize("hasRole('ROLE_EDITOR')")
     public String listQuestionnaires(final Model model) {
         List<Questionnaire> allQuestionnaires = questionnaireDao.getAllElements();
-        // This map contians a questionnaire id as key and a set with all
+        // This map contains a questionnaire id as key and a set with all
         // languages
         // which are available for all questions in this questionnaire.
         Map<Long, List<String>> availableLanguagesInQuestionForQuestionnaires = new HashMap<>();
@@ -236,7 +236,13 @@ public class QuestionnaireController {
         final BindingResult result, final Model model, final HttpServletRequest request,
         RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
-            return "redirect:/questionnaire/list";
+            if (questionnaireDTO.getId() != null) {
+                //Exists; return to questionnaire hub (question/list)
+                return "redirect:/question/list?id=" + questionnaireDTO.getId();
+            } else {
+                // Is new; return to questionnaire list
+                return "redirect:/questionnaire/list";
+            }
         }
 
         questionnaireService.processLocalizedText(questionnaireDTO);
@@ -254,11 +260,8 @@ public class QuestionnaireController {
             questionnaireDao.getElementById(questionnaireDTO.getId()));
         redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
             hasQuestionnaireConditions);
-        if (action.equals("saveEditButton")) {
-            return "redirect:/question/list?id=" + questionnaire.getId();
-        } else {
-            return "redirect:/questionnaire/list";
-        }
+
+        return "redirect:/question/list?id=" + questionnaire.getId();
     }
 
     /**

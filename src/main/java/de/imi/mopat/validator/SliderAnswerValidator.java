@@ -5,6 +5,7 @@ import de.imi.mopat.model.SliderAnswer;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -94,6 +95,7 @@ public class SliderAnswerValidator implements Validator {
                     }
                 }
             }
+
         } catch (NumberFormatException ex) {
         }
     }
