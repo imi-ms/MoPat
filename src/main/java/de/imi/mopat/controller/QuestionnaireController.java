@@ -10,6 +10,7 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.service.AuthService;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
