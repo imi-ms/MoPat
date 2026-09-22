@@ -5,7 +5,7 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.Answer;
 import de.imi.mopat.model.ImageAnswer;

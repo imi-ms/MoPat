@@ -1,6 +1,6 @@
 package de.imi.mopat.helper.model;
 
-import de.imi.mopat.helper.controller.ClinicConfigurationMappingService;
+import de.imi.mopat.service.ClinicConfigurationMappingService;
 import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.ClinicConfiguration;
 import de.imi.mopat.model.ClinicConfigurationMapping;

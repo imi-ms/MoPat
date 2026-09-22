@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.service;
 
 import de.imi.mopat.dao.AnswerDao;
 import de.imi.mopat.dao.BundleDao;
