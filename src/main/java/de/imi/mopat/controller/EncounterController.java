@@ -445,7 +445,7 @@ public class EncounterController {
                 new ArrayList<>(Arrays.asList(EncounterScheduledSerialType.values())));
             return "encounter/schedule";
         }
-        MailSendingStatus status= encounterSchedulingService.save(encounterScheduledDTO, encounterScheduledExecutor);
+        MailSendingStatus status = encounterSchedulingService.save(encounterScheduledDTO, encounterScheduledExecutor);
 
         switch (status){
             case SUCCESS -> redirectAttributes.addFlashAttribute("success",
