@@ -13,7 +13,7 @@ from helper.Navigation import NavigationHelper
 
 class ConfigurationSelectors:
     SELECT_LANGUAGE = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs0\\.value")
-    INPUT_ADDITIONAL_LOGO = (By.CSS_SELECTOR, "#configurationGroup\.label\.general > fieldset > ul > li:nth-child(2) > div > div > div > div.file-caption > div > input")
+    INPUT_ADDITIONAL_LOGO = (By.CSS_SELECTOR, "#configurationGroup\\.label\\.general > fieldset > ul > li:nth-child(2) > div > div > div > div.file-caption > div > input")
     INPUT_CASE_NUMBER_TYPE= (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs2\\.value")
     INPUT_STORAGE_PATH_FOR_UPLOADS = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs3\\.value")
     INPUT_BASE_URL = (By.ID, "configurationGroupDTOsgeneral0\\.configurationDTOs4\\.value")

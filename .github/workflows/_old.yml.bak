@@ -74,6 +74,9 @@ jobs:
     outputs:
       selenium-results: ${{ steps.decode-results.outputs.content }}
 
+    env:
+      VIDEO_DIR: ${{ github.workspace }}/video
+
     steps:
       # Checkout the repository
       - name: Check out the repository
@@ -86,6 +89,14 @@ jobs:
       # Pull the Chrome image
       - name: Pull Selenoid Chrome Image
         run: docker pull selenoid/chrome:latest
+
+      - name: Pull Selenoid Video Image
+        run: docker pull selenoid/video-recorder:latest-release
+
+      - name: Prepare video directory
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/video"
+          echo "VIDEO_DIR=$GITHUB_WORKSPACE/video" >> "$GITHUB_ENV"
 
       # Setup Docker-Compose
       - name: Docker Compose Action
@@ -117,6 +128,34 @@ jobs:
       - name: Run Selenium tests
         run: |
           python3 selenium/selenium_tests.py > test-results.log
+
+      - name: Wait for video recording to finish
+        if: always()
+        run: |
+          for i in {1..60}; do
+            recorder_ids="$(docker ps -q --filter ancestor=selenoid/video-recorder:latest-release)"
+      
+            if [ -z "$recorder_ids" ]; then
+              echo "No active video recorder containers."
+              break
+            fi
+      
+            echo "Waiting for recorder containers: $recorder_ids"
+            sleep 1
+          done
+      
+          sleep 2
+      
+          echo "Videos:"
+          find "$VIDEO_DIR" -maxdepth 1 -type f -ls
+
+      - name: Upload videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-videos
+          path: ${{ github.workspace }}/video/
+          if-no-files-found: warn
 
       - name: Save results to env
         if: always() && github.event_name == 'pull_request'
