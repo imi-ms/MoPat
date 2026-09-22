@@ -39,6 +39,8 @@ class BundleSelectors:
 
     CELL_FLAGICON=(By.CSS_SELECTOR, "#bundleTable > tbody > tr > td:nth-child(2) > img")
     PAGINATION_BUNDLE = (By.CSS_SELECTOR, "#bundleTable_paginate")
+    
+    EDIT_BUTTON = (By.CLASS_NAME, "editButton")
 
 class BundleHelper:
     def __init__(self, driver: WebDriver, navigation_helper: NavigationHelper):
@@ -138,10 +140,11 @@ class BundleHelper:
             self.utils.fill_text_field(SearchBoxSelectors.BUNDLE, bundle_name)
 
             # Extract the bundle ID from the link
-            bundle_link = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
-                (By.LINK_TEXT, bundle_name)))
+            bundle_edit = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+                BundleSelectors.EDIT_BUTTON
+            ))
 
-            return bundle_link.get_attribute("href").split("id=")[1]
+            return bundle_edit.get_attribute("href").split("id=")[1]
         except Exception as e:
             raise Exception(f"Error while saving bundle '{bundle_name}': {e}")
 
