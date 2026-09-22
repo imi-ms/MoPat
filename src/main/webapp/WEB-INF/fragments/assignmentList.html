@@ -1,9 +1,8 @@
 <!--/*
     Reusable assignment list fragment.
 
-    Generischer Baustein, um "items" (Fragebögen, Kliniken, Benutzer, ...)
-    einem Elternobjekt (Bundle, Klinik, Einladung, ...) zuzuweisen.
-
+    Generic module for assigning “items” (questionnaires, clinics, users, etc.)
+    to a parent object (bundle, clinic, invitation, etc.).
 */-->
 <th:block th:fragment="assignmentList(assignedItems, availableItems, fieldPrefix, itemDtoField, isModifiable,
                                       headingText, headingInfoText, addButtonText, emptyStateText,
@@ -191,7 +190,7 @@
   </div>
 </th:block>
 
-<!-- Template, das beim Hinzufuegen eines verfuegbaren Items in die Liste geklont wird. -->
+<!-- Template that is cloned when an available item is added to the list. -->
 <div th:fragment="assignmentItemTemplate(itemDto, itemDtoField, reorderText, itemMetaFragment, availableDetailFragment)"
      class="list-group-item assignment-list-item"
      th:attr="data-item-id=${itemDto.id}">
