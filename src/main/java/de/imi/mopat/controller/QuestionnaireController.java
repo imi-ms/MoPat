@@ -58,8 +58,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +136,8 @@ public class QuestionnaireController {
     private FhirVersionHelper fhirVersionHelper;
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
+
+    private final DocumentParser documentParser = new DocumentParser();
 
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
@@ -235,7 +235,13 @@ public class QuestionnaireController {
         final BindingResult result, final Model model, final HttpServletRequest request,
         RedirectAttributes redirectAttributes) {
         if (action.equalsIgnoreCase("cancel")) {
-            return "redirect:/questionnaire/list";
+            if (questionnaireDTO.getId() != null) {
+                //Exists; return to questionnaire hub (question/list)
+                return "redirect:/question/list?id=" + questionnaireDTO.getId();
+            } else {
+                // Is new; return to questionnaire list
+                return "redirect:/questionnaire/list";
+            }
         }
 
         questionnaireService.processLocalizedText(questionnaireDTO);
@@ -253,11 +259,8 @@ public class QuestionnaireController {
             questionnaireDao.getElementById(questionnaireDTO.getId()));
         redirectAttributes.addFlashAttribute("hasQuestionnaireConditions",
             hasQuestionnaireConditions);
-        if (action.equals("saveEditButton")) {
-            return "redirect:/question/list?id=" + questionnaire.getId();
-        } else {
-            return "redirect:/questionnaire/list";
-        }
+
+        return "redirect:/question/list?id=" + questionnaire.getId();
     }
 
     /**
@@ -609,11 +612,7 @@ public class QuestionnaireController {
     private boolean checkValidOdmFile(MultipartFile file) {
         if (Objects.requireNonNull(file.getOriginalFilename()).contains(".xml")) {
             try {
-                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-                documentBuilderFactory.setNamespaceAware(true);
-
-                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                Document document = documentBuilder.parse(file.getInputStream());
+                Document document = documentParser.parse(file);
 
                 NodeList standardNodes = document.getElementsByTagName("ODM");
                 NodeList customNodes = document.getElementsByTagName("odm:ODM");
@@ -622,6 +621,7 @@ public class QuestionnaireController {
                     (customNodes != null && customNodes.getLength() > 0);
 
             } catch (Exception e) {
+                LOGGER.error("Could not parse file as ODM", e);
                 return false;
             }
         } else {

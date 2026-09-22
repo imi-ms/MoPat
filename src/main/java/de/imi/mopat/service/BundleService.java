@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import de.imi.mopat.model.user.AclObjectIdentity;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -356,5 +357,51 @@ public class BundleService {
     public List<Bundle> sortBundlesByNameAsc(List<Bundle> bundles) {
         bundles.sort(Comparator.comparing(Bundle::getName));
         return bundles;
+    }
+
+    /**
+     * Retrieves a mapping of bundle names to their corresponding identifiers.
+     * This method fetches all available bundles and constructs a map where each key is a bundle name
+     * and the associated value is the unique identifier of that bundle.
+     *
+     * @return a map containing bundle names as keys and their respective IDs as values
+     */
+    public Map<String, Long> getBundlesByNameAndId() {
+        Map<String, Long> bundleMap = new HashMap<>();
+        List<Bundle> bundles = bundleDao.getAllElements();
+
+        for (Bundle bundle: bundles) {
+            bundleMap.put(bundle.getName(), bundle.getId());
+        }
+
+        return bundleMap;
+    }
+
+    /**
+     * Retrieves all available bundles and categorizes them into those assigned
+     * to the specified questionnaire and those not assigned to it.
+     *
+     * @param questionnaire The questionnaire used to determine bundle assignment status.
+     * @return A pair containing two maps: the first map contains assigned bundles
+     *         and the second map contains unassigned bundles, both keyed by bundle
+     *         name with values representing the bundle ID.
+     */
+    public Pair<Map<String, Long>, Map<String, Long>> getAvailableBundlesSplitIntoAssignedAndUnassigned(
+        Questionnaire questionnaire
+    ) {
+        Map<String, Long> assignedBundles = new TreeMap<>();
+        Map<String, Long> unassignedBundles = new TreeMap<>();
+
+        List<Bundle> bundles = bundleDao.getAllElements();
+
+        for (Bundle bundle : bundles) {
+            if (bundle.getBundleQuestionnaires().stream()
+                .noneMatch(bq -> bq.getQuestionnaire().getId().equals(questionnaire.getId()))) {
+                unassignedBundles.put(bundle.getName(), bundle.getId());
+            } else {
+                assignedBundles.put(bundle.getName(), bundle.getId());
+            }
+        }
+        return Pair.of(assignedBundles, unassignedBundles);
     }
 }

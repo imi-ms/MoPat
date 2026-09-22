@@ -798,6 +798,16 @@ public class QuestionnaireService {
         return resultSet;
     }
 
+    public Set<String> getUniqueLanguages(Questionnaire questionnaire) {
+        Set<String> resultSet = new HashSet<>();
+
+        for (Question question: questionnaire.getQuestions()) {
+            resultSet.addAll(question.getLocalizedQuestionText().keySet());
+        }
+
+        return resultSet;
+    }
+
     /**
      * Returns the list of questionnaires sorted by their id property (ascending)
      *
