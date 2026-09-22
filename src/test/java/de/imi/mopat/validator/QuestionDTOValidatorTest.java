@@ -48,6 +48,18 @@ public class QuestionDTOValidatorTest {
     MessageSource messageSource;
 
     /**
+     * Creates a QuestionDTO that passes validation, so single fields can be
+     * modified in isolation to test their specific constraints.
+     */
+    private QuestionDTO createValidQuestionDTO() {
+        QuestionDTO dto = new QuestionDTO();
+        dto.setQuestionType(QuestionType.FREE_TEXT);
+        dto.setIsRequired(Boolean.FALSE);
+        dto.setLocalizedQuestionText(localizedText(Helper.getRandomAlphabeticString(20)));
+        return dto;
+    }
+
+    /**
      * Test of {@link QuestionDTOValidator#supports(java.lang.Class)}.<br> Valid input:
      * {@link Question#class}<br> Invalid input: Other class than {@link Question#class}
      */
@@ -319,5 +331,47 @@ public class QuestionDTOValidatorTest {
         assertFalse(
             "Validation of questionDTO failed for invalid instance with invalid question text. The result hasn't caught errors except it was expected to do.",
             result.hasErrors());
+    }
+
+    @Test
+    public void testValidateQuestionTextLength() {
+        int maxLength = QuestionDTOValidator.MAX_QUESTION_TEXT_LENGTH;
+        String errorField = "localizedQuestionText[de_DE]";
+
+        // Case 1: exactly at the limit -> no error expected
+        QuestionDTO questionDTO = createValidQuestionDTO();
+        questionDTO.setLocalizedQuestionText(localizedText(Helper.getRandomAlphabeticString(maxLength)));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "questionDTO");
+        questionDTOValidator.validate(questionDTO, result);
+
+        assertFalse("Question text at the limit should not raise an error.",
+                result.hasFieldErrors(errorField));
+
+        // Case 2: one character over the limit -> error expected
+        int tooLongLength = maxLength + 1;
+        questionDTO = createValidQuestionDTO();
+        questionDTO.setLocalizedQuestionText(localizedText(Helper.getRandomAlphabeticString(tooLongLength)));
+
+        result = new MapBindingResult(new HashMap<>(), "questionDTO");
+        questionDTOValidator.validate(questionDTO, result);
+
+        assertTrue("Too long question text should raise an error.",
+                result.hasFieldErrors(errorField));
+
+        String expectedMessage = messageSource.getMessage("question.error.questionTextTooLong",
+                new Object[]{tooLongLength, maxLength},
+                LocaleContextHolder.getLocale());
+
+        assertEquals("The returned error message for a too long question text didn't match the expected one.",
+                expectedMessage,
+                result.getFieldError(errorField).getDefaultMessage());
+    }
+
+
+    private SortedMap<String, String> localizedText(String text) {
+        SortedMap<String, String> map = new TreeMap<>();
+        map.put("de_DE", text);
+        return map;
     }
 }

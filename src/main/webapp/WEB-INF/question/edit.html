@@ -1281,54 +1281,55 @@
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-    <script
-            th:inline="javascript"
-            type="text/javascript"
-    >
-        var labelQuestionText =
-            /*[[${messages.get(#locale, 'question.label.questiontext', 'Question:')}]]*/ "Question:";
-        var labelInfoText =
-            /*[[${messages.get(#locale, 'question.label.infotext', 'Info text:')}]]*/ "Info text:";
-        var labelAnswerDelete =
-            /*[[${messages.get(#locale, 'question.label.answerDelete', 'The last answer cannot be deleted')}]]*/ "The last answer cannot be deleted";
-        var labelLastWarning =
-            /*[[${messages.get(#locale, 'question.label.lastWarning', 'You did not get it')}]]*/ "You did not get it";
-        var labelChangeQuestionTypeWarningStart =
-            /*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningStart', 'The change of the question type will also delete the following:')}]]*/ "The change of the question type will also delete the following:";
-        var labelChangeQuestionTypeWarningExportRules =
-            /*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningExportRules', 'Export rules')}]]*/ "Export rules";
-        var labelChangeQuestionTypeWarningEnd =
-            /*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningEnd', 'Do you really want to continue?')}]]*/ "Do you really want to continue?";
-        var labelDeleteAnswerWarningStart =
-            /*[[${messages.get(#locale, 'question.label.deleteAnswerWarningStart', 'The removal of an answer will also delete the following:')}]]*/ "The removal of an answer will also delete the following:";
-        var errorSliderStepsizeDoesNotMatch =
-            /*[[${messages.get(#locale, 'question.error.sliderDifferenceMaxMinNotDivisibleByStepsize', 'The difference between max and min values is not divisible without remainder by the step size')}]]*/ "The difference between max and min values is not divisible without remainder by the step size";
-        var warningSliderTooMuchSteps =
-            /*[[${messages.get(#locale, 'sliderAnswer.validator.tooManySteps', 'There are more than 200 steps available. Alternatively you can also use the question type number input')}]]*/ "There are more than 200 steps available. Alternatively you can also use the question type number input";
-        var labelMoveDown =
-            /*[[${messages.get(#locale, 'answer.label.moveDown', 'Move down')}]]*/ "Move down";
-        var labelMoveUp =
-            /*[[${messages.get(#locale, 'answer.label.moveUp', 'Move up')}]]*/ "Move up";
-        var errorSliderStepsizeLessOrEqualToZero =
-            /*[[${messages.get(#locale, 'question.error.sliderStepsizeLessOrEqualToZero', 'The stepsize should not contain a value less or equal to zero')}]]*/ "The stepsize should not contain a value less or equal to zero";
-        var errorSliderIconMissingIconValue =
-            /*[[${messages.get(#locale, 'sliderIcon.validator.missingIconValue', 'An icon for every field has to be selected, if the feature is enabled.')}]]*/ "An icon for every field has to be selected, if the feature is enabled.";
-        var errorSliderIconMissingPosition =
-            /*[[${messages.get(#locale, 'sliderIcon.validator.missingPosition', 'The icon''s position is required.')}]]*/ "The icon's position is required.";
-        var errorSliderIconPositionAlreadyInUse =
-            /*[[${messages.get(#locale, 'sliderIcon.validator.positionAlreadyInUse', 'The icon''s position of one ore more icons is identical. Please select different values.')}]]*/ "The icon's position of one ore more icons is identical. Please select different values.";
-        var errorSliderIconPositionBiggerThanMaxValue =
-            /*[[${messages.get(#locale, 'sliderIcon.validator.positionBiggerThanMaxValue', 'The icon''s position cannot be larger thant the maximum slider value.')}]]*/ "The icon's position cannot be larger thant the maximum slider value.";
-        var errorSliderIconPositionSmallerThanMinValue =
-            /*[[${messages.get(#locale, 'sliderIcon.validator.positionSmallerThanMinValue', 'The icon''s position cannot be smaller than the minimum slider value.')}]]*/ "The icon's position cannot be smaller than the minimum slider value.";
-        var warningImageTooSmall =
-            /*[[${messages.get(#locale, 'imageAnswer.validator.resolutionTooSmall', 'The resolution of the choosen image may be too small.')}]]*/ "The resolution of the choosen image may be too small.";
-        var noValidScoreMinMax =
-            /*[[${messages.get(#locale, 'question.error.noValidScoreMinMax', 'It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
-        var noValidScoreQuestionType =
-            /*[[${messages.get(#locale, 'question.error.noValidScoreQuestionType', 'A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
-        var warningIsOtherNotLastAnswer =
-            /*[[${messages.get(#locale, 'answer.warning.isOtherNotLastAnswer', 'This answer is marked as "other" and will be shown as the last answer of the question.')}]]*/ 'This answer is marked as "other" and will be shown as the last answer of the question.';
+    <script th:src="@{/js/helper/htmlUtilities.js}"></script>
+	<script
+		th:inline="javascript"
+		type="text/javascript"
+	>
+		var labelQuestionText =
+			/*[[${messages.get(#locale, 'question.label.questiontext', 'Question:')}]]*/ "Question:";
+		var labelInfoText =
+			/*[[${messages.get(#locale, 'question.label.infotext', 'Info text:')}]]*/ "Info text:";
+		var labelAnswerDelete =
+			/*[[${messages.get(#locale, 'question.label.answerDelete', 'The last answer cannot be deleted')}]]*/ "The last answer cannot be deleted";
+		var labelLastWarning =
+			/*[[${messages.get(#locale, 'question.label.lastWarning', 'You did not get it')}]]*/ "You did not get it";
+		var labelChangeQuestionTypeWarningStart =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningStart', 'The change of the question type will also delete the following:')}]]*/ "The change of the question type will also delete the following:";
+		var labelChangeQuestionTypeWarningExportRules =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningExportRules', 'Export rules')}]]*/ "Export rules";
+		var labelChangeQuestionTypeWarningEnd =
+			/*[[${messages.get(#locale, 'question.label.changeQuestionTypeWarningEnd', 'Do you really want to continue?')}]]*/ "Do you really want to continue?";
+		var labelDeleteAnswerWarningStart =
+			/*[[${messages.get(#locale, 'question.label.deleteAnswerWarningStart', 'The removal of an answer will also delete the following:')}]]*/ "The removal of an answer will also delete the following:";
+		var errorSliderStepsizeDoesNotMatch =
+			/*[[${messages.get(#locale, 'question.error.sliderDifferenceMaxMinNotDivisibleByStepsize', 'The difference between max and min values is not divisible without remainder by the step size')}]]*/ "The difference between max and min values is not divisible without remainder by the step size";
+		var warningSliderTooMuchSteps =
+			/*[[${messages.get(#locale, 'sliderAnswer.validator.tooManySteps', 'There are more than 200 steps available. Alternatively you can also use the question type number input')}]]*/ "There are more than 200 steps available. Alternatively you can also use the question type number input";
+		var labelMoveDown =
+			/*[[${messages.get(#locale, 'answer.label.moveDown', 'Move down')}]]*/ "Move down";
+		var labelMoveUp =
+			/*[[${messages.get(#locale, 'answer.label.moveUp', 'Move up')}]]*/ "Move up";
+		var errorSliderStepsizeLessOrEqualToZero =
+			/*[[${messages.get(#locale, 'question.error.sliderStepsizeLessOrEqualToZero', 'The stepsize should not contain a value less or equal to zero')}]]*/ "The stepsize should not contain a value less or equal to zero";
+		var errorSliderIconMissingIconValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.missingIconValue', 'An icon for every field has to be selected, if the feature is enabled.')}]]*/ "An icon for every field has to be selected, if the feature is enabled.";
+		var errorSliderIconMissingPosition =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.missingPosition', 'The icon''s position is required.')}]]*/ "The icon's position is required.";
+		var errorSliderIconPositionAlreadyInUse =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionAlreadyInUse', 'The icon''s position of one ore more icons is identical. Please select different values.')}]]*/ "The icon's position of one ore more icons is identical. Please select different values.";
+		var errorSliderIconPositionBiggerThanMaxValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionBiggerThanMaxValue', 'The icon''s position cannot be larger thant the maximum slider value.')}]]*/ "The icon's position cannot be larger thant the maximum slider value.";
+		var errorSliderIconPositionSmallerThanMinValue =
+			/*[[${messages.get(#locale, 'sliderIcon.validator.positionSmallerThanMinValue', 'The icon''s position cannot be smaller than the minimum slider value.')}]]*/ "The icon's position cannot be smaller than the minimum slider value.";
+		var warningImageTooSmall =
+			/*[[${messages.get(#locale, 'imageAnswer.validator.resolutionTooSmall', 'The resolution of the choosen image may be too small.')}]]*/ "The resolution of the choosen image may be too small.";
+		var noValidScoreMinMax =
+			/*[[${messages.get(#locale, 'question.error.noValidScoreMinMax', 'It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "It is not possible to give exactly one answer. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
+		var noValidScoreQuestionType =
+			/*[[${messages.get(#locale, 'question.error.noValidScoreQuestionType', 'A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?')}]]*/ "A question type has been selected that does not support score calculation. If you save the question, all scores that contain this question will be deleted. Do you really want to save the question?";
+		var warningIsOtherNotLastAnswer =
+			/*[[${messages.get(#locale, 'answer.warning.isOtherNotLastAnswer', 'This answer is marked as "other" and will be shown as the last answer of the question.')}]]*/ 'This answer is marked as "other" and will be shown as the last answer of the question.';
 
         var deletedAnswerWithExportRule = false;
         /*[- Get the current used language -]*/
@@ -1341,10 +1342,14 @@
         var sliderIconValueErrors = [];
         var sliderIconPositionErrors = [];
 
+        var maxQuestionTextLength = 2000;
+        var textLengthExceededMessage =
+            /*[[${messages.get(#locale, 'textLength.error.exceeded', 'Character limit exceeded ({0} / {1})')}]]*/ "Character limit exceeded ({0} / {1})";
+
         var currentIconDTOs = /*[[${questionDTO.answers[0].icons}]]*/ null;
-        var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
-        /*[- Add the error messages from the model to the javascript arrays -]*/
-        /*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].icons}"]*/
+		var numberOfIcons = currentIconDTOs!=null ? currentIconDTOs.length : null;
+		/*[- Add the error messages from the model to the javascript arrays -]*/
+		/*[# th:each="iconDTO, iconDTOIndex : ${questionDTO.answers[0].icons}"]*/
 
         sliderIconValueErrors.push(
             "[(${vars['errorSliderIconIcon__${iconDTOIndex.index}__']})]"
@@ -1383,6 +1388,13 @@
                         $(this).attr("disabled", true);
                     }
                 });
+            });
+
+            // Checks the length of the question text
+            HtmlUtilities.bindWysiwygTextLengthValidation({
+                textareaNamePrefix: "localizedQuestionText[",
+                maxLength: maxQuestionTextLength,
+                message: textLengthExceededMessage
             });
 
             /*[- Reduce the size of multiple choice answers to 98% for the move buttons -]*/
