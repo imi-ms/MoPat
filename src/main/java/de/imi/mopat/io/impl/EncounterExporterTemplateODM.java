@@ -393,6 +393,11 @@ public class EncounterExporterTemplateODM implements EncounterExporterTemplate {
     }
 
     @Override
+    public void clean() {
+
+    }
+
+    @Override
     public ExportStatus flush() throws Exception {
         Boolean exportInDirectory = null;
         String exportPath = null;
