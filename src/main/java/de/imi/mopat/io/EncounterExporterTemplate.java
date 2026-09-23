@@ -35,6 +35,12 @@ public interface EncounterExporterTemplate {
     void write(String exportField, String value) throws Exception;
 
     /**
+     * Cleans the export template with optional post-processing steps.
+     * This can be used to make sure, that certain special rules are fulfilled.
+     */
+    void clean();
+
+    /**
      * Flushes the filled export template to the export path with a corresponding file name
      *
      * @return export status for the filled export template that was  flushed
