@@ -10,6 +10,7 @@ import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.model.Answer;
+import de.imi.mopat.model.BodyPartAnswer;
 import de.imi.mopat.model.DateAnswer;
 import de.imi.mopat.model.NumberInputAnswer;
 import de.imi.mopat.model.Question;
@@ -266,10 +267,14 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
 
         // Add min/max extensions for choice questions
         if (question.getQuestionType() == QuestionType.DROP_DOWN
-            || question.getQuestionType() == QuestionType.MULTIPLE_CHOICE) {
-            item.addExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
-                new IntegerType(question.getMinNumberAnswers()));
-            item.setRequired(true);
+            || question.getQuestionType() == QuestionType.MULTIPLE_CHOICE
+            || question.getQuestionType() == QuestionType.BODY_PART) {
+
+            if (question.getIsRequired() && question.getMinNumberAnswers() > 0) {
+                item.setRequired(true);
+                item.addExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+                    new IntegerType(question.getMinNumberAnswers()));
+            }
 
             if (question.getMaxNumberAnswers() > 1) {
                 item.setRepeats(true);
@@ -327,6 +332,16 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
                     // Set type to openchoice if isOther is true
                     item.setType(QuestionnaireItemType.OPENCHOICE);
                 }
+            }
+            if (answer instanceof BodyPartAnswer) {
+                QuestionnaireItemAnswerOptionComponent option = new QuestionnaireItemAnswerOptionComponent();
+                item.setType(QuestionnaireItemType.CHOICE);
+                Coding coding = new Coding()
+                    .setSystem(configurationDao.getFHIRsystemURI())
+                    .setCode(ANSWER_OID + answer.getId() + "/" + ((BodyPartAnswer) answer).getBodyPart().getMessageCode());
+
+                option.setValue(coding);
+                item.addAnswerOption(option);
             }
         }
     }
@@ -439,7 +454,7 @@ public class MetadataExporterFhirR4b implements MetadataExporter {
             SliderFreetextAnswer sliderFreetextAnswer = (SliderFreetextAnswer) question.getAnswers()
                 .get(0);
             QuestionnaireItemComponent freeTextItem = new QuestionnaireItemComponent();
-            freeTextItem.setLinkId(Question.class.getSimpleName() + "/" + question.getId() + "-ft");
+            freeTextItem.setLinkId(Question.class.getSimpleName() + "/" + question.getId() + "_ft");
             freeTextItem.setType(QuestionnaireItemType.TEXT);
             freeTextItem.setTextElement(
                 convertLocalizedTextToStringType(sliderFreetextAnswer.getLocalizedFreetextLabel()));
