@@ -12,9 +12,9 @@ import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import java.io.File;
 import java.io.FileInputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DateType;
@@ -25,6 +25,8 @@ import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.OperationOutcome.OperationOutcomeIssueComponent;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Questionnaire;
+import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemComponent;
+import org.hl7.fhir.dstu3.model.Questionnaire.QuestionnaireItemOptionComponent;
 import org.hl7.fhir.dstu3.model.QuestionnaireResponse;
 import org.hl7.fhir.dstu3.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent;
 import org.hl7.fhir.dstu3.model.Reference;
@@ -45,6 +47,8 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
     private Encounter encounter;
     private ExportTemplate exportTemplate;
     private QuestionnaireResponse questionnaireResponse;
+    private Questionnaire questionnaire;
+
 
     public EncounterExporterTemplateFhirDstu3(final ConfigurationDao configurationDao) {
         this.configurationDao = configurationDao;
@@ -73,8 +77,9 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
         File file = new File(templatePath, filename);
 
         // Create questionnaireResponse and set patientID and caseNumber
-        questionnaireResponse = FhirDstu3Helper.getQuestionnaireResponse(
-            (Questionnaire) FhirDstu3Helper.parseResourceFromFile(new FileInputStream(file)));
+        questionnaire = (Questionnaire) FhirDstu3Helper.parseResourceFromFile(
+            new FileInputStream(file));
+        questionnaireResponse = FhirDstu3Helper.getQuestionnaireResponse(questionnaire);
         Patient patient = new Patient();
         patient.addIdentifier(new Identifier().setValue(encounter.getCaseNumber()));
         questionnaireResponse.addContained(patient);
@@ -84,119 +89,212 @@ public class EncounterExporterTemplateFhirDstu3 implements EncounterExporterTemp
     @Override
     public void write(final String exportField, final String value) throws Exception {
         String exportClean = exportField.replace("u002E", ".");
-        // Split the exportField into splitExportField[0] (item.linkId)
-        // and splitExportField[1] (option.code) or boolean value
         String[] splitExportField = exportClean.split("_");
         for (int i = 0; i < splitExportField.length; i++) {
             splitExportField[i] = splitExportField[i].replace("u005F", "_");
         }
 
-        // Search all answers for the exportField and write the value
-        for (QuestionnaireResponseItemAnswerComponent answer : FhirDstu3Helper.getAllAnswersOfQuestionnaireResponse(
-            questionnaireResponse)) {
-            if (value != null && !value.isEmpty()) {
-                if (answer.getId().equalsIgnoreCase(splitExportField[0])) {
-                    if (splitExportField.length > 1 && splitExportField[1].equals("true")
-                        && value.equals("TRUE")) {
-                        answer.setValue(new BooleanType(Boolean.TRUE));
-                        LOGGER.info(
-                            "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                                + value + "'.");
-                    } else if (splitExportField.length > 1 && splitExportField[1].equals("false")
-                        && value.equals("TRUE")) {
-                        answer.setValue(new BooleanType(Boolean.FALSE));
-                        LOGGER.info(
-                            "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                                + value + "'.");
-                    } else if (splitExportField.length > 1 && splitExportField[1].equals(
-                        "freetext")) {
-                        answer.setValue(new StringType(value));
-                        LOGGER.info(
-                            "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                                + value + "'.");
-                    } else if (answer.getValue() instanceof Coding) {
-                        answer.setValue(new Coding().setDisplay(value));
-                        LOGGER.info(
-                            "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                                + value + "'.");
-                    } else if (answer.getValue() instanceof DateType) {
-                        try {
-                            answer.setValue(
-                                new DateType(new SimpleDateFormat("yyyy-MM-dd").parse(value)));
-                            LOGGER.info("ExportField found. Value of answer " + "'" + answer.getId()
-                                + "' set" + " to '" + new SimpleDateFormat("yyyy-MM-dd").parse(
-                                value) + "'.");
-                        } catch (ParseException e) {
-                            LOGGER.info(
-                                "ExportField could not be written. Value " + "is invalid. {}",
-                                e.getMessage());
-                            answer.setValue(null);
-                        }
-                    } else if (answer.getValue() instanceof DecimalType) {
-                        answer.setValue(new DecimalType(Double.parseDouble(value)));
-                        LOGGER.info(
-                            "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                                + value + "'.");
-                    } else if (answer.getValue() instanceof IntegerType) {
-                        Double doubleValue = null;
-                        try {
-                            doubleValue = Double.parseDouble(value);
-                            LOGGER.info("ExportField found. Value of answer " + "'" + answer.getId()
-                                + "' set" + " to '" + value + "'.");
-                        } catch (NumberFormatException e) {
-                            LOGGER.info(
-                                "ExportField could not be written. Value " + "is invalid. {}",
-                                e.getMessage());
-                            answer.setValue(null);
-                        }
-                        if (doubleValue != null) {
-                            answer.setValue(new IntegerType(doubleValue.intValue()));
-                            LOGGER.info("ExportField found. Value of answer " + "'" + answer.getId()
-                                + "' set" + " to '" + value + "'.");
-                        } else {
-                            try {
-                                answer.setValue(new IntegerType(Integer.parseInt(value)));
-                                LOGGER.info(
-                                    "ExportField found. Value of " + "answer '" + answer.getId()
-                                        + "' set to '" + value + "'.");
-                            } catch (NumberFormatException e) {
-                                LOGGER.info(
-                                    "ExportField could not be written. " + "Value is invalid. {}",
-                                    e.getMessage());
-                                answer.setValue(null);
-                                break;
-                            }
-                        }
-                    } else if (answer.getValue() instanceof StringType) {
-                        try {
-                            answer.setValue(new StringType(value));
-                            LOGGER.info("ExportField found. Value of answer " + "'" + answer.getId()
-                                + "' set" + " to '" + value + "'.");
-                        } catch (Exception e) {
-                            LOGGER.info(
-                                "ExportField could not be written. Value " + "is invalid. {}",
-                                e.getMessage());
-                            answer.setValue(null);
-                        }
-                    }
-                    // For multiple choice questions the exportFields also
-                    // save the items linkId.
-                    // Thus, the second item of splitExportFields contains
-                    // the answer id.
-                } else if (splitExportField.length > 1 && splitExportField[1].equals(answer.getId())
-                    && value.equals("TRUE")) {
-                    answer.setValue(new BooleanType(Boolean.parseBoolean(value)));
+        List<QuestionnaireResponseItemAnswerComponent> allAnswers = FhirDstu3Helper
+            .getAllAnswersOfQuestionnaireResponse(questionnaireResponse);
+
+        // Handle null/empty value: Find the specific answer and clear it, then stop.
+        if (value == null || value.isEmpty()) {
+            for (QuestionnaireResponseItemAnswerComponent answer : allAnswers) {
+                if (isMatchingAnswer(answer, splitExportField)) {
+                    answer.setValue(null);
                     LOGGER.info(
-                        "ExportField found. Value of answer '" + answer.getId() + "' set to '"
-                            + value + "'.");
+                        "ExportField '{}' found. Value of answer '{}' set to null.",
+                        exportField,
+                        answer.getId()
+                    );
+                    return; // CRITICAL: Exit immediately to avoid clearing other answers
                 }
-            } else {
-                answer.setValue(null);
-                LOGGER.info("Value was null or empty. Value of export field " + "[" + exportField
-                    + "] was set to null.");
-                return;
+            }
+            // If no matching answer was found for a null value, log it and exit
+            LOGGER.warn("No matching answer found for null/empty value of exportField: {}",
+                exportField);
+            return;
+        }
+
+        // Handle non-empty value: Find the matching answer and set the value.
+        for (QuestionnaireResponseItemAnswerComponent answer : allAnswers) {
+            if (!isMatchingAnswer(answer, splitExportField)) {
+                continue;
+            }
+
+            try {
+                setValueBasedOnType(answer, value, splitExportField);
+                LOGGER.info(
+                    "ExportField '{}' found. Value of answer '{}' set to '{}'.",
+                    exportField,
+                    answer.getId(),
+                    value
+                );
+                return; // Stop after setting the first match
+            } catch (Exception e) {
+                LOGGER.error(
+                    "Failed to write value '{}' to answer '{}': {}",
+                    value,
+                    answer.getId(),
+                    e.getMessage(),
+                    e
+                );
             }
         }
+    }
+
+    @Override
+    public void clean() {
+        removeEmptyAnswersFromQuestionnaireResponse();
+    }
+
+    /**
+     * Removes all answers with empty or null values from the questionnaire response items. This
+     * method iterates through each item in the questionnaire response and filters out any answer
+     * components where the value is null or an empty string.
+     */
+    private void removeEmptyAnswersFromQuestionnaireResponse() {
+        questionnaireResponse.getItem().forEach(qr ->
+            qr.setAnswer(qr.getAnswer().stream().filter(answer ->
+                answer.getValue() != null && !answer.getValue().isEmpty()
+            ).toList())
+        );
+    }
+
+    /**
+     * Determines if a given answer component matches the specified field identifier.
+     *
+     * @param answer     The answer component to check against.
+     * @param splitField The array of field parts extracted from the export field definition.
+     * @return true if the answer ID matches the field identifier directly or as a multiple choice
+     * option, false otherwise.
+     */
+    private boolean isMatchingAnswer(QuestionnaireResponseItemAnswerComponent answer,
+        String[] splitField) {
+        if (splitField.length == 0) {
+            return false;
+        }
+
+        // Case 1: Direct match (e.g., "item.linkId" or "item.linkId_true")
+        if (answer.getId().equalsIgnoreCase(splitField[0])) {
+            return true;
+        }
+
+        // Case 2: Multiple choice option match (e.g., "item.linkId_optionId")
+        return splitField.length > 1 && splitField[1].equals(answer.getId());
+    }
+
+    /**
+     * Sets the value of the given answer component based on the existing FHIR primitive type and
+     * special field logic. Handles boolean logic embedded in the field name as well as standard
+     * type-based conversions for Coding, Date, Decimal, Integer, and String types.
+     *
+     * @param answer     The questionnaire response item answer component to which the value should
+     *                   be assigned.
+     * @param value      The string representation of the value to be parsed and assigned to the
+     *                   answer.
+     * @param splitField An array containing the split parts of the export field definition, used
+     *                   for identifying special cases such as boolean or freetext handling.
+     * @throws Exception If an error occurs during date parsing or type conversion.
+     */
+    private void setValueBasedOnType(
+        QuestionnaireResponseItemAnswerComponent answer,
+        String value,
+        String[] splitField
+    ) throws Exception {
+
+        // 1. Handle Explicit Boolean Flags (e.g., "item_true", "item_false")
+        // Only apply if the value is strictly "TRUE" or "FALSE"
+        if (splitField.length > 1) {
+            String suffix = splitField[1];
+
+            // Case: Explicit boolean toggle
+            if ((suffix.equals("true") || suffix.equals("false")) &&
+                (value.equals("TRUE") || value.equals("FALSE"))) {
+                // if suffix "false" && value "TRUE" -> set FALSE.
+                if (suffix.equals("false") && value.equals("TRUE")) {
+                    answer.setValue(new BooleanType(false));
+                } else if (suffix.equals("true") && value.equals("TRUE")) {
+                    answer.setValue(new BooleanType(true));
+                } else {
+                    answer.setValue(new BooleanType(Boolean.parseBoolean(value)));
+                }
+                return;
+            }
+
+            // Case: Free Text
+            if (suffix.equals("ft")) {
+                answer.setValue(new StringType(value));
+                return;
+            }
+
+            // Case: Multiple Choice / Coding Lookup
+            // If splitField[1] is an option ID, we need to find the Coding in the Questionnaire
+            Coding coding = findCodingFromQuestionnaire(splitField[0], splitField[1]);
+            if (coding != null && value.equals("TRUE")) {
+                // Set the Coding value.
+                // Note: If the answer component currently holds a Coding, we replace it.
+                // If it holds a Boolean, this will change the type, which is correct for MCQs.
+                answer.setValue(coding);
+            }
+        }
+
+        // 2. Standard Type-Based Conversion (Fallback for non-matched suffixes or single-part fields)
+        else {
+            if (answer.getValue() instanceof Coding) {
+                answer.setValue(new Coding().setDisplay(value));
+            } else if (answer.getValue() instanceof DateType) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date parsedDate = sdf.parse(value);
+                answer.setValue(new DateType(parsedDate));
+            } else if (answer.getValue() instanceof DecimalType) {
+                answer.setValue(new DecimalType(Double.parseDouble(value)));
+            } else if (answer.getValue() instanceof IntegerType) {
+                // Try integer first, then double if it fails
+                try {
+                    answer.setValue(new IntegerType(Integer.parseInt(value)));
+                } catch (NumberFormatException e) {
+                    answer.setValue(new IntegerType((int) Double.parseDouble(value)));
+                }
+            } else if (answer.getValue() instanceof StringType) {
+                answer.setValue(new StringType(value));
+            } else {
+                // Default fallback: If type is unknown or null, try String
+                answer.setValue(new StringType(value));
+            }
+        }
+    }
+
+    /**
+     * Traverses the Questionnaire to find the Coding for a specific answer option.
+     *
+     * @param itemId   The linkId of the Questionnaire Item (e.g., "question1")
+     * @param optionId The linkId or code of the Answer Option (e.g., "option1" or "yes")
+     * @return The Coding object, or null if not found.
+     */
+    private Coding findCodingFromQuestionnaire(String itemId, String optionId) {
+        if (this.questionnaire == null) {
+            return null;
+        }
+
+        // Traverse items to find the one with linkId == itemId
+        for (QuestionnaireItemComponent item : questionnaire.getItem()) {
+            if (item.getLinkId().equals(itemId)) {
+                // Check if this item has answerOptions
+                for (QuestionnaireItemOptionComponent option : item.getOption()) {
+                    // The option might be identified by linkId or valueCoding
+                    if (option.getValueCoding() != null) {
+                        Coding coding = option.getValueCoding();
+                        // Match by Code, Display, or System+Code
+                        if (coding.getCode().equals(optionId) ||
+                            (coding.getDisplay() != null && coding.getDisplay().equals(optionId))) {
+                            return coding;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override

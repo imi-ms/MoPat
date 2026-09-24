@@ -140,6 +140,11 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
     }
 
     @Override
+    public void clean() {
+
+    }
+
+    @Override
     public ExportStatus flush() throws Exception {
         Boolean exportInDirectory = null;
         String exportPath = null;
