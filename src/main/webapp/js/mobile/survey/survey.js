@@ -255,71 +255,102 @@ function showBundleFinal() {
 
     // Show activated scores
     if (encounter.isTest === false && encounter.bundle.hasActiveScores() === true) {
-        // Post the encounter to be sure that the given responses are up to date
-        postEncounterForScore(encounter);
-        // Get the evaluated scores
-        var activatedScores;
-        $.ajax({
-            url: "scores",
-            type: "POST",
-            async: false,
-            data: "encounterUuid=" + encounter.uuid,
-            success: function (data) {
-                // Check if entries function is not supported
-                if (!Object.entries) {
-                    activatedScores = new Map();
-                    var ownProps = Object.keys(data);
-                    for (var i = 0; i < ownProps.length; i++) {
-                        activatedScores.set(ownProps[i], data[ownProps[i]]);
-                    }
-                } else {
-                    activatedScores = new Map(Object.entries(data));
-                }
-            }
-        });
 
-        jQuery('<div/>', {
-            "id": 'scoreText',
-            "style": 'float: left;'
-        }).appendTo('#questionContent');
+        //Add loading spinner to the scoreText div
+        jQuery("<div/>", {
+            id: "scoreText",
+            style: "float: left;",
+        }).appendTo("#questionContent");
 
-        jQuery('<div/>', {
-            "id": 'scoreDatamatrix',
-            "style": 'float: left; margin-left: 6em; margin-top: 2em;'
-        }).appendTo('#questionContent');
+        jQuery("<div/>", {
+            id: "scoreDatamatrix",
+            style: "float: left; margin-left: 4em",
+            class: "loading"
+        }).appendTo("#questionContent");
 
-        $('#scoreText').append($("<span/>", {"html": "<b>Scores:</b><br>", "class": "resizable"}));
+        $("#scoreText").append(
+            $("<span/>", { html: "<b>Scores:</b><br>", class: "resizable" }),
+        );
 
-        // Iterate over all given scores and print them
-        var activatedScoresAsString = "";
-        activatedScores.forEach(function (value, key) {
-            if (value === null) {
-                $("#scoreText").append($("<span/>", {"html": key + ": " + "<br>", "class": "resizable"}));
-                activatedScoresAsString += key + ":\n";
-            } else {
-                $("#scoreText").append($("<span/>", {"html": key + ": " + value + "<br>", "class": "resizable", "style": "padding-left:2em;"}));
-                activatedScoresAsString += key + ": " + value + "\n";
-            }
-        });
+		// 1. Post the encounter first
+		postEncounterForScore(encounter)
+			.then(() => {
+				// 2. Only request scores AFTER the post is confirmed
+				return new Promise((resolve, reject) => {
+					$.ajax({
+						url: "scores",
+						type: "POST",
+						async: true, // Always keep async true
+						data: "encounterUuid=" + encounter.uuid,
+						success: function (data) {
+							let activatedScores;
+							if (!Object.entries) {
+								activatedScores = new Map();
+								var ownProps = Object.keys(data);
+								for (var i = 0; i < ownProps.length; i++) {
+									activatedScores.set(ownProps[i], data[ownProps[i]]);
+								}
+							} else {
+								activatedScores = new Map(Object.entries(data));
+							}
+							resolve(activatedScores);
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							reject(
+								new Error(`Failed to get scores: ${textStatus} - ${errorThrown}`),
+							);
+						},
+					});
+				});
+			})
+			.then((activatedScores) => {
+				// Iterate over all given scores and print them
+				var activatedScoresAsString = "";
+				activatedScores.forEach(function (value, key) {
+					if (value === null) {
+						$("#scoreText").append(
+							$("<span/>", { html: key + ": " + "<br>", class: "resizable" }),
+						);
+						activatedScoresAsString += key + ":\n";
+					} else {
+						$("#scoreText").append(
+							$("<span/>", {
+								html: key + ": " + value + "<br>",
+								class: "resizable",
+								style: "padding-left:2em;",
+							}),
+						);
+						activatedScoresAsString += key + ": " + value + "\n";
+					}
+				});
 
-        var barcodeSettings = {
-            barWidth: 1,
-            barHeight: 50,
-            moduleSize: 5,
-            showHRI: false,
-            addQuietZone: true,
-            marginHRI: 0,
-            bgColor: "#FFFFFF",
-            color: "#000000",
-            fontSize: 10,
-            output: "bmp",
-            posX: 0,
-            posY: 0
-        };
+				var barcodeSettings = {
+					barWidth: 1,
+					barHeight: 50,
+					moduleSize: 5,
+					showHRI: false,
+					addQuietZone: true,
+					marginHRI: 0,
+					bgColor: "#FFFFFF",
+					color: "#000000",
+					fontSize: 10,
+					output: "bmp",
+					posX: 0,
+					posY: 0,
+				};
 
-        // Show the printed scores as QR-code
-        $("#scoreDatamatrix").barcode(activatedScoresAsString, "datamatrix", barcodeSettings);
-    }
+                //Remove loading animation
+                $("#scoreDatamatrix").removeClass("loading");
+				// Show the printed scores as QR-code
+				$("#scoreDatamatrix").barcode(
+					activatedScoresAsString,
+					"datamatrix",
+					barcodeSettings,
+				);
+			})
+			.catch((error) => {
+			});
+	}
 
     var title = strings['survey.questionnaire.label.finishedSurvey'];
     var buttonTextNext = strings['survey.questionnaire.button.closeApplication'];
@@ -1152,27 +1183,38 @@ function getSubmitErrorMessage(jqXHR, textStatus) {
 }
 
 /**
- * This methods posts the encounter object as a JSON representation to the server
- * 
- * @param encounter The encounter object with the user's responses
+ * Posts the encounter and resolves when successful.
+ * @returns {Promise} Resolves when the encounter is saved, rejects after max retries.
  */
-function postEncounterForScore(encounter) {
-    var data = ["bundle"];
+function postEncounterForScore(encounter, retryCount = 0) {
+    const maxRetries = 30;
+    const data = ["bundle"];
     data.push("bundleDTO");
 
-    $.ajax({
-        url: "encounter",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        async: false,
-        // Exclude the bundle object
-        data: JSON.stringify(excludeFromJSON(encounter, data)),
-        success: function () {
-
-        },
-        error: function () {
-            postEncounterForScore(encounter);
-        }
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: "encounter",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            async: true,
+            data: JSON.stringify(excludeFromJSON(encounter, data)),
+            success: function () {
+                resolve();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (retryCount < maxRetries) {
+                    // Delay before retrying
+                    setTimeout(() => {
+                        // Re-throw the promise result into the original chain
+                        postEncounterForScore(encounter, retryCount + 1)
+                            .then(resolve)
+                            .catch(reject);
+                    }, 1000 * (retryCount + 1));
+                } else {
+                    reject(new Error(`Failed to post encounter after ${maxRetries} attempts: ${textStatus} - ${errorThrown}`));
+                }
+            }
+        });
     });
 }
 
