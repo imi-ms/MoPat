@@ -53,9 +53,9 @@ public class SurveyService {
             (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())
         );
 
+        addPublishedAndAssignedBundlesToMap(encountersByBundleAndLanguage);
         addIncompleteEncountersForCaseToMap(encounterDTO.getCaseNumber(),
             encountersByBundleAndLanguage);
-        addPublishedAndAssignedBundlesToMap(encountersByBundleAndLanguage);
 
         return encountersByBundleAndLanguage;
     }
