@@ -872,6 +872,12 @@ public class SurveyController {
     public @ResponseBody ResponseEntity<EncounterSubmitResponseDTO> updateEncounter(
         @RequestBody final EncounterDTO encounterDTO) {
 
+        if (encounterDTO.getIsTest()) {
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(EncounterSubmitResponseDTO.test("Data not stored, as it is a test."));
+        }
+
         try {
             EncounterSubmitResponseDTO response = encounterSubmitService.updateEncounter(encounterDTO);
             return ResponseEntity.ok(response);
@@ -1085,21 +1091,26 @@ public class SurveyController {
      */
     @RequestMapping(value = "/mobile/survey/encountertest", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public @ResponseBody String updateEncounterTest(@RequestBody final EncounterDTO encounterDTO) {
+    public @ResponseBody ResponseEntity<EncounterSubmitResponseDTO> updateEncounterTest(
+        @RequestBody final EncounterDTO encounterDTO) {
 
-        if (encounterDTO.getBundleDTO().getIsPublished() == null || !encounterDTO.getBundleDTO().getIsPublished()) {
+        if (encounterDTO.getBundleDTO() == null ||
+            !Boolean.TRUE.equals(encounterDTO.getBundleDTO().getIsPublished())) {
             // If the encounter is finished
             if (encounterDTO.getIsCompleted()) {
                 // Wait 5 seconds for a possibly running export
                 try {
                     Thread.sleep(5000L);
                 } catch (InterruptedException ex) {
-                    LOGGER.debug("The waiting of the test exporting thread " + "was" + " interrupted");
+                    LOGGER.debug(
+                        "The waiting of the test exporting thread " + "was" + " interrupted");
                 }
             }
         }
-        return "";
 
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(EncounterSubmitResponseDTO.test("Data not stored, as it is a test."));
     }
 
 }

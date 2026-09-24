@@ -27,6 +27,10 @@ public class EncounterSubmitResponseDTO {
         return new EncounterSubmitResponseDTO(false, "FAILED", message);
     }
 
+    public static EncounterSubmitResponseDTO test(String message) {
+        return new EncounterSubmitResponseDTO(false, "TEST", message);
+    }
+
     public boolean isSuccess() {
         return success;
     }

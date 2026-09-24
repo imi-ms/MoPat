@@ -1029,7 +1029,7 @@ function submitEncounterFinal(encounter) {
 function submitEncounterFinalAttempt(encounter, attemptNumber) {
     postEncounter(encounter, true)
     .done(function (response) {
-        if (isStoredResponse(response)) {
+        if (isStoredResponse(response) || isTestResponse(response)) {
             handleFinalSubmitSuccess();
             return;
         }
@@ -1157,6 +1157,12 @@ function isStoredResponse(response) {
     return response
       && response.success === true
       && response.status === "STORED";
+}
+
+function isTestResponse(response) {
+    return response
+        && response.success === false
+        && response.status === "TEST";
 }
 
 /**
