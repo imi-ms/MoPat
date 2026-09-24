@@ -328,9 +328,6 @@
         </answerOption>
     </item>
     <item>
-        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
-            <valueInteger value="1"/>
-        </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
             <valueInteger value="2"/>
         </extension>
@@ -366,7 +363,7 @@
             </extension>
         </text>
         <type value="coding"/>
-        <required value="true"/>
+        <required value="false"/>
         <repeats value="true"/>
         <answerOption>
             <valueCoding>
@@ -762,7 +759,7 @@
         <repeats value="false"/>
     </item>
     <item>
-        <linkId value="Question/null-ft"/>
+        <linkId value="Question/null_ft"/>
         <text value="Restaurants:">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
                 <extension url="lang">
@@ -828,9 +825,6 @@
         <repeats value="false"/>
     </item>
     <item>
-        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs">
-            <valueInteger value="1"/>
-        </extension>
         <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
             <valueInteger value="3"/>
         </extension>
@@ -865,7 +859,7 @@
             </extension>
         </text>
         <type value="coding"/>
-        <required value="true"/>
+        <required value="false"/>
         <repeats value="true"/>
         <answerOption>
             <valueCoding>
@@ -1078,6 +1072,9 @@
         <repeats value="false"/>
     </item>
     <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+            <valueInteger value="10"/>
+        </extension>
         <linkId value="Question/null"/>
         <text value="Where do you have pain on the front of your body?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
@@ -1107,10 +1104,144 @@
         </text>
         <type value="coding"/>
         <required value="false"/>
-        <repeats value="false"/>
-        <answerConstraint value="optionsOrString"/>
+        <repeats value="true"/>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.throat"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.chest"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.stomach"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.hips"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.genitals"/>
+            </valueCoding>
+        </answerOption>
     </item>
     <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+            <valueInteger value="5"/>
+        </extension>
         <linkId value="Question/null"/>
         <text value="Where do you have pain on the back of your body?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
@@ -1140,10 +1271,60 @@
         </text>
         <type value="coding"/>
         <required value="false"/>
-        <repeats value="false"/>
-        <answerConstraint value="optionsOrString"/>
+        <repeats value="true"/>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.hips"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightLowerLeg"/>
+            </valueCoding>
+        </answerOption>
     </item>
     <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs">
+            <valueInteger value="5"/>
+        </extension>
         <linkId value="Question/null"/>
         <text value="Where do you still have pain?">
             <extension url="http://hl7.org/fhir/StructureDefinition/translation">
@@ -1173,8 +1354,97 @@
         </text>
         <type value="coding"/>
         <required value="false"/>
-        <repeats value="false"/>
-        <answerConstraint value="optionsOrString"/>
+        <repeats value="true"/>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.stomach"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.upperBack"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.hips"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightThigh"/>
+            </valueCoding>
+        </answerOption>
     </item>
     <item>
         <linkId value="Question/null"/>
@@ -1207,6 +1477,263 @@
         <type value="coding"/>
         <required value="false"/>
         <repeats value="false"/>
-        <answerConstraint value="optionsOrString"/>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.throat"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.chest"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.stomach"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.hips"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.rightElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.leftElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.front.genitals"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.lowerBack"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.upperBack"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.head"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.hips"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftLowerLeg"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.leftThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.neck"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightElbowJoint"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightFoot"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightHand"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightKnee"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightLowerArm"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightShoulder"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightThigh"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://mopat-test/fhir"/>
+                <code value="MoPat/Answer/null/bodyPart.back.rightLowerLeg"/>
+            </valueCoding>
+        </answerOption>
     </item>
 </Questionnaire>
