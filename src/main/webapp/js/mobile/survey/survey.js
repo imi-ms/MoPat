@@ -46,7 +46,14 @@ var wasScrollTitleManuallyClosed = false;
 var questionOptions = {
     "nextState": null,
     "switchQuestion": false
-}; 
+};
+
+var finalSubmitMaxAttempts = 5;
+var finalSubmitRetryDelay = 2000;
+var finalSubmitTimeout =
+  typeof waitBeforeResubmit !== "undefined" ? waitBeforeResubmit : 15000;
+var draftSubmitTimeout =
+  typeof waitBeforeResubmit !== "undefined" ? waitBeforeResubmit : 10000;
 
 function setSwitchQuestion(bool) {
     this.questionOptions.switchQuestion = bool; 
@@ -248,71 +255,102 @@ function showBundleFinal() {
 
     // Show activated scores
     if (encounter.isTest === false && encounter.bundle.hasActiveScores() === true) {
-        // Post the encounter to be sure that the given responses are up to date
-        postEncounterForScore(encounter);
-        // Get the evaluated scores
-        var activatedScores;
-        $.ajax({
-            url: "scores",
-            type: "POST",
-            async: false,
-            data: "encounterUuid=" + encounter.uuid,
-            success: function (data) {
-                // Check if entries function is not supported
-                if (!Object.entries) {
-                    activatedScores = new Map();
-                    var ownProps = Object.keys(data);
-                    for (var i = 0; i < ownProps.length; i++) {
-                        activatedScores.set(ownProps[i], data[ownProps[i]]);
-                    }
-                } else {
-                    activatedScores = new Map(Object.entries(data));
-                }
-            }
-        });
 
-        jQuery('<div/>', {
-            "id": 'scoreText',
-            "style": 'float: left;'
-        }).appendTo('#questionContent');
+        //Add loading spinner to the scoreText div
+        jQuery("<div/>", {
+            id: "scoreText",
+            style: "float: left;",
+        }).appendTo("#questionContent");
 
-        jQuery('<div/>', {
-            "id": 'scoreDatamatrix',
-            "style": 'float: left; margin-left: 6em; margin-top: 2em;'
-        }).appendTo('#questionContent');
+        jQuery("<div/>", {
+            id: "scoreDatamatrix",
+            style: "float: left; margin-left: 4em",
+            class: "loading"
+        }).appendTo("#questionContent");
 
-        $('#scoreText').append($("<span/>", {"html": "<b>Scores:</b><br>", "class": "resizable"}));
+        $("#scoreText").append(
+            $("<span/>", { html: "<b>Scores:</b><br>", class: "resizable" }),
+        );
 
-        // Iterate over all given scores and print them
-        var activatedScoresAsString = "";
-        activatedScores.forEach(function (value, key) {
-            if (value === null) {
-                $("#scoreText").append($("<span/>", {"html": key + ": " + "<br>", "class": "resizable"}));
-                activatedScoresAsString += key + ":\n";
-            } else {
-                $("#scoreText").append($("<span/>", {"html": key + ": " + value + "<br>", "class": "resizable", "style": "padding-left:2em;"}));
-                activatedScoresAsString += key + ": " + value + "\n";
-            }
-        });
+		// 1. Post the encounter first
+		postEncounterForScore(encounter)
+			.then(() => {
+				// 2. Only request scores AFTER the post is confirmed
+				return new Promise((resolve, reject) => {
+					$.ajax({
+						url: "scores",
+						type: "POST",
+						async: true, // Always keep async true
+						data: "encounterUuid=" + encounter.uuid,
+						success: function (data) {
+							let activatedScores;
+							if (!Object.entries) {
+								activatedScores = new Map();
+								var ownProps = Object.keys(data);
+								for (var i = 0; i < ownProps.length; i++) {
+									activatedScores.set(ownProps[i], data[ownProps[i]]);
+								}
+							} else {
+								activatedScores = new Map(Object.entries(data));
+							}
+							resolve(activatedScores);
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							reject(
+								new Error(`Failed to get scores: ${textStatus} - ${errorThrown}`),
+							);
+						},
+					});
+				});
+			})
+			.then((activatedScores) => {
+				// Iterate over all given scores and print them
+				var activatedScoresAsString = "";
+				activatedScores.forEach(function (value, key) {
+					if (value === null) {
+						$("#scoreText").append(
+							$("<span/>", { html: key + ": " + "<br>", class: "resizable" }),
+						);
+						activatedScoresAsString += key + ":\n";
+					} else {
+						$("#scoreText").append(
+							$("<span/>", {
+								html: key + ": " + value + "<br>",
+								class: "resizable",
+								style: "padding-left:2em;",
+							}),
+						);
+						activatedScoresAsString += key + ": " + value + "\n";
+					}
+				});
 
-        var barcodeSettings = {
-            barWidth: 1,
-            barHeight: 50,
-            moduleSize: 5,
-            showHRI: false,
-            addQuietZone: true,
-            marginHRI: 0,
-            bgColor: "#FFFFFF",
-            color: "#000000",
-            fontSize: 10,
-            output: "bmp",
-            posX: 0,
-            posY: 0
-        };
+				var barcodeSettings = {
+					barWidth: 1,
+					barHeight: 50,
+					moduleSize: 5,
+					showHRI: false,
+					addQuietZone: true,
+					marginHRI: 0,
+					bgColor: "#FFFFFF",
+					color: "#000000",
+					fontSize: 10,
+					output: "bmp",
+					posX: 0,
+					posY: 0,
+				};
 
-        // Show the printed scores as QR-code
-        $("#scoreDatamatrix").barcode(activatedScoresAsString, "datamatrix", barcodeSettings);
-    }
+                //Remove loading animation
+                $("#scoreDatamatrix").removeClass("loading");
+				// Show the printed scores as QR-code
+				$("#scoreDatamatrix").barcode(
+					activatedScoresAsString,
+					"datamatrix",
+					barcodeSettings,
+				);
+			})
+			.catch((error) => {
+			});
+	}
 
     var title = strings['survey.questionnaire.label.finishedSurvey'];
     var buttonTextNext = strings['survey.questionnaire.button.closeApplication'];
@@ -779,7 +817,7 @@ function switchState(state) {
             if (nextQuestion.position > 1) {
                 var timeNow = Date.now();
                 if ((timeNow - debounceTimeCheck) > debounceTime) {
-                    postEncounter(encounter, false);
+                    submitEncounterDraft(encounter);
                     debounceTimeCheck = timeNow;
                 }
             }
@@ -802,7 +840,7 @@ function switchState(state) {
                 // Submit the encounter if the debounce time is over but do not care for its success
                 var timeNow = Date.now();
                 if ((timeNow - debounceTimeCheck) > debounceTime) {
-                    postEncounter(encounter, false);
+                    submitEncounterDraft(encounter);
                     debounceTimeCheck = timeNow;
                 }
                 // If it is the questionnaire final page, and you go one back from the current question,
@@ -825,28 +863,14 @@ function switchState(state) {
             break;
             // LOGOUT
         case States.LOGOUT:
-            if (MobileApplication.isInternetAvailable() === true) {
-                // For indicate that the last site is shown, set the this.nextState to null 
-                this.nextState = null;
-                // The user wants to end the application, thus open the data submit popup
-                var submitDialog = document.getElementById("submitDialog"); 
-                bootstrap.Modal.getOrCreateInstance(submitDialog).show();
+            this.nextState = States.LOGOUT;
+            encounter.isCompleted = true;
+            encounter.submitId = encounter.submitId || createSubmitId();
 
-                // Set the isCompleted Flag for the encounter
-                encounter.isCompleted = true;
+            showSubmitDialog();
 
-                // This is the final submit. Do it here already, because the setInterval method
-                // will execute its content the first time AFTER it has waited the desired time
-                postEncounter(encounter, true);
-                var intervalID = setInterval(function () {
-                    postEncounter(encounter, true);
-                    // Stop interval
-                    clearInterval(intervalID);
-                }, waitBeforeResubmit);
-            } else {
-                var noInternetConnectionDialog = document.getElementById("noInternetConnectionDialog"); 
-                bootstrap.Modal.getOrCreateInstance(noInternetConnectionDialog).show();
-            }
+            submitEncounterFinal(encounter);
+
             break;
     }
 
@@ -942,114 +966,261 @@ function getIncompleteQuestionsCountFromQuestionnaire(questionnaire) {
  * to redirect to the start page. If it is <code>false</code>, nothing will happen.
  */
 function postEncounter(encounter, finalSubmit) {
+    var excludedFields = ["bundle"];
+
+    if (finalSubmit !== true) {
+        excludedFields.push("bundleDTO");
+    }
+
+    var url = "encounter";
+
     if (encounter.isTest === true && performExportTest === true) {
-        if (finalSubmit) {
-            var data = ["bundle"];
-            $.ajax({
-                url: "encountertest",
-                type: "POST",
-                contentType: "application/json; charset=utf-8",
-                async: true,
-                timeout: waitBeforeResubmit,
-                // Exclude the bundle object
-                data: JSON.stringify(excludeFromJSON(encounter, data)),
-                success: function () {
-                    if (finalSubmit) {
-                        // Open the success popup, which will overlay the previous one $("#submitDialog").popup("close");
-                        setInterval(function() {
-                            var submitDialog = document.getElementById("submitDialog");
-                            bootstrap.Modal.getOrCreateInstance(submitDialog).hide();
-                        }, 100)
+        url = "encountertest";
+    }
 
-                        setTimeout(function () {
-                            setInterval(function () {
-                                var successDialog = document.getElementById("successDialog");
-                                bootstrap.Modal.getOrCreateInstance(successDialog).show();
-                            }, 250);
-                        }, 500);
+    return $.ajax({
+        url: url,
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        timeout: finalSubmit === true ? finalSubmitTimeout : waitBeforeResubmit,
+        data: JSON.stringify(excludeFromJSON(encounter, excludedFields))
+    });
+}
 
-
-                        setTimeout(function () {
-                            window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
-                        }, waitBeforeRedirect);
-                    }
-                },
-                error: function () {
-                    if (finalSubmit) {
-                        postEncounter(encounter, true);
-                    }
-                }
-            });
-            // window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
+/**
+ * Submits the encounter draft for processing without immediate finalization.
+ * Initiates an asynchronous POST request to save the encounter data as a draft.
+ * Logs a warning if the submission is not stored successfully or if the request fails.
+ * @param {Object} encounter The encounter object containing the data to be submitted as a draft.
+ * @returns {undefined}
+ */
+function submitEncounterDraft(encounter) {
+    postEncounter(encounter, false)
+    .done(function (response) {
+        if (!isStoredResponse(response)) {
+            console.warn("Draft submit was not stored:", response);
         }
-        return true;
-    } else {
-        var data = ["bundle"];
-        if (finalSubmit === true) {
-            //do not exclude bundleDTO if it's finalSubmit
-            data.push("bundleDTO");
+    })
+    .fail(function (jqXHR, textStatus) {
+        console.warn("Draft submit failed:", getSubmitErrorMessage(jqXHR, textStatus));
+    });
+}
+
+/**
+ * Submits the final attempt for the given encounter.
+ * This method initiates the final submission process by delegating to
+ * submitEncounterFinalAttempt with an attempt count of 1.
+ * @param {object} encounter - The encounter object to be submitted as final.
+ * @return {void}
+ */
+function submitEncounterFinal(encounter) {
+    submitEncounterFinalAttempt(encounter, 1);
+}
+
+/**
+ * Submits the final encounter data with a retry mechanism for network failures.
+ * This function attempts to post the encounter and, if the request fails due to a network issue,
+ * it will automatically retry up to the maximum allowed number of attempts.
+ * @param {Object} encounter The encounter object to be submitted.
+ * @param {Number} attemptNumber The current number of submission attempts.
+ * @returns {undefined}
+ */
+function submitEncounterFinalAttempt(encounter, attemptNumber) {
+    postEncounter(encounter, true)
+    .done(function (response) {
+        if (isStoredResponse(response) || isTestResponse(response)) {
+            handleFinalSubmitSuccess();
+            return;
         }
 
+        handleFinalSubmitFailure(
+          response && response.message
+            ? response.message
+            : "The encounter could not be stored."
+        );
+    })
+    .fail(function (jqXHR, textStatus) {
+        if (attemptNumber < finalSubmitMaxAttempts) {
+            setTimeout(function () {
+                submitEncounterFinalAttempt(encounter, attemptNumber + 1);
+            }, finalSubmitRetryDelay);
+
+            return;
+        }
+
+        var message = getSubmitErrorMessage(jqXHR, textStatus);
+        handleFinalSubmitFailure(message);
+    });
+}
+
+/**
+ * Handles the final submission success by orchestrating a sequence of UI updates and navigation.
+ * It hides the submit dialog, displays a success message, and redirects the user to the login page after a specified delay.
+ * @returns {void}
+ */
+function handleFinalSubmitSuccess() {
+    this.nextState = null;
+
+    setTimeout(function () {
+        hideSubmitDialog();
+    }, 100);
+
+    setTimeout(function () {
+        showSuccessDialog();
+    }, 500);
+
+    setTimeout(function () {
+        window.location.replace(
+          contextPath + "/mobile/user/login?lang=" + defaultLanguage
+        );
+    }, waitBeforeRedirect);
+}
+
+/**
+ * Handles the final submission failure by hiding the submit dialog after a delay,
+ * logging the error, and displaying a no internet connection dialog.
+ *
+ * @param {string} message - The error message describing the failure.
+ * @returns {undefined}
+ */
+function handleFinalSubmitFailure(message) {
+    setTimeout(function () {
+        hideSubmitDialog();
+    }, 100);
+
+    console.error("Final submit failed:", message);
+
+    showNoInternetConnectionDialog();
+}
+
+/**
+ * Displays the modal dialog for submitting the form.
+ *
+ * @return {void}
+ */
+function showSubmitDialog() {
+    var submitDialog = document.getElementById("submitDialog");
+    bootstrap.Modal.getOrCreateInstance(submitDialog).show();
+}
+
+/**
+ * Hides the submit dialog by closing the Bootstrap modal instance
+ * associated with the element having the id "submitDialog".
+ *
+ * @return {void}
+ */
+function hideSubmitDialog() {
+    var submitDialog = document.getElementById("submitDialog");
+    bootstrap.Modal.getOrCreateInstance(submitDialog).hide();
+}
+
+/**
+ * Displays the success dialog using Bootstrap's modal functionality.
+ *
+ * @return {void}
+ */
+function showSuccessDialog() {
+    var successDialog = document.getElementById("successDialog");
+    bootstrap.Modal.getOrCreateInstance(successDialog).show();
+}
+
+/**
+ * Displays the no internet connection dialog by retrieving the modal element and showing it.
+ * @return {void}
+ */
+function showNoInternetConnectionDialog() {
+    var dialog = document.getElementById("noInternetConnectionDialog");
+    bootstrap.Modal.getOrCreateInstance(dialog).show();
+}
+
+/**
+ * Creates a unique identifier for the submission.
+ *
+ * @return {string} A unique identifier for the submission.
+ */
+function createSubmitId() {
+    if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+
+    return String(Date.now()) + "-" + String(Math.random()).substring(2);
+}
+
+/**
+ * Checks if the provided response is a stored response.
+ *
+ * @param {Object} response - The response object to check.
+ * @return {boolean} True if the response is a stored response, false otherwise.
+ */
+function isStoredResponse(response) {
+    return response
+      && response.success === true
+      && response.status === "STORED";
+}
+
+function isTestResponse(response) {
+    return response
+        && response.success === false
+        && response.status === "TEST";
+}
+
+/**
+ * Retrieves the error message for the submission based on the provided jqXHR and textStatus.
+ *
+ * @param {Object} jqXHR - The jqXHR object containing the error information.
+ * @param {string} textStatus - The text status of the request.
+ * @return {string} The error message for the submission.
+ */
+function getSubmitErrorMessage(jqXHR, textStatus) {
+    if (textStatus === "timeout") {
+        return "The request timed out.";
+    }
+
+    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.message) {
+        return jqXHR.responseJSON.message;
+    }
+
+    if (jqXHR && jqXHR.status) {
+        return "Submit failed with HTTP status " + jqXHR.status + ".";
+    }
+
+    return "Submit failed because the server could not be reached.";
+}
+
+/**
+ * Posts the encounter and resolves when successful.
+ * @returns {Promise} Resolves when the encounter is saved, rejects after max retries.
+ */
+function postEncounterForScore(encounter, retryCount = 0) {
+    const maxRetries = 30;
+    const data = ["bundle"];
+    data.push("bundleDTO");
+
+    return new Promise((resolve, reject) => {
         $.ajax({
             url: "encounter",
             type: "POST",
             contentType: "application/json; charset=utf-8",
             async: true,
-            timeout: waitBeforeResubmit,
-            // Exclude the bundle object
             data: JSON.stringify(excludeFromJSON(encounter, data)),
             success: function () {
-                if (finalSubmit) {
-                    // Open the success popup, which will overlay the previous one $("#submitDialog").popup("close");
-                    setInterval(function() {
-                        var submitDialog = document.getElementById("submitDialog");
-                        bootstrap.Modal.getOrCreateInstance(submitDialog).hide();
-                    }, 100)
-
-                    setTimeout(function () {
-                        setInterval(function () {
-                            var successDialog = document.getElementById("successDialog"); 
-                            bootstrap.Modal.getOrCreateInstance(successDialog).show();
-                        }, 250);
-                    }, 500);
-
-
-                    setTimeout(function () {
-                        window.location.replace(contextPath + '/mobile/user/login?lang=' + defaultLanguage);
-                    }, waitBeforeRedirect);
-                }
+                resolve();
             },
-            error: function () {
-                if (finalSubmit) {
-                    postEncounter(encounter, true);
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (retryCount < maxRetries) {
+                    // Delay before retrying
+                    setTimeout(() => {
+                        // Re-throw the promise result into the original chain
+                        postEncounterForScore(encounter, retryCount + 1)
+                            .then(resolve)
+                            .catch(reject);
+                    }, 1000 * (retryCount + 1));
+                } else {
+                    reject(new Error(`Failed to post encounter after ${maxRetries} attempts: ${textStatus} - ${errorThrown}`));
                 }
             }
         });
-    }
-}
-
-/**
- * This methods posts the encounter object as a JSON representation to the server
- * 
- * @param encounter The encounter object with the user's responses
- */
-function postEncounterForScore(encounter) {
-    var data = ["bundle"];
-    data.push("bundleDTO");
-
-    $.ajax({
-        url: "encounter",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        async: false,
-        // Exclude the bundle object
-        data: JSON.stringify(excludeFromJSON(encounter, data)),
-        success: function () {
-
-        },
-        error: function () {
-            postEncounterForScore(encounter);
-        }
     });
 }
 
