@@ -106,6 +106,11 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     }
 
     @Override
+    public void clean() {
+
+    }
+
+    @Override
     public ExportStatus flush() throws Exception {
         Boolean isExportServer = null;
         String hostname = null;

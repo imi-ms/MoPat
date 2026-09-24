@@ -228,6 +228,8 @@ public class EncounterExporter {
             exporter.write(rule.getExportField(), value);
         }
 
+        exporter.clean();
+
         // Flush out the export template to the export folder
         return exporter.flush();
     }
@@ -303,6 +305,7 @@ public class EncounterExporter {
         switch (questionType) {
             case BODY_PART:
             case MULTIPLE_CHOICE:
+            case DROP_DOWN:
                 if (rule.getAnswer() instanceof SelectAnswer
                     || rule.getAnswer() instanceof BodyPartAnswer) {
                     value = (response != null) ? TRUE : FALSE;
