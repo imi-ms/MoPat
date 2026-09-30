@@ -1,344 +1,329 @@
 (function ($) {
     'use strict';
 
-    const selectors = {
-        root: '#assignmentList',
-        assignedList: '#assignedItemList',
-        assignedItem: '.assignment-list-item',
-        assignedEmptyState: '#assignedItemEmptyState',
-        selectionModal: '#itemSelectionModal',
-        selectionList: '#itemSelectionList',
-        selectionRow: '.assignment-selection-row',
-        selectionCheckbox: '.assignment-selection-checkbox',
-        selectionFilter: '#itemSelectionFilter',
-        selectionEmptyState: '#itemSelectionEmptyState',
-        addButton: '#addSelectedItemsButton',
-        selectedCount: '#selectedItemCount'
+    const SELECTORS = {
+        root:                '.assignment-list',
+        assignedList:        '.assignment-list__assigned',
+        assignedItem:        '.assignment-list-item',
+        assignedEmptyState:  '.assignment-list__assigned-empty',
+        modal:               '.assignment-list__modal',
+        selectionRow:        '.assignment-selection-row',
+        selectionCheckbox:   '.assignment-selection-checkbox',
+        selectionFilter:     '.assignment-list__filter',
+        selectionEmptyState: '.assignment-list__selection-empty',
+        addButton:           '.assignment-list__add-selected',
+        selectedCount:       '.assignment-list__selected-count',
+        removeButton:        '.remove-assignment-item-button',
+        dragHandle:          '.assignment-drag-handle',
+        itemTemplate:        '.assignment-item-template',
+        itemPosition:        '.assignment-item-position',
+        assignedBadge:       '.assignment-item-assigned-badge'
     };
 
-    let sortable;
+    const INSTANCE_KEY = 'assignmentListInstance';
 
-    function init() {
-        if (!$(selectors.root).length) {
-            return;
-        }
 
-        initializeSorting();
-        bindEvents();
-        refreshState();
+    function escapeAttributeValue(value) {
+        return String(value).replace(/(["\\])/g, '\\$1');
     }
 
-    function initializeSorting() {
-        const assignedListElement =
-          document.querySelector(selectors.assignedList);
+    function AssignmentList(rootElement) {
+        this.$root = $(rootElement);
+        this.sortable = null;
+    }
+
+    /* ---------- Scoping ---------------------------------------------- */
+
+    /**
+     * Searches within THIS instance only.
+     * Elements belonging to a nested assignment list are filtered out.
+     */
+    AssignmentList.prototype.$in = function (selector, $context) {
+        const rootElement = this.$root[0];
+
+        return ($context || this.$root).find(selector).filter(function () {
+            return $(this).closest(SELECTORS.root)[0] === rootElement;
+        });
+    };
+
+    AssignmentList.prototype.owns = function (element) {
+        return $(element).closest(SELECTORS.root)[0] === this.$root[0];
+    };
+
+    AssignmentList.prototype.$assignedItems = function () {
+        return this.$assignedList.children(SELECTORS.assignedItem);
+    };
+
+    /* ---------- Lifecycle -------------------------------------------- */
+
+    AssignmentList.prototype.init = function () {
+        this.$assignedList        = this.$in(SELECTORS.assignedList).first();
+        this.$assignedEmptyState  = this.$in(SELECTORS.assignedEmptyState).first();
+        this.$modal               = this.$in(SELECTORS.modal).first();
+        this.$filter              = this.$in(SELECTORS.selectionFilter).first();
+        this.$selectionEmptyState = this.$in(SELECTORS.selectionEmptyState).first();
+        this.$addButton           = this.$in(SELECTORS.addButton).first();
+        this.$selectedCount       = this.$in(SELECTORS.selectedCount).first();
+
+        this.fieldPrefix              = this.$root.data('field-prefix') || 'assignedItems';
+        this.alreadyAddedText         = this.$root.data('already-added-text') || 'Already added';
+        this.disableWhenEmptySelector = this.$root.data('disable-when-empty');
+
+        this.initializeSorting();
+        this.bindEvents();
+        this.refreshState();
+    };
+
+    AssignmentList.prototype.initializeSorting = function () {
+        const assignedListElement = this.$assignedList[0];
 
         if (!assignedListElement || typeof Sortable === 'undefined') {
             return;
         }
 
-        sortable = Sortable.create(assignedListElement, {
+        const self = this;
+
+        this.sortable = Sortable.create(assignedListElement, {
             animation: 150,
-            handle: '.assignment-drag-handle',
-            draggable: selectors.assignedItem,
+            handle: SELECTORS.dragHandle,
+            draggable: SELECTORS.assignedItem,
             onEnd: function () {
-                reindexAssignedItems();
+                self.reindexAssignedItems();
             }
         });
-    }
+    };
 
-    function bindEvents() {
-        $(document)
-          .on(
-            'click',
-            '.remove-assignment-item-button',
-            removeItem
-          )
-          .on(
-            'change',
-            selectors.selectionCheckbox,
-            updateSelectedCount
-          )
-          .on(
-            'input',
-            selectors.selectionFilter,
-            filterItems
-          )
-          .on(
-            'click',
-            selectors.addButton,
-            addSelectedItems
-          );
+    AssignmentList.prototype.bindEvents = function () {
+        const self = this;
 
-        $(selectors.selectionModal).on(
-          'show.bs.modal',
-          function () {
-              synchronizeSelectionRows();
-              $(selectors.selectionFilter).val('');
-              filterItems();
-          }
-        );
-    }
+        // Delegate on the root element, not on document.
+        this.$root
+          .on('click', SELECTORS.removeButton, function (event) {
+              if (!self.owns(event.currentTarget)) { return; }
+              self.removeItem(event);
+          })
+          .on('change', SELECTORS.selectionCheckbox, function (event) {
+              if (!self.owns(event.currentTarget)) { return; }
+              self.updateSelectedCount();
+          })
+          .on('input', SELECTORS.selectionFilter, function (event) {
+              if (!self.owns(event.currentTarget)) { return; }
+              self.filterItems();
+          })
+          .on('click', SELECTORS.addButton, function (event) {
+              if (!self.owns(event.currentTarget)) { return; }
+              self.addSelectedItems();
+          });
 
-    function removeItem(event) {
-        const assignedItem = $(event.currentTarget)
-          .closest(selectors.assignedItem);
+        this.$modal.on('show.bs.modal', function () {
+            self.synchronizeSelectionRows();
+            self.$filter.val('');
+            self.filterItems();
+        });
+    };
 
-        const itemId = String(
-          assignedItem.data('item-id')
-        );
+    /* ---------- Actions ----------------------------------------------- */
 
-        assignedItem.remove();
-        setSelectionRowAssigned(itemId, false);
-        refreshState();
-    }
+    AssignmentList.prototype.removeItem = function (event) {
+        const $assignedItem = $(event.currentTarget).closest(SELECTORS.assignedItem);
+        const itemId = String($assignedItem.data('item-id'));
 
-    function addSelectedItems() {
-        const selectedRows = $(
-          `${selectors.selectionRow} ` +
-          `${selectors.selectionCheckbox}:checked:not(:disabled)`
-        ).closest(selectors.selectionRow);
+        $assignedItem.remove();
+        this.setSelectionRowAssigned(itemId, false);
+        this.refreshState();
+    };
 
-        selectedRows.each(function () {
-            const selectionRow = $(this);
-            const itemId = String(
-              selectionRow.data('item-id')
-            );
+    AssignmentList.prototype.addSelectedItems = function () {
+        const self = this;
 
-            if (isAssigned(itemId)) {
+        const $selectedRows = this.$in(SELECTORS.selectionCheckbox)
+          .filter(':checked:not(:disabled)')
+          .closest(SELECTORS.selectionRow);
+
+        $selectedRows.each(function () {
+            const $selectionRow = $(this);
+            const itemId = String($selectionRow.data('item-id'));
+
+            if (self.isAssigned(itemId)) {
                 return;
             }
 
-            const assignedItem = selectionRow
-              .find('.assignment-item-template')
-              .find(selectors.assignedItem)
+            const $assignedItem = $selectionRow
+              .find(SELECTORS.itemTemplate)
+              .find(SELECTORS.assignedItem)
               .first()
               .clone(false, false);
 
-            assignedItem
-              .find(':input')
-              .prop('disabled', false);
+            $assignedItem.find(':input').prop('disabled', false);
 
-            $(selectors.assignedList).append(assignedItem);
-            setSelectionRowAssigned(itemId, true);
+            self.$assignedList.append($assignedItem);
+            self.setSelectionRowAssigned(itemId, true);
         });
 
-        refreshState();
+        this.refreshState();
 
-        const modalElement = document.querySelector(
-          selectors.selectionModal
-        );
-
-        const modalInstance =
-          bootstrap.Modal.getInstance(modalElement);
+        const modalInstance = bootstrap.Modal.getInstance(this.$modal[0]);
 
         if (modalInstance) {
             modalInstance.hide();
         }
-    }
+    };
 
-    function refreshState() {
-        reindexAssignedItems();
-        synchronizeSelectionRows();
-        updateAssignedEmptyState();
-        updateDisableWhenEmptyTarget();
-        updateSelectedCount();
-    }
+    /* ---------- State -------------------------------------------------- */
 
-    function reindexAssignedItems() {
-        const fieldPrefix =
-          $(selectors.root).data('field-prefix') ||
-          'assignedItems';
+    AssignmentList.prototype.refreshState = function () {
+        this.reindexAssignedItems();
+        this.synchronizeSelectionRows();
+        this.updateAssignedEmptyState();
+        this.updateDisableWhenEmptyTarget();
+        this.updateSelectedCount();
+    };
 
-        $(
-          `${selectors.assignedList} > ` +
-          selectors.assignedItem
-        ).each(function (index) {
-            const assignedItem = $(this);
+    AssignmentList.prototype.reindexAssignedItems = function () {
+        const fieldPrefix = this.fieldPrefix;
+
+        this.$assignedItems().each(function (index) {
+            const $assignedItem = $(this);
             const position = index + 1;
 
-            assignedItem
-              .find('.assignment-item-position span')
+            $assignedItem
+              .find(SELECTORS.itemPosition)
+              .first()
+              .children('span')
+              .first()
               .text(`${position}.`);
 
-            assignedItem
-              .find('[data-field="position"]')
-              .val(position);
+            $assignedItem.find('[data-field="position"]').val(position);
 
-            assignedItem
-              .find('[data-field]')
-              .each(function () {
-                  const input = $(this);
-
-                  input.attr(
-                    'name',
-                    `${fieldPrefix}[${index}].` +
-                    input.data('field')
-                  );
-              });
+            $assignedItem.find('[data-field]').each(function () {
+                const $input = $(this);
+                $input.attr('name', `${fieldPrefix}[${index}].${$input.data('field')}`);
+            });
         });
-    }
+    };
 
-    function synchronizeSelectionRows() {
-        $(selectors.selectionRow).each(function () {
-            const selectionRow = $(this);
-            const itemId = String(
-              selectionRow.data('item-id')
-            );
+    AssignmentList.prototype.synchronizeSelectionRows = function () {
+        const self = this;
 
-            setSelectionRowAssigned(
-              itemId,
-              isAssigned(itemId)
-            );
+        this.$in(SELECTORS.selectionRow).each(function () {
+            const itemId = String($(this).data('item-id'));
+            self.setSelectionRowAssigned(itemId, self.isAssigned(itemId));
         });
-    }
+    };
 
-    function setSelectionRowAssigned(itemId, assigned) {
-        const escapedItemId =
-          escapeSelectorValue(itemId);
+    AssignmentList.prototype.setSelectionRowAssigned = function (itemId, assigned) {
+        const attributeFilter = `[data-item-id="${escapeAttributeValue(itemId)}"]`;
 
-        const selectionRow = $(
-          `${selectors.selectionRow}` +
-          `[data-item-id="${escapedItemId}"]`
-        );
+        const $selectionRow  = this.$in(SELECTORS.selectionRow + attributeFilter);
+        const $checkbox      = $selectionRow.find(SELECTORS.selectionCheckbox);
+        const $assignedBadge = $selectionRow.find(SELECTORS.assignedBadge);
 
-        const checkbox = selectionRow.find(
-          selectors.selectionCheckbox
-        );
-
-        const assignedBadge = selectionRow.find(
-          '.assignment-item-assigned-badge'
-        );
-
-        checkbox
+        $checkbox
           .prop('checked', false)
           .prop('disabled', assigned);
 
-        selectionRow.toggleClass(
-          'text-muted',
-          assigned
-        );
+        $selectionRow.toggleClass('text-muted', assigned);
 
         if (assigned) {
-            if (!assignedBadge.length) {
-                const alreadyAddedText =
-                  $(selectors.root).data('already-added-text') ||
-                  'Already added';
+            if (!$assignedBadge.length) {
+                const $badge = $(
+                  '<span class="badge bg-secondary float-end assignment-item-assigned-badge"></span>'
+                ).text(this.alreadyAddedText);
 
-                const badge = $(
-                  '<span class="badge bg-secondary float-end ' +
-                  'assignment-item-assigned-badge"></span>'
-                ).text(alreadyAddedText);
-
-                selectionRow.find('.form-check-label').append(badge);
+                $selectionRow.find('.form-check-label').first().append($badge);
             }
         } else {
-            selectionRow
-              .find('.assignment-item-assigned-badge')
-              .remove();
+            $assignedBadge.remove();
         }
-    }
+    };
 
-    function isAssigned(itemId) {
-        const escapedItemId =
-          escapeSelectorValue(itemId);
+    AssignmentList.prototype.isAssigned = function (itemId) {
+        return this.$assignedItems()
+          .filter(`[data-item-id="${escapeAttributeValue(itemId)}"]`)
+          .length > 0;
+    };
 
-        return $(
-          `${selectors.assignedList} > ` +
-          `${selectors.assignedItem}` +
-          `[data-item-id="${escapedItemId}"]`
-        ).length > 0;
-    }
+    AssignmentList.prototype.updateAssignedEmptyState = function () {
+        this.$assignedEmptyState.toggle(this.$assignedItems().length === 0);
+    };
 
-    function updateAssignedEmptyState() {
-        const hasNoAssignedItems = $(
-          `${selectors.assignedList} > ` +
-          selectors.assignedItem
-        ).length === 0;
-
-        $(selectors.assignedEmptyState)
-          .toggle(hasNoAssignedItems);
-    }
-
-    function updateDisableWhenEmptyTarget() {
-        const selector = $(selectors.root).data('disable-when-empty');
-
-        if (!selector) {
+    /**
+     * Intentionally targets an element OUTSIDE the component
+     * (e.g. '#isPublished1') and is therefore resolved document-wide.
+     */
+    AssignmentList.prototype.updateDisableWhenEmptyTarget = function () {
+        if (!this.disableWhenEmptySelector) {
             return;
         }
 
-        const hasNoAssignedItems = $(
-          `${selectors.assignedList} > ` +
-          selectors.assignedItem
-        ).length === 0;
+        const $target = $(this.disableWhenEmptySelector);
 
-        const target = $(selector);
-
-        if (!target.length) {
+        if (!$target.length) {
             return;
         }
 
-        target.prop('disabled', hasNoAssignedItems);
+        const hasNoAssignedItems = this.$assignedItems().length === 0;
+
+        $target.prop('disabled', hasNoAssignedItems);
 
         if (hasNoAssignedItems) {
-            target.prop('checked', false);
+            $target.prop('checked', false);
         }
-    }
+    };
 
-    function updateSelectedCount() {
-        const selectedItemCount = $(
-          `${selectors.selectionCheckbox}` +
-          ':checked:not(:disabled)'
-        ).length;
+    AssignmentList.prototype.updateSelectedCount = function () {
+        const selectedItemCount = this.$in(SELECTORS.selectionCheckbox)
+          .filter(':checked:not(:disabled)')
+          .length;
 
-        $(selectors.selectedCount)
-          .text(`(${selectedItemCount})`);
+        this.$selectedCount.text(`(${selectedItemCount})`);
+        this.$addButton.prop('disabled', selectedItemCount === 0);
+    };
 
-        $(selectors.addButton)
-          .prop('disabled', selectedItemCount === 0);
-    }
-
-    function filterItems() {
-        const searchTerm = String(
-          $(selectors.selectionFilter).val() || ''
-        ).trim().toLowerCase();
+    AssignmentList.prototype.filterItems = function () {
+        const searchTerm = String(this.$filter.val() || '').trim().toLowerCase();
 
         let visibleItemCount = 0;
 
-        $(selectors.selectionRow).each(function () {
-            const selectionRow = $(this);
+        this.$in(SELECTORS.selectionRow).each(function () {
+            const $selectionRow = $(this);
+            const searchableName = String($selectionRow.data('search-name') || '');
+            const isVisible = searchTerm === '' || searchableName.includes(searchTerm);
 
-            const searchableName = String(
-              selectionRow.data('search-name') || ''
-            );
-
-            const isVisible =
-              searchTerm === '' ||
-              searchableName.includes(searchTerm);
-
-            selectionRow.toggle(isVisible);
+            $selectionRow.toggle(isVisible);
 
             if (isVisible) {
                 visibleItemCount++;
             }
         });
 
-        $(selectors.selectionEmptyState)
-          .toggle(visibleItemCount === 0);
+        this.$selectionEmptyState.toggle(visibleItemCount === 0);
+    };
+
+    /* ---------- Bootstrapping ------------------------------------------ */
+
+    function initAll(context) {
+        $(context || document).find(SELECTORS.root).addBack(SELECTORS.root).each(function () {
+            const $root = $(this);
+
+            if ($root.data(INSTANCE_KEY)) {
+                return;
+            }
+
+            const instance = new AssignmentList(this);
+            $root.data(INSTANCE_KEY, instance);
+            instance.init();
+        });
     }
 
-    function escapeSelectorValue(value) {
-        if (
-          window.CSS &&
-          typeof window.CSS.escape === 'function'
-        ) {
-            return window.CSS.escape(value);
+    window.AssignmentList = {
+        initAll: initAll,
+        get: function (element) {
+            return $(element).closest(SELECTORS.root).data(INSTANCE_KEY) || null;
         }
+    };
 
-        return value.replace(
-          /([ #;?%&,.+*~\\':"!^$[\]()=>|/@])/g,
-          '\\$1'
-        );
-    }
-
-    $(init);
+    $(function () {
+        initAll(document);
+    });
 })(jQuery);
