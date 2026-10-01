@@ -153,8 +153,11 @@
           />
         </div>
 
-
+        <!--/* componentId: unique namespace for this instance.
+               Must be different for each embedding on the same page.
+               On this page not necessary but its required bc on pages which contains multi-instances like clinic it's important*/-->
         <div th:replace="~{fragments/assignmentList :: assignmentList(
+            componentId='bundle-questionnaires',
             assignedItems=${bundleDTO.bundleQuestionnaireDTOs},
             availableItems=${availableQuestionnaireDTOs},
             fieldPrefix='bundleQuestionnaireDTOs',
