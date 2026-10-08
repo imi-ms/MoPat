@@ -3,14 +3,14 @@
 */-->
 <th:block layout:decorate="~{layout/error}">
 	<th:block layout:fragment="content">
-		<div class="accessDenied">
-			<span
-				class="errorText"
-				th:text="${messages.get(#locale, 'encounterScheduled.heading.encounterCompleted', 
+        <div class="d-flex flex-column accessDenied centeredContent">
+            <i class="bi bi-x-circle-fill icon-red"></i>
+            <span
+                class="errorText"
+                th:text="${messages.get(#locale, 'encounterScheduled.heading.encounterCompleted',
                     'This survey is not available any more or was already completed.')}"
-			>
-			</span>
-			<br />
-		</div>
+            ></span>
+            <br />
+        </div>
 	</th:block>
 </th:block>
