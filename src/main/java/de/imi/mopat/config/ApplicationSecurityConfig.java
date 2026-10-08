@@ -291,7 +291,7 @@ public class ApplicationSecurityConfig {
             Maps.of("ROLE_ADMIN", "/admin/index",
                 "ROLE_MODERATOR", "/admin/index",
                 "ROLE_EDITOR", "/admin/index",
-                "ROLE_ENCOUNTERMANAGER", "/mobile/survey/index",
+                "ROLE_ENCOUNTERMANAGER", "/mobile/user/modeselection",
                 "ROLE_USER", "/mobile/survey/index"));
         return roleBasedAuthenticationSuccessHandler;
     }
