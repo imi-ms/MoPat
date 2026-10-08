@@ -1,5 +1,6 @@
 package de.imi.mopat.dao.user;
 
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.user.AclClass;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.enumeration.PermissionType;
@@ -45,4 +46,12 @@ public interface AclEntryDao extends UserManagementDao<AclEntry> {
      * @return A map with {@link User Users} and corresponding {@link PermissionType rights}.
      */
     Map<User, PermissionType> getUserRightsByObject(Object object);
+
+    /**
+     * Fetches all Clinic entities accessible by the given User based on ACL permissions.
+     *
+     * @param user The User entity for whom to retrieve accessible clinics. Must not be null.
+     * @return A list of Clinic entities that the user has access to. Returns an empty list if the user is null, has no ACL entries for Clinics, or no clinics are accessible.
+     */
+    List<Clinic> getClinicsForUser(final User user);
 }

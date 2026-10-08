@@ -233,4 +233,13 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
         query.setParameter("endDate", endDate);
         return query.getSingleResult();
     }
+
+    @Override
+    public List<Encounter> getEncounterForEnchounterScheduledId(Long encounterScheduledId) {
+        TypedQuery<Encounter> query = moPatEntityManager.createQuery(
+            "SELECT e FROM Encounter e WHERE e.encounterScheduled.id=" + encounterScheduledId,
+            Encounter.class);
+
+        return query.getResultList();
+    }
 }

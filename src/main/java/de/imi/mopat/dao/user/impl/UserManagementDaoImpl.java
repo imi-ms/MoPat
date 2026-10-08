@@ -29,6 +29,8 @@ public abstract class UserManagementDaoImpl<T> implements
 
     @PersistenceContext(unitName = "MoPat_User")
     protected EntityManager moPatUserEntityManager;
+    @PersistenceContext(unitName="MoPat")
+    protected EntityManager moPatEntityManager;
     // Holds the generic entity class T
     private final Class<T> entityClass;
 
