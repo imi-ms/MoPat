@@ -106,7 +106,7 @@ public class LocaleHelper {
      */
     public static String formatDate(Timestamp timestamp) {
         if (timestamp == null) {
-            throw new NullPointerException("Timestamp cannot be null.");
+            return null;
         }
         Locale locale = Locale.getDefault();
         String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
@@ -123,7 +123,7 @@ public class LocaleHelper {
      */
     public static String formatDate(Date date) {
         if (date == null) {
-            throw new NullPointerException("Date cannot be null.");
+            return null;
         }
         Locale locale = Locale.getDefault();
         String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
@@ -140,7 +140,7 @@ public class LocaleHelper {
      */
     public static String formatDateTime(Timestamp timestamp) {
         if (timestamp == null) {
-            throw new NullPointerException("Timestamp cannot be null.");
+            return null;
         }
         Locale locale = Locale.getDefault();
         String pattern = isGermanLocale(locale) ? "dd.MM.yyyy' - 'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm:ss";
