@@ -36,4 +36,30 @@ public enum UserRole {
     public static UserRole fromString(final String textValue) {
         return stringToEnum.get(textValue);
     }
+
+    public boolean isAtLeast(UserRole required) {
+        if (required == null) return false;
+
+        int thisLevel = getLevel(this);
+        int requiredLevel = getLevel(required);
+
+        return thisLevel >= requiredLevel;
+    }
+
+    private int getLevel(UserRole role) {
+        switch (role) {
+            case ROLE_USER:
+                return 0;
+            case ROLE_ENCOUNTERMANAGER:
+                return 1;
+            case ROLE_EDITOR:
+                return 2;
+            case ROLE_MODERATOR:
+                return 3;
+            case ROLE_ADMIN:
+                return 4;
+            default:
+                return -1; // Unknown role
+        }
+    }
 }

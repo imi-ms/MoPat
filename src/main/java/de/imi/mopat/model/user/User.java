@@ -197,6 +197,17 @@ public class User implements Serializable, UserDetails {
         }
     }
 
+    public boolean hasAtLeastRole(UserRole required) {
+        if (required == null) return false;
+        for (Authority auth : authority) {
+            UserRole role = UserRole.fromString(auth.getAuthority());
+            if (role != null && role.isAtLeast(required)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the password of the current user object.
      *
