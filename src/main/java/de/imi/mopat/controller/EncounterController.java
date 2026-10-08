@@ -31,13 +31,17 @@ import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.service.EncounterScheduledService;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,10 +49,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -56,10 +60,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import uk.org.okapibarcode.backend.QrCode;
+import uk.org.okapibarcode.graphics.Color;
+import uk.org.okapibarcode.output.SvgRenderer;
 
 /**
  *
@@ -81,6 +90,8 @@ public class EncounterController {
     private EncounterExporter encounterExporter;
     @Autowired
     private EncounterScheduledDao encounterScheduledDao;
+    @Autowired
+    private EncounterScheduledService encounterScheduledService;
     @Autowired
     private EncounterScheduledDTOValidator encounterScheduledDTOValidator;
     @Autowired
@@ -161,11 +172,6 @@ public class EncounterController {
 
         // Fetch all required elements at once
         List<Bundle> bundles = bundleDao.getAllElements();
-        List<EncounterScheduled> allEncounterScheduled = encounterScheduledDao.getAllElements();
-
-        // Group EncounterScheduled by Bundle ID for quick access
-        Map<Long, List<EncounterScheduled>> encounterScheduledByBundle = allEncounterScheduled.stream()
-            .collect(Collectors.groupingBy(e -> e.getBundle().getId()));
 
         // Process each bundle
         bundles.forEach(bundle -> {
@@ -174,16 +180,19 @@ public class EncounterController {
                 caseNumbers.add(encounter.getCaseNumber());
                 if (encounter.getEncounterScheduled() == null) {
                     encounterDTOs.add(encounterDTOMapper.apply(false, encounter));
+                } else {
+
                 }
             });
+        });
 
-            // Add EncounterScheduled to DTOs based on already grouped data by bundle
-            encounterScheduledByBundle.getOrDefault(bundle.getId(), Collections.emptyList()).stream()
-                .map(encounterScheduledDTOMapper)
-                .forEach(dto -> {
-                    encounterScheduledDTOs.add(dto);
-                    encounterScheduledJSONSet.add(dto.getJSON());
-                });
+        encounterScheduledDao.getAllElements().forEach(encounterScheduled -> {
+            EncounterScheduledDTO encounterScheduledDTO = encounterScheduledDTOMapper.apply(
+                encounterScheduled
+            );
+
+            encounterScheduledDTOs.add(encounterScheduledDTO);
+            encounterScheduledJSONSet.add(encounterScheduledDTO.getJSON());
         });
 
         // Sort the encounters and scheduled encounters by start date using stream sorted method
@@ -456,6 +465,9 @@ public class EncounterController {
                     redirectAttributes.addFlashAttribute("success",
                         messageSource.getMessage("encounterScheduled.mail.success", new Object[]{},
                             LocaleContextHolder.getLocale()));
+
+                    redirectAttributes.addFlashAttribute("newEncounterScheduledDTO",
+                        encounterScheduledDTOMapper.apply(encounterScheduled));
                 } else {
                     String failMessage = messageSource.getMessage("encounterScheduled.mail.fail",
                         new Object[]{}, LocaleContextHolder.getLocale());
@@ -485,7 +497,42 @@ public class EncounterController {
         encounterScheduledDao.merge(encounterScheduled);
         bundleDao.merge(bundle);
 
+        encounterScheduledService.grantUserRightsForEncounterScheduledByClinicUsers(clinic, encounterScheduled);
+
         return "redirect:/encounter/list";
+    }
+
+    /**
+     * Endpoint to request the QR Code Base64 encoded for a specific encounter uuid
+     * @param uuid to generate the QR code for
+     * @param request to fetch baseUrl from
+     * @return Base64 encoded svg
+     */
+    @GetMapping("/encounter/{uuid}/qr-base64")
+    @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
+    @ResponseBody
+    public ResponseEntity<String> getEncounterQrCodeBase64(@PathVariable String uuid,
+        HttpServletRequest request) {
+        try {
+            String baseUrl = request.getRequestURL().toString()
+                .replace(request.getRequestURI(), request.getContextPath());
+
+            String link = baseUrl + "/mobile/survey/encounter?hash=" + uuid;
+
+            QrCode qrCode = new QrCode();
+            qrCode.setContent(link);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            SvgRenderer renderer = new SvgRenderer(outputStream, 1, Color.WHITE, Color.BLACK, false);
+            renderer.render(qrCode);
+
+            String svg = outputStream.toString(StandardCharsets.UTF_8);
+            String base64 = Base64.getEncoder().encodeToString(svg.getBytes(StandardCharsets.UTF_8));
+
+            return ResponseEntity.ok(base64);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
