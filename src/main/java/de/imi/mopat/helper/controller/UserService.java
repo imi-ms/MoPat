@@ -10,6 +10,7 @@ import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
+import de.imi.mopat.service.EncounterScheduledService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,9 @@ public class UserService {
 
     @Autowired
     private UserDTOMapper userDTOMapper;
+
+    @Autowired
+    private EncounterScheduledService encounterScheduledService;
 
     /**
      * Retrieves all users as UserDTO objects.
@@ -120,6 +124,7 @@ public class UserService {
     public void replaceUserRoles(User user, UserRole newRole) {
         user.replaceRolesWith(newRole);
         userDao.merge(user);
+        encounterScheduledService.updateUserRightsForEncounterScheduledsOfAllAssignedClinics(user);
     }
 
     /**
@@ -151,6 +156,7 @@ public class UserService {
             AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
             if (clinicACLEntry == null) {
                 clinicDao.grantRight(clinic, user, PermissionType.READ, Boolean.TRUE);
+                encounterScheduledService.addUserRightsForEncounterScheduledsOfClinic(clinic, user);
             }
         }
 
@@ -159,6 +165,7 @@ public class UserService {
             AclEntry clinicACLEntry = aclEntryDao.getEntryForObjectUserAndRight(clinic, user, PermissionType.READ);
             if (clinicACLEntry != null) {
                 clinicDao.revokeRight(clinic, user, PermissionType.READ, Boolean.TRUE);
+                encounterScheduledService.removeUserRightsForEncounterScheduledsOfClinic(clinic, user);
             }
         }
     }
