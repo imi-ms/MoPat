@@ -260,7 +260,10 @@
                     />
                     <error layout:replace="~{fragments/forms :: errorField(path='startDate')}" />
                 </div>
-                <div class="form-group">
+                <div
+                    id="repeatContainer" 
+                    class="form-group d-none"
+                >
                     <div>
                         <label
                             for="repeatPeriod"
@@ -562,6 +565,8 @@
                     });
                 }
             } else {
+                /*[- Set the standard date to today -]*/
+                $('#startDate').val(new Date().toISOString().split('T')[0]);
                 /*[- Set min startdate to today -]*/
                 $("#startDate").prop("min", function () {
                     return new Date().toJSON().split("T")[0];
@@ -582,19 +587,23 @@
         -]*/
         function displayPeriod(encounterScheduledSerialType) {
             if (encounterScheduledSerialType === "UNIQUELY") {
+                $("#repeatContainer").addClass("d-none"); 
                 $("#endDate").attr("disabled", "");
                 $("#repeatPeriod").attr("disabled", "");
                 $("#labeldate").html(encounterScheduledSerialTypeDate);
             } else if (encounterScheduledSerialType === "REPEATEDLY") {
+                $("#repeatContainer").removeClass("d-none"); 
                 $("#endDate").removeAttr("disabled");
                 $("#repeatPeriod").removeAttr("disabled");
                 $("#labeldate").html(encounterScheduledSerialTypeStartdate);
             } else if (encounterScheduledSerialType === "WEEKLY") {
+                $("#repeatContainer").removeClass("d-none"); 
                 $("#endDate").removeAttr("disabled");
                 $("#repeatPeriod").attr("disabled", "");
                 $("#repeatPeriod").val(7);
                 $("#labeldate").html(encounterScheduledSerialTypeStartdate);
             } else if (encounterScheduledSerialType === "MONTHLY") {
+                $("#repeatContainer").removeClass("d-none"); 
                 $("#endDate").removeAttr("disabled");
                 $("#repeatPeriod").attr("disabled", "");
                 $("#repeatPeriod").val(30);

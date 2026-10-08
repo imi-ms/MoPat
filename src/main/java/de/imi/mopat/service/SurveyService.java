@@ -2,15 +2,18 @@ package de.imi.mopat.service;
 
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.EncounterDao;
+import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.EncounterDTOMapper;
 import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.Encounter;
+import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.model.dto.EncounterDTO;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +38,9 @@ public class SurveyService {
 
     @Autowired
     private EncounterDTOMapper encounterDTOMapper;
+
+    @Autowired
+    private EncounterScheduledDao encounterScheduledDao;
 
     /**
      * Builds a map of published, clinic-associated bundles to their incomplete encounters grouped
@@ -92,13 +98,55 @@ public class SurveyService {
     }
 
     /**
+     * Attempts to resolve a DTO by first checking if the UUID belongs to an
+     * {@link EncounterScheduled}; if not, falls back to resolving it as an
+     * {@link Encounter} UUID.
+     *
+     * @param uuid UUID of either an {@link EncounterScheduled} or {@link Encounter}
+     * @return Mapped DTO, or {@code null} if not found in either lookup
+     */
+    public EncounterDTO getEncounterDTOEitherFromEncounterUUIDOrEncounterScheduledUUID(String uuid) {
+        EncounterDTO encounterFromScheduled = getEncounterDTOForEncounterScheduledUUID(uuid);
+
+        if (encounterFromScheduled != null) {
+            return encounterFromScheduled;
+        } else {
+            return getEncounterDTOForUUID(uuid);
+        }
+    }
+
+    /**
      * Loads the encounter identified by the given UUID and maps it to an {@link EncounterDTO}.
      *
      * @param uuid UUID of the encounter to load
      * @return mapped encounter DTO
      */
     public EncounterDTO getEncounterDTOForUUID(String uuid) {
-        return encounterDTOMapper.apply(true, encounterDao.getElementByUUID(uuid));
+        Encounter encounter = encounterDao.getElementByUUID(uuid);
+        if (encounter == null) {
+            return null;
+        }
+        return encounterDTOMapper.apply(true, encounter);
+    }
+
+    /**
+     * Gets the oldest {@link EncounterDTO} for a given {@link EncounterScheduled} UUID.
+     *
+     * @param uuid UUID of the {@link EncounterScheduled}
+     * @return Oldest {@link EncounterDTO}, or {@code null} if not found
+     */
+    public EncounterDTO getEncounterDTOForEncounterScheduledUUID(String uuid) {
+        EncounterScheduled encounterScheduled = encounterScheduledDao.getElementByUUID(uuid);
+        if (encounterScheduled == null) {
+            return null;
+        } else {
+            List<Encounter> encounters = encounterDao.getEncounterForEnchounterScheduledId(
+                encounterScheduled.getId());
+
+            encounters.sort(Comparator.comparing(Encounter::getStartTime));
+            Encounter newestEncounter = encounters.get(encounters.size() - 1);
+            return encounterDTOMapper.apply(true, newestEncounter);
+        }
     }
 
     /**

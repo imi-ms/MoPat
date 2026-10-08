@@ -134,4 +134,11 @@ public interface EncounterDao extends MoPatDao<Encounter> {
      * @param encounter: The encounter to process
      */
     void removeEncounterExportTemplatesForEncounter(Encounter encounter);
+
+    /**
+     * Fetches all encounters that are associated to a scheduled encounter
+     * @param encounterScheduledId to fetch {@link Encounter} objects for
+     * @return List of {@link Encounter}
+     */
+    List<Encounter> getEncounterForEnchounterScheduledId(Long encounterScheduledId);
 }

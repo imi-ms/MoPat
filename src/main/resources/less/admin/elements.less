@@ -31,6 +31,16 @@
     font-weight: 900;
 }
 
+.bi-xxlarge {
+    font-size: 250%;
+    font-weight: 900;
+}
+
+.bi-xxxlarge {
+    font-size: 300%;
+    font-weight: 900;
+}
+
 .bi-action {
     &:hover {
         cursor: grab;
@@ -187,6 +197,57 @@
     }
 }
 
+@index-button-size: 175px;
+@index-small-button-size: 125px;
+
+.btn-index {
+    width: clamp(120px, 20vw, @index-button-size);
+    height: clamp(90px, 14vw, @index-small-button-size);
+
+    opacity: 0;
+    transform: translateX(-15px) scale(0.9);
+    animation: btn-index-in 0.3s ease-out forwards;
+
+    .bi-xxxlarge {
+        font-size: clamp(1.25rem, 3vw, 250%) !important;
+    }
+
+    @media only screen and (max-width:@b5-screen-xl-min) {
+        span {
+            font-size: clamp(1rem, 1.4vw, 1rem);
+            font-weight: 400;
+        }
+    }
+
+    @media only screen and (min-width:@b5-screen-xl-min) {
+        span {
+            font-size: clamp(1rem, 1.8vw, 1.1rem);
+            font-weight: 600;
+        }
+    }
+}
+
+.btn-index:nth-child(1) { animation-delay: 0.05s; }
+.btn-index:nth-child(2) { animation-delay: 0.10s; }
+.btn-index:nth-child(3) { animation-delay: 0.15s; }
+.btn-index:nth-child(4) { animation-delay: 0.20s; }
+.btn-index:nth-child(5) { animation-delay: 0.25s; }
+.btn-index:nth-child(6) { animation-delay: 0.30s; }
+.btn-index:nth-child(7) { animation-delay: 0.35s; }
+.btn-index:nth-child(8) { animation-delay: 0.40s; }
+.btn-index:nth-child(9) { animation-delay: 0.45s; }
+
+@keyframes btn-index-in {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
 .bi-list-icon {
     display: inline-block;
     width:2em;
@@ -203,8 +264,8 @@
     color: @color-failure-text;
 
     &.badge {
-        border: solid 1px !important; 
-        border-radius: 20px !important; 
+        border: solid 1px !important;
+        border-radius: 20px !important;
     }
 }
 
@@ -214,8 +275,8 @@
     color: @color-success-text;
 
     &.badge {
-        border: solid 1px !important; 
-        border-radius: 20px !important; 
+        border: solid 1px !important;
+        border-radius: 20px !important;
     }
 }
 
@@ -225,8 +286,8 @@
     color: @color-conflict-text;
 
     &.badge {
-        border: solid 1px !important; 
-        border-radius: 20px !important; 
+        border: solid 1px !important;
+        border-radius: 20px !important;
     }
 
 }

@@ -136,4 +136,17 @@ public class EncounterScheduledDaoImpl extends MoPatDaoImpl<EncounterScheduled> 
 
         return resultList;
     }
+
+    @Override
+    public List<EncounterScheduled> findByClinicIdIn(List<Long> clinicIds) {
+        if (clinicIds == null || clinicIds.isEmpty()) {
+            return List.of();
+        }
+
+        String jpql = "SELECT es FROM EncounterScheduled es WHERE es.clinic.id IN :clinicIds";
+        TypedQuery<EncounterScheduled> query = moPatEntityManager.createQuery(jpql, EncounterScheduled.class)
+            .setParameter("clinicIds", clinicIds);
+
+        return query.getResultList();
+    }
 }

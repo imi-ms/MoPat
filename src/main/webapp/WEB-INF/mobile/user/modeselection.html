@@ -1,0 +1,39 @@
+<!--/*
+    View for switch view after login
+*/-->
+<th:block
+    layout:decorate="~{layout/login}"
+    th:with="onLoad='initLogin()', contenttype='centeredContent', isLogin='true'"
+>
+    <th:block layout:fragment="content">
+        <div class="d-flex flex-column justify-content-center align-items-center">
+            <div class="mb-5">
+                <span class="h1"
+                    th:text="${messages.get(#locale, 'modeselection.label.welcome', 'Welcome! Please select an action:')}"
+                ></span>
+            </div>
+            <div class="d-flex flex-row justify-content-center align-items-center">
+                <a
+                    th:href="@{/mobile/survey/index}"
+                    class="btn btn-index btn-white btn-mobile me-2 d-flex flex-column justify-content-center align-items-center"
+                >
+                    <i class="bi bi-xxxlarge bi-tablet-fill"></i>
+                    <span class="h2"
+                        th:text="${messages.get(#locale, 'modeselection.label.startSurvey', 'Start a Survey')}"
+                    ></span>
+                </a>
+                <a
+                    th:href="@{/encounter/schedule}"
+                    class="btn btn-index btn-white btn-mobile me-2 d-flex flex-column justify-content-center align-items-center"
+                >
+                    <i class="bi bi-xxxlarge bi-calendar-date-fill"></i>
+                    <span class="h2"
+                        th:text="${messages.get(#locale, 'modeselection.label.planSurvey', 'Plan a Survey')}"                    
+                    ></span>
+                </a>
+            </div>
+        </div>
+    </th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer"> </th:block>
