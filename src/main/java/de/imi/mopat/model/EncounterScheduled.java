@@ -4,17 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.helper.controller.ApplicationMailer;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.model.UUIDGenerator;
-import de.imi.mopat.model.dto.EncounterDTO;
-import de.imi.mopat.model.dto.EncounterScheduledDTO;
 import de.imi.mopat.model.enumeration.EncounterScheduledMailStatus;
 import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import jakarta.persistence.CascadeType;
@@ -484,4 +484,54 @@ public class EncounterScheduled implements Serializable {
         }
         return false;
     }
+
+    /**
+     * Helper function to determine weather a date matches with the
+     * defined scheduled encounter.
+     * @param date to check the pattern with
+     * @return true if the date fits within the pattern, false otherwise.
+     */
+    public Boolean doesScheduledPatternMatchDate(Date date) {
+        LocalDate today = Instant.ofEpochMilli(date.getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+
+        LocalDate startDate = Instant.ofEpochMilli(this.getStartDate().getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+
+        long daysBetween = ChronoUnit.DAYS.between(startDate, today);
+        if (daysBetween < 0) {
+            return false;
+        }
+
+        return switch (this.getEncounterScheduledSerialType()) {
+            case UNIQUELY -> daysBetween == 0;
+            case WEEKLY -> daysBetween % 7 == 0;
+            case MONTHLY -> today.getDayOfMonth() == startDate.getDayOfMonth();
+            case REPEATEDLY -> {
+                Integer repeatPeriod = this.getRepeatPeriod();
+                yield repeatPeriod != null && repeatPeriod > 0 && daysBetween % repeatPeriod == 0;
+            }
+        };
+    }
+
+    /**
+     * Helper function that checks weather today matches with the
+     * defined scheduled encounter pattern.
+     * @return true if today matches with the pattern, false otherwise.
+     */
+    public Boolean doesScheduledPatternMatchToday() {
+        // Generate date today at midnight
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTime(new Date());
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        Date today = calendar.getTime();
+        return this.doesScheduledPatternMatchDate(today);
+    }
+
 }
