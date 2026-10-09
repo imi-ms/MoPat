@@ -37,7 +37,11 @@ import de.imi.mopat.service.EncounterScheduledService;
 import de.imi.mopat.service.MailSendingStatus;
 import de.imi.mopat.service.EncounterExportService;
 import de.imi.mopat.validator.EncounterScheduledDTOValidator;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -68,13 +72,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.FlashMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 /**
  *
  */
 @Controller
 public class EncounterController {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+            EncounterController.class);
 
     @Autowired
     private ApplicationMailer applicationMailer;
@@ -285,10 +294,11 @@ public class EncounterController {
      * @return The assembled export content as a downloadable file.
      */
     @GetMapping(value = "/encounter/downloadexport")
-    @PreAuthorize("hasRole('ROLE_ENCOUNTERMANAGER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<byte[]> downloadEncounterTemplate(
-        @RequestParam(required = true, value = "id") final Long encounterId,
-        @RequestParam(required = true, value = "templateid") final Long templateId)
+            @RequestParam(required = true, value = "id") final Long encounterId,
+            @RequestParam(required = true, value = "templateid") final Long templateId,
+            final HttpServletRequest request, final HttpServletResponse response)
         throws Exception {
 
         if (!Boolean.TRUE.equals(configurationDao.isEncounterTemplateDownloadEnabled())) {
@@ -302,7 +312,23 @@ public class EncounterController {
         if (!isFileExportEnabled(exportTemplate)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        String exportContent = encounterExportService.getExportContent(encounter, exportTemplate);
+
+        String exportContent;
+        try {
+            exportContent = encounterExportService.getExportContent(encounter, exportTemplate);
+        } catch (Exception e) {
+            LOGGER.error("Download of export template {} for encounter {} failed",
+                    templateId, encounterId, e);
+
+            FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
+            flashMap.put("downloadFailedTemplateId", templateId);
+            String target = "/encounter/show?id=" + encounterId;
+            RequestContextUtils.saveOutputFlashMap(target, request, response);
+
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                    .location(URI.create(request.getContextPath() + target))
+                    .build();
+        }
 
         Set<AuditPatientAttribute> patientAttributes = new HashSet<>();
         patientAttributes.add(AuditPatientAttribute.CASE_NUMBER);

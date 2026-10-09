@@ -6,6 +6,12 @@
 	th:with="title=${messages.get(#locale, 'encounter.heading.title', 'Encounter')}"
 >
 	<th:block layout:fragment="content">
+		<div
+				th:if="${downloadFailedTemplateId != null}"
+				id="notification"
+				class="alert alert-danger"
+				th:text="${messages.get(#locale, 'encounter.download.failed', 'The download of the export failed. Please contact your administrator.')}"
+		></div>
 		<div class="panel-body">
 			<div class="form-group">
 				<label
@@ -76,6 +82,7 @@
 										th:text="${messages.get(#locale, 'encounter.button.download', 'Download')}"
 								>
 								</a>
+
 								<table>
 									<colgroup>
 										<col

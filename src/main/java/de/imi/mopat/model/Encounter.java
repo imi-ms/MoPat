@@ -79,7 +79,9 @@ public class Encounter implements Serializable {
     @NotNull(message = "{encounter.caseNumber.notNull}")
     @NotEmpty(message = "{encounter.caseNumber.notEmpty}")
     @Column(name = "case_number", nullable = false)
-    private String caseNumber; // case number or study number
+    private String caseNumber; // case nu
+
+     // mber or study number
     @OneToMany(mappedBy = "encounter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Response> responses = new HashSet<>();
     @Column(name = "last_seen_question_id")
