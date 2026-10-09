@@ -298,7 +298,7 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
 
         return exportStatus;
     }
-//TODO
+
     @Override
     public String getExportContent() throws Exception {
         return FhirR4bHelper.decodeResourceToString(questionnaireResponse, false);

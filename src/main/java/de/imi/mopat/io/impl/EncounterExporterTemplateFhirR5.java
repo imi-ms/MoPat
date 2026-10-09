@@ -307,7 +307,6 @@ public class EncounterExporterTemplateFhirR5 implements EncounterExporterTemplat
 
         return exportStatus;
     }
-//TODO
     @Override
     public String getExportContent() throws Exception {
         return FhirR5Helper.decodeResourceToString(questionnaireResponse, false);
