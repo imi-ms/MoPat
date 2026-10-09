@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.service;
 
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.helper.model.ClinicConfigurationDTOMapper;

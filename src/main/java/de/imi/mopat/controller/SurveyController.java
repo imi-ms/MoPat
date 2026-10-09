@@ -34,6 +34,9 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.dto.ResponseDTO;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.AuthService;
+import de.imi.mopat.service.ClinicConfigurationMappingService;
+import de.imi.mopat.service.ClinicService;
 import de.imi.mopat.service.SurveyService;
 import de.imi.mopat.validator.MoPatValidator;
 
@@ -400,6 +403,7 @@ public class SurveyController {
 
         SortedMap<BundleDTO, Map<String, List<EncounterDTO>>> bundleLanguageEncounterMap =
             surveyService.getBundleLanguageEncounterMap(encounterDTO);
+
         model.addAttribute("bundleLanguageEncounterMap", bundleLanguageEncounterMap);
 
         model.addAttribute("hideProfile", Boolean.FALSE);

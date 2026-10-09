@@ -3,7 +3,7 @@ package de.imi.mopat.controller;
 import com.mchange.v1.db.sql.UnsupportedTypeException;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.helper.controller.ConfigurationService;
+import de.imi.mopat.service.ConfigurationService;
 import de.imi.mopat.helper.controller.MailSender;
 import de.imi.mopat.helper.controller.MultiPartFileUploadBean;
 import de.imi.mopat.helper.controller.StringUtilities;

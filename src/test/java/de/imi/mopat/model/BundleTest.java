@@ -11,7 +11,7 @@ import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
-import de.imi.mopat.helper.controller.BundleService;
+import de.imi.mopat.service.BundleService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.model.dto.BundleDTO;
 import de.imi.mopat.utils.Helper;

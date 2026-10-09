@@ -179,6 +179,11 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
         return exportStatus;
     }
 
+    @Override
+    public String getExportContent() throws Exception {
+        return mapper.writeValueAsString(List.of(exportJSON));
+    }
+
     /**
      * Exports the resultant REDCap JSON to a given path
      *
@@ -202,6 +207,7 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
 
         // Write to disk
         File exportFile = new File(subDirectory, this.createFileName());
+        //TODO: check if, JSON or string should be written mapper.writeValue(exportFile, List.of(exportJSON));
         mapper.writeValue(exportFile, "[" + mapper.writeValueAsString(exportJSON) + "]");
     }
 

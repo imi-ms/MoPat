@@ -92,4 +92,6 @@ public abstract class Constants {
 
     // Configuration: The name of the attribute for the Imprint text message
     public static final String IMPRINT_TEXT = "imprintText";
+
+    public static final String ENABLE_ENCOUNTER_TEMPLATE_DOWNLOAD = "enableEncounterTemplateDownload";
 }
