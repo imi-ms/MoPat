@@ -382,23 +382,22 @@ public class ExportMappingController {
             model.addAttribute("error", messageSource.getMessage("mapping.error.assignedtobundle",
                 new Object[]{exportTemplate.getName()}, LocaleContextHolder.getLocale()));
         } else {
-            String objectStoragePath = configurationDao.getObjectStoragePath();
-            // delete file from disk
-            String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
-            File templateFile = new File(contextPath, exportTemplate.getFilename());
-            // only if exists and is a file
-            if (templateFile.isFile()) {
-                templateFile.delete();
-            }
-            // Update all encounters associated with the removed export template
-            for (EncounterExportTemplate encounterExportTemplate : exportTemplate.getEncounterExportTemplates()) {
-                Encounter encounter = encounterExportTemplate.getEncounter();
-                encounter.removeEncounterExportTemplate(encounterExportTemplate);
-                encounterDao.merge(encounter);
-            }
+            //delete history from database
+            exportTemplateDao.removeEncounterExportTemplatesForExportTemplate(exportTemplate);
+            //reload, to update object
+            exportTemplate = exportTemplateDao.getElementById(id);
+            questionnaire = exportTemplate.getQuestionnaire();
+
             questionnaire.removeExportTemplate(exportTemplate);
             exportTemplateDao.remove(exportTemplate);
             questionnaireDao.merge(questionnaire);
+            //delete object
+            String objectStoragePath = configurationDao.getObjectStoragePath();
+            String contextPath = objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY;
+            File templateFile = new File(contextPath, exportTemplate.getFilename());
+            if (templateFile.isFile()) {
+                templateFile.delete();
+            }
         }
 
         return showMapping(questionnaire.getId(), model);
