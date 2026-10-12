@@ -42,8 +42,6 @@ import jakarta.validation.constraints.Size;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.springframework.cache.annotation.Cacheable;
 
-// test
-
 /**
  * The database table model for table <i>questionnaire</i>. This model represents a set of
  * questions.
