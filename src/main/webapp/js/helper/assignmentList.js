@@ -119,6 +119,7 @@
             self.synchronizeSelectionRows();
             self.$filter.val('');
             self.filterItems();
+            self.updateSelectedCount();
         });
     };
 
