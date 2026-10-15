@@ -398,6 +398,9 @@ public class ExportMappingController {
             if (templateFile.isFile()) {
                 templateFile.delete();
             }
+            model.addAttribute("messageSuccess",
+                    messageSource.getMessage("mapping.message.deleteSuccess",
+                            new Object[]{exportTemplate.getName()}, LocaleContextHolder.getLocale()));
         }
 
         return showMapping(questionnaire.getId(), model);
