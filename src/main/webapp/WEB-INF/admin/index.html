@@ -3,117 +3,240 @@
 */-->
 <th:block
     layout:decorate="~{layout/admin}"
-    th:with="title=${messages.get(#locale, 'admin.title', 'Admin')}"
+    th:with="title=${messages.get(#locale, 'admin.welcome.introduction', 'Welcome To Mobile Patient Survey (MoPat)!')}"
 >
     <th:block layout:fragment="content">
-        <div class="mt-3"
-             sec:authorize="hasRole('ROLE_ADMIN')"
-        >
-            <div th:if="${gitRepositoryMetadata.updateAvailable}">
-                <div class="alert alert-warning">
-                    <strong th:text="${messages.get(#locale, 'update.available', 'Update Available!')}"></strong>
-                    <span th:with="message=${messages.get(
-                        #locale,
-                        'update.message',
-                        messages.buildArguments(gitRepositoryMetadata.latestReleaseVersion, gitRepositoryMetadata.buildVersion),
-                        '')}"
-                          th:utext="${message}">
-                    </span>
-                    <a th:href="${gitRepositoryMetadata.latestReleaseUrl}"
-                       class="alert-link" target="_blank"
-                       th:text="${messages.get(#locale, 'update.click.here', 'Click here')}">
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div
-                sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_ADMIN')"
-                class="panel-body"
-                th:with="message=${messages.get(#locale,
-                'editor.welcome',
-                messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
-                'Welcome Text')}"
-            th:utext="${message}"
-        >
-        </div>
-        <div
-            sec:authorize="hasRole('ROLE_ADMIN')"
-            class="panel-body"
-            th:with="message=${messages.get(#locale,
-                'admin.welcome', 
-                messages.buildArguments(contextPath, configurationDao.supportPhone, configurationDao.supportEMail),
-                'Welcome Text')}"
-            th:utext="${message}"
-        >
-        </div>
         <div
             class="mt-3"
             sec:authorize="hasRole('ROLE_ADMIN')"
         >
-            <button
-                class="btn btn-primary"
-                id="adminPanelButton"
-                data-bs-toggle="modal"
-                data-bs-target="#adminPanel"
-                th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
-            ></button>
-
-            <div
-                class="modal modal-xl fade"
-                id="adminPanel"
-                tabindex="-1"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5
-                                th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
-                            ></h5>
-                            <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            >
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <table id="gitInformationTable">
-                                <!-- Git Properties -->
-                                <h6
-                                        th:text="${messages.get(#locale, 'admin.information.git.title', 'Git Repository Information')}"
-                                ></h6>
-                                <tr>
-                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.build.version', 'Build Version')}"></td>
-                                    <td id="gitBuildVersion" class="w-50" th:text="${gitRepositoryMetadata.buildVersion}"></td>
-                                </tr>
-                                <tr>
-                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.branch', 'Branch')}"></td>
-                                    <td id="gitBranch" class="w-50" th:text="${gitRepositoryMetadata.branch}"></td>
-                                </tr>
-                                <tr>
-                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.id', 'Commit ID')}"></td>
-                                    <td id="gitCommitId" class="w-50">
-                                        <a class="link" target="_blank"
-                                           th:href="${gitRepositoryMetadata.latestCommitUrl}"
-                                           th:text="${gitRepositoryMetadata.commitId}">
-                                        </a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="w-25" th:text="${messages.get(#locale, 'admin.information.git.commit.message', 'Commit Message')}"></td>
-                                    <td id="gitCommitMessage" class="w-50" th:text="${gitRepositoryMetadata.commitMessageShort}"></td>
-                                </tr>
-                                <!-- End of Git Properties -->
-                                <tr>
-                                    <td colspan="4"><hr></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
+            <div th:if="${gitRepositoryMetadata.updateAvailable}">
+                <div class="alert alert-warning">
+                    <strong
+                        th:text="${messages.get(#locale, 'update.available', 'Update Available!')}"
+                    ></strong>
+                    <span
+                        th:utext="${message}"
+                        th:with="message=${messages.get(
+                        #locale,
+                        'update.message',
+                        messages.buildArguments(gitRepositoryMetadata.latestReleaseVersion, gitRepositoryMetadata.buildVersion),
+                        '')}"
+                    >
+                    </span>
+                    <a
+                        class="alert-link"
+                        target="_blank"
+                        th:href="${gitRepositoryMetadata.latestReleaseUrl}"
+                        th:text="${messages.get(#locale, 'update.click.here', 'Click here')}"
+                    >
+                    </a>
                 </div>
             </div>
+        </div>
+        <div class="d-flex flex-column">
+            <div class="d-flex flex-column mb-5">
+                <span
+                    th:utext="${messages.get(#locale, 'admin.welcome.welcometext', 'Welcome text')}"
+                ></span>
+                <span
+                    sec:authorize="hasRole('ROLE_ADMIN')"
+                    th:utext="${messages.get(#locale, 'admin.welcome.admin.explanation', 'Role explanation')}"
+                ></span>
+                <span
+                    sec:authorize="hasRole('ROLE_EDITOR') and not hasRole('ROLE_MANAGER') and not hasRole('ROLE_ADMIN')"
+                    th:utext="${messages.get(#locale, 'admin.welcome.editor.explanation', 'Role explanation')}"
+                ></span>
+                <span
+                    sec:authorize="hasRole('ROLE_MODERATOR') and not hasRole('ROLE_ADMIN')"
+                    th:utext="${messages.get(#locale, 'admin.welcome.moderator.explanation', 'Role explanation')}"
+                ></span>
+                <span
+                    sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER') and not hasRole('ROLE_ADMIN') and not hasRole('ROLE_MODERATOR') and not hasRole('ROLE_EDITOR')"
+                    th:utext="${messages.get(#locale, 'admin.welcome.encountermanager.explanation', 'Role explanation')}"
+                ></span>
+                <div class="mt-4">
+                    <span
+                        th:utext="${messages.get(#locale,
+                        'admin.welcome.copyright',
+                        messages.buildArguments(configurationDao.supportPhone, configurationDao.supportEMail),
+                        'MoPat Copyright text')}"
+                    ></span>
+                </div>
+            </div>
+            <div class="d-flex flex-column">
+                <span
+                    class="h3 mb-2"
+                    th:text="${messages.get(#locale, 'admin.welcome.shortcuts', 'Shortcut Menu')}"
+                ></span>
+                <div class="d-flex flex-row flex-wrap gap-2">
+                    <a
+                        class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                        sec:authorize="hasRole('ROLE_EDITOR')"
+                        th:href="@{/questionnaire/fill}"
+                    >
+                        <i class="bi bi-xxxlarge bi-question-square-fill"></i>
+                        <span
+                            th:text="${messages.get(#locale, 'admin.welcome.buttons.createQuestionnaire', 'Create a new Questionnaire')}"
+                        ></span>
+                    </a>
+                    <a
+                        class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                        sec:authorize="hasRole('ROLE_MODERATOR')"
+                        th:href="@{/bundle/fill}"
+                    >
+                        <i class="bi bi-xxxlarge bi-box-seam-fill"></i>
+                        <span
+                            th:text="${messages.get(#locale, 'admin.welcome.buttons.createBundle', 'Create a new Bundle')}"
+                        ></span>
+                    </a>
+                    <a
+                        class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                        sec:authorize="hasRole('ROLE_ADMIN')"
+                        th:href="@{/invitation/edit}"
+                    >
+                        <i class="bi bi-xxxlarge bi-person-fill-add"></i>
+                        <span
+                            th:text="${messages.get(#locale, 'admin.welcome.buttons.inviteUser', 'Invite a new User')}"
+                        ></span>
+                    </a>
+                    <a
+                        class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                        th:href="@{/mobile/survey/index}"
+                    >
+                        <i class="bi bi-xxxlarge bi-tablet-fill"></i>
+                        <span
+                            th:text="${messages.get(#locale, 'admin.navigation.executeSurvey', 'Execute survey')}"
+                        ></span>
+                    </a>
+                    <a
+                        class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                        sec:authorize="hasRole('ROLE_ENCOUNTERMANAGER')"
+                        th:href="@{/encounter/schedule}"
+                    >
+                        <i class="bi bi-xxxlarge bi-calendar-date-fill"></i>
+                        <span
+                            th:text="${messages.get(#locale, 'admin.navigation.scheduleSurvey', 'Schedule survey')}"
+                        ></span>
+                    </a>
+
+                    <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a
+                            class="btn btn-index btn-primary me-2 d-flex flex-column justify-content-center align-items-center"
+                            data-bs-target="#adminPanel"
+                            data-bs-toggle="modal"
+                            id="adminPanelButton"
+                        >
+                            <i class="bi bi-xxxlarge bi-git"></i>
+                            <span
+                                th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
+                            ></span>
+                        </a>
+
+                        <div
+                            aria-hidden="true"
+                            class="modal modal-xl fade"
+                            id="adminPanel"
+                            tabindex="-1"
+                        >
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5
+                                            th:text="${messages.get(#locale, 'admin.information.title', 'Admin Information')}"
+                                        ></h5>
+                                        <button
+                                            aria-label="Close"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            type="button"
+                                        >
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table id="gitInformationTable">
+                                            <!-- Git Properties -->
+                                            <h6
+                                                th:text="${messages.get(#locale, 'admin.information.git.title', 'Git Repository Information')}"
+                                            ></h6>
+                                            <tr>
+                                                <td
+                                                    class="w-25"
+                                                    th:text="${messages.get(#locale, 'admin.information.git.build.version', 'Build Version')}"
+                                                ></td>
+                                                <td
+                                                    class="w-50"
+                                                    id="gitBuildVersion"
+                                                    th:text="${gitRepositoryMetadata.buildVersion}"
+                                                ></td>
+                                            </tr>
+                                            <tr>
+                                                <td
+                                                    class="w-25"
+                                                    th:text="${messages.get(#locale, 'admin.information.git.branch', 'Branch')}"
+                                                ></td>
+                                                <td
+                                                    class="w-50"
+                                                    id="gitBranch"
+                                                    th:text="${gitRepositoryMetadata.branch}"
+                                                ></td>
+                                            </tr>
+                                            <tr>
+                                                <td
+                                                    class="w-25"
+                                                    th:text="${messages.get(#locale, 'admin.information.git.commit.id', 'Commit ID')}"
+                                                ></td>
+                                                <td
+                                                    class="w-50"
+                                                    id="gitCommitId"
+                                                >
+                                                    <a
+                                                        class="link"
+                                                        target="_blank"
+                                                        th:href="${gitRepositoryMetadata.latestCommitUrl}"
+                                                        th:text="${gitRepositoryMetadata.commitId}"
+                                                    >
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td
+                                                    class="w-25"
+                                                    th:text="${messages.get(#locale, 'admin.information.git.commit.message', 'Commit Message')}"
+                                                ></td>
+                                                <td
+                                                    class="w-50"
+                                                    id="gitCommitMessage"
+                                                    th:text="${gitRepositoryMetadata.commitMessageShort}"
+                                                ></td>
+                                            </tr>
+                                            <!-- End of Git Properties -->
+                                            <tr>
+                                                <td colspan="4"><hr /></td>
+                                            </tr>
+                                        </table>
+
+                                        <form
+                                            th:action="@{/admin/refreshEncounterScheduledRights}"
+                                            method="POST"
+                                        >
+                                            <button
+                                                class="btn btn-primary"
+                                                type="submit"
+                                                th:text="${messages.get(#locale, 'admin.information.refreshEncounterScheduledRights', 'Refresh EncounterScheduled rights')}"
+                                                th:title="${messages.get(#locale, 'admin.information.refreshEncounterScheduledRights.information', 'This button updates the access control list for all “EncounterScheduled” entries in the application. As a result, all users who hold at least the role of a encounter manager are granted permission to access, edit, or delete “EncounterScheduled” instances in the frontend.')}"
+                                            >
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+            <hr/>
         </div>
     </th:block>
 </th:block>

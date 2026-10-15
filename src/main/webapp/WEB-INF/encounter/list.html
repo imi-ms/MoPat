@@ -8,16 +8,33 @@
 	<th:block layout:fragment="content">
 		<th:block th:if="${success != null}">
 			<div
+				class="alert alert-success d-flex flex-column"
 				id="notification"
-				class="alert alert-success"
-				th:text="${success}"
 			>
+                <span th:text="${success}"></span>
+                <br/>
+					<th:block
+						th:text="${messages.get(#locale, 'encounterScheduled.label.shouldQrCodeBePrinted', 'Should the survey be completed on an external device? If so, you can print a QR code that can be used to start the survey.')}"
+					></th:block>
+					<a class="btn btn-primary"
+						id="encounterLink"
+						th:data-link="${fullLink}"
+						th:data-uuid="${newEncounterScheduledDTO.uuid}"
+						th:data-start="${localeHelper.formatDate(newEncounterScheduledDTO.startDate)}"
+						th:data-period="${messages.getPeriodLabel(#locale, newEncounterScheduledDTO.encounterScheduledSerialType, newEncounterScheduledDTO.repeatPeriod)}"
+						th:data-end="${localeHelper.formatDate(newEncounterScheduledDTO.endDate)}"
+						th:with="link=@{/mobile/survey/encounter(hash=${newEncounterScheduledDTO.uuid})},
+								fullLink=${requestURL.replace('/encounter/list', '') + link}"
+						onclick="printEncounterInfo(this)"
+						th:text="${messages.get(#locale, 'encounterScheduled.label.printQrCode', 'Print QR-Code')}"
+					>
+					</a>
 			</div>
 		</th:block>
 		<th:block th:if="${failure != null}">
 			<div
-				id="notification"
 				class="alert alert-danger"
+				id="notification"
 				th:text="${failure}"
 			>
 			</div>
@@ -33,26 +50,26 @@
 				role="presentation"
 			>
 				<button
-					class="nav-link active"
-					id="encounter-tablink"
-					data-bs-toggle="tab"
-					data-bs-target="#encounterTab"
-					role="tab"
 					aria-controls="profile"
 					aria-selected="true"
+					class="nav-link active"
+					data-bs-target="#encounterTab"
+					data-bs-toggle="tab"
+					id="encounter-tablink"
+					role="tab"
 					th:text="${messages.get(#locale, 'encounter.label.encounters', 'All Encounters')}"
 				>
 				</button>
 			</li>
 			<li class="nav-item">
 				<button
-					class="nav-link"
-					id="encounterScheduled-tablink"
-					data-bs-toggle="tab"
-					data-bs-target="#encounterScheduledTab"
-					role="tab"
 					aria-controls="profile"
 					aria-selected="true"
+					class="nav-link"
+					data-bs-target="#encounterScheduledTab"
+					data-bs-toggle="tab"
+					id="encounterScheduled-tablink"
+					role="tab"
 					th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledAll', 'All scheduled encounters')}"
 				>
 				</button>
@@ -60,14 +77,14 @@
 		</ul>
 		<div class="tab-content">
 			<div
-				id="encounterTab"
-				class="tab-pane fade show active"
-				role="tabpanel"
 				aria-labelledby="encounter-tablink"
+				class="tab-pane fade show active"
+				id="encounterTab"
+				role="tabpanel"
 			>
 				<div 
-					id="loadingContainer" 
 					class="d-flex flex-column align-items-center justify-content-center vh-50"
+					id="loadingContainer"
 				>
 					<div 
 						class="spinner-border" 
@@ -113,8 +130,8 @@
 									th:text="${messages.get(#locale, 'encounter.label.export', 'Export')}"
 								></th>
 								<th
-									data-priority="2"
 									class="actionColumn"
+									data-priority="2"
 									th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
 								></th>
 							</tr>
@@ -183,22 +200,22 @@
 				</div>
 				<div class="panel-body">
 					<a
-						th:href="@{/mobile/survey/index}"
 						class="btn btn-primary"
 						id="executeEncounter"
+						th:href="@{/mobile/survey/index}"
 						th:text="${messages.get(#locale, 'admin.navigation.executeSurvey', 'Execute survey')}"
 					>
 					</a>
 				</div>
 			</div>
 			<div
-				id="encounterScheduledTab"
-				class="tab-pane fade"
 				aria-labelledby="encounterScheduled-tablink"
+				class="tab-pane fade"
+				id="encounterScheduledTab"
 			>
 				<div 
-					id="loadingContainerScheduled" 
 					class="d-flex flex-column align-items-center justify-content-center vh-50"
+					id="loadingContainerScheduled"
 				>
 					<div 
 						class="spinner-border" 
@@ -210,8 +227,8 @@
 				</div>
 				<div class="table-responsive">
 					<table
-						id="encounterScheduled"
 						class="table table-hover responsive"
+						id="encounterScheduled"
 						style="width: 100%"
 					>
 						<!--/* CAVE: You are displaying patient details. Each patient attribute that is displayed to the user needs to be entered into the audit log. */-->
@@ -250,8 +267,8 @@
 									th:text="${messages.get(#locale, 'encounterScheduled.label.encounterScheduledSerialType', 'EncounterScheduledSerialType')}"
 								></th>
 								<th
-									data-priority="2"
 									class="actionColumn"
+									data-priority="2"
 									th:text="${messages.get(#locale, 'admin.table.actions', 'Actions')}"
 								></th>
 							</tr>
@@ -336,10 +353,10 @@
 														<span
 															class="data-email"
 															data-bs-toggle="modal"
-															th:href="|#${item.id}_emailForm|"
 															style="color: red; cursor: pointer"
-															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
+															th:href="|#${item.id}_emailForm|"
 															th:text="${item.email}"
+															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
 														>
 														</span>
 													</th:block>
@@ -350,21 +367,21 @@
 														<span
 															class="data-email"
 															data-bs-toggle="modal"
-															th:href="|#${item.id}_emailForm|"
 															style="cursor: pointer"
-															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
+															th:href="|#${item.id}_emailForm|"
 															th:text="${item.email}"
+															th:title="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Change email address')}"
 														></span>
 													</th:block>
 												</th:block>
 												<div
+													aria-hidden="true"
 													class="modal fade"
-													th:id="|${item.id}_emailForm|"
 													data-backdrop="static"
 													data-keyboard="false"
 													tabindex="-1"
-													aria-hidden="true"
 													th:aria-labelledby="|${item.id}_emailFormLabel|"
+													th:id="|${item.id}_emailForm|"
 												>
 													<div class="modal-dialog">
 														<div class="modal-content">
@@ -375,17 +392,17 @@
 																	th:text="|${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Edit email')}: ${item.email}|"
 																></h5>
 																<button 
-																	type="button" 
+																	aria-hidden="true"
 																	class="btn-close" 
 																	data-bs-dismiss="modal" 
-																	aria-hidden="true"
+																	type="button"
 																></button>
 															</div>
 															<div class="modal-body">
 																<form
+																	action="editEmail"
 																	enctype="application/x-www-form-urlencoded"
 																	method="POST"
-																	action="editEmail"
 																>
 																	<div class="form-group">
 																		<label
@@ -396,32 +413,32 @@
 																			class="form-control"
 																			id="email"
 																			name="email"
-																			type="text"
-																			th:placeholder="${item.email}"
 																			onchange="validateEmail(this)"
+																			th:placeholder="${item.email}"
+																			type="text"
 																			value=""
 																		/>
 																		<input
 																			class="form-control"
+																			hidden="true"
 																			id="encounterScheduledId"
 																			name="encounterScheduledId"
-																			hidden="true"
-																			type="text"
 																			th:value=${item.id}
+																			type="text"
 																		/>
 																		<span
 																			class="d-none"
-																			th:id="|${item.id}_invalid-mail-error|"
 																			style="color: red;"
+																			th:id="|${item.id}_invalid-mail-error|"
 																			th:text="${messages.get(#locale, 'encounterScheduled.error.invalidMail', 'Invalid email address')}"
 																		></span>
 																	</div>
 																	<div class="d-flex justify-content-end submitDiv">
 																		<button 
-																			type="submit" 
 																			class="btn btn-primary"
 																			disabled="disabled"
 																			th:text="${messages.get(#locale, 'encounterScheduled.label.changeEmail', 'Edit email')}"
+																			type="submit"
 																		></button>
 																	</div>
 																</form>
@@ -436,35 +453,29 @@
 												th:if="${not #strings.isEmpty(item.encounterScheduledSerialType)}"
 											>
 												<th:block
-													th:switch="${item.encounterScheduledSerialType.toString()}"
-												>
-													<th:block
-														th:case="'UNIQUELY'"
-														th:text="${messages.get(#locale, 'encounterScheduled.label.period.uniquely', 'Uniquely')}"
-													>
-													</th:block>
-													<th:block
-														th:case="'REPEATEDLY'"
-														th:text="${messages.get(#locale, 'encounterScheduled.label.period.multipleTimes',
-                                                                    messages.buildArguments('__${item.repeatPeriod}__'), 'Multiple Times')}"
-													>
-													</th:block>
-													<th:block
-														th:case="'WEEKLY'"
-														th:text="${messages.get(#locale, 'encounterScheduled.label.period.weekly', 'Weekly')}"
-													>
-													</th:block>
-													<th:block
-														th:case="'MONTHLY'"
-														th:text="${messages.get(#locale, 'encounterScheduled.label.period.monthly', 'Monthly')}"
-													>
-													</th:block>
-												</th:block>
+													th:text="${messages.getPeriodLabel(#locale, item.encounterScheduledSerialType, item.repeatPeriod)}"
+												></th:block>
 											</th:block>
 										</td>
 										<td class="actionColumn">
 											<div class="d-none d-xl-block">
                                                 <div class="btn-group" role="group">
+													<a class="btn btn-sm btn-primary-list link"
+														th:classappend="${item.mailStatus.name() != 'INTERRUPTED' ? '' : 'btn-crossed'}"
+														th:data-link="${fullLink}"
+														th:data-uuid="${item.uuid}"
+														th:data-start="${localeHelper.formatDate(item.startDate)}"
+														th:data-period="${messages.getPeriodLabel(#locale, item.encounterScheduledSerialType, item.repeatPeriod)}"
+														th:data-end="${localeHelper.formatDate(item.endDate)}"
+														th:with="link=@{/mobile/survey/encounter(hash=${item.uuid})},
+                                    							fullLink=${requestURL.replace('/encounter/list', '') + link}"
+														onclick="printEncounterInfo(this)"
+													>
+															<i
+																class="bi-qr-code-scan bi-list-icon"
+																th:title="${messages.get(#locale, 'encounterScheduled.button.print', 'Print encounter information')}">
+															</i>	
+													</a>
                                                     <th:block th:switch="${item.mailStatus.name()}">
                                                         <th:block th:case="'ACTIVE'">
                                                             <a
@@ -480,8 +491,8 @@
                                                         </th:block>
                                                         <th:block th:case="'ADDRESS_REJECTED'">
                                                             <i
-                                                                onclick="editEmail($(this).parents('tr').find('.data-email'))"
                                                                 class="bi-exclamation-triangle-fill bi-list-icon"
+                                                                onclick="editEmail($(this).parents('tr').find('.data-email'))"
                                                                 style="cursor: pointer"
                                                                 th:title="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
                                                             >
@@ -520,8 +531,8 @@
                                                         </th:block>
                                                         <th:block th:case="'INTERRUPTED'">
 															<a
-																class="btn btn-sm btn-primary-list reactivationLink link btn-crossed btn-yellow"
 																aria-disabled="true"
+																class="btn btn-sm btn-primary-list reactivationLink link btn-crossed btn-yellow"
 															>
 																<i
 																	class="bi-exclamation-circle-fill bi-list-icon"
@@ -550,9 +561,9 @@
                                                             th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
                                                         >
                                                             <a
-																th:id="'removeScheduleEncounter_' + ${item.id}"
-                                                                class="btn btn-sm btn-primary-list link btn-red"
+																class="btn btn-sm btn-primary-list link btn-red"
                                                                 th:href="|remove?encounterScheduledId=${item.id}|"
+                                                                th:id="'removeScheduleEncounter_' + ${item.id}"
                                                             >
                                                                 <i
                                                                     class="bi-trash-fill bi-list-icon"
@@ -580,19 +591,32 @@
 													layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=|${item.caseNumber}: ${item.email}|, id=|${item.id}_offcanvas|)}"
 												>
 													<th:block layout:fragment="optionsContent">
+														<a class="link"
+															th:if="${item.mailStatus.name() != 'INTERRUPTED'}"
+															th:data-link="${fullLink}"
+															th:data-uuid="${item.uuid}"
+															th:data-start="${localeHelper.formatDate(item.startDate)}"
+															th:data-period="${messages.getPeriodLabel(#locale, item.encounterScheduledSerialType, item.repeatPeriod)}"
+															th:data-end="${localeHelper.formatDate(item.endDate)}"
+															th:with="link=@{/mobile/survey/encounter(hash=${item.uuid})},
+																	fullLink=${requestURL.replace('/encounter/list', '') + link}"
+															onclick="printEncounterInfo(this)"
+															th:text="${messages.get(#locale, 'encounterScheduled.label.printQrCode', 'Print QR-Code')}"
+														>
+														</a>
 														<th:block th:switch="${item.mailStatus}">
 															<a
-																th:case="'ACTIVE'"
 																class="link"
+																th:case="'ACTIVE'"
 																th:href="|toggleMailStatus?id=${item.id}|"
 																th:text="${messages.get(#locale, 'encounterScheduled.button.deactivateMailStatus', 'Deactivate remind mails')}"
 															>
 															</a>
 															<a
-																th:case="'ADDRESS_REJECTED'"
-																onclick=""
 																class="link"
+																onclick=""
 																style="cursor: pointer"
+																th:case="'ADDRESS_REJECTED'"
 																th:text="${messages.get(#locale, 'encounterScheduled.button.addressRejected', 'Deactivate remind mails')}"
 															>
 															</a>
@@ -603,15 +627,15 @@
 																></span>
 															</a>
 															<a
-																th:case="'DEACTIVATED_ENCOUNTER_MANAGER'"
 																class="link"
+																th:case="'DEACTIVATED_ENCOUNTER_MANAGER'"
 																th:href="|toggleMailStatus?id=${item.id}|"
 																th:text="${messages.get(#locale, 'encounterScheduled.button.reactivate', 'Reactivate remind mails')}"
 															>
 															</a>
 															<a
-																th:case="'DEACTIVATED_PATIENT'"
 																class="reactivationLink link"
+																th:case="'DEACTIVATED_PATIENT'"
 																th:href="|toggleMailStatus?id=${item.id}|"
 																th:text="${messages.get(#locale, 'encounterScheduled.button.reactivatePatient', 'Send mail to patient and let him reactivate remind mails')}"
 															>
@@ -625,17 +649,17 @@
 																th:if="${item.mailStatus != 'INTERRUPTED'}"
 															>
 																<a
-																	th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
 																	class="interruptLink link"
 																	th:href="|interrupt?encounterScheduledId=${item.id}|"
+																	th:if="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
 																	th:text="${messages.get(#locale, 'encounterScheduled.button.abort', 'Abort this scheduled encounter')}"
 																>
 																</a>
 																<a
-																	th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
 																	class="dropdown-item link"
 																	th:href="|remove?encounterScheduledId=${item.id}|"
 																	th:text="${messages.get(#locale, 'encounterScheduled.button.remove', 'Remove this scheduled encounter')}"
+																	th:unless="${item.encounterDTOs != null and not #lists.isEmpty(item.encounterDTOs)}"
 																>
 																</a>
 															</th:block>
@@ -652,12 +676,58 @@
 				</div>
 				<div class="panel-body">
 					<a
-						href="schedule"
 						class="btn btn-primary"
+						href="schedule"
 						id="scheduleEncounter"
 						th:text="${messages.get(#locale, 'admin.navigation.scheduleSurvey', 'Schedule survey')}"
 					>
 					</a>
+				</div>
+			</div>
+		</div>
+
+		<div id="printSection" style="display: none;">
+			<div class="flyer">
+				<div class="flyer-header">
+		
+					<div class="flyer-logo">
+						<img alt="Logo" src="/images/logo.svg" />
+					</div>
+		
+					<div class="flyer-title"
+						th:text="${messages.get(#locale, 'encounterScheduled.label.print.heading', 'Please participate in the survey online')}"	
+					></div>
+		
+				</div>
+		
+				<div class="flyer-text"
+					th:utext="${messages.get(#locale, 'encounter.scheduled.infoText', 'Please scan this code:')}"></div>
+		
+				<div>
+					<div class="flyer-qr-wrapper">
+						<div id="printBarcodeContainer"></div>
+					</div>
+					<div id="textContainer">
+						<div class="grid">
+							<div id="startContainer"></div>
+							<div id="periodContainer"></div>
+							<div id="endContainer"></div>
+						</div>
+					</div>
+				</div>
+		
+				<div class="flyer-link" id="printLinkText"></div>
+		
+				<div class="flyer-instructions">
+					<b th:text="${messages.get(#locale, 'encounter.scheduled.surveyInformation', 'Survey Information')}"></b>
+					<th:block
+						th:utext="${messages.get(#locale, 'encounterScheduled.label.print.informationSection', '&lt;ol&gt;&lt;li&gt;Scan the QR code&lt;/li&gt;&lt;li&gt;Start the survey&lt;/li&gt;&lt;li&gt;Answer all required questions. Please follow the instructions regarding the completeness of your answers&lt;/li&gt;&lt;li&gt;When finished, submit your responses by clicking “End Survey.” Please wait for confirmation that your responses have been successfully submitted.&lt;/li&gt;&lt;/ol&gt;')}"
+					></th:block>
+				</div>
+		
+				<div class="flyer-footer"
+					th:text="${messages.get(#locale, 'encounterScheduled.label.print.thanks', 'Thank you for your support.')}"	
+				>
 				</div>
 			</div>
 		</div>
@@ -674,6 +744,8 @@
 			/*[[${messages.get(#locale, 'encounterScheduled.label.endDate', 'Enddate')}]]*/ "Enddate";
 		strings["encounter.label.startDate"] =
 			/*[[${messages.get(#locale, 'encounter.label.startDate', 'Startdate')}]]*/ "Startdate";
+		strings["encounterScheduled.label.encounterScheduledSerialType"] = 
+			/*[[${messages.get(#locale, 'encounterScheduled.label.encounterScheduledSerialType', 'EncounterScheduledSerialType')}]]*/ 'Encounter Type'; 
 		strings["encounter.label.export"] =
 			/*[[${messages.get(#locale, 'encounter.label.export', 'Export')}]]*/ "";
 		strings["encounter.label.lastReminderDate"] =
@@ -694,6 +766,7 @@
 			/*[[${messages.get(#locale, 'button.save', 'Save')}]]*/ "Save";
 		strings["button.cancel"] =
 			/*[[${messages.get(#locale, 'button.cancel', 'Cancel')}]]*/ "Cancel";
+
 
 		var encounterScheduledDTOs = /*[[${encounterScheduledDTOs}]]*/ "";
 		var currentLanguage = /*[[${#locale.toString()}]]*/ "en_GB";
@@ -781,7 +854,7 @@
 					return false;
 				}
 			});
-		});
+        });
 
 		/*[- Reset the colspan of the empty row of the tables, because the tabs reset colspan to zero. -]*/
 		function tabChange() {
@@ -965,9 +1038,16 @@
         * @param {String} uuid UUID of the Encounter
         * @param {String} locale Locale of the Encounter as a String
         -]*/
-		function copyLinkToClipboard(trigger, uuid, locale) {
+		async function copyLinkToClipboard(trigger, uuid, locale) {
+            /*[- Fill the textarea with the right URL -]*/
+            var baseUrl = /*[[${requestURL}]]*/ "";
+            baseUrl = baseUrl.replace(
+                "/encounter/list", ""
+            );
+            const url = baseUrl + "/mobile/survey/encounter?hash=" + uuid + "&lang=" + locale;
+
 			/*[- Create a small textarea for the copytext -]*/
-			var textArea = document.createElement("textarea");
+			const textArea = document.createElement("textarea");
 			textArea.style.position = "fixed";
 			textArea.style.top = 0;
 			textArea.style.left = 0;
@@ -979,37 +1059,233 @@
 			textArea.style.boxShadow = "none";
 			textArea.style.background = "transparent";
 
-			/*[- Fill the textarea with the right URL -]*/
-			var baseUrl = /*[[${requestURL}]]*/ "";
-			baseUrl = baseUrl.replace(
-        "/encounter/list", ""
-			);
-			textArea.value =
-				baseUrl + "/mobile/survey/encounter?hash=" + uuid + "&lang=" + locale;
+			textArea.value = url;
 
 			/*[- Add the textarea and select the text -]*/
 			document.body.appendChild(textArea);
 			textArea.select();
 
 			/*[- Try to copy the text -]*/
-			var successful = document.execCommand("copy");
+            const successful = await navigator.clipboard.writeText(url)
+                .then(() => true)
+                .catch(() => false);
 
 			/*[- And remove the textarea -]*/
 			document.body.removeChild(textArea);
 
 			/*[- Change the icon for 1500 ms -]*/
-			if (successful === true) {
-				switchClass($(trigger).children(".bi"), "bi-clipboard-fill", "bi-check-lg");
-			} else {
-				switchClass($(trigger).children(".bi"), "bi-clipboard-fill", "bi-x-lg");
-			}
-			setTimeout(function () {
-				$(trigger)
-					.children(".bi")
-					.removeClass("bi-check-lg bi-x-lg");
-				$(trigger).children(".bi").addClass("bi-clipboard-fill");
-			}, 1500);
+            const icon = $(trigger).children(".bi");
+            const successClass = successful ? "bi-check-lg" : "bi-x-lg";
+
+            switchClass(icon, "bi-clipboard-fill", successClass);
+
+            setTimeout(function () {
+                icon.removeClass("bi-check-lg bi-x-lg").addClass("bi-clipboard-fill");
+            }, 1500);
 		}
+
+        async function printEncounterInfo(element) {
+            const $link = $(element);
+            if (!$link.length) {
+                return;
+            }
+
+            const link = $link.data("link");
+            const uuid = $link.data("uuid");
+            if (!link || !uuid) {
+                return;
+            }
+
+            const response = await fetch(`/encounter/${uuid}/qr-base64`);
+            if (!response.ok) {
+                return;
+            }
+
+            const base64 = await response.text();
+
+            $("#printBarcodeContainer").html(
+                `<img src="data:image/svg+xml;base64,${base64}" alt="QR Code" class="flyer-qr-image">`
+            );
+
+            $("#printLinkText").text(link);
+
+			var start = $link.data("start");
+			var period = $link.data("period");
+			var end = $link.data("end");
+			
+			if (start) {
+				$("#startContainer").html(
+					"<span><b>" + strings['encounter.label.startDate'] + ":</b></span>" +
+					"<span>" + $link.data("start") + "</span>"
+				);
+			}
+			if (period) {
+				$("#periodContainer").html(
+					"<span><b>" + strings['encounterScheduled.label.encounterScheduledSerialType'] + ":</b></span>" +
+					"<span>" + $link.data("period") + "</span>"
+				);
+			}
+			if (end) {
+				$("#endContainer").html(
+					"<span><b>" + strings['encounter.label.endDate'] + ":</b></span>" +
+					"<span>" + $link.data("end") + "</span>"
+				);
+			}
+
+            const printContents = document.getElementById("printSection").innerHTML;
+            const printWindow = window.open("", "_blank");
+
+            printWindow.document.write(`
+		<html>
+			<head>
+				<title>MoPat</title>
+				<style>
+					@page {
+						size: A4;
+						margin: 8mm;
+					}
+
+					body {
+						font-family: Arial, sans-serif;
+						background: #fff;
+						margin: 0;
+						padding: 0;
+						color: #000;
+					}
+
+					.flyer {
+						width: 180mm;
+						margin: 0 auto;
+						padding: 16mm 12mm;
+						box-sizing: border-box;
+						text-align: center;
+						border: 1px solid #d9d9d9;
+					}
+
+					.flyer-header {
+					    display: flex;
+					    flex-direction: row;
+					    max-width: 140mm;
+					    align-items: center;
+					    justify-content: space-between;
+					    margin: 0 auto 6mm auto;
+					}
+
+					.flyer-logo img {
+						max-height: 25mm;
+						display: block;
+						margin: 0 4mm 4mm auto;
+					}
+
+					.flyer-app-name {
+						font-size: 18px;
+						font-weight: bold;
+						color: #0b6aa9;
+					}
+
+					.flyer-title {
+                        font-size: 18pt;
+                        font-weight: 800;
+                        line-height: 1.1;
+                        color: #0b6aa9;
+                        text-transform: uppercase;
+                        text-align: justify;
+                        display: block;
+                        margin-bottom: 6mm;
+                    }
+
+					.flyer-text {
+                        font-size: 12pt;
+                        line-height: 1.4;
+                        max-width: 140mm;
+                        margin: 0 auto 10mm auto;
+                        white-space: pre-line;
+                        text-align: justify;
+                        display: block;
+                    }
+
+					.flyer-qr-wrapper {
+						display: inline-block;
+						padding: 6mm;
+						border: 2px solid #7ed3ff;
+						border-radius: 4mm;
+						box-shadow: 0 0 10px rgba(0, 170, 255, 0.25);
+						margin-bottom: 4mm;
+					}
+
+					.flyer-qr-image {
+						display: block;
+						width: 55mm;
+						height: 55mm;
+					}
+
+					.flyer-scan-text {
+						font-size: 14pt;
+						font-weight: bold;
+						margin-bottom: 3mm;
+					}
+
+					.flyer-link {
+						font-size: 10pt;
+						font-weight: bold;
+						word-break: break-word;
+						margin: 0 auto 10mm auto;
+						margin-top: 4mm;
+						max-width: 150mm;
+					}
+
+					.flyer-instructions {
+						text-align: left;
+						font-size: 11pt;
+						line-height: 1.4;
+						max-width: 140mm;
+						margin: 0 auto 12mm auto;
+					}
+
+					.flyer-instructions ol {
+						padding-left: 6mm;
+						margin: 0;
+					}
+
+					.flyer-footer {
+						border-top: 1px solid #bbb;
+						padding-top: 5mm;
+						font-size: 10pt;
+						color: #333;
+					}
+				
+					#textContainer {
+						display: flex;
+						justify-content: center;
+					}
+
+					#textContainer .grid {
+						display: grid;
+						grid-template-columns: auto 1fr;
+						gap: 8px 16px;
+						text-align: left;
+					}
+
+					#textContainer .grid > div {
+						display: contents;
+					}
+
+
+				</style>
+			</head>
+			<body>
+				${printContents}
+			</body>
+		</html>
+	`);
+            printWindow.document.close();
+
+            setTimeout(function () {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 300);
+        }
 
 		/*[- function to return to the last chosen tab after redirecting to this page. -]*/
 		$(function () {

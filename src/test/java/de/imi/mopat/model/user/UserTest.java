@@ -55,9 +55,24 @@ public class UserTest {
      * @return Returns a valid new User
      */
     public static User getNewValidUser() {
-        return new User(Helper.getRandomAlphabeticString(random.nextInt(10) + 3),
+        String username = Helper.getRandomAlphabeticString(random.nextInt(10) + 3);
+        User user = new User(username,
             Helper.getRandomAlphanumericString(random.nextInt(10) + 3));
 
+        user.setFirstname("Test");
+        user.setLastname("User");
+        user.setEmail(username + "@test.com");
+        user.setSalt("random_salt_456");
+        user.setPrincipal(true);
+        user.setIsEnabled(true);
+        user.replaceRolesWith(UserRole.ROLE_ADMIN);
+        return user;
+    }
+
+    public static User getNewValidUser(UserRole role) {
+        User user = getNewValidUser();
+        user.replaceRolesWith(role);
+        return user;
     }
 
     @Before
@@ -108,7 +123,9 @@ public class UserTest {
         }
         assertTrue("It was possible to add null to the Authorities", e instanceof AssertionError);
 
-        List<GrantedAuthority> testList = new ArrayList<>();
+        List<GrantedAuthority> testList = new ArrayList<>(
+                testUser.getAuthorities()
+        );
         int countAuthorities = random.nextInt(3) + 1;
         for (int i = 0; i < countAuthorities; i++) {
             testAuthority = AuthorityTest.getNewValidAuthority();

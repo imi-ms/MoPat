@@ -897,6 +897,12 @@
             <type>jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.org.okapibarcode</groupId>
+            <artifactId>okapibarcode</artifactId>
+            <version>0.5.5</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <repositories>

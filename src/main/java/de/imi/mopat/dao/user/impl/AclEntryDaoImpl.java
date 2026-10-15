@@ -3,6 +3,7 @@ package de.imi.mopat.dao.user.impl;
 import de.imi.mopat.dao.user.AclClassDao;
 import de.imi.mopat.dao.user.AclEntryDao;
 import de.imi.mopat.dao.user.AclObjectIdentityDao;
+import de.imi.mopat.model.Clinic;
 import de.imi.mopat.model.user.AclClass;
 import de.imi.mopat.model.user.AclEntry;
 import de.imi.mopat.model.user.AclObjectIdentity;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +119,52 @@ public class AclEntryDaoImpl extends UserManagementDaoImpl<AclEntry> implements 
         } catch (NoResultException | NoSuchMethodException | SecurityException |
                  IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             return null;
+        }
+    }
+
+    @Override
+    public List<Clinic> getClinicsForUser(final User user) {
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        // 1. Get the AclClass for Clinic
+        AclClass clinicClass = aclClassDao.getElementByClass(Clinic.class.getName());
+        if (clinicClass == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // 2. Get the User's ID
+            Long userId = user.getId();
+
+            // 3. Query for AclObjectIdentity entries that belong to the user for Clinic class
+            String jpql = "SELECT DISTINCT aoi.objectIdIdentity " +
+                "FROM AclObjectIdentity aoi " +
+                "JOIN AclEntry ae ON ae.aclObjectIdentity = aoi " +
+                "WHERE aoi.objectIdClass = :aclClass " +
+                "AND ae.user.id = :userId " +
+                "AND ae.granting = true"; // Assuming granting=true means access is allowed
+
+            TypedQuery<Long> query = moPatUserEntityManager.createQuery(jpql, Long.class);
+            query.setParameter("aclClass", clinicClass);
+            query.setParameter("userId", userId);
+
+            List<Long> clinicIds = query.getResultList();
+
+            if (clinicIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // 4. Fetch the actual Clinic entities by their IDs
+            String clinicJpql = "SELECT c FROM Clinic c WHERE c.id IN :ids";
+            TypedQuery<Clinic> clinicQuery = moPatEntityManager.createQuery(clinicJpql, Clinic.class);
+            clinicQuery.setParameter("ids", clinicIds);
+
+            return clinicQuery.getResultList();
+
+        } catch (NoResultException ex) {
+            return Collections.emptyList();
         }
     }
 

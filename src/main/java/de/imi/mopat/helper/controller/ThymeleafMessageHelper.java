@@ -1,6 +1,7 @@
 package de.imi.mopat.helper.controller;
 
 
+import de.imi.mopat.model.enumeration.EncounterScheduledSerialType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -45,5 +46,30 @@ public class ThymeleafMessageHelper {
      */
     public Object[] buildArguments(Object... args) {
         return args;
+    }
+
+    /**
+     * Evaluates the correct period label based on locale, serial type and repeat period
+     * @param locale to get message for
+     * @param type of the EncounterScheduled
+     * @param repeatPeriod of the EncounterScheduled
+     * @return String of the correct label
+     */
+    public String getPeriodLabel(Locale locale, EncounterScheduledSerialType type, Integer repeatPeriod) {
+        if (type == null) return "";
+
+        switch (type) {
+            case UNIQUELY:
+                return get(locale, "encounterScheduled.label.period.uniquely", "Uniquely");
+            case REPEATEDLY:
+                return get(locale, "encounterScheduled.label.period.multipleTimes",
+                    buildArguments(repeatPeriod), "Multiple Times");
+            case WEEKLY:
+                return get(locale, "encounterScheduled.label.period.weekly", "Weekly");
+            case MONTHLY:
+                return get(locale, "encounterScheduled.label.period.monthly", "Monthly");
+            default:
+                return type.toString(); // Fallback
+        }
     }
 }

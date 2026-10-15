@@ -313,7 +313,8 @@ CREATE TABLE IF NOT EXISTS `acl_class` (
 
 INSERT INTO `acl_class` (`id`, `class`) VALUES
 (1, 'de.imi.mopat.model.Clinic'),
-(2, 'de.imi.mopat.model.Bundle');
+(2, 'de.imi.mopat.model.Bundle'),
+(3, 'de.imi.mopat.model.EncounterScheduled');
 
 -- --------------------------------------------------------
 

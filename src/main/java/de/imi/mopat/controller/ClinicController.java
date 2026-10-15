@@ -30,6 +30,7 @@ import de.imi.mopat.model.dto.ClinicDTO;
 import de.imi.mopat.model.dto.UserDTO;
 import de.imi.mopat.model.enumeration.PermissionType;
 import de.imi.mopat.model.user.AclObjectIdentity;
+import de.imi.mopat.service.EncounterScheduledService;
 import de.imi.mopat.validator.BundleDTOValidator;
 import de.imi.mopat.validator.ClinicDTOValidator;
 
@@ -103,6 +104,8 @@ public class ClinicController {
     private ClinicConfigurationDTOMapper clinicConfigurationDTOMapper;
     @Autowired
     private EncounterDao encounterDao;
+    @Autowired
+    private EncounterScheduledService encounterScheduledService;
 
     /**
      * @param id The Id of the {@link Clinic} object
@@ -430,7 +433,9 @@ public class ClinicController {
         for (Bundle deletedBundle : deletedBundles) {
             bundleDao.merge(deletedBundle);
         }
+
         clinicDao.updateUserRights(clinic, deletedBundles, clinicDTO.getAssignedUserDTOs());
+        encounterScheduledService.updateEncounterScheduledUserRightsForClinic(clinic);
 
         return "redirect:/clinic/list";
     }

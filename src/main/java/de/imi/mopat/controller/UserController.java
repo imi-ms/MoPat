@@ -581,6 +581,11 @@ public class UserController {
         return "mobile/user/login";
     }
 
+    @RequestMapping(value = "/mobile/user/modeselection")
+    public String showModeSelection(final Model model) {
+        return "mobile/user/modeselection";
+    }
+
     /**
      * Control the HTTP GET requests for the URL <i>/mobile/user/pinlogin</i> Shows the pin login
      * page

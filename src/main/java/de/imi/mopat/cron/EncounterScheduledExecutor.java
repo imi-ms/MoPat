@@ -132,18 +132,7 @@ public class EncounterScheduledExecutor {
         List<EncounterScheduled> listEncounterScheduled = encounterScheduledDao.getEncounterScheduledByDate(
             today);
         for (EncounterScheduled encounterScheduled : listEncounterScheduled) {
-            long timeDifference = today.getTime() - encounterScheduled.getStartDate().getTime();
-            long daysBetween = TimeUnit.DAYS.convert(timeDifference, TimeUnit.MILLISECONDS);
-            if ((encounterScheduled.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.UNIQUELY) && encounterScheduled.getStartDate()
-                .equals(today)) || (encounterScheduled.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.WEEKLY) && daysBetween % 7 == 0) || (
-                encounterScheduled.getEncounterScheduledSerialType()
-                    .equals(EncounterScheduledSerialType.MONTHLY) && daysBetween % 30 == 0) || (
-                encounterScheduled.getEncounterScheduledSerialType()
-                    .equals(EncounterScheduledSerialType.REPEATEDLY)
-                    && daysBetween % encounterScheduled.getRepeatPeriod() == 0)) {
-
+            if (encounterScheduled.doesScheduledPatternMatchDate(today)) {
                 Encounter encounter = new Encounter();
                 Bundle bundle = bundleDao.getElementById(encounterScheduled.getBundle().getId());
                 encounter.setBundle(bundle);
