@@ -123,7 +123,9 @@ public class UserTest {
         }
         assertTrue("It was possible to add null to the Authorities", e instanceof AssertionError);
 
-        List<GrantedAuthority> testList = new ArrayList<>();
+        List<GrantedAuthority> testList = new ArrayList<>(
+                testUser.getAuthorities()
+        );
         int countAuthorities = random.nextInt(3) + 1;
         for (int i = 0; i < countAuthorities; i++) {
             testAuthority = AuthorityTest.getNewValidAuthority();
