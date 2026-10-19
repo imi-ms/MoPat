@@ -385,8 +385,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PUBLISH, "Failed to locate publish checkbox")
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_NAME_PROGRESS, "Failed to locate name progress checkbox")
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PROGRESS_WHOLE_PACKAGE, "Failed to locate progress whole package checkbox")
-        self.utils.check_visibility_of_element(BundleSelectors.TABLE_AVAILABLE_QUESTIONNAIRES, "Available questionnaires table not found")
-        self.utils.check_visibility_of_element(BundleSelectors.TABLE_ASSIGNED_QUESTIONNAIRES, "Assigned questionnaires table not found")
+        self.utils.check_visibility_of_element(BundleSelectors.QUESTIONNAIRE_ASSIGNMENT_LIST, "Questionnaire assignment list not found")
+        self.utils.check_visibility_of_element(BundleSelectors.BUTTON_OPEN_QUESTIONNAIRE_MODAL, "Add questionnaires button not found")
 
         #Assert - Test for assigning questionnaire to bundle
         try:
