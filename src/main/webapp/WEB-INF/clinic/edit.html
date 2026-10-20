@@ -102,6 +102,8 @@
                         availableItems=${availableBundleDTOs},
                         fieldPrefix='bundleClinicDTOs',
                         itemDtoField='bundleDTO',
+                        itemNameField='name',
+                        isSortable=true,
                         isModifiable=true,
                         headingText=${messages.get(#locale, 'clinic.heading.assignedBundles', 'Assigned bundles')},
                         headingInfoText=${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Only published bundles with at least one questionnaire can be assigned.')},
@@ -532,5 +534,5 @@
             }
         }
     </script>
-    <script th:src="@{/js/helper/assignmentList.js?version=3.5.0}"></script>
+    <script th:src="@{/js/helper/assignmentList.js?version=3.5.1}"></script>
 </th:block>

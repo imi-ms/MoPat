@@ -1,20 +1,30 @@
 <!--/*
     Reusable assignment list fragment.
 
-    componentId: unique namespace per instance on the page.
-                 Only used for real DOM ids (label/for, Bootstrap targets).
-                 Falls back to fieldPrefix when not set.
+    componentId:   unique namespace per instance on the page.
+                   Only used for real DOM ids (label/for, Bootstrap targets).
+                   Falls back to fieldPrefix when not set.
+    itemDtoField:  name of the property inside each assigned entry that holds the item
+                   (e.g. 'questionnaireDTO'). null = "flat mode": the assigned entry IS the item
+                   (e.g. a plain List<UserDTO>).
+    itemNameField: property of the item that is displayed and searched (e.g. 'name', 'username').
+    isSortable:    true = drag handle, numbering and position field are rendered.
+                   false = list order is fixed, no position is submitted.
 */-->
-<div th:fragment="assignmentList(componentId, assignedItems, availableItems, fieldPrefix, itemDtoField, isModifiable,
+<div th:fragment="assignmentList(componentId, assignedItems, availableItems, fieldPrefix, itemDtoField, itemNameField,
+                                 isSortable, isModifiable,
                                  headingText, headingInfoText, addButtonText, emptyStateText,
                                  reorderText, alreadyAddedText, disableWhenEmptySelector,
                                  itemMetaFragment, assignedDetailFragment, availableDetailFragment)"
      class="assignment-list"
      th:with="cid=${componentId ?: fieldPrefix},
               modalId=|${cid}-item-selection-modal|,
-              modalLabelId=|${cid}-item-selection-modal-label|"
+              modalLabelId=|${cid}-item-selection-modal-label|,
+              fieldPath=${itemDtoField == null ? '' : itemDtoField + '.'},
+              sortable=${#bools.isTrue(isSortable)}"
      th:attr="data-component-id=${cid},
               data-field-prefix=${fieldPrefix},
+              data-sortable=${sortable},
               data-disable-when-empty=${disableWhenEmptySelector},
               data-already-added-text=${alreadyAddedText ?: 'Already added'}">
 
@@ -43,39 +53,41 @@
   <div class="list-group assignment-list__assigned">
     <div class="list-group-item assignment-list-item"
          th:each="assignment, status : ${assignedItems}"
-         th:with="itemDto=${assignment.__${itemDtoField}__}"
+         th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
          th:attr="data-item-id=${itemDto.id}">
       <div class="row align-items-start g-2">
-        <div class="col-auto pt-2">
-          <button type="button"
-                  class="btn btn-sm btn-link text-body assignment-drag-handle"
-                  th:disabled="${#bools.isFalse(isModifiable)}"
-                  th:title="${reorderText ?: 'Change order'}">
-            <span class="bi bi-grip-vertical" aria-hidden="true"></span>
-          </button>
-        </div>
+        <th:block th:if="${sortable}">
+          <div class="col-auto pt-2">
+            <button type="button"
+                    class="btn btn-sm btn-link text-body assignment-drag-handle"
+                    th:disabled="${#bools.isFalse(isModifiable)}"
+                    th:title="${reorderText ?: 'Change order'}">
+              <span class="bi bi-grip-vertical" aria-hidden="true"></span>
+            </button>
+          </div>
 
-        <div class="col-auto pt-2 assignment-item-position">
-          <span th:text="|${status.index + 1}.|">1.</span>
-          <input type="hidden"
-                 data-field="position"
-                 th:name="|${fieldPrefix}[${status.index}].position|"
-                 th:value="${status.index + 1}" />
-        </div>
+          <div class="col-auto pt-2 assignment-item-position">
+            <span th:text="|${status.index + 1}.|">1.</span>
+            <input type="hidden"
+                   data-field="position"
+                   th:name="|${fieldPrefix}[${status.index}].position|"
+                   th:value="${status.index + 1}" />
+          </div>
+        </th:block>
 
         <div class="col">
-          <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
+          <div class="fw-semibold" th:text="${itemDto[itemNameField]}">Item</div>
           <th:block th:if="${itemMetaFragment != null}">
             <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
           </th:block>
 
           <input type="hidden"
-                 th:attr="data-field=${itemDtoField + '.name'}"
-                 th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.name|"
-                 th:value="${itemDto.name}" />
+                 th:attr="data-field=${fieldPath + itemNameField}"
+                 th:name="|${fieldPrefix}[${status.index}].${fieldPath}${itemNameField}|"
+                 th:value="${itemDto[itemNameField]}" />
           <input type="hidden"
-                 th:attr="data-field=${itemDtoField + '.id'}"
-                 th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.id|"
+                 th:attr="data-field=${fieldPath + 'id'}"
+                 th:name="|${fieldPrefix}[${status.index}].${fieldPath}id|"
                  th:value="${itemDto.id}" />
         </div>
 
@@ -130,8 +142,8 @@
             <!-- Already assigned items are shown, but disabled. -->
             <div class="list-group-item assignment-selection-row"
                  th:each="assignment : ${assignedItems}"
-                 th:with="itemDto=${assignment.__${itemDtoField}__}"
-                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
+                 th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}">
               <div class="form-check">
                 <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
@@ -139,7 +151,7 @@
                        th:id="|${cid}-select-item-${itemDto.id}|" />
                 <label class="form-check-label w-100"
                        th:for="|${cid}-select-item-${itemDto.id}|">
-                  <span th:text="${itemDto.name}">Item</span>
+                  <span th:text="${itemDto[itemNameField]}">Item</span>
                   <span class="badge bg-secondary float-end assignment-item-assigned-badge"
                         th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
                 </label>
@@ -149,6 +161,8 @@
                 <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
                         itemDto=${itemDto},
                         itemDtoField=${itemDtoField},
+                        itemNameField=${itemNameField},
+                        isSortable=${sortable},
                         reorderText=${reorderText},
                         itemMetaFragment=${itemMetaFragment},
                         availableDetailFragment=${availableDetailFragment})}"></div>
@@ -157,14 +171,14 @@
 
             <div class="list-group-item assignment-selection-row"
                  th:each="itemDto : ${availableItems}"
-                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
+                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}">
               <div class="form-check">
                 <input class="form-check-input assignment-selection-checkbox"
                        type="checkbox"
                        th:id="|${cid}-select-item-${itemDto.id}|" />
                 <label class="form-check-label w-100"
                        th:for="|${cid}-select-item-${itemDto.id}|">
-                  <span th:text="${itemDto.name}">Item</span>
+                  <span th:text="${itemDto[itemNameField]}">Item</span>
                   <th:block th:if="${itemMetaFragment != null}">
                     <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
                   </th:block>
@@ -175,6 +189,8 @@
                 <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
                         itemDto=${itemDto},
                         itemDtoField=${itemDtoField},
+                        itemNameField=${itemNameField},
+                        isSortable=${sortable},
                         reorderText=${reorderText},
                         itemMetaFragment=${itemMetaFragment},
                         availableDetailFragment=${availableDetailFragment})}"></div>
@@ -200,27 +216,31 @@
        Ids must stay out entirely: a componentId prefix makes ids unique
        across instances, but not across clones within one instance.
        Labels therefore wrap their input instead of using for/id. */-->
-<div th:fragment="assignmentItemTemplate(itemDto, itemDtoField, reorderText, itemMetaFragment, availableDetailFragment)"
+<div th:fragment="assignmentItemTemplate(itemDto, itemDtoField, itemNameField, isSortable, reorderText,
+                                         itemMetaFragment, availableDetailFragment)"
      class="list-group-item assignment-list-item"
+     th:with="fieldPath=${itemDtoField == null ? '' : itemDtoField + '.'}"
      th:attr="data-item-id=${itemDto.id}">
   <div class="row align-items-start g-2">
-    <div class="col-auto pt-2">
-      <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
-              th:title="${reorderText ?: 'Change order'}">
-        <span class="bi bi-grip-vertical" aria-hidden="true"></span>
-      </button>
-    </div>
-    <div class="col-auto pt-2 assignment-item-position">
-      <span>0.</span>
-      <input type="hidden" data-field="position" value="0" disabled="disabled" />
-    </div>
+    <th:block th:if="${#bools.isTrue(isSortable)}">
+      <div class="col-auto pt-2">
+        <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
+                th:title="${reorderText ?: 'Change order'}">
+          <span class="bi bi-grip-vertical" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="col-auto pt-2 assignment-item-position">
+        <span>0.</span>
+        <input type="hidden" data-field="position" value="0" disabled="disabled" />
+      </div>
+    </th:block>
     <div class="col">
-      <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
+      <div class="fw-semibold" th:text="${itemDto[itemNameField]}">Item</div>
       <th:block th:if="${itemMetaFragment != null}">
         <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
       </th:block>
-      <input type="hidden" th:attr="data-field=${itemDtoField + '.name'}" th:value="${itemDto.name}" disabled="disabled" />
-      <input type="hidden" th:attr="data-field=${itemDtoField + '.id'}" th:value="${itemDto.id}" disabled="disabled" />
+      <input type="hidden" th:attr="data-field=${fieldPath + itemNameField}" th:value="${itemDto[itemNameField]}" disabled="disabled" />
+      <input type="hidden" th:attr="data-field=${fieldPath + 'id'}" th:value="${itemDto.id}" disabled="disabled" />
     </div>
 
     <th:block th:if="${availableDetailFragment != null}">
