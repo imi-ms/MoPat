@@ -126,10 +126,13 @@ public class SurveyController {
     private Validator validator;
     @Autowired
     private SurveyService surveyService;
+    @Autowired
+    private EncounterScheduledDao encounterScheduledDao;
 
     // Initialize every needed configuration information as a final string
     private final String className = this.getClass().getName();
     private final String caseNumberTypeProperty = "caseNumberType";
+
 
     /**
      * Controls the HTTP GET requests for the URL
@@ -755,7 +758,10 @@ public class SurveyController {
             return "encounter/completed";
         }
 
-        EncounterDTO encounterDTO = surveyService.getEncounterDTOForUUID(uuid);
+        EncounterDTO encounterDTO = surveyService.getEncounterDTOEitherFromEncounterUUIDOrEncounterScheduledUUID(uuid);
+        if (encounterDTO == null) {
+            return "encounter/notActive";
+        }
 
         surveyService.startEncounterIfFirstAccess(encounterDTO);
 

@@ -2,11 +2,13 @@ package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.GitRepositoryMetadataHandler;
+import de.imi.mopat.service.EncounterScheduledService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 /**
  * AdminController controller.
@@ -24,6 +26,9 @@ public class AdminController {
     @Autowired
     private GitRepositoryMetadataHandler gitRepositoryMetadataHandler;
 
+    @Autowired
+    private EncounterScheduledService encounterScheduledService;
+
     /**
      * @param model The model, which holds the information for the view.
      * @return The <i>/admin/index</i> website.
@@ -36,5 +41,12 @@ public class AdminController {
         model.addAttribute("defaultLanguage", configurationDao.getDefaultLocale());
         model.addAttribute("gitRepositoryMetadata", gitRepositoryMetadataHandler.getGitRepositoryMetadata());
         return "admin/index";
+    }
+
+    @PostMapping("/admin/refreshEncounterScheduledRights")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String refreshEncountnerScheduledRights() {
+        encounterScheduledService.refreshAllUserRightsForEncounterScheduled();
+        return "redirect:/admin/index";
     }
 }

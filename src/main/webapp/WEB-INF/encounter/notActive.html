@@ -1,0 +1,16 @@
+<!--/*
+    * Error page that shows, if a specific planned encounter exists, but is not due for the day
+*/-->
+<th:block layout:decorate="~{layout/error}">
+    <th:block layout:fragment="content">
+        <div class="d-flex flex-column accessDenied centeredContent">
+            <i class="bi bi-x-circle-fill icon-red"></i>
+            <span
+                class="errorText"
+                th:text="${messages.get(#locale, 'encounterScheduled.heading.encounterNotActive',
+                    'The survey has been set up but is not yet active. Please contact your healthcare provider to find out the correct dates.')}"
+            ></span>
+            <br />
+        </div>
+    </th:block>
+</th:block>

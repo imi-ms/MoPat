@@ -37,7 +37,7 @@ class AdminIndexSelectors:
     FOOTER_WRAPPER = (By.CSS_SELECTOR, ".footer-wrapper")
     MOPAT_LOGO = (By.ID, "mopatImageFooter")
     CLINIC_LOGO = (By.CSS_SELECTOR, "footer img.clinicLogo")
-    WELCOME_TEXT = (By.CSS_SELECTOR, ".panel-body")
+    WELCOME_TEXT = (By.ID, "adminWelcomeText")
     PHONE_NUMBER = (By.CSS_SELECTOR, ".contact-phone")
     EMAIL = (By.CSS_SELECTOR, ".contact-email")
     IMPRESSUM_MODAL = (By.ID, "imprintDialog")
@@ -52,7 +52,7 @@ class AdminIndexExpectedContent:
     FORGOT_PASSWORD_TEXT = "Passwort vergessen?"
     PHONE_NUMBER = "+49 (251) 83-55262"
     EMAIL = "imi@uni-muenster.de"
-    WELCOME_TEXT_DE = "Willkommen zur Mobilen Patientenbefragung (MoPat)!"
+    WELCOME_TEXT_DE = "MoPat ist eine webbasierte Anwendung zur digitalen Erfassung und Verwaltung von Patientenfragebögen."
 
 
 class AuthenticationHelper:

@@ -11,6 +11,7 @@ import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
 import de.imi.mopat.model.enumeration.AuditEntryActionType;
 import de.imi.mopat.model.enumeration.AuditPatientAttribute;
+import de.imi.mopat.service.EncounterScheduledService;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,8 @@ public class FrequentEncounterDeletor {
     private EncounterDao encounterDao;
     @Autowired
     private EncounterScheduledDao encounterScheduledDao;
+    @Autowired
+    private EncounterScheduledService encounterScheduledService;
 
     /**
      * Gets triggered by the value provided in de.imi.mopat.cron.FrequentEncounterDeletor.checkTime.
@@ -188,6 +191,7 @@ public class FrequentEncounterDeletor {
                 for(Encounter nestedEncounter: encounterScheduled.getEncounters()) {
                     encounterDao.removeEncounterExportTemplatesForEncounter(nestedEncounter);
                 }
+                encounterScheduledService.deleteEncounterScheduledAclEntries(encounterScheduled);
 
                 encounterScheduledDao.remove(encounterScheduled);
                 deletedCaseNumbers.add(encounterScheduled.getCaseNumber());

@@ -60,4 +60,12 @@ public interface EncounterScheduledDao extends MoPatDao<EncounterScheduled> {
      * the given timestamp.
      */
     List<EncounterScheduled> getEncounterScheduledOlderThan(Timestamp timestamp);
+
+    /**
+     * Returns all {@link EncounterScheduled} objects that are assigned to either
+     * clinic in the list of clinic ids.
+     * @param clinicIds to fetch {@link EncounterScheduled} objects for
+     * @return {@link List} of {@link EncounterScheduled}
+     */
+    List<EncounterScheduled> findByClinicIdIn(List<Long> clinicIds);
 }
