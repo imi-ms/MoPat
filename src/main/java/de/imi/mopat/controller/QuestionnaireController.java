@@ -10,12 +10,9 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.*;
 import de.imi.mopat.service.AuthService;
-import de.imi.mopat.helper.controller.FhirVersionHelper;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.service.QuestionnaireVersionGroupService;
-import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
@@ -80,9 +77,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
-import javax.swing.text.html.parser.DocumentParser;
-
 /**
  *
  */
