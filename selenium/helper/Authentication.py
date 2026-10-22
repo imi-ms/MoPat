@@ -37,7 +37,7 @@ class AdminIndexSelectors:
     FOOTER_WRAPPER = (By.CSS_SELECTOR, ".footer-wrapper")
     MOPAT_LOGO = (By.ID, "mopatImageFooter")
     CLINIC_LOGO = (By.CSS_SELECTOR, "footer img.clinicLogo")
-    WELCOME_TEXT = (By.CSS_SELECTOR, ".panel-body")
+    WELCOME_TEXT = (By.ID, "adminWelcomeText")
     PHONE_NUMBER = (By.CSS_SELECTOR, ".contact-phone")
     EMAIL = (By.CSS_SELECTOR, ".contact-email")
     IMPRESSUM_MODAL = (By.ID, "imprintDialog")
