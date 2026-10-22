@@ -235,4 +235,18 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
             Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
+
+    @Override
+    public Boolean isApiKeyAccessEnabled() {
+        Configuration configuration = getConfigurationByAttributeAndClass(Constants.ENABLE_API_TOKEN_ACCESS,
+            Constants.CLASS_GLOBAL);
+        return Boolean.valueOf(configuration.getValue());
+    }
+
+    @Override
+    public String getApiKey() {
+        Configuration configuration = getConfigurationByAttributeAndClass(Constants.API_KEY,
+            Constants.CLASS_GLOBAL);
+        return configuration.getValue();
+    }
 }

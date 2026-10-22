@@ -18,7 +18,7 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.impl.MetadataExporterFhirDstu3;
 import de.imi.mopat.io.impl.MetadataExporterFhirR4b;
 import de.imi.mopat.io.impl.MetadataExporterFhirR5;

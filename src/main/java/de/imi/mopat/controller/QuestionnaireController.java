@@ -10,13 +10,9 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.helper.controller.AuthService;
-import de.imi.mopat.helper.controller.DocumentParser;
-import de.imi.mopat.helper.controller.FhirVersionHelper;
-import de.imi.mopat.helper.controller.LocaleHelper;
-import de.imi.mopat.helper.controller.QuestionnaireService;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
-import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.helper.controller.*;
+import de.imi.mopat.service.AuthService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
@@ -61,6 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -80,14 +77,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
 /**
  *
  */
 @Controller
 public class QuestionnaireController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+    private static final Logger LOGGER = LoggerFactory.getLogger(
         QuestionnaireController.class);
     @Autowired
     MoPatQuestionnaireImporter moPatQuestionnaireImporter;
@@ -390,7 +386,7 @@ public class QuestionnaireController {
      * questionnaires.
      *
      * @param id    Id of the {@link Questionnaire} object, which should be downloaded.
-     * @param type  Exporttype of the file, which should be downloaded.
+     * @param types  Exporttype of the file, which should be downloaded.
      * @param model The model, which holds the information for the view.
      * @return Returns the requested download file and redirects to the
      * <i>questionnaire/list</i> website.

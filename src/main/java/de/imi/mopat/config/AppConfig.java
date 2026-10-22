@@ -50,8 +50,7 @@ import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 /**
  * The main configuration class defining the view.
  * <p>
- * Includes other configuration classes, e.g. Security Config. Takes over functionality of old
- * spring-servlet.xml.
+ * Includes other configuration classes, e.g. Security Config. Takes over functionality of old spring-servlet.xml.
  */
 
 @Configuration

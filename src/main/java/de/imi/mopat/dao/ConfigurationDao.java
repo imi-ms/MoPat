@@ -169,4 +169,17 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      * @return The imprint text to display.
      */
     String getImprintText();
+
+    /**
+     * Returns the flag, whether automated access via Api-token is enabled
+     * @return true, if access is enabled, false otherwise
+     */
+    Boolean isApiKeyAccessEnabled();
+
+    /**
+     * returns String of API-Key for automated encounters.
+     * @return String of API-Key
+     */
+
+    String getApiKey();
 }
