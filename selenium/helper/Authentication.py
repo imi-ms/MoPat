@@ -52,7 +52,7 @@ class AdminIndexExpectedContent:
     FORGOT_PASSWORD_TEXT = "Passwort vergessen?"
     PHONE_NUMBER = "+49 (251) 83-55262"
     EMAIL = "imi@uni-muenster.de"
-    WELCOME_TEXT_DE = "Willkommen zur Mobilen Patientenbefragung (MoPat)!"
+    WELCOME_TEXT_DE = "MoPat ist eine webbasierte Anwendung zur digitalen Erfassung und Verwaltung von Patientenfragebögen."
 
 
 class AuthenticationHelper:
