@@ -11,6 +11,7 @@ import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.ResultSeverityEnum;
 import ca.uhn.fhir.validation.SingleValidationMessage;
 import ca.uhn.fhir.validation.ValidationResult;
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.io.importer.ImportQuestionnaireValidation;
 import de.imi.mopat.model.enumeration.FHIRExtensionType;
 import java.io.BufferedWriter;
@@ -29,8 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
@@ -74,6 +73,7 @@ public class FhirR4bHelper extends FhirHelper {
     private static FhirContext context;
     private static final IParser PARSER = getContext().newXmlParser();
     private static final String PROFILE_UNKNOWN_ID = "Validation_VAL_Profile_Unknown";
+    private static final DocumentParser DOCUMENT_PARSER = new DocumentParser();
 
     /**
      * Set the error handler to the fhir parser.
@@ -110,19 +110,14 @@ public class FhirR4bHelper extends FhirHelper {
             return false;
         }
 
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder = null;
         Document document = null;
         File validationSchemaFile = new File(validationSchemaFileDirectory,
             validationSchemaFileName);
         try {
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            document = documentBuilder.parse(fileToValidate.getInputStream());
+            document = DOCUMENT_PARSER.parse(fileToValidate);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(
                 "http://www.w3.org/2001/XMLSchema");
             Schema schema = schemaFactory.newSchema(validationSchemaFile);
-            documentBuilderFactory.setSchema(schema);
             Validator schemaValidator = schema.newValidator();
             DOMSource source = new DOMSource(document);
             try {
@@ -133,7 +128,7 @@ public class FhirR4bHelper extends FhirHelper {
                 LOGGER.info("Validation failed. File is invalid. {}", e.getMessage());
                 return false;
             }
-        } catch (SAXException | ParserConfigurationException | IOException e) {
+        } catch (SAXException | IOException e) {
             errors.reject("import.fhir.validate.error", new Object[]{e.getLocalizedMessage()},
                 "Error during validation: {}");
             LOGGER.info("ERROR: {}", e.getMessage());

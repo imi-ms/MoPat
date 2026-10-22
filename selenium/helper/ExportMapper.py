@@ -25,7 +25,7 @@ class ExportSelectors:
     PAGINATION = (By.ID, "questionnaireTable_paginate")
     SEARCH_BOX = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
 
-    EDIT_EXPORT_BUTTON_FIRST_ROW = (By.XPATH, "//table[@id='questionnaireTable']//tbody//tr[not(@id='emptyRow')][1]//td[contains(@class, 'actionColumn')]//a[3]")
+    EDIT_EXPORT_BUTTON_FIRST_ROW = (By.XPATH, "//table[@id='questionnaireTable']//tbody//tr[not(@id='emptyRow')][1]//td[contains(@class, 'actionColumn')]//a[2]")
 
     UPLOAD_TEMPLATE_BUTTON = (By.ID, "uploadtemplate")
 
@@ -316,9 +316,3 @@ class ExportHelper:
         except Exception as e:
             print(f"Error validating mapping state: {e}")
             return False
-
-    def click_save_mapping(self):
-        save_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable(ExportSelectors.MAPPING_SAVE_BUTTON)
-                )
-        save_button.click()

@@ -3,6 +3,7 @@ package de.imi.mopat.io.impl;
 import ca.uhn.hl7v2.model.v23.message.ORU_R01;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
+import de.imi.mopat.helper.controller.DocumentParser;
 import de.imi.mopat.io.EncounterExporter;
 import de.imi.mopat.io.EncounterExporterTemplate;
 import de.imi.mopat.model.Configuration;
@@ -18,8 +19,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -50,6 +49,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
     private Document document;
     private Encounter encounter;
     private ExportTemplate exportTemplate;
+    private final DocumentParser documentParser = new DocumentParser();;
 
     /**
      * Constructor with given {@link ConfigurationDao} to get configuration informations within this
@@ -86,11 +86,7 @@ public class EncounterExporterTemplateHL7v2 implements EncounterExporterTemplate
         File file = new File(templatePath, filename);
 
         // This code is adapted from http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder;
-        dBuilder = dbFactory.newDocumentBuilder();
-        // Load inputStream into w3c Document object..
-        document = dBuilder.parse(new FileInputStream(file));
+        document = documentParser.parse(new FileInputStream(file));
         document.setXmlStandalone(true);
     }
 

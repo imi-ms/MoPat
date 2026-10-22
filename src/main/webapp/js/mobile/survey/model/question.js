@@ -39,6 +39,7 @@ function Question() {
     this.questionType;
     this.answers;
     this.bodyPartImages;
+    this.imageType;
 
     var response;
     var image;
@@ -80,13 +81,13 @@ function Question() {
 
     /**
      * Appends the HTML representation of the current question given its
-     * questiontype to the questioncontent object.
+     * questiontype to the questionContent object.
      * 
-     * @param questioncontent
+     * @param questionContent
      *            The element into which the content is to be injected
      *            (ATTENTION: PASS BY REFERENCE)
      */
-    this.getHTML = function (questioncontent) {
+    this.getHTML = function (questionContent, isPreview, language) {
         // This is necessary so that the current object can be accessed from
         // within the jQuery functions
 
@@ -97,7 +98,7 @@ function Question() {
 
             // MULTIPLE CHOICE
             case Questiontypes.MULTIPLE_CHOICE:
-                questioncontent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
+                questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
                 var inputType = 'checkbox';
                 // If only one response is allowed, create radio buttons instead of checkboxes
                 if (this.maxNumberAnswers === 1) {
@@ -121,11 +122,13 @@ function Question() {
                                 "class": "form-check"
                             });
 
-                            var answerLabel = $("<label/>", {
-                                "for": "input" + answer.id, 
-                                "class": "btn btn-outline-primary center resizable", 
+                            var answerLabelAttributes = {
+                                "for": "input" + answer.id,
+                                "class": "btn btn-outline-primary center resizable",
                                 "id": answer.id
-                            }); 
+                            };
+                            if(isPreview) delete answerLabelAttributes["for"]; // no answer.id yet so the 'for' value does not work
+                            var answerLabel = $("<label/>", answerLabelAttributes);
 
                             var leftDiv = $("<div/>", {
                                 "class": "left"
@@ -135,14 +138,14 @@ function Question() {
                                 type: inputType, 
                                 id: "input" + answer.id, 
                                 name: "check",
-                                "onclick": "Selector.selectElement(" + question.id + ", " + answer.id + ",'','','',true);",
+                                "onclick": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + answer.id + ",'','','',true);",
                             }); 
 
                             var rightDiv =$("<div/>", {
                                 "class": "right"
                             }); 
 
-                            rightDiv.html(answer.localizedLabel[encounter.bundleLanguage]);
+                            rightDiv.html(answer.localizedLabel[language]);
                             leftDiv.html(answerInput);
                             answerLabel.append(leftDiv);
                             answerLabel.append(rightDiv); 
@@ -178,14 +181,14 @@ function Question() {
                         type: inputType, 
                         id: "input" + isOtherAnswer.id, 
                         name: "check",
-                        "onclick": "Selector.selectElement(" + question.id + ", " + isOtherAnswer.id + ",'','','',true);",
+                        "onclick": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + isOtherAnswer.id + ",'','','',true);",
                     }); 
 
                     var rightDiv =$("<div/>", {
                         "class": "right"
                     }); 
 
-                    rightDiv.html(isOtherAnswer.localizedLabel[encounter.bundleLanguage]);
+                    rightDiv.html(isOtherAnswer.localizedLabel[language]);
                     leftDiv.html(answerInput);
                     answerLabel.append(leftDiv);
                     answerLabel.append(rightDiv); 
@@ -201,9 +204,9 @@ function Question() {
                         "id": "textarea",
                         "class": "resizable",
                         "name": "textarea",
-                        "onChange": "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
+                        "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
-                        "rows": "8",
+                        "rows": calculateTextAreaRows(isPreview),
                         "style": "height: auto;",
                         "disabled": "disabled"
                     });
@@ -212,7 +215,7 @@ function Question() {
                     multipleChoiceContainer.append(textareaWrapper);
                 }
 
-                questioncontent.append(multipleChoiceContainer); 
+                questionContent.append(multipleChoiceContainer);
 
 
                 break;
@@ -229,7 +232,7 @@ function Question() {
 
                 dropDown.change(function () {
                     var selectedOption = $(this).find(":selected");
-                    Selector.selectElement(question.id, selectedOption.attr('id'), selectedOption.html(), '', '', true);
+                    if(!isPreview) Selector.selectElement(question.id, selectedOption.attr('id'), selectedOption.html(), '', '', true);
                 });
                 // Create first option for no answer
                 $("<option/>", {
@@ -251,7 +254,7 @@ function Question() {
                         $("<option/>", {
                             "id": answer.id,
                             "value": answer.id,
-                            "text": answer.localizedLabel[encounter.bundleLanguage],
+                            "text": answer.localizedLabel[language],
                             "style": enable
                         }).appendTo(dropDown);
                     } else if (answer.isOther === true) {
@@ -272,28 +275,28 @@ function Question() {
                     $("<option/>", {
                         "id": isOtherAnswer.id,
                         "value": isOtherAnswer.id,
-                        "text": isOtherAnswer.localizedLabel[encounter.bundleLanguage],
+                        "text": isOtherAnswer.localizedLabel[language],
                         "style": enable
                     }).appendTo(dropDown);
 
                     // Append drop down to the question content
-                    questioncontent.append(dropDownWrapper);
+                    questionContent.append(dropDownWrapper);
 
                     var textarea = $("<textarea/>", {
                         "id": "textarea",
                         "class": "resizable mt-5",
                         "name": "textarea",
-                        "onChange": "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
+                        "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + freetextAnswer.id + ", '', $('textarea').val(), '', true)",
                         "cols": "40",
-                        "rows": "8",
+                        "rows": calculateTextAreaRows(isPreview),
                         "style": "height: auto;" + enable,
                         "disabled": "disabled"
                     });
 
-                    questioncontent.append(textarea); 
+                    questionContent.append(textarea);
                 } else {
                     // Append drop down to the question content
-                    questioncontent.append(dropDownWrapper);
+                    questionContent.append(dropDownWrapper);
                 }
                 break;
                 //SLIDER
@@ -406,7 +409,7 @@ function Question() {
                     } else {
                         changed = false; 
                     }
-                    Selector.selectElement(question.id, _object.answers[0].id, $("#sliderInput").val(), '', '', true);
+                    if(!isPreview) Selector.selectElement(question.id, _object.answers[0].id, $("#sliderInput").val(), '', '', true);
                 };
 
                 //Simple function to set changed to true
@@ -451,8 +454,8 @@ function Question() {
                 sliderDiv.append(contentDiv); 
 
                 //Fetch localized texts from answerDTO
-                var localizedMinText = this.answers[0].localizedMinimumText[encounter.bundleLanguage];
-                var localizedMaxText = this.answers[0].localizedMaximumText[encounter.bundleLanguage];
+                var localizedMinText = this.answers[0].localizedMinimumText[language];
+                var localizedMaxText = this.answers[0].localizedMaximumText[language];
 
                 // Create text divs that are below the range slider, on each end respectively 
                 var textDiv = $("<div/>", {
@@ -480,13 +483,13 @@ function Question() {
 
                 sliderDiv.append(sliderWidthElement); 
 
-                questioncontent.append(sliderDiv); 
+                questionContent.append(sliderDiv);
                 break; 
 
                 
                 // INFO TEXT 
             case Questiontypes.INFO_TEXT:
-                questioncontent.append($("<span/>", {"html": question.localizedQuestionText[encounter.bundleLanguage], "class": "resizable"}));
+                questionContent.append($("<span/>", {"html": question.localizedQuestionText[language], "class": "resizable"}));
                 $("#questionTitle").empty();
                 $("#questionTitle").append($("<span />", {"text": strings['survey.question.infotext.hint']}));
                 break;
@@ -496,12 +499,12 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", '', $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;"
                 });
-                questioncontent.append(textarea);
+                questionContent.append(textarea);
                 break;
             case Questiontypes.BARCODE:
 
@@ -510,13 +513,13 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + question.answers[0].id + ", '', $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + question.answers[0].id + ", '', $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;",
                     "disabled": "disabled"
                 });
-                questioncontent.append(textarea);
+                questionContent.append(textarea);
 
                 // Check if the device supports WebRTC
                 if (Modernizr.getusermedia === true) {
@@ -525,6 +528,7 @@ function Question() {
                     var datamatrixReader = new ZXing.BrowserDatamatrixCodeReader();
                     var videoDeviceIndex = "";
                     var videoDeviceIndex = 0;
+                    var videoModalEl = null; 
 
                     var switchCamera = function(event) {
                         /*[- Reset to clear all existing instances -]*/
@@ -546,34 +550,35 @@ function Question() {
 
                     var loadVideoDiv = function() {
                         // Check if the scan was successful and fill in the result
+                        videoModalEl = $("#videoModal")[0];
                         barcodeReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                         qrcodeReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                         datamatrixReader.decodeFromInputVideoDevice(videoDeviceId, 'video').then(function (result) {
                             document.getElementById('textarea').value = result.text;
-                            $(".btn-close").click(); 
+                            bootstrap.Modal.getOrCreateInstance(videoModalEl).hide();
                             barcodeReader.reset();
                             qrcodeReader.reset();
                             datamatrixReader.reset();
                             $('#clearButton').removeAttr('disabled');
-                            Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                            if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                         })
                         .catch(function (err) {});
                     };
@@ -604,10 +609,9 @@ function Question() {
                             // Add a button to begin scanning
                             var scanButton = $("<button/>", {
                                 "id": "scanButton",
+                                "type": "button",
                                 "class": "btn btn-mobile btn-question me-1 mb-2",
                                 "title": strings['survey.question.barcode.scanButton'],
-                                "data-bs-toggle": "modal",
-                                "data-bs-target": "#videoModal"
                             });
 
                             var scanLabel = $("<span/>", {
@@ -619,6 +623,7 @@ function Question() {
 
                             var clearButton = $("<button/>", {
                                 "id": "clearButton",
+                                "type": "button",
                                 "class": "btn btn-mobile btn-question ms-1 mb-2",
                                 "title": strings['survey.question.barcode.clearButton'],
                             });
@@ -647,6 +652,14 @@ function Question() {
                                 "aria-labeledby": "staticBackdrop",
                                 "aria-hidden": "true"
                             }); 
+
+                            var videoModalEl = videoModal[0];
+
+                            scanButton.on("click", function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                bootstrap.Modal.getOrCreateInstance(videoModalEl).show();
+                            });
 
                             var modalDialog = $("<div/>", {
                                 "class": "modal-dialog modal-dialog-centered"
@@ -741,19 +754,24 @@ function Question() {
 
                             videoModal.append(modalDialog); 
 
+                            questionContent.prepend(buttonDiv);
 
-                            questioncontent.prepend(videoModal); 
-                            questioncontent.prepend(buttonDiv);
+                            if (isPreview) {
+                                $("body").append(videoModal);
+                            } else {
+                                questionContent.prepend(videoModal);
+                            }
+
+                            questionContent.prepend(buttonDiv);
                             
-                            setFontSize(fontSizeClass);
+                            if(!isPreview) setFontSize(fontSizeClass);
 
-                            $("#videoModal").on("hidden.bs.modal", closeModal);
-
-                            $("#videoModal").on("shown.bs.modal", openModal);
+                            $(videoModalEl).on("hidden.bs.modal", closeModal);
+                            $(videoModalEl).on("shown.bs.modal", openModal);    
                             // Add the EventListener for the click event to the scan button
                             document.getElementById('clearButton').addEventListener('click', function () {
                                 $('#textarea').val('');
-                                Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
+                                if(!isPreview) Selector.selectElement(question.id, question.answers[0].id, '', $('#textarea').val(), '', true);
                             });
                         } else {
                             $('#textarea').removeAttr('disabled');
@@ -764,41 +782,44 @@ function Question() {
                 }
 
                 break;
-                // NUMBER INPUT
+
+            // NUMBER INPUT
             case Questiontypes.NUMBER_INPUT:
+                var numberAnswer = this.answers[0];
+
                 // Get the appropriate message for the number input. Could be either a decimal or a integer.
-                if (this.answers[0].stepsize != null) {
-                    var topicLabelHtml = this.answers[0].stepsize % 1 != 0 ? 
-                    strings['survey.questionnaire.label.numberInput.wrongInputDecimal'] : 
+                if (numberAnswer.stepsize != null) {
+                    var topicLabelHtml = numberAnswer.stepsize % 1 != 0 ?
+                    strings['survey.questionnaire.label.numberInput.wrongInputDecimal'] :
                     strings['survey.questionnaire.label.numberInput.wrongInputInteger'];
                 } else {
-                    //If no stepsize is given, any input is allowed 
+                    //If no stepsize is given, any input is allowed
                     var topicLabelHtml = strings['survey.questionnaire.label.numberInput.wrongInputDecimal'];
                 }
                 var roundNoteHtml = strings['survey.questionnaire.label.numberInput.roundingNote'];
                 // If the number input has a min and a max value, only a min value or only a max get the additional message.
-                if (this.answers[0].minValue !== null && this.answers[0].maxValue !== null) {
+                if (numberAnswer.minValue !== null && numberAnswer.maxValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.minMax'];
-                } else if (this.answers[0].maxValue !== null) {
+                } else if (numberAnswer.maxValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.max'];
-                } else if (this.answers[0].minValue !== null) {
+                } else if (numberAnswer.minValue !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.min'];
-                } 
+                }
                 //Always append stepsize message if a value was given
-                if (this.answers[0].stepsize !== null) {
+                if (numberAnswer.stepsize !== null) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.numberInput.stepSize'];
                 }
                 // Replace the placeholders.
-                topicLabelHtml = topicLabelHtml.replace('{min}', this.answers[0].minValue);
-                topicLabelHtml = topicLabelHtml.replace('{max}', this.answers[0].maxValue);
-                
-                if (this.answers[0].stepsize != null) {
-                    var numStr = this.answers[0].stepsize;
-                    if (this.answers[0].stepsize.includes('.') && this.answers[0].stepsize.endsWith('.0')) {
+                topicLabelHtml = topicLabelHtml.replace('{min}', numberAnswer.minValue);
+                topicLabelHtml = topicLabelHtml.replace('{max}', numberAnswer.maxValue);
+
+                if (numberAnswer.stepsize != null) {
+                    var numStr = numberAnswer.stepsize;
+                    if (numberAnswer.stepsize.includes('.') && numberAnswer.stepsize.endsWith('.0')) {
                         // Remove the decimal point and trailing zero
-                        numStr = this.answers[0].stepsize.slice(0, -2);
+                        numStr = numberAnswer.stepsize.slice(0, -2);
                     }
-                    topicLabelHtml = topicLabelHtml.replace("{stepSize}",numStr);
+                    topicLabelHtml = topicLabelHtml.replace("{stepSize}", numStr);
                 }
 
                 var topicLabel = $("<label/>", {
@@ -806,62 +827,81 @@ function Question() {
                     "class": "resizable"
                 });
 
-                questioncontent.append(topicLabel);
+                questionContent.append(topicLabel);
 
-                if (this.answers[0].stepsize != null) {
+                if (numberAnswer.stepsize != null) {
                     var roundingNoteLabel = $("<p/>", {
                         "html": roundNoteHtml,
                         "class": "mb-5"
                     });
-                    questioncontent.append(roundingNoteLabel);
+                    questionContent.append(roundingNoteLabel);
                 }
 
                 var row = $("<div/>", {
                     "class": "row mt-5 d-flex align-items-center"
-                }); 
+                });
 
                 var inputLabel = $("<div/>", {
                     "class": "col-12 col-bp-4 d-flex align-items-center"
-                }); 
+                });
 
                 inputLabel.append($("<span/>", {
                     "id": "freetextLabel",
                     "class": "resizable",
-                    "html": this.answers[0].stepsize % 1 != 0 ? strings['survey.questionnaire.label.numberInput.decimal'] + ":" : strings['survey.questionnaire.label.numberInput.integer'] + ":"
-                })); 
+                    "html": numberAnswer.stepsize % 1 != 0 ? strings['survey.questionnaire.label.numberInput.decimal'] + ":" : strings['survey.questionnaire.label.numberInput.integer'] + ":"
+                }));
 
                 var inputDiv = $("<div/>", {
                     "class": "tooltipC col-12 col-bp-8"
-                }); 
+                });
 
-                inputDiv.append($("<input/>", {
+                var numberInput = $("<input/>", {
                     "type": "number",
                     "class": "resizable form-control gray",
-                    "min": this.answers[0].minValue,
-                    "max": this.answers[0].maxValue,
-                    "step": this.answers[0].stepsize,
+                    "min": numberAnswer.minValue,
+                    "max": numberAnswer.maxValue,
+                    "step": numberAnswer.stepsize,
                     "name": "numberInput",
-                    "id": "numberInput",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", this.value, '', '', true)"
-                }));
+                    "id": "numberInput"
+                });
 
-                inputDiv.append($("<span/>", {
-                    "id": "toolTipText"
-                }));
+                var tooltipSpan = $("<span/>", {
+                    "id": "toolTipText",
+                    "style": "opacity: 0",
+                });
+                tooltipSpan.html(
+                    strings["survey.questionnaire.label.numberInput.roundingTooltip"]
+                );
 
-                row.append(inputLabel); 
-                row.append(inputDiv); 
+                if (isPreview) {
+                    numberInput.on("change", function () {
+                        Selector.renderNumberInput(numberAnswer, this.value, this, tooltipSpan);
+                    });
+                } else {
+                    numberInput.attr(
+                        "onChange",
+                        "Selector.selectElement(" + question.id + ", " + numberAnswer.id + ", this.value, '', '', true)"
+                    );
+                }
 
-                questioncontent.append(row); 
+                inputDiv.append(numberInput);
+
+                inputDiv.append(tooltipSpan);
+
+                row.append(inputLabel);
+                row.append(inputDiv);
+
+                questionContent.append(row);
                 break;
-                // NUMBER CHECKBOX TEXT
+
+            // NUMBER CHECKBOX TEXT
             case Questiontypes.NUMBER_CHECKBOX_TEXT:
-                createNumberCheckboxes(this, questioncontent);
+                createNumberCheckboxes(this, questionContent, isPreview, language);
 
                 var label = $("<div/>", {
                     "for": "textarea",
                     "class": "resizable",
-                    "html": this.answers[0].localizedFreetextLabel[encounter.bundleLanguage]
+                    "html": this.answers[0].localizedFreetextLabel[language]
                 });
                 
 
@@ -873,40 +913,40 @@ function Question() {
                     "id": "textarea",
                     "class": "resizable",
                     "name": "textarea",
-                    "onChange": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", parseInt($('input[name*=numberedCheckbox_]:checked').val()), $('textarea').val(), '', true)",
+                    "onChange": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", parseInt($('input[name*=numberedCheckbox_]:checked').val()), $('textarea').val(), '', true)",
                     "cols": "40",
-                    "rows": "8",
+                    "rows": calculateTextAreaRows(isPreview),
                     "style": "height: auto;"
                 });
                 textareaWrapper.append(label).append(textarea); 
-                questioncontent.append(textareaWrapper);
+                questionContent.append(textareaWrapper);
                 break;
                 // NUMBER CHECKBOX
             case Questiontypes.NUMBER_CHECKBOX :
-                createNumberCheckboxes(this, questioncontent);
+                createNumberCheckboxes(this, questionContent, isPreview, language);
                 break;
             case Questiontypes.DATE:
 
                 var topicLabelHtml = strings['survey.questionnaire.label.dateDescription'];
                 // If the date input has a start and a end date, only a start date value or only a end date get the additional message.
-                if (this.answers[0].startDate !== null && this.answers[0].endDate !== null) {
+                if (this.answers[0].startDate && this.answers[0].endDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.startEndDate'];
-                } else if (this.answers[0].endDate !== null) {
+                } else if (this.answers[0].endDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.endDate'];
-                } else if (this.answers[0].startDate !== null) {
+                } else if (this.answers[0].startDate) {
                     topicLabelHtml += " " + strings['survey.questionnaire.label.date.startDate'];
                 }
                 // Replace the placeholders.
                 var dateOptions = {year: 'numeric', month: '2-digit', day: '2-digit'};
-                topicLabelHtml = topicLabelHtml.replace('{startDate}', new Date(this.answers[0].startDate).toLocaleDateString(encounter.bundleLanguage.replace("_", "-"), dateOptions));
-                topicLabelHtml = topicLabelHtml.replace('{endDate}', new Date(this.answers[0].endDate).toLocaleDateString(encounter.bundleLanguage.replace("_", "-"), dateOptions));
+                topicLabelHtml = topicLabelHtml.replace('{startDate}', new Date(this.answers[0].startDate).toLocaleDateString(language.replace("_", "-"), dateOptions));
+                topicLabelHtml = topicLabelHtml.replace('{endDate}', new Date(this.answers[0].endDate).toLocaleDateString(language.replace("_", "-"), dateOptions));
 
                 var topicLabel = $("<label/>", {
                     "html": topicLabelHtml,
                     "class": "resizable"
                 });
 
-                questioncontent.append(topicLabel);
+                questionContent.append(topicLabel);
 
                 var row = $("<div/>", {
                     "class": "row mt-5"
@@ -944,23 +984,27 @@ function Question() {
                     "min": startDateString,
                     "max": endDateString,
                     "onFocus": "this.showPicker()",
-                    "onBlur": "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", null, null, $(this).val(), true)"
+                    "onBlur": isPreview ? "" : "Selector.selectElement(" + question.id + ", " + this.answers[0].id + ", null, null, $(this).val(), true)"
                 }));
 
                 row.append(inputLabel); 
                 row.append(inputDiv); 
 
-                questioncontent.append(row); 
+                questionContent.append(row);
                 break;
                 // IMAGE
             case Questiontypes.IMAGE:
-                // Create a div which centers the canvas
+                var imageAnswer = this.answers[0];
+
+                // Preview has no encounter: keep marks in a local store.
+                question.previewPointsOnImage = [];
+                question.previewPointsPosition = -1;
+
                 var canvasDiv = $("<div/>", {
                     "id": "canvasDiv",
                     "style": "text-align:center; width:100%;"
                 });
 
-                // Create a div which cointains the undo/redo buttons and the color picker
                 var toolbarDiv = $("<div/>", {
                     "id": "toolbarDiv",
                     "class": "d-flex justify-content-center mb-3"
@@ -968,10 +1012,11 @@ function Question() {
 
                 var buttonDiv = $("<div/>", {
                     "class": "d-flex"
-                }); 
+                });
 
                 var undoButton = $("<button/>", {
                     "id": "undoButton",
+                    "type": "button",
                     "class": "btn btn-mobile me-1",
                     "title": strings['survey.question.image.button.undo'],
                     "disabled": "true"
@@ -983,6 +1028,7 @@ function Question() {
 
                 var redoButton = $("<button/>", {
                     "id": "redoButton",
+                    "type": "button",
                     "class": "btn btn-mobile ms-1",
                     "title": strings['survey.question.image.button.redo'],
                     "disabled": "true"
@@ -994,106 +1040,141 @@ function Question() {
 
                 var colorButtonGroup = $("<div/>", {
                     "class": "btn-group align-items-center ms-1 me-1 h-100"
-                }); 
+                });
 
                 colorButtonGroup.append($("<input/>", {
                     "name": "colorCheckbox",
-                    "id": "checkboxBlack", 
+                    "id": "checkboxBlack",
                     "class": "btn-check",
-                    "value": "#000000", 
+                    "value": "#000000",
                     "type": "radio",
                     "checked": "checked"
-                })); 
+                }));
 
                 colorButtonGroup.append($("<label/>", {
-                    "for": "checkboxBlack", 
+                    "for": "checkboxBlack",
                     "class": "btn btn-outline-primary h-100 d-flex align-items-center z-0",
                     "html": strings['survey.question.image.flipswitch.black']
-                })); 
+                }));
 
                 colorButtonGroup.append($("<input/>", {
                     "name": "colorCheckbox",
-                    "id": "checkboxWhite", 
+                    "id": "checkboxWhite",
                     "class": "btn-check",
-                    "value": "#ffffff", 
-                    "type": "radio",
-                })); 
+                    "value": "#ffffff",
+                    "type": "radio"
+                }));
 
                 colorButtonGroup.append($("<label/>", {
-                    "for": "checkboxWhite", 
+                    "for": "checkboxWhite",
                     "class": "btn btn-outline-primary h-100 d-flex align-items-center z-0",
                     "html": strings['survey.question.image.flipswitch.white']
-                })); 
+                }));
 
-                buttonDiv.append(undoButton); 
+                buttonDiv.append(undoButton);
                 buttonDiv.append(colorButtonGroup);
-                buttonDiv.append(redoButton); 
+                buttonDiv.append(redoButton);
 
-                // Append all tools to the toolbar div
-                toolbarDiv.append(buttonDiv); 
-                // Create an empty canvas element and set its context to 2d
+                toolbarDiv.append(buttonDiv);
+
                 var canvas = document.createElement("canvas");
                 canvas.setAttribute("id", "canvas");
+                question.canvasElement = canvas;
 
-                this.rearrange();
-
-                var rearrangeEvent = ()=> {
-                    this.rearrange(); 
-                }
-
-                $(window).on("resize", rearrangeEvent); 
-
-                // Enable the undo button if there are already points on th image
-                if (encounter.getResponse(question.answers[0].id) !== null && encounter.getResponse(question.answers[0].id).pointsOnImage.length > 0) {
-                    undoButton.removeAttr("disabled");
-                }
-                // Append the divs to the question content
                 canvasDiv.append(canvas);
-                questioncontent.append(canvasDiv);
+
+                // Toolbar first so it renders above the image.
+                if (!this.isJustInfo) {
+                    questionContent.append(toolbarDiv);
+                }
+                questionContent.append(canvasDiv);
+
+                // Only size the canvas once it is in the document.
+                this.rearrange(isPreview);
+
+                var rearrangeEvent = () => {
+                    question.rearrange(isPreview);
+                };
+
+                $(window).on("resize.question", rearrangeEvent);
+
                 if (this.isJustInfo) {
                     break;
                 }
-                questioncontent.append(toolbarDiv);
 
-                // Bind mouse actions on canvas and buttons
+                if (!isPreview
+                        && encounter.getResponse(imageAnswer.id) !== null
+                        && encounter.getResponse(imageAnswer.id).pointsOnImage.length > 0) {
+                    undoButton.removeAttr("disabled");
+                }
+
+                var syncPreviewButtons = function () {
+                    if (question.previewPointsPosition >= 0) {
+                        undoButton.removeAttr("disabled");
+                    } else {
+                        undoButton.attr("disabled", "disabled");
+                    }
+                    if (question.previewPointsPosition < question.previewPointsOnImage.length - 1) {
+                        redoButton.removeAttr("disabled");
+                    } else {
+                        redoButton.attr("disabled", "disabled");
+                    }
+                };
+
                 canvas.addEventListener('click', function (e) {
-                    var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
-                    Selector.selectElement(question.id, question.answers[0].id, mouseClickPosition, '', '', true);
-                    question.redraw(image);
+                    if (isPreview) {
+                        // getBoundingClientRect accounts for the preview frame's
+                        // CSS transform; offsetLeft/pageX do not.
+                        var rect = this.getBoundingClientRect();
+                        var relativeX = (e.clientX - rect.left) / rect.width;
+                        var relativeY = (e.clientY - rect.top) / rect.height;
+
+                        // Drop anything redone-past, then append.
+                        question.previewPointsOnImage.length = question.previewPointsPosition + 1;
+                        question.previewPointsOnImage.push({
+                            xCoordinate: relativeX,
+                            yCoordinate: relativeY,
+                            color: colorButtonGroup.find("input[name='colorCheckbox']:checked").val()
+                        });
+                        question.previewPointsPosition = question.previewPointsOnImage.length - 1;
+                        syncPreviewButtons();
+                    } else {
+                        var mouseClickPosition = [e.pageX - this.offsetLeft, e.pageY - this.offsetTop];
+                        Selector.selectElement(question.id, imageAnswer.id, mouseClickPosition, '', '', true);
+                    }
+                    question.redraw(image, isPreview);
                 });
 
-                document.getElementById("undoButton").onclick = function () {
-                    Selector.selectElement(question.id, question.answers[0].id, 'undo', null, null, true);
-                    question.redraw(image);
-                };
+                undoButton.on("click", function () {
+                    if (isPreview) {
+                        if (question.previewPointsPosition >= 0) {
+                            question.previewPointsPosition--;
+                        }
+                        syncPreviewButtons();
+                    } else {
+                        Selector.selectElement(question.id, imageAnswer.id, 'undo', null, null, true);
+                    }
+                    question.redraw(image, isPreview);
+                });
 
-                document.getElementById("redoButton").onclick = function () {
-                    Selector.selectElement(question.id, question.answers[0].id, 'redo', null, null, true);
-                    question.redraw(image);
-                };
+                redoButton.on("click", function () {
+                    if (isPreview) {
+                        if (question.previewPointsPosition < question.previewPointsOnImage.length - 1) {
+                            question.previewPointsPosition++;
+                        }
+                        syncPreviewButtons();
+                    } else {
+                        Selector.selectElement(question.id, imageAnswer.id, 'redo', null, null, true);
+                    }
+                    question.redraw(image, isPreview);
+                });
                 break;
-            case Questiontypes.BODY_PART:
-                questioncontent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
-                questioncontent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
-                //Get the imageType of this question by walking through attached images
-                var imageType;
-                for (var i = 0; i < this.bodyPartImages.length; i++) {
-                    if (this.bodyPartImages[i] == ImagePath.FRONT) {
-                        if (imageType != ImageType.BACK) {
-                            imageType = ImageType.FRONT;
-                        } else {
-                            imageType = ImageType.FRONT_BACK;
-                        }
-                    }
 
-                    if (this.bodyPartImages[i] == ImagePath.BACK) {
-                        if (imageType != ImageType.FRONT) {
-                            imageType = ImageType.BACK;
-                        } else {
-                            imageType = ImageType.FRONT_BACK;
-                        }
-                    }
-                }
+            case Questiontypes.BODY_PART:
+                questionContent.append($("<span />", {"text": strings['survey.question.bodyPart.hint'], "class": "resizable"}));
+                questionContent.append(getMinMaxAnswerText(this.minNumberAnswers, this.maxNumberAnswers, this.answers));
+                //Get the imageType of this question by walking through attached images
+                var imageType = this.imageType;
 
                 //Create the div that contains the image element
                 var imageContent;
@@ -1104,7 +1185,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var frontImageContent = $('<div/>', {
                             "class": 'col-12',
@@ -1117,10 +1198,10 @@ function Question() {
                         });
                         frontImageContent.append(frontDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
+                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
+                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
                         }
                         
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
@@ -1134,7 +1215,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var backImageContent = $('<div/>', {
                             "class": 'col-12',
@@ -1147,10 +1228,10 @@ function Question() {
                         });
                         backImageContent.append(backDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
                         }
 
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
@@ -1165,7 +1246,7 @@ function Question() {
                             "class": 'row',
                             "id": 'imageContent',
                         });
-                        questioncontent.append(imageContent);
+                        questionContent.append(imageContent);
 
                         var frontImageContent = $('<div/>', {
                             "class": 'col-12 col-bp-6',
@@ -1189,12 +1270,12 @@ function Question() {
                         });
                         backImageContent.append(backDiv);
 
-                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
-                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                        this.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
+                        this.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
 
                         var rescaleImage = () => {
-                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv);
-                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv);
+                            question.createAndScaleImageAndSvg(ImageType.FRONT, ImagePath.FRONT, images["frontImage"], frontDiv, isPreview);
+                            question.createAndScaleImageAndSvg(ImageType.BACK, ImagePath.BACK, images["backImage"], backDiv, isPreview);
                         }
 
                         //Add timeout before adding resize event because otherwise it will trigger before the image is created
@@ -1212,14 +1293,14 @@ function Question() {
         }
 
         // Set the font size
-        setFontSize(fontSizeClass);
+        if(!isPreview) setFontSize(fontSizeClass);
 
         // Div to check if the question is overflowing
         var overflowDiv = $("<div/>", {
             "id": "overflowDiv",
             "style": "float:left; height:1px; width:100%;"
         });
-        questioncontent.append(overflowDiv);
+        questionContent.append(overflowDiv);
     };
 
     /**
@@ -1231,7 +1312,7 @@ function Question() {
      * @param {type} imageSource The image represented as base64 string.
      * @param {type} div containing the svg whose size has to be specified.
      */
-    this.createAndScaleImageAndSvg = function (imageType, imagePath, imageSource, div) {
+    this.createAndScaleImageAndSvg = function (imageType, imagePath, imageSource, div, isPreview) {
         //create image to get height and width to size svg correctly
         try {
             var id = $("#svgDiv-" + imageType).find("svg").attr("id")
@@ -1290,7 +1371,7 @@ function Question() {
                         groupPath.attr('id', 'answer' + answers[i].id);
                         groupPath.attr('class', answerPath.attr('class'));
                         groupPath.attr('style', answerPath.attr('style'));
-                        groupPath.attr('onclick', 'Selector.selectElement(' + question.id + ',' + answers[i].id + ', null, null, null, true);');
+                        if(!isPreview) groupPath.attr('onclick', 'Selector.selectElement(' + question.id + ',' + answers[i].id + ', null, null, null, true);');
                     }
                 }
             } else {
@@ -1325,7 +1406,7 @@ function Question() {
 
             //Select answers that has been already selected again because this load method is called asynchronously to the survey.showQuestion function
             //so if you try to do this there no path objects will be found because they won't be available then
-            if (createNew === true) {
+            if (!isPreview && createNew === true) {
                 var responses = encounter.getResponsesForQuestion(question);
                 if (responses.length > 0) {
                     $.each(responses, function () {
@@ -1483,18 +1564,27 @@ function Question() {
     };
 
     /**
-     * Function that adds numbered checkboxes to the questioncontent
+     * Function that adds numbered checkboxes to the questionContent
      * for a given question
      * @param {*} question for which the checkboxes should be created
-     * @param {*} questioncontent to which the checkboxes should be added 
+     * @param {*} questionContent to which the checkboxes should be added
      */
-    function createNumberCheckboxes(question, questioncontent) {
+    function createNumberCheckboxes(question, questionContent, isPreview, language) {
         //Handle vertical and horizontal checkboxes completely separately
         if (question.answers[0].vertical === true) {
-            questioncontent.append(handleVerticalCheckboxes(question)); 
+            questionContent.append(handleVerticalCheckboxes(question, isPreview, language));
         } else {
-            questioncontent.append(handleHorizontalCheckboxes(question)); 
+            questionContent.append(handleHorizontalCheckboxes(question, isPreview, language));
         }
+    }
+
+    function addWithoutRoundingError(i, stepSize) {
+        var i_decimal_length = (i.toString().split('.')[1] ?? '').length;
+        var stepSize_decimal_length = (stepSize.toString().split('.')[1] ?? '').length;
+        var factor = Math.pow(10, Math.max(i_decimal_length, stepSize_decimal_length));
+        var i_int = Math.round(i * factor);
+        var stepSize_int = Math.round(stepSize * factor);
+        return (i_int + stepSize_int) / factor;
     }
 
     /**
@@ -1504,10 +1594,10 @@ function Question() {
      * @param {*} question element 
      * @returns numberedCheckboxes div
      */
-    function handleVerticalCheckboxes(question) {
+    function handleVerticalCheckboxes(question, isPreview, language) {
         // Cretae the minimum und maximum text
-        var localizedMinText = question.answers[0].localizedMinimumText[encounter.bundleLanguage];
-        var localizedMaxText = question.answers[0].localizedMaximumText[encounter.bundleLanguage];
+        var localizedMinText = question.answers[0].localizedMinimumText[language];
+        var localizedMaxText = question.answers[0].localizedMaximumText[language];
         var hasMinMaxText = typeof localizedMinText !== 'undefined' && localizedMinText !== "" || typeof localizedMaxText !== 'undefined' && localizedMaxText !== "";
 
         var checkboxDiv = $("<div/>", {
@@ -1543,12 +1633,13 @@ function Question() {
         var buttonGroup = $("<div/>", {
             "class": "btn-group-vertical flex-wrap w-100"
         });
-        
+
+        var stepSize = Number(question.answers[0].stepsize);
         //Add all input elements
         for (
             let i = Number(question.answers[0].minValue); 
             i <= question.answers[0].maxValue; 
-            i += Number(question.answers[0].stepsize)
+            i = addWithoutRoundingError(i, stepSize)
         ) {
             var inputElement = $("<input/>", {
                 "name": "numberedCheckboxes", 
@@ -1559,7 +1650,7 @@ function Question() {
             }); 
     
             //Event triggers checkbox toggle and saves encounter response
-            inputElement[0].addEventListener("click", function() {
+            if(!isPreview) inputElement[0].addEventListener("click", function() {
                 Selector.selectElement(question.id ,question.answers[0].id, i, $('textarea').val(), '', true);
             });
     
@@ -1599,10 +1690,10 @@ function Question() {
      * @param {*} question element
      * @returns numberedCheckboxes div
      */
-    function handleHorizontalCheckboxes(question) {
-        // Cretae the minimum und maximum text
-        var localizedMinText = question.answers[0].localizedMinimumText[encounter.bundleLanguage];
-        var localizedMaxText = question.answers[0].localizedMaximumText[encounter.bundleLanguage];
+    function handleHorizontalCheckboxes(question, isPreview, language) {
+        // Create the minimum und maximum text
+        var localizedMinText = question.answers[0].localizedMinimumText[language];
+        var localizedMaxText = question.answers[0].localizedMaximumText[language];
         var hasMinMaxText = typeof localizedMinText !== 'undefined' && localizedMinText !== "" || typeof localizedMaxText !== 'undefined' && localizedMaxText !== "";
 
         var checkboxDiv = $("<div/>", {
@@ -1662,12 +1753,14 @@ function Question() {
             "class": "btn-group flex-wrap w-100"
         })
 
+        var stepSize = Number(question.answers[0].stepsize);
         //Add all checkboxes
         for (
             let i = Number(question.answers[0].minValue); 
             i <= question.answers[0].maxValue; 
-            i += Number(question.answers[0].stepsize)
+            i = addWithoutRoundingError(i, stepSize)
         ) {
+            let summy = i + question.answers[0].stepsize;
             var inputElement = $("<input/>", {
                 "name": "numberedCheckboxes", 
                 "id": "numberedCheckbox_" + i, 
@@ -1677,7 +1770,7 @@ function Question() {
             }); 
     
             //Event triggers checkbox toggle and saves encounter response
-            inputElement[0].addEventListener("click", function() {
+            if(!isPreview) inputElement[0].addEventListener("click", function() {
                 Selector.selectElement(question.id ,question.answers[0].id, i, $('textarea').val(), '', true);
             });
     
@@ -1739,6 +1832,17 @@ function Question() {
         return checkboxDiv; 
     }
 
+    // Prevents overflow in landscape view modes in Preview
+    function calculateTextAreaRows(isPreview) {
+        if(isPreview && modalSettings.dimensions) {
+            const [w, h] = modalSettings.dimensions;
+            if(w > h) {
+                return "4";
+            }
+        }
+        return "8";
+    }
+
     /**
      * Computes the width for the numbered checkboxes by
      * using the maxValue and sets the style attribute of
@@ -1786,7 +1890,7 @@ function Question() {
     };
 
 
-    this.rearrange = function () {
+    this.rearrange = function (isPreview) {
         var question = this;
         switch (question.questionType) {
             case Questiontypes.IMAGE:
@@ -1799,8 +1903,8 @@ function Question() {
                     var optimalHeight = image.naturalHeight;
 
                     // Set the maximum canvas size
-                    var availableWidth = $('#canvasDiv').width();
-                    var availableHeight = window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
+                    var availableWidth = isPreview ? calcModalWidth() * 4/5: $('#canvasDiv').width();
+                    var availableHeight = isPreview ? calcModalHeight() * 4/5: window.innerHeight - $('.header').height() - $('.footer').height() - $('#toolbarDiv').height() - 50;
 
                     // If the available size is smaller than the optimal size recalculate the optimal size depending on the images' proportion
                     if (availableWidth < optimalWidth) {
@@ -1809,7 +1913,7 @@ function Question() {
                         optimalHeight = optimalWidth * proportion;
                     }
                     // Only recalculate the optimal height, when it's not used on mobile devices
-                    if (availableHeight < optimalHeight && isMobile.matches === false) {
+                    if (availableHeight < optimalHeight && (isPreview || isMobile.matches === false)) {
                         var proportion = optimalWidth / optimalHeight;
                         optimalHeight = availableHeight;
                         optimalWidth = optimalHeight * proportion;
@@ -1819,7 +1923,7 @@ function Question() {
                     $('#canvas')[0].height = optimalHeight;
 
                     // Call the redraw function to draw the image and if applicable its points
-                    question.redraw(this);
+                    question.redraw(this, isPreview);
                 };
 
                 // Set the image source after the onload function to get sure that it's fired
@@ -1829,38 +1933,43 @@ function Question() {
         }
     };
 
-    this.redraw = function (image) {
-        // Get the context from the existing canvas
-        var context = $('#canvas')[0].getContext("2d");
-        // Clear the canvas
+    this.redraw = function (image, isPreview) {
+        var canvasEl = this.canvasElement || $('#canvas')[0];
+        if (!canvasEl || !image) { return; }
+
+        var context = canvasEl.getContext("2d");
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        // Draw the image
-        context.drawImage(image, 0, 0, image.width, image.height, 0, 0, $('#canvas')[0].width, $('#canvas')[0].height);
-        // Set the linetype and linewidth
+        context.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasEl.width, canvasEl.height);
         context.lineJoin = "round";
         context.lineWidth = 2;
 
-        // If the encounter has already a response
-        if (encounter.getResponse(this.answers[0].id) !== null) {
-            // Draw every point that must be shown
-            for (var i = 0; i <= encounter.getResponse(this.answers[0].id).currentPointsPosition; i++) {
-                // Get the current point and calculate its x and y coordinates depending on the canvas size
-                var currentPoint = encounter.getResponse(this.answers[0].id).pointsOnImage[i];
-                var xCoordinate = currentPoint.xCoordinate * $('#canvas')[0].width;
-                var yCoordinate = currentPoint.yCoordinate * $('#canvas')[0].height;
+        var points = null;
+        var lastIndex = -1;
 
-                // Set the right color of the current point
-                context.strokeStyle = currentPoint.color;
+        if (isPreview) {
+            points = this.previewPointsOnImage || [];
+            lastIndex = (this.previewPointsPosition === undefined) ? -1 : this.previewPointsPosition;
+        } else if (encounter.getResponse(this.answers[0].id) !== null) {
+            points = encounter.getResponse(this.answers[0].id).pointsOnImage;
+            lastIndex = encounter.getResponse(this.answers[0].id).currentPointsPosition;
+        }
 
-                // Draw an X on the calculated point
-                context.beginPath();
-                context.moveTo(xCoordinate - 5, yCoordinate - 5);
-                context.lineTo(xCoordinate + 5, yCoordinate + 5);
-                context.moveTo(xCoordinate + 5, yCoordinate - 5);
-                context.lineTo(xCoordinate - 5, yCoordinate + 5);
-                context.closePath();
-                context.stroke();
-            }
+        if (!points) { return; }
+
+        for (var i = 0; i <= lastIndex && i < points.length; i++) {
+            var currentPoint = points[i];
+            var xCoordinate = currentPoint.xCoordinate * canvasEl.width;
+            var yCoordinate = currentPoint.yCoordinate * canvasEl.height;
+
+            context.strokeStyle = currentPoint.color;
+
+            context.beginPath();
+            context.moveTo(xCoordinate - 5, yCoordinate - 5);
+            context.lineTo(xCoordinate + 5, yCoordinate + 5);
+            context.moveTo(xCoordinate + 5, yCoordinate - 5);
+            context.lineTo(xCoordinate - 5, yCoordinate + 5);
+            context.closePath();
+            context.stroke();
         }
     };
 

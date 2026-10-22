@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import jakarta.persistence.PersistenceException;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -161,6 +162,19 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
 
         return !query.getResultList().isEmpty();
 
+    }
+
+    @Override
+    @Transactional("MoPat")
+    public void removeEncounterExportTemplatesForEncounter(Encounter encounter) {
+        moPatEntityManager.createQuery(
+                "delete from EncounterExportTemplate e where e.encounter.id = :encounterId"
+            )
+            .setParameter("encounterId", encounter.getId())
+            .executeUpdate();
+
+        moPatEntityManager.flush();
+        moPatEntityManager.clear();
     }
 
     @Override

@@ -12,7 +12,7 @@ function Questionnaire() {
     this.hasConditionsAsTarget;
     this.questions;
 
-    //Transfer variable. Only use for transerfing the questionDTOs into the questions variable
+    //Transfer variable. Only use for transferring the questionDTOs into the questions variable
     this.questionDTOs;
 
     this.init = function () {

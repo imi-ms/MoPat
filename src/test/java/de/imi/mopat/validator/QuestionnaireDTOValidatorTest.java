@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,20 @@ public class QuestionnaireDTOValidatorTest {
     QuestionnaireDTOValidator questionnaireDTOValidator;
     @Autowired
     MessageSource messageSource;
+
+    /**
+     * Creates a QuestionnaireDTO that passes validation, so single fields can be
+     * modified in isolation to test their specific constraints.
+     */
+    private QuestionnaireDTO createValidQuestionnaireDTO() {
+        QuestionnaireDTO dto = new QuestionnaireDTO();
+        dto.setName(Helper.getRandomAlphabeticString(10));
+        dto.setDescription(Helper.getRandomAlphabeticString(20));
+        dto.setLocalizedDisplayName(localizedText(Helper.getRandomAlphabeticString(10)));
+        dto.setLocalizedWelcomeText(localizedText(Helper.getRandomAlphabeticString(20)));
+        dto.setLocalizedFinalText(localizedText(Helper.getRandomAlphabeticString(20)));
+        return dto;
+    }
 
     /**
      * Test of {@link QuestionnaireDTOValidator#supports(java.lang.Class)}<br> Valid input:
@@ -226,5 +242,85 @@ public class QuestionnaireDTOValidatorTest {
         assertFalse(
             "Validation of questionnaireDTO failed for valid instance. The result has caught errors except it wasn't expected to do.",
             result.hasErrors());
+    }
+
+
+    @Test
+    public void testValidateDescriptionLength() {
+        assertTextLengthValidation("description",
+                QuestionnaireDTOValidator.MAX_DESCRIPTION_TEXT_LENGTH,
+                "questionnaire.error.descriptionTooLong",
+                QuestionnaireDTO::setDescription);
+    }
+
+    @Test
+    public void testValidateWelcomeTextLength() {
+        assertLocalizedTextLengthValidation("localizedWelcomeText",
+                QuestionnaireDTOValidator.MAX_WELCOME_TEXT_LENGTH,
+                "questionnaire.error.welcomeTextTooLong",
+                QuestionnaireDTO::setLocalizedWelcomeText);
+    }
+
+    @Test
+    public void testValidateFinalTextLength() {
+        assertLocalizedTextLengthValidation("localizedFinalText",
+                QuestionnaireDTOValidator.MAX_FINAL_TEXT_LENGTH,
+                "questionnaire.error.finalTextTooLong",
+                QuestionnaireDTO::setLocalizedFinalText);
+    }
+
+    private void assertLocalizedTextLengthValidation(String fieldName, int maxLength,
+                                                     String messageKey, BiConsumer<QuestionnaireDTO, SortedMap<String, String>> setter) {
+        assertLengthValidation(fieldName + "[de_DE]", fieldName, maxLength, messageKey,
+                (dto, text) -> setter.accept(dto, localizedText(text)));
+    }
+
+    private void assertTextLengthValidation(String fieldName, int maxLength,
+                                            String messageKey, BiConsumer<QuestionnaireDTO, String> setter) {
+        assertLengthValidation(fieldName, fieldName, maxLength, messageKey, setter);
+    }
+
+    /**
+     * Verifies that a text field is accepted at the maximum length and rejected
+     * with the expected message one character above it.
+     */
+    private void assertLengthValidation(String errorField, String fieldName, int maxLength,
+                                        String messageKey, BiConsumer<QuestionnaireDTO, String> setter) {
+
+        // Case 1: exactly at the limit -> no error expected
+        QuestionnaireDTO dto = createValidQuestionnaireDTO();
+        setter.accept(dto, Helper.getRandomAlphabeticString(maxLength));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "questionnaireDTO");
+        questionnaireDTOValidator.validate(dto, result);
+
+        assertFalse(fieldName + " at the limit should not raise an error.",
+                result.hasFieldErrors(errorField));
+
+        // Case 2: one character over the limit -> error expected
+        int tooLongLength = maxLength + 1;
+        dto = createValidQuestionnaireDTO();
+        setter.accept(dto, Helper.getRandomAlphabeticString(tooLongLength));
+
+        result = new MapBindingResult(new HashMap<>(), "questionnaireDTO");
+        questionnaireDTOValidator.validate(dto, result);
+
+        assertTrue("Too long " + fieldName + " should raise an error.",
+                result.hasFieldErrors(errorField));
+
+        String expectedMessage = messageSource.getMessage(messageKey,
+                new Object[]{tooLongLength, maxLength},
+                LocaleContextHolder.getLocale());
+
+        assertEquals("The returned error message for a too long " + fieldName
+                        + " didn't match the expected one.",
+                expectedMessage,
+                result.getFieldError(errorField).getDefaultMessage());
+    }
+
+    private SortedMap<String, String> localizedText(String text) {
+        SortedMap<String, String> map = new TreeMap<>();
+        map.put("de_DE", text);
+        return map;
     }
 }

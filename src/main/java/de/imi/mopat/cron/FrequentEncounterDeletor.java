@@ -1,16 +1,5 @@
 package de.imi.mopat.cron;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import de.imi.mopat.dao.AuditEntryDao;
 import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConfigurationDao;
@@ -18,10 +7,20 @@ import de.imi.mopat.dao.EncounterDao;
 import de.imi.mopat.dao.EncounterScheduledDao;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.model.Bundle;
-import de.imi.mopat.model.enumeration.AuditEntryActionType;
-import de.imi.mopat.model.enumeration.AuditPatientAttribute;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterScheduled;
+import de.imi.mopat.model.enumeration.AuditEntryActionType;
+import de.imi.mopat.model.enumeration.AuditPatientAttribute;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 /**
  * This class checks on a regular basis (set in the mopat.properties) (see
@@ -72,144 +71,145 @@ public class FrequentEncounterDeletor {
      */
     @Scheduled(cron = "${de.imi.mopat.cron.FrequentEncounterDeletor" + ".checkTime}")
     public void deleteOldEncounters() {
-        //First delete the independent encounters
-        boolean deleteFinishedEncounters = true;
-        Long finishedEncounterTimeWindowInMillis = configurationDao.getFinishedEncounterTimeWindow();
-        if (finishedEncounterTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (30 days) instead",
-                Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
-            finishedEncounterTimeWindowInMillis = THIRTY_DAYS_IN_MILLISECONDS;
-        } else if (finishedEncounterTimeWindowInMillis == -1) {
-            deleteFinishedEncounters = false;
-        }
+        List<Encounter> oldEncounters = collectOldEncounters();
+        List<EncounterScheduled> oldEncounterScheduleds = collectOldEncounterScheduleds();
 
-        boolean deleteIncompleteEncounters = true;
-        Long incompleteEncounterTimeWindowInMillis = configurationDao.getIncompleteEncounterTimeWindow();
-        if (incompleteEncounterTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (180 days) instead",
-                Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
-            incompleteEncounterTimeWindowInMillis = ONEHUNDREDEIGHTY_DAYS_IN_MILLISECONDS;
-        } else if (incompleteEncounterTimeWindowInMillis == -1) {
-            deleteIncompleteEncounters = false;
-        }
+        Set<String> deletedCaseNumbers = new HashSet<>();
+        deleteEncounters(oldEncounters, deletedCaseNumbers);
+        deleteEncounterScheduleds(oldEncounterScheduleds, deletedCaseNumbers);
 
+        writeAuditLog(deletedCaseNumbers);
+    }
+
+    /**
+     * Resolves a configured time-window value, falling back to a default if not set,
+     * or returning null if the window is explicitly disabled (-1).
+     */
+    private Long resolveTimeWindow(Long configuredValue, long defaultValue, String propertyName) {
+        if (configuredValue == null) {
+            LOGGER.info("Could not find a value for the property {}; will take the default ({} ms) instead",
+                propertyName, defaultValue);
+            return defaultValue;
+        }
+        if (configuredValue == -1) {
+            return null; // disabled
+        }
+        return configuredValue;
+    }
+
+    private Timestamp nowMinus(long millis) {
+        return new Timestamp(System.currentTimeMillis() - millis);
+    }
+
+    private List<Encounter> collectOldEncounters() {
         List<Encounter> oldEncounters = new ArrayList<>();
 
-        Timestamp nowMinusFinishedEncounterTimeWindow = new Timestamp(
-            System.currentTimeMillis() - finishedEncounterTimeWindowInMillis);
-        Timestamp nowMinusInclompleteEncounterTimeWindow = new Timestamp(
-            System.currentTimeMillis() - incompleteEncounterTimeWindowInMillis);
+        Long finishedWindow = resolveTimeWindow(
+            configurationDao.getFinishedEncounterTimeWindow(),
+            THIRTY_DAYS_IN_MILLISECONDS,
+            Constants.FINISHED_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
+
+        Long incompleteWindow = resolveTimeWindow(
+            configurationDao.getIncompleteEncounterTimeWindow(),
+            ONEHUNDREDEIGHTY_DAYS_IN_MILLISECONDS,
+            Constants.INCOMPLETE_ENCOUNTER_TIME_WINDOW_IN_MILLIS);
+
         try {
-            if (deleteFinishedEncounters) {
-                oldEncounters.addAll(encounterDao.getFinishedEncounterOlderThan(
-                    nowMinusFinishedEncounterTimeWindow));
+            if (finishedWindow != null) {
+                oldEncounters.addAll(encounterDao.getFinishedEncounterOlderThan(nowMinus(finishedWindow)));
             }
-            if (deleteIncompleteEncounters) {
-                oldEncounters.addAll(encounterDao.getIncompleteEncountersOlderThan(
-                    nowMinusInclompleteEncounterTimeWindow));
+            if (incompleteWindow != null) {
+                oldEncounters.addAll(encounterDao.getIncompleteEncountersOlderThan(nowMinus(incompleteWindow)));
             }
         } catch (Exception e) {
-            LOGGER.error("Something went wrong while checking for old finished "
-                    + "Encounters. Since this is important for not "
-                    + "having a database of old finished encounters, " + "investigate this error ASAP",
-                e);
+            LOGGER.error("Something went wrong while checking for old finished Encounters. "
+                + "Since this is important for not having a database of old finished encounters, "
+                + "investigate this error ASAP", e);
         }
+        return oldEncounters;
+    }
 
-        //Now delete all encounters and encounters scheduled that are connected
-        boolean deleteFinishedEncounterScheduleds = true;
-        Long finishedEncounterScheduledTimeWindowInMillis = configurationDao.getFinishedEncounterScheduledTimeWindow();
-        if (finishedEncounterScheduledTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (90 days) instead",
-                Constants.FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS);
-            finishedEncounterScheduledTimeWindowInMillis = NINETY_DAYS_IN_MILLISECONDS;
-        } else if (finishedEncounterScheduledTimeWindowInMillis == -1) {
-            deleteFinishedEncounterScheduleds = false;
-        }
-
-        boolean deleteIncompleteEncounterScheduleds = true;
-        Long incompleteEncounterScheduledTimeWindowInMillis = configurationDao.getIncompleteEncounterScheduledTimeWindow();
-        if (incompleteEncounterScheduledTimeWindowInMillis == null) {
-            LOGGER.info("Could not find a value for the property {}; will take "
-                    + "the default (180 days) instead",
-                Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS);
-            incompleteEncounterScheduledTimeWindowInMillis = ONEHUNDREDEIGHTY_DAYS_IN_MILLISECONDS;
-        } else if (incompleteEncounterScheduledTimeWindowInMillis == -1) {
-            deleteIncompleteEncounterScheduleds = false;
-        }
-
+    private List<EncounterScheduled> collectOldEncounterScheduleds() {
         List<EncounterScheduled> oldEncounterScheduleds = new ArrayList<>();
 
-        Timestamp nowMinusFinishedEncounterScheduledTimeWindow = new Timestamp(
-            System.currentTimeMillis() - finishedEncounterScheduledTimeWindowInMillis);
-        Timestamp nowMinusInclompleteEncounterScheduledTimeWindow = new Timestamp(
-            System.currentTimeMillis() - incompleteEncounterScheduledTimeWindowInMillis);
+        Long finishedWindow = resolveTimeWindow(
+            configurationDao.getFinishedEncounterScheduledTimeWindow(),
+            NINETY_DAYS_IN_MILLISECONDS,
+            Constants.FINISHED_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS);
+
+        Long incompleteWindow = resolveTimeWindow(
+            configurationDao.getIncompleteEncounterScheduledTimeWindow(),
+            ONEHUNDREDEIGHTY_DAYS_IN_MILLISECONDS,
+            Constants.INCOMPLETE_ENCOUNTER_SCHEDULED_TIME_WINDOW_IN_MILLIS);
+
         try {
-            if (deleteFinishedEncounterScheduleds) {
+            if (finishedWindow != null) {
                 oldEncounterScheduleds.addAll(
-                    encounterScheduledDao.getFinishedEncounterScheduledOlderThan(
-                        nowMinusFinishedEncounterScheduledTimeWindow));
+                    encounterScheduledDao.getFinishedEncounterScheduledOlderThan(nowMinus(finishedWindow)));
             }
-            if (deleteIncompleteEncounterScheduleds) {
-                for (EncounterScheduled encounterScheduled : encounterScheduledDao.getEncounterScheduledOlderThan(
-                    nowMinusInclompleteEncounterScheduledTimeWindow)) {
-                    //prevent to add encounterScheduled twice
-                    if (!oldEncounterScheduleds.contains(encounterScheduled)) {
-                        oldEncounterScheduleds.add(encounterScheduled);
+            if (incompleteWindow != null) {
+                for (EncounterScheduled es : encounterScheduledDao.getEncounterScheduledOlderThan(nowMinus(incompleteWindow))) {
+                    if (!oldEncounterScheduleds.contains(es)) {
+                        oldEncounterScheduleds.add(es);
                     }
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Something went wrong while checking for old finished "
-                + "EncounterScheduleds. Since this is important for"
-                + " not having a database of old finished "
-                + "encounters, investigate this error ASAP", e);
+            LOGGER.error("Something went wrong while checking for old finished EncounterScheduleds. "
+                + "Since this is important for not having a database of old finished encounters, "
+                + "investigate this error ASAP", e);
         }
+        return oldEncounterScheduleds;
+    }
 
-        Set<AuditPatientAttribute> patientAttributes = new HashSet<>(
-            Arrays.asList(AuditPatientAttribute.values()));
-        Set<String> deletedCaseNumbers = new HashSet<>();
+    private void deleteEncounters(List<Encounter> oldEncounters, Set<String> deletedCaseNumbers) {
         for (Encounter encounter : oldEncounters) {
             // Do not remove encounters that belong to scheduled encounters
-            if (encounter.getEncounterScheduled() == null) {
-                try {
-                    Bundle bundle = encounter.getBundle();
-                    bundle.removeEncounter(encounter);
-                    bundleDao.merge(bundle);
-                    encounterDao.remove(encounter);
-                    deletedCaseNumbers.add(encounter.getCaseNumber());
-                } catch (Exception e) {
-                    LOGGER.error("Something went wrong while deleting an old "
-                        + "finished Encounter. Since this is "
-                        + "important for not having a database of "
-                        + "old finished encounters, investigate " + "this error ASAP", e);
-                }
+            if (encounter.getEncounterScheduled() != null) {
+                continue;
+            }
+            try {
+                Bundle bundle = encounter.getBundle();
+                bundle.removeEncounter(encounter);
+                bundleDao.merge(bundle);
+                encounterDao.remove(encounter);
+                deletedCaseNumbers.add(encounter.getCaseNumber());
+            } catch (Exception e) {
+                LOGGER.error("Something went wrong while deleting an old finished Encounter. "
+                    + "Since this is important for not having a database of old finished encounters, "
+                    + "investigate this error ASAP", e);
             }
         }
+    }
 
+    private void deleteEncounterScheduleds(List<EncounterScheduled> oldEncounterScheduleds, Set<String> deletedCaseNumbers) {
         for (EncounterScheduled encounterScheduled : oldEncounterScheduleds) {
             try {
+                for(Encounter nestedEncounter: encounterScheduled.getEncounters()) {
+                    encounterDao.removeEncounterExportTemplatesForEncounter(nestedEncounter);
+                }
+
                 encounterScheduledDao.remove(encounterScheduled);
                 deletedCaseNumbers.add(encounterScheduled.getCaseNumber());
             } catch (Exception e) {
-                LOGGER.error("Something went wrong while deleting an old "
-                    + "EncounterScheduled. Since this is important "
-                    + "for not having a database of old finished "
-                    + "encounters, investigate this error ASAP", e);
+                LOGGER.error("Something went wrong while deleting an old EncounterScheduled. "
+                    + "Since this is important for not having a database of old finished encounters, "
+                    + "investigate this error ASAP", e);
             }
         }
+    }
 
+    private void writeAuditLog(Set<String> deletedCaseNumbers) {
+        Set<AuditPatientAttribute> patientAttributes = new HashSet<>(Arrays.asList(AuditPatientAttribute.values()));
         try {
             auditEntryDao.writeAuditEntries(this.getClass().getSimpleName(),
                 "deleteOldEncounters()", deletedCaseNumbers, patientAttributes,
                 AuditEntryActionType.DELETE);
         } catch (Exception e) {
-            LOGGER.error("Something went wrong while writing audit logs of " + "deleted"
-                + " old Encounters and old " + "EncounterScheduleds. " + "Since this is "
-                + "important for having a complete " + "audit log, "
-                + "investigate this error ASAP", e);
+            LOGGER.error("Something went wrong while writing audit logs of deleted old Encounters "
+                + "and old EncounterScheduleds. Since this is important for having a complete "
+                + "audit log, investigate this error ASAP", e);
         }
     }
+
 }

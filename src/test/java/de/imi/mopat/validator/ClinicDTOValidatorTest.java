@@ -60,6 +60,19 @@ public class ClinicDTOValidatorTest {
     @Autowired
     private ClinicDTOMapper clinicDTOMapper;
 
+
+    /**
+     * Creates a ClinicDTO that passes validation, so single fields can be
+     * modified in isolation to test their specific constraints.
+     */
+    private ClinicDTO createValidClinicDTO() {
+        ClinicDTO dto = new ClinicDTO();
+        dto.setName(Helper.getRandomAlphabeticString(10));
+        dto.setDescription(Helper.getRandomAlphabeticString(20));
+        dto.setClinicConfigurationMappingDTOS(new ArrayList<>());
+        return dto;
+    }
+
     /**
      * Test of {@link ClinicDTOValidator#supports(java.lang.Class)}<br> Valid input:
      * {@link ClinicDTO#class}<br> Invalid input: Other class than {@link ClinicDTO#class}
@@ -120,4 +133,39 @@ public class ClinicDTOValidatorTest {
             "The validation of the clinicDTO name failed. The returned error message didn't match the expected one.",
             message, testErrorMessage);
     }
+
+    @Test
+    public void testValidateDescriptionLength() {
+        int maxLength = ClinicDTOValidator.MAX_DESCRIPTION_TEXT_LENGTH;
+
+        // Case 1: exactly at the limit -> no error expected
+        ClinicDTO clinicDTO = createValidClinicDTO();
+        clinicDTO.setDescription(Helper.getRandomAlphabeticString(maxLength));
+
+        BindingResult result = new MapBindingResult(new HashMap<>(), "clinicDTO");
+        clinicDTOValidator.validate(clinicDTO, result);
+
+        assertFalse("Description at the limit should not raise an error.",
+                result.hasFieldErrors("description"));
+
+        // Case 2: one character over the limit -> error expected
+        int tooLongLength = maxLength + 1;
+        clinicDTO = createValidClinicDTO();
+        clinicDTO.setDescription(Helper.getRandomAlphabeticString(tooLongLength));
+
+        result = new MapBindingResult(new HashMap<>(), "clinicDTO");
+        clinicDTOValidator.validate(clinicDTO, result);
+
+        assertTrue("Too long description should raise an error.",
+                result.hasFieldErrors("description"));
+
+        String expectedMessage = messageSource.getMessage("questionnaire.error.descriptionTooLong",
+                new Object[]{tooLongLength, maxLength},
+                LocaleContextHolder.getLocale());
+
+        assertEquals("The returned error message for a too long description didn't match the expected one.",
+                expectedMessage,
+                result.getFieldError("description").getDefaultMessage());
+    }
+
 }

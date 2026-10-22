@@ -68,13 +68,11 @@
 					<th:block th:if="${not #lists.isEmpty(allBundles)}">
 						<tr th:each="item: ${allBundles}">
 							<td>
-								<a
+								<span
 									th:if="${not #strings.isEmpty(item.name)}"
-									class="link"
-									th:href="@{fill?id=__${item.id}__}"
 									th:text="${item.name}"
 								>
-								</a>
+								</span>
 							</td>
 							<td style="text-align: left">
 								<addVar
@@ -137,8 +135,8 @@
 								<div class="d-none d-xl-block">
                                     <div class="btn-group" role="group">
                                         <a
-                                            id="bundleLink__${item.id}__"
-                                            class="btn btn-sm btn-primary-list link"
+                                            th:id="bundleLink__${item.id}__"
+                                            class="btn btn-sm btn-primary-list link editButton"
                                             th:href="@{fill?id=__${item.id}__}"
                                         >
                                             <i
@@ -154,15 +152,16 @@
                                                 th:classappend="${item.getAllAssignedExportTemplates().isEmpty() == false && item.getBundleQuestionnaires().isEmpty() == false && item.isPublished == false} ? '' : 'btn-crossed'"
                                             >
                                                 <i
-                                                    class="bi-lab-icon bi-list-icon"
+                                                    class="bi-file-earmark-arrow-up-fill bi-list-icon"
                                                     th:title="${messages.get(#locale, 'bundle.button.testExport', 'Test Assigned Exports')}"
                                                 >
                                                 </i>
                                             </a>
                                         </th:block>
                                         <a
-                                            th:if="${item.isPublished == true && item.isModifiable() == true}"
-                                            class="btn btn-sm btn-primary-list link btn-red"
+                                            th:if="${item.isPublished == true}"
+                                            class="btn btn-sm btn-primary-list link"
+											th:classappend="${item.isModifiable() == false} ? 'btn-crossed' : 'btn-red'"
                                             th:href="@{togglepublish?id=__${item.id}__}"
                                         >
                                             <i
@@ -171,20 +170,10 @@
                                             >
                                             </i>
                                         </a>
-										<a
-											th:if="${item.isPublished == true && item.isModifiable() == false}"
-											class="btn btn-sm btn-primary-list btn-crossed link"
-											aria-disabled="true"
-										>
-											<i
-												class="bi-x-circle-fill bi-list-icon"
-												th:title="${messages.get(#locale, 'bundle.button.lock', 'Disable')}"
-											>
-											</i>
-										</a>
                                         <a
-                                            th:if="${item.isPublished == false && item.getBundleQuestionnaires().isEmpty() == false}"
-                                            class="btn btn-sm btn-primary-list link btn-green"
+                                            th:if="${item.isPublished == false}"
+                                            class="btn btn-sm btn-primary-list link"
+											th:classappend="${item.getBundleQuestionnaires().isEmpty() == true} ? 'btn-crossed' : 'btn-green'"
                                             th:href="@{togglepublish?id=__${item.id}__}"
                                         >
                                             <i

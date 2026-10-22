@@ -137,7 +137,7 @@ class QuestionnaireHelper:
         :return: The ID of the newly created questionnaire.
         """
         current_url = self.driver.current_url
-        self.utils.click_element(QuestionnaireSelectors.BUTTON_SAVE_AND_EDIT)
+        self.utils.click_element(QuestionnaireSelectors.BUTTON_SAVE)
 
         # Wait for redirection and extract questionnaire ID
         WebDriverWait(self.driver, 15).until(EC.url_changes(current_url))
@@ -155,10 +155,12 @@ class QuestionnaireHelper:
         """
         current_url = self.driver.current_url
         self.utils.click_element(QuestionnaireSelectors.BUTTON_SAVE)
-
+        
         # Wait for redirection and extract questionnaire ID
         WebDriverWait(self.driver, 15).until(EC.url_changes(
             current_url))
+
+        self.navigation_helper.navigate_to_manage_questionnaires()
         
         WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
             QuestionnaireTableSelectors.FILTER_INPUT))

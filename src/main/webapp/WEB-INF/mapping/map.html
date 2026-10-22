@@ -758,7 +758,11 @@
 													<th:block
 														th:if="${export.getExportTemplateType().name() eq 'REDCap' && 
 																question.getMinNumberAnswers() eq 1 && 
-																question.getMaxNumberAnswers() eq 1}"
+																question.getMaxNumberAnswers() eq 1 &&
+                                                                (
+                                                                    vars['questionType'] == 'MULTIPLE_CHOICE' ||
+                                                                    vars['questionType'] == 'DROP_DOWN'
+                                                                )}"
 													>
 														<div
 															th:id="|question-${question.getId()}|"
@@ -858,11 +862,15 @@
 														<th:block th:text="${counter.increment()}" />
 													</th:block>
 
-													<th:block
-														th:unless="${export.getExportTemplateType().name() eq 'REDCap' && 
-													question.getMinNumberAnswers() eq 1 && 
-													question.getMaxNumberAnswers() eq 1}"
-													>
+                                                    <th:block
+                                                        th:unless="${export.getExportTemplateType().name() eq 'REDCap' &&
+																question.getMinNumberAnswers() eq 1 &&
+																question.getMaxNumberAnswers() eq 1 &&
+                                                                (
+                                                                    vars['questionType'] == 'MULTIPLE_CHOICE' ||
+                                                                    vars['questionType'] == 'DROP_DOWN'
+                                                                )}"
+                                                    >
 														<th:block
 															th:each="answer: ${question.getAnswers()}"
 														>
