@@ -1,9 +1,11 @@
 package de.imi.mopat.io;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
 import de.imi.mopat.model.Encounter;
@@ -29,11 +31,13 @@ public class EncounterExporterTemplateREDCapTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
-     * Verifies that the content written by the regular file export
-     * is identical to the content returned for manual direct download.
+     * Verifies that the REDCap file that is being exported and the REDCap file that can be downloaded
+     * contain the same data, even though the data format differs.
      *
-     * @throws Exception if preparing or writing the export fails
+     * @throws Exception if preparing, reading or writing the export fails
      */
     @Test
     public void exportedFileAndDownloadContentShouldBeEqual() throws Exception {
@@ -92,7 +96,25 @@ public class EncounterExporterTemplateREDCapTest {
         // Act: generate the download-content
         String downloadContent = exporter.getExportContent();
 
-        // Assert that both output paths produce exactly the same content
-        assertEquals(downloadContent, exportedContent);
+        //Verify, that the Download file is valid JSON
+        assertTrue(objectMapper.readTree(downloadContent).isArray());
+
+        //normalize download-content for assertEqual test
+        String normalizedDownloadContent = convertDownloadContentToExportFormat(downloadContent);
+
+        //assert, that export and download contain the same data
+        assertEquals(normalizedDownloadContent, exportedContent);
+
+    }
+
+
+     /** Converts plain JSON returned by the download into the serialized
+     * string representation used by the regular REDCap file export.
+*/
+
+    private String convertDownloadContentToExportFormat(
+            final String downloadContent) throws Exception {
+
+        return objectMapper.writeValueAsString(downloadContent);
     }
 }
