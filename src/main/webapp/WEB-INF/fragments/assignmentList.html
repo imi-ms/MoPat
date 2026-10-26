@@ -56,8 +56,16 @@
          th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
          th:attr="data-item-id=${itemDto.id}">
       <div class="row align-items-start g-2">
-        <th:block th:if="${sortable}">
-          <div class="col-auto pt-2">
+                <th:block th:if="${sortable}">
+          <div class="col-auto pt-2 me-2 text-end assignment-item-position" style="min-width: 1.5em;">
+            <span th:text="|${status.index + 1}.|">1.</span>
+            <input type="hidden"
+                   data-field="position"
+                   th:name="|${fieldPrefix}[${status.index}].position|"
+                   th:value="${status.index + 1}" />
+          </div>
+
+          <div class="col-auto pt-1 me-2">
             <button type="button"
                     class="btn btn-sm btn-link text-body assignment-drag-handle"
                     th:disabled="${#bools.isFalse(isModifiable)}"
@@ -65,17 +73,9 @@
               <span class="bi bi-grip-vertical" aria-hidden="true"></span>
             </button>
           </div>
-
-          <div class="col-auto pt-2 assignment-item-position">
-            <span th:text="|${status.index + 1}.|">1.</span>
-            <input type="hidden"
-                   data-field="position"
-                   th:name="|${fieldPrefix}[${status.index}].position|"
-                   th:value="${status.index + 1}" />
-          </div>
         </th:block>
 
-        <div class="col">
+        <div class="col pt-2">
           <div class="fw-semibold" th:text="${itemDto[itemNameField]}">Item</div>
           <th:block th:if="${itemMetaFragment != null}">
             <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
@@ -223,18 +223,18 @@
      th:attr="data-item-id=${itemDto.id}">
   <div class="row align-items-start g-2">
     <th:block th:if="${#bools.isTrue(isSortable)}">
-      <div class="col-auto pt-2">
+      <div class="col-auto pt-2 me-2 text-end assignment-item-position" style="min-width: 1.5em;">
+        <span>0.</span>
+        <input type="hidden" data-field="position" value="0" disabled="disabled" />
+      </div>
+      <div class="col-auto pt-1 me-2">
         <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
                 th:title="${reorderText ?: 'Change order'}">
           <span class="bi bi-grip-vertical" aria-hidden="true"></span>
         </button>
       </div>
-      <div class="col-auto pt-2 assignment-item-position">
-        <span>0.</span>
-        <input type="hidden" data-field="position" value="0" disabled="disabled" />
-      </div>
     </th:block>
-    <div class="col">
+    <div class="col pt-2">
       <div class="fw-semibold" th:text="${itemDto[itemNameField]}">Item</div>
       <th:block th:if="${itemMetaFragment != null}">
         <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
