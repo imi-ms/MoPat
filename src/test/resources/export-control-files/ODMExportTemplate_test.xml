@@ -1,0 +1,988 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odm:ODM xmlns:odm="http://www.cdisc.org/ns/odm/v1.3" xmlns:ns0="http://www.w3.org/2000/09/xmldsig#" FileType="Snapshot" FileOID=".2.1793020948339" CreationDateTime="2026-10-26T14:22:28.323+01:00" ODMVersion="1.3.2">
+   <odm:Study OID=".2.1793020948339.1">
+      <odm:GlobalVariables>
+         <odm:StudyName>Demo Questionnaire</odm:StudyName>
+         <odm:StudyDescription>Dieser Fragebogen enthält alle bisher implementierten Fragetypen</odm:StudyDescription>
+         <odm:ProtocolName>Protocol</odm:ProtocolName>
+      </odm:GlobalVariables>
+      <odm:MetaDataVersion OID=".2.1793020948339.2" Name="MD.1">
+         <odm:Protocol>
+            <odm:StudyEventRef OrderNumber="1" Mandatory="No" StudyEventOID=".2.1793020948339.1.1"/>
+         </odm:Protocol>
+         <odm:StudyEventDef OID=".2.1793020948339.1.1" Name="SE.1" Repeating="No" Type="Common">
+            <odm:FormRef OrderNumber="1" Mandatory="No" FormOID=".2"/>
+         </odm:StudyEventDef>
+         <odm:FormDef OID=".2" Name="Demo Questionnaire" Repeating="No">
+            <odm:Description>
+               <odm:TranslatedText xml:lang="de-DE">Dieser Fragebogen enthält alle bisher implementierten Fragetypen</odm:TranslatedText>
+            </odm:Description>
+            <odm:ItemGroupRef ItemGroupOID=".2.1" OrderNumber="1" Mandatory="No"/>
+         </odm:FormDef>
+         <odm:ItemGroupDef OID=".2.1" Name="IG.1" Repeating="No">
+            <odm:ItemRef OrderNumber="1" Mandatory="Yes" ItemOID=".66.67"/>
+            <odm:ItemRef OrderNumber="2" Mandatory="Yes" ItemOID=".66.68"/>
+            <odm:ItemRef OrderNumber="3" Mandatory="Yes" ItemOID=".66.69"/>
+            <odm:ItemRef OrderNumber="4" Mandatory="Yes" ItemOID=".66.70"/>
+            <odm:ItemRef OrderNumber="5" Mandatory="Yes" ItemOID=".66.71"/>
+            <odm:ItemRef OrderNumber="6" Mandatory="Yes" ItemOID=".66.72"/>
+            <odm:ItemRef OrderNumber="7" Mandatory="Yes" ItemOID=".66.73"/>
+            <odm:ItemRef OrderNumber="8" Mandatory="No" ItemOID=".3.4"/>
+            <odm:ItemRef OrderNumber="9" Mandatory="No" ItemOID=".3.5"/>
+            <odm:ItemRef OrderNumber="10" Mandatory="No" ItemOID=".3.6"/>
+            <odm:ItemRef OrderNumber="11" Mandatory="No" ItemOID=".3.7"/>
+            <odm:ItemRef OrderNumber="12" Mandatory="No" ItemOID=".3.8"/>
+            <odm:ItemRef OrderNumber="13" Mandatory="No" ItemOID=".3.9"/>
+            <odm:ItemRef OrderNumber="14" Mandatory="No" ItemOID=".3.10"/>
+            <odm:ItemRef OrderNumber="15" Mandatory="No" ItemOID=".75"/>
+            <odm:ItemRef OrderNumber="16" Mandatory="No" ItemOID=".129"/>
+            <odm:ItemRef OrderNumber="17" Mandatory="Yes" ItemOID=".125"/>
+            <odm:ItemRef OrderNumber="19" Mandatory="Yes" ItemOID=".127.2"/>
+            <odm:ItemRef OrderNumber="18" Mandatory="Yes" ItemOID=".127.1"/>
+            <odm:ItemRef OrderNumber="20" Mandatory="Yes" ItemOID=".134"/>
+            <odm:ItemRef OrderNumber="21" Mandatory="No" ItemOID=".62.63"/>
+            <odm:ItemRef OrderNumber="22" Mandatory="No" ItemOID=".62.64"/>
+            <odm:ItemRef OrderNumber="23" Mandatory="No" ItemOID=".62.65"/>
+            <odm:ItemRef OrderNumber="24" Mandatory="No" ItemOID=".13"/>
+            <odm:ItemRef OrderNumber="25" Mandatory="No" ItemOID=".16"/>
+            <odm:ItemRef OrderNumber="26" Mandatory="No" ItemOID=".11"/>
+            <odm:ItemRef OrderNumber="27" Mandatory="No" ItemOID=".77.78"/>
+            <odm:ItemRef OrderNumber="28" Mandatory="No" ItemOID=".77.79"/>
+            <odm:ItemRef OrderNumber="29" Mandatory="No" ItemOID=".77.80"/>
+            <odm:ItemRef OrderNumber="30" Mandatory="No" ItemOID=".77.81"/>
+            <odm:ItemRef OrderNumber="31" Mandatory="No" ItemOID=".77.82"/>
+            <odm:ItemRef OrderNumber="32" Mandatory="No" ItemOID=".77.83"/>
+            <odm:ItemRef OrderNumber="33" Mandatory="No" ItemOID=".77.84"/>
+            <odm:ItemRef OrderNumber="34" Mandatory="No" ItemOID=".77.85"/>
+            <odm:ItemRef OrderNumber="35" Mandatory="No" ItemOID=".77.86"/>
+            <odm:ItemRef OrderNumber="36" Mandatory="No" ItemOID=".77.87"/>
+            <odm:ItemRef OrderNumber="37" Mandatory="No" ItemOID=".77.88"/>
+            <odm:ItemRef OrderNumber="38" Mandatory="No" ItemOID=".77.89"/>
+            <odm:ItemRef OrderNumber="39" Mandatory="No" ItemOID=".77.90"/>
+            <odm:ItemRef OrderNumber="40" Mandatory="No" ItemOID=".77.91"/>
+            <odm:ItemRef OrderNumber="41" Mandatory="No" ItemOID=".77.92"/>
+            <odm:ItemRef OrderNumber="42" Mandatory="No" ItemOID=".77.93"/>
+            <odm:ItemRef OrderNumber="43" Mandatory="No" ItemOID=".77.94"/>
+            <odm:ItemRef OrderNumber="44" Mandatory="No" ItemOID=".77.95"/>
+            <odm:ItemRef OrderNumber="45" Mandatory="No" ItemOID=".77.96"/>
+            <odm:ItemRef OrderNumber="46" Mandatory="No" ItemOID=".77.97"/>
+            <odm:ItemRef OrderNumber="47" Mandatory="No" ItemOID=".77.98"/>
+            <odm:ItemRef OrderNumber="48" Mandatory="No" ItemOID=".77.99"/>
+            <odm:ItemRef OrderNumber="49" Mandatory="No" ItemOID=".116.117"/>
+            <odm:ItemRef OrderNumber="50" Mandatory="No" ItemOID=".116.118"/>
+            <odm:ItemRef OrderNumber="51" Mandatory="No" ItemOID=".116.119"/>
+            <odm:ItemRef OrderNumber="52" Mandatory="No" ItemOID=".116.120"/>
+            <odm:ItemRef OrderNumber="53" Mandatory="No" ItemOID=".116.121"/>
+            <odm:ItemRef OrderNumber="54" Mandatory="No" ItemOID=".116.122"/>
+            <odm:ItemRef OrderNumber="55" Mandatory="No" ItemOID=".116.123"/>
+            <odm:ItemRef OrderNumber="56" Mandatory="No" ItemOID=".116.124"/>
+            <odm:ItemRef OrderNumber="57" Mandatory="No" ItemOID=".100.101"/>
+            <odm:ItemRef OrderNumber="58" Mandatory="No" ItemOID=".100.102"/>
+            <odm:ItemRef OrderNumber="59" Mandatory="No" ItemOID=".100.103"/>
+            <odm:ItemRef OrderNumber="60" Mandatory="No" ItemOID=".100.104"/>
+            <odm:ItemRef OrderNumber="61" Mandatory="No" ItemOID=".100.105"/>
+            <odm:ItemRef OrderNumber="62" Mandatory="No" ItemOID=".100.106"/>
+            <odm:ItemRef OrderNumber="63" Mandatory="No" ItemOID=".100.107"/>
+            <odm:ItemRef OrderNumber="64" Mandatory="No" ItemOID=".100.108"/>
+            <odm:ItemRef OrderNumber="65" Mandatory="No" ItemOID=".100.109"/>
+            <odm:ItemRef OrderNumber="66" Mandatory="No" ItemOID=".100.110"/>
+            <odm:ItemRef OrderNumber="67" Mandatory="No" ItemOID=".100.111"/>
+            <odm:ItemRef OrderNumber="68" Mandatory="No" ItemOID=".100.112"/>
+            <odm:ItemRef OrderNumber="69" Mandatory="No" ItemOID=".100.113"/>
+            <odm:ItemRef OrderNumber="70" Mandatory="No" ItemOID=".100.114"/>
+            <odm:ItemRef OrderNumber="71" Mandatory="No" ItemOID=".100.115"/>
+            <odm:ItemRef OrderNumber="72" Mandatory="No" ItemOID=".18"/>
+         </odm:ItemGroupDef>
+         <odm:ItemDef OID=".66.67" Name="I.66.67" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Montag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Lunes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Monday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.68" Name="I.66.68" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Dienstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Martes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Tuesday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.69" Name="I.66.69" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Mittwoch</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Miércoles</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Wednesday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.70" Name="I.66.70" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Donnerstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Jueves</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Thursday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.71" Name="I.66.71" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Freitag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Viernes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Friday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.72" Name="I.66.72" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Samstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Sábado</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Saturday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".66.73" Name="I.66.73" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Wenn Sie &quot;Sonntag&quot; auswählen, wir die nächste Frage bedingt angezeigt.&lt;br>&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Sonntag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>Si selecciona «Domingo», la siguiente pregunta se mostrará de forma condicional.&lt;br>&lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Domingo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>If you select ‘Sunday’, the next question will be displayed conditionally.&lt;br>&lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Sunday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.4" Name="I.3.4" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Lunes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Montag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Monday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.5" Name="I.3.5" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Martes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Dienstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Tuesday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.6" Name="I.3.6" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Miércoles</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Mittwoch</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Wednesday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.7" Name="I.3.7" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Jueves</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Donnerstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Thursday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.8" Name="I.3.8" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Viernes</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Freitag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Friday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.9" Name="I.3.9" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Sábado</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Samstag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Saturday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".3.10" Name="I.3.10" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta condicional. Aparece porque previamente ha seleccionado «Domingo».&lt;br>&lt;/p>&lt;p>Ésta es una pregunta de tipo: múltiples respuestas. Varias respuestas son posibles. &lt;/p>&lt;p>El número de respuestas posible es configurable. &lt;/p>&lt;p>La pregunta dice así: Qué día(s) de la semana le gusta(n) más? Domingo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine bedingte Frage. Sie wird angezeigt, weil Sie zuvor &quot;Sonntag&quot; ausgewählt haben.&lt;br>&lt;/p>&lt;p>Dies ist eine Mehrfachauswahl-Frage. Sie sehen mehrere Antwortmöglichkeiten zu dieser Frage.&lt;/p>&lt;p>In Mehrfachauswahl-Fragen ist festgelegt, wie viele Antworten maximal gegeben werden können.&lt;/p>&lt;p>Die Frage lautet: Welche(n) Wochentag(e) mögen Sie besonders? Sonntag</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a conditional question. It is displayed because you have previously selected ‘Sunday’.&lt;br>&lt;/p>&lt;p>This is a multiple choice question. There are multiple answers posible to this question. &lt;/p>&lt;p>In this kind of questions, the number of posible answers can be configured. &lt;/p>&lt;p>The question reads: What day(s) of the week do you like best? Sunday</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".75" Name="I.75" DataType="double">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist ebenfalls ein Schieberegler. Er verhält sich wie sein vertikaler Bruder, ist aber horizontal dargestellt.&lt;/p>&lt;p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Ésta es una barra deslizante horizontal. &lt;br> La pregunta dice así: qué tal se encuentra? </odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a horizontal slider.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?</odm:TranslatedText>
+            </odm:Question>
+            <odm:RangeCheck Comparator="GE" SoftHard="Soft">
+               <odm:CheckValue>0.0</odm:CheckValue>
+            </odm:RangeCheck>
+            <odm:RangeCheck Comparator="LE" SoftHard="Soft">
+               <odm:CheckValue>1.0</odm:CheckValue>
+            </odm:RangeCheck>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".129" Name="I.129" DataType="double">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist ein horizontaler Schieberegler. Er zeigt zusätzlich Symbole über der Skala an.&lt;br>&lt;p>&lt;/p>&lt;p>Die Frage lautet hier: Wie gut geht es Ihnen gerade?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de un deslizador horizontal. También muestra símbolos encima de la escala.&lt;br> La pregunta dice así: qué tal se encuentra? </odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a horizontal slider. It also displays symbols above the scale.&lt;br>&lt;/p>&lt;p>The question reads: How do you feel?</odm:TranslatedText>
+            </odm:Question>
+            <odm:RangeCheck Comparator="GE" SoftHard="Soft">
+               <odm:CheckValue>0.0</odm:CheckValue>
+            </odm:RangeCheck>
+            <odm:RangeCheck Comparator="LE" SoftHard="Soft">
+               <odm:CheckValue>1.0</odm:CheckValue>
+            </odm:RangeCheck>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".125" Name="I.125" DataType="integer">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Hier können Sie aus einer Reihe von Zahlenwerten einen auswählen. Erneutes Antippen/Klicken einer Antwort führt dazu, dass sie nicht mehr ausgewählt ist.&lt;/p>&lt;p>Wir möchten gerne wissen: Wenn Sie Ihrer bisherigen MoPat-Erfahrung eine Schulnote geben müssten, welche wäre das?&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Aquí puede elegir uno entre una gama de diferentes valores numéricos.Al seleccionar una respuesta previamente seleccionada, la respuesta será des-seleccionada.&lt;br>&lt;/p>&lt;p>La pregunta dicta: Si tuviera que dar una nota a MoPat, qué nota le pondría?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Here you may select a number amongst a list of different numerical values. Selecting an answer previously selected will un-select it.&amp;nbsp; &lt;br>&lt;/p>&lt;p>The question here is: If you had to give a grade to MoPat, what would it be? </odm:TranslatedText>
+            </odm:Question>
+            <odm:RangeCheck Comparator="GE" SoftHard="Soft">
+               <odm:CheckValue>1.0</odm:CheckValue>
+            </odm:RangeCheck>
+            <odm:RangeCheck Comparator="LE" SoftHard="Soft">
+               <odm:CheckValue>6.0</odm:CheckValue>
+            </odm:RangeCheck>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".127.1" Name="I.127" DataType="integer">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.&lt;/p>&lt;p>Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? &lt;br>&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. &lt;/p>&lt;p>La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p>&lt;p>The question would be: How many restaurants have you visited in the last week? Which ones? </odm:TranslatedText>
+            </odm:Question>
+            <odm:RangeCheck Comparator="GE" SoftHard="Soft">
+               <odm:CheckValue>0.0</odm:CheckValue>
+            </odm:RangeCheck>
+            <odm:RangeCheck Comparator="LE" SoftHard="Soft">
+               <odm:CheckValue>10.0</odm:CheckValue>
+            </odm:RangeCheck>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".127.2" Name="I.127_freetext" DataType="string">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Nun haben Sie die Möglichkeit, neben der Auswahl eines Zahlenwertes einen Kommentar zu hinterlassen.&lt;/p>&lt;p>Wir wüssten gerne: Wie viele verschiedene Süßigkeiten haben Sie in den letzten 2 Tagen gegessen? Und welche? &lt;br>&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Al igual que en la pregunta anterior, aquí puede seleccionar un número en un rango especificado. Además, puede añadir un comentario. &lt;/p>&lt;p>La pregunta aquí sería: A cuántos restaurantes ha ido durante la última semana? A cuáles?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">As in the previous question, here you can select a number from a pre-defined range. Besides, you may type a comment. &lt;/p>&lt;p>The question would be: How many restaurants have you visited in the last week? Which ones? </odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".134" Name="I.134" DataType="date">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Datumsfrage. &lt;br>&lt;/p>&lt;p>Bitte tippen/klicken Sie in das Eingabefeld, um die Datumsauswahl zu starten.&lt;/p>&lt;p> Die Frage hier lautet: Wann sind Sie geboren?&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Esta pregunta es de tipo temporal. &lt;/p>&lt;p>Haga click en el campo en blanco para introducir su respuesta.&lt;br>&lt;/p>&lt;p>Cuál es su fecha de nacimiento? &lt;br>&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a date question. &lt;/p>&lt;p>Tap/click on the empty field to introduce your answer.&lt;br>&lt;/p>&lt;p>What is your date of birth?&lt;br></odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".62.63" Name="I.62.63" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">&lt;p>Dies ist eine Auswahllistenfrage.&lt;br>&lt;/p> Antwort 1</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista.  Respuesta uno</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a drop down list question. You may select a value from the drop down list.  Answer one</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".62.64" Name="I.62.64" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">&lt;p>Dies ist eine Auswahllistenfrage.&lt;br>&lt;/p> Antwort 2</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista.  Respuesta dos</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a drop down list question. You may select a value from the drop down list.  Answer two</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".62.65" Name="I.62.65" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">&lt;p>Dies ist eine Auswahllistenfrage.&lt;br>&lt;/p> Antwort 3</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Esta pregunta es de tipo &quot;lista&quot;. Seleccione un valor de entre los posibles mostrados en la lista.  Respuesta tres</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a drop down list question. You may select a value from the drop down list.  Answer three</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".13" Name="I.13" DataType="double">
+            <odm:Description>
+               <odm:TranslatedText xml:lang="en-GB">Minimum value is 1.0 and maximum value is 111.0.</odm:TranslatedText>
+            </odm:Description>
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine numerische Frage. Bitte geben Sie ein Zahl zwischen 1 und 111 ein.&lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">Esta pregunta es de tipo numérica. Introduzca un valor entre 1 y 111. </odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a numeric question. Introduce a number between 1 and 111.</odm:TranslatedText>
+            </odm:Question>
+            <odm:RangeCheck Comparator="GE" SoftHard="Soft">
+               <odm:CheckValue>1.0</odm:CheckValue>
+            </odm:RangeCheck>
+            <odm:RangeCheck Comparator="LE" SoftHard="Soft">
+               <odm:CheckValue>111.0</odm:CheckValue>
+            </odm:RangeCheck>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".16" Name="I.16" DataType="string">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="de-DE">&lt;p>Zum Schluss präsentieren wir Ihnen eine sog. Freitext-Frage. Hier können Sie - naheliegenderweise - einen Freitext hinterlassen.&#xd;
+&lt;/p>&lt;p>Wir würden uns hier über Anmerkungen, Hinweise zu Fehlern und Wünsche zu diesem Fragebogen und MoPat2 im Allgemeinen freuen!&lt;/p></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="es-ES">&lt;p>Para terminar, les mostramos una pregunta de tipo texto libre. Aquí pueden introducir un comentario. &#xd;
+&lt;/p>&lt;p>Nos gustaría que nos comentara qué le parece el sistema, si ha detectado algún error y/o si tiene alguna sugerencia.&lt;/p></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">&lt;p>Last but not least, we want to present to you the free-text question. This kind of question allows users to type comments in the field dedicated to it.  &#xd;
+&lt;/p>&lt;p>We would love to know what you think about the system, if you have detected any error and/or if you have any sugestion.&lt;/p></odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".11" Name="I.11" DataType="string">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">Se trata de una pregunta con código de barras. Los códigos se pueden escanear con este tipo de pregunta. &lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Dies ist eine Barcode Frage. Mit diesem Fragetypen können Codes gescannt werden. &lt;br></odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">This is a barcode question. Codes can be scanned with this question type. &lt;br></odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.78" Name="I.77.78" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Cabeza</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Kopf</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Head</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.79" Name="I.77.79" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Garganta</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Hals</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Throat</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.80" Name="I.77.80" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Hombro/Bíceps derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechte Schulter/Oberarm</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right shoulder/upper arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.81" Name="I.77.81" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Hombro/Bíceps izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linke Schulter/Oberarm</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left shoulder/upper arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.82" Name="I.77.82" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Antebrazo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linker Unterarm</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left lower arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.83" Name="I.77.83" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Antebrazo derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechter Unterarm</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right lower arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.84" Name="I.77.84" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Mano izquierda</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linke Hand</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left hand</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.85" Name="I.77.85" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Mano derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechte Hand</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right hand</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.86" Name="I.77.86" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Pecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Brust</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Chest</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.87" Name="I.77.87" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Estómago</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Bauch</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Stomach</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.88" Name="I.77.88" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Caderas</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Hüfte</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Hips</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.89" Name="I.77.89" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Muslo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linker Oberschenkel</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left thigh</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.90" Name="I.77.90" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Rodilla izquierda</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linkes Knie</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left knee</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.91" Name="I.77.91" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Pierna izquierda</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linkes Schienbein</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left lower leg</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.92" Name="I.77.92" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Pie izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linker Fuß</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left foot</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.93" Name="I.77.93" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Muslo derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechter Oberschenkel</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right thigh</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.94" Name="I.77.94" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Rodilla derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechtes Knie</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right knee</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.95" Name="I.77.95" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Pierna derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechtes Schienbein</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right lower leg</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.96" Name="I.77.96" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Pie derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechter Fuß</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right foot</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.97" Name="I.77.97" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Articulación del codo derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Rechtes Ellbogengelenk Innenseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Right elbow joint</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.98" Name="I.77.98" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Articulación del codo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Linkes Ellbogengelenk Innenseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Left elbow joint</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".77.99" Name="I.77.99" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte delantera del cuerpo? Genitales</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Vorderseite Ihres Körpers? Genitalbereich</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the front of your body? Genitals</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.117" Name="I.116.117" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Nuca</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Hinterer Kopf</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Back head</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.118" Name="I.116.118" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Nalgas</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Pobereich</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Buttocks</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.119" Name="I.116.119" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Bíceps izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Linke/-r Schulter/Oberarmrücken</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Left back shoulder/upper arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.120" Name="I.116.120" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Muslo trasero izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Linker Oberschenkel Rückseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Left back thigh</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.121" Name="I.116.121" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Articulación del codo posterior derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Rechtes Ellbogengelenk Rückseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Right back elbow joint</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.122" Name="I.116.122" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Talón derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Rechte Ferse</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Right heel</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.123" Name="I.116.123" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Mano derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Rechter Handrücken</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Right back hand</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".116.124" Name="I.116.124" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele la parte posterior del cuerpo? Gemelo derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie Schmerzen auf der Rückseite Ihres Körpers? Rechte Wade</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you have pain on the back of your body? Right calf</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.101" Name="I.100.101" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Cabeza</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Kopf</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Head</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.102" Name="I.100.102" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Antebrazo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linker Unterarm</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left lower arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.103" Name="I.100.103" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Mano derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Rechte Hand</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Right hand</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.104" Name="I.100.104" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Estómago</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Bauch</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Stomach</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.105" Name="I.100.105" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Pierna izquierda</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linkes Schienbein</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left lower leg</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.106" Name="I.100.106" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Pie izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linker Fuß</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left foot</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.107" Name="I.100.107" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Pierna derecha</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Rechtes Schienbein</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Right lower leg</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.108" Name="I.100.108" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Articulación del codo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linkes Ellbogengelenk Innenseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left elbow joint</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.109" Name="I.100.109" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Parte superior de la espalda</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Oberer Rücken</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Upper back</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.110" Name="I.100.110" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Nuca</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Hinterer Kopf</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Back head</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.111" Name="I.100.111" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Nalgas</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Pobereich</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Buttocks</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.112" Name="I.100.112" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Gemelo izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linke Wade</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left calf</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.113" Name="I.100.113" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Bíceps izquierdo</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Linke/-r Schulter/Oberarmrücken</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Left back shoulder/upper arm</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.114" Name="I.100.114" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Talón derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Rechte Ferse</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Right heel</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".100.115" Name="I.100.115" DataType="boolean">
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde le duele todavía? Muslo trasero derecho</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie noch Schmerzen? Rechter Oberschenkel Rückseite</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where do you still have pain? Right back thigh</odm:TranslatedText>
+            </odm:Question>
+         </odm:ItemDef>
+         <odm:ItemDef OID=".18" Name="I.18" DataType="string">
+            <odm:Description>
+               <odm:TranslatedText xml:lang="en-GB">Choose exactly 1 answers.</odm:TranslatedText>
+            </odm:Description>
+            <odm:Question>
+               <odm:TranslatedText xml:lang="es-ES">¿Dónde más te duele?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="de-DE">Wo haben Sie außerdem noch Schmerzen?</odm:TranslatedText>
+               <odm:TranslatedText xml:lang="en-GB">Where else do you have pain?</odm:TranslatedText>
+            </odm:Question>
+            <odm:CodeListRef CodeListOID=".18.1"/>
+         </odm:ItemDef>
+         <odm:CodeList OID=".18.1" Name=".18.1" DataType="string">
+            <odm:CodeListItem CodedValue="bodyPart.front.head">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Cabeza</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Kopf</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Head</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="19"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.throat">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Garganta</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Hals</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Throat</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="20"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightShoulder">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Hombro/Bíceps derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte Schulter/Oberarm</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right shoulder/upper arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="21"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftShoulder">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Hombro/Bíceps izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke Schulter/Oberarm</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left shoulder/upper arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="22"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftLowerArm">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Antebrazo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Unterarm</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left lower arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="23"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightLowerArm">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Antebrazo derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Unterarm</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right lower arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="24"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftHand">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Mano izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke Hand</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left hand</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="25"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightHand">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Mano derecha</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte Hand</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right hand</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="26"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.chest">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Pecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Brust</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Chest</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="27"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.stomach">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Estómago</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Bauch</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Stomach</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="28"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.hips">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Caderas</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Hüfte</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Hips</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="29"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftThigh">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Muslo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Oberschenkel</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left thigh</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="30"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftKnee">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Rodilla izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linkes Knie</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left knee</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="31"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftLowerLeg">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Pierna izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linkes Schienbein</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left lower leg</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="32"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftFoot">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Pie izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Fuß</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left foot</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="33"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightThigh">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Muslo derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Oberschenkel</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right thigh</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="34"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightKnee">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Rodilla derecha</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechtes Knie</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right knee</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="35"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightLowerLeg">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Pierna derecha</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechtes Schienbein</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right lower leg</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="36"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightFoot">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Pie derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Fuß</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right foot</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="37"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.rightElbowJoint">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Articulación del codo derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechtes Ellbogengelenk Innenseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right elbow joint</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="38"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.leftElbowJoint">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Articulación del codo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linkes Ellbogengelenk Innenseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left elbow joint</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="39"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.front.genitals">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Genitales</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Genitalbereich</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Genitals</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="40"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.lowerBack">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Lumbares</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Unterer Rücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Lower back</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="41"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.upperBack">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Parte superior de la espalda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Oberer Rücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Upper back</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="42"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.head">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Nuca</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Hinterer Kopf</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Back head</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="43"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.hips">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Nalgas</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Pobereich</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Buttocks</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="44"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftElbowJoint">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Codo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linkes Ellbogengelenk Rückseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left back elbow joint</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="45"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftFoot">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Planta izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke Ferse</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left heel</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="46"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftHand">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Posterior mano izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Handrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left back hand</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="47"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftKnee">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Comisura rodilla izquierda</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke Kniekehle</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left hollow of the knee</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="48"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftLowerArm">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Antebrazo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Unterarmrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left back lower arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="49"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftLowerLeg">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Gemelo izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke Wade</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left calf</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="50"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftShoulder">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Bíceps izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linke/-r Schulter/Oberarmrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left back shoulder/upper arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="51"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.leftThigh">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Muslo trasero izquierdo</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Linker Oberschenkel Rückseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Left back thigh</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="52"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.neck">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Cuello</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Nacken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Neck</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="53"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightElbowJoint">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Articulación del codo posterior derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechtes Ellbogengelenk Rückseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right back elbow joint</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="54"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightFoot">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Talón derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte Ferse</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right heel</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="55"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightHand">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Mano derecha</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Handrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right back hand</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="56"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightKnee">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Comisura rodilla derecha</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte Kniekehle</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right hollow of the knee</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="57"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightLowerArm">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Antebrazo derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Unterarmrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right back lower arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="58"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightShoulder">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Bíceps derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte/-r Schulter/Oberarmrücken</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right back shoulder/upper arm</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="59"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightThigh">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Muslo trasero derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechter Oberschenkel Rückseite</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right back thigh</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="60"/>
+            </odm:CodeListItem>
+            <odm:CodeListItem CodedValue="bodyPart.back.rightLowerLeg">
+               <odm:Decode>
+                  <odm:TranslatedText xml:lang="es-ES">Gemelo derecho</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="de-DE">Rechte Wade</odm:TranslatedText>
+                  <odm:TranslatedText xml:lang="en-GB">Right calf</odm:TranslatedText>
+               </odm:Decode>
+               <odm:Alias Context="MoPatAnswerID" Name="61"/>
+            </odm:CodeListItem>
+         </odm:CodeList>
+      </odm:MetaDataVersion>
+   </odm:Study>
+</odm:ODM>
