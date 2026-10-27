@@ -91,12 +91,15 @@
                     </div>
                 </div>
 
-                <!--/* Assigned bundles: reusable assignment list fragment.
-                       componentId must be unique on this page (users get 'clinic-users').
-                       Field names (bundleClinicDTOs[i].position / .bundleDTO.id / .bundleDTO.name)
-                       match what ClinicController binds, so the controller stays unchanged. */-->
-                <div class="mb-4">
-                    <div th:replace="~{fragments/assignmentList :: assignmentList(
+                <div class="row g-4 mb-4">
+
+
+                    <!--/* Assigned bundles: reusable assignment list fragment.
+                           componentId must be unique on this page (users get 'clinic-users').
+                           Field names (bundleClinicDTOs[i].position / .bundleDTO.id / .bundleDTO.name)
+                           match what ClinicController binds, so the controller stays unchanged. */-->
+                    <div class="col-lg-6">
+                        <div th:replace="~{fragments/assignmentList :: assignmentList(
                         componentId='clinic-bundles',
                         assignedItems=${clinicDTO.bundleClinicDTOs},
                         availableItems=${availableBundleDTOs},
@@ -106,8 +109,8 @@
                         isSortable=true,
                         isModifiable=true,
                         headingText=${messages.get(#locale, 'clinic.heading.assignedBundles', 'Assigned bundles')},
-                        headingInfoText=${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Only published bundles with at least one questionnaire can be assigned.')},
-                        addButtonText=${messages.get(#locale, 'bundle.button.add', 'Add bundles')},
+                        headingInfoText=null,
+                        modalInfoText=${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Only published bundles with at least one questionnaire are shown.')},                        addButtonText=${messages.get(#locale, 'bundle.button.add', 'Add bundles')},
                         emptyStateText=${messages.get(#locale, 'clinic.table.bundlesEmpty', 'No bundles assigned')},
                         reorderText=${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')},
                         alreadyAddedText=${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')},
@@ -116,13 +119,13 @@
                         assignedDetailFragment=null,
                         availableDetailFragment=null
                     )}"></div>
-                </div>
+                    </div>
 
-                <!--/* Assigned users: uses same fragment as above, but in flat mode.
-                       Each list entry is the UserDTO itself, it is not wrapped in an object like UserClinicDTO (-> itemDtoField=null).
-                       The user order is not saved (there is no db field), so the list is not sortable. */-->
-                <div class="mb-4">
-                    <div th:replace="~{fragments/assignmentList :: assignmentList(
+                    <!--/* Assigned users: uses same fragment as above, but in flat mode.
+                           Each list entry is the UserDTO itself, it is not wrapped in an object like UserClinicDTO (-> itemDtoField=null).
+                           The user order is not saved (there is no db field), so the list is not sortable. */-->
+                    <div class="col-lg-6">
+                        <div th:replace="~{fragments/assignmentList :: assignmentList(
                         componentId='clinic-users',
                         assignedItems=${clinicDTO.assignedUserDTOs},
                         availableItems=${availableUserDTOs},
@@ -133,6 +136,7 @@
                         isModifiable=true,
                         headingText=${messages.get(#locale, 'clinic.heading.assignedUsers', 'Assigned users')},
                         headingInfoText=null,
+                        modalInfoText=null,
                         addButtonText=${messages.get(#locale, 'user.button.add', 'Add users')},
                         emptyStateText=${messages.get(#locale, 'clinic.table.usersEmpty', 'No users assigned')},
                         reorderText=null,
@@ -142,7 +146,9 @@
                         assignedDetailFragment=null,
                         availableDetailFragment=null
                     )}"></div>
+                    </div>
                 </div>
+
 
                 <button
                   type="submit"

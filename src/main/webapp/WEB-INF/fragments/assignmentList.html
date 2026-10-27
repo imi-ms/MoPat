@@ -13,7 +13,7 @@
 */-->
 <div th:fragment="assignmentList(componentId, assignedItems, availableItems, fieldPrefix, itemDtoField, itemNameField,
                                  isSortable, isModifiable,
-                                 headingText, headingInfoText, addButtonText, emptyStateText,
+                                 headingText, headingInfoText, modalInfoText, addButtonText, emptyStateText,
                                  reorderText, alreadyAddedText, disableWhenEmptySelector,
                                  itemMetaFragment, assignedDetailFragment, availableDetailFragment)"
      class="assignment-list"
@@ -28,14 +28,11 @@
               data-disable-when-empty=${disableWhenEmptySelector},
               data-already-added-text=${alreadyAddedText ?: 'Already added'}">
 
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <div>
-      <h3 class="h5 mb-0" th:text="${headingText ?: 'Assigned items'}">Assigned items</h3>
-      <small class="text-muted" th:text="${headingInfoText}"></small>
-    </div>
+  <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+    <h3 class="h5 mb-0" th:text="${headingText ?: 'Assigned items'}">Assigned items</h3>
     <!--/* No own id needed; data-bs-target must point at the prefixed modal id. */-->
     <button type="button"
-            class="btn btn-primary assignment-list__open-modal"
+            class="btn btn-primary text-nowrap flex-shrink-0 assignment-list__open-modal"
             data-bs-toggle="modal"
             th:attr="data-bs-target=|#${modalId}|"
             th:disabled="${#bools.isFalse(isModifiable)}">
@@ -43,6 +40,11 @@
       <span th:text="${addButtonText ?: 'Add items'}">Add items</span>
     </button>
   </div>
+
+
+  <p class="small text-muted mb-2"
+     th:unless="${#strings.isEmpty(headingInfoText)}"
+     th:text="${headingInfoText}"></p>
 
   <div class="alert alert-light border assignment-list__assigned-empty"
        th:style="${#lists.isEmpty(assignedItems)} ? '' : 'display:none;'"
@@ -128,6 +130,9 @@
         </div>
 
         <div class="modal-body">
+          <p class="small text-muted mb-2"
+             th:unless="${#strings.isEmpty(modalInfoText)}"
+             th:text="${modalInfoText}"></p>
           <input class="form-control mb-3 assignment-list__filter"
                  type="search"
                  th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}" />
