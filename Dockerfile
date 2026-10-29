@@ -1,7 +1,7 @@
 # ------------------------------
 # Runtime stage: Tomcat + Java 17
 # ------------------------------
-FROM tomcat:10-jdk17-temurin-noble
+FROM tomcat:10-jdk17-temurin-resolute
 RUN rm -rf /usr/local/tomcat/webapps/*
 COPY src/main/resources/docker-server.xml /usr/local/tomcat/conf/server.xml
 COPY target/MoPat.war /usr/local/tomcat/webapps/ROOT.war
