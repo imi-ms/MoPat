@@ -1,4 +1,4 @@
-FROM maven:3.9.11-eclipse-temurin-17-resolute as builder
+FROM maven:3.10.0-eclipse-temurin-17-resolute as builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
