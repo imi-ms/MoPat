@@ -454,10 +454,6 @@
                     <groupId>jakarta.annotation</groupId>
                     <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
