@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
              http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
              version="2.1">
-  <persistence-unit name="MoPat_User" transaction-type="RESOURCE_LOCAL">
+  <persistence-unit name="MoPat_User">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <non-jta-data-source/>
     <class>de.imi.mopat.model.user.User</class>

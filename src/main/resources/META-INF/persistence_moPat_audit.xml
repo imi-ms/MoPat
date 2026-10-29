@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
              http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
              version="2.1">
-  <persistence-unit name="MoPat_Audit" transaction-type="RESOURCE_LOCAL">
+  <persistence-unit name="MoPat_Audit">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>de.imi.mopat.model.AuditEntry</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>

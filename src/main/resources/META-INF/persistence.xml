@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence              http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-  <persistence-unit name="MoPat" transaction-type="RESOURCE_LOCAL">
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+  <persistence-unit name="MoPat">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>de.imi.mopat.model.Answer</class>
     <class>de.imi.mopat.model.BodyPartAnswer</class>
@@ -24,7 +26,6 @@
     <class>de.imi.mopat.model.Question</class>
     <class>de.imi.mopat.model.Response</class>
     <class>de.imi.mopat.model.SliderIcon</class>
-    <class>de.imi.mopat.model.QuestionnaireExport</class>
     <class>de.imi.mopat.model.ExportTemplate</class>
     <class>de.imi.mopat.model.ExportRule</class>
     <class>de.imi.mopat.model.ExportRuleEncounter</class>
@@ -35,7 +36,6 @@
     <class>de.imi.mopat.model.conditions.Condition</class>
     <class>de.imi.mopat.model.conditions.SelectAnswerCondition</class>
     <class>de.imi.mopat.model.conditions.SliderAnswerThresholdCondition</class>
-    <class>de.imi.mopat.model.conditions.AnswerCondition</class>
     <class>de.imi.mopat.model.score.Operator</class>
     <class>de.imi.mopat.model.score.UnaryOperator</class>
     <class>de.imi.mopat.model.score.ValueOfQuestionOperator</class>
@@ -46,7 +46,7 @@
     <class>de.imi.mopat.model.score.Plus</class>
     <class>de.imi.mopat.model.score.MultiOperator</class>
     <class>de.imi.mopat.model.score.Sum</class>
-    <class>de.imi.mopat.model.score.Expression</class>,
+    <class>de.imi.mopat.model.score.Expression</class>
     <class>de.imi.mopat.model.score.UnaryExpression</class>
     <class>de.imi.mopat.model.score.BinaryExpression</class>
     <class>de.imi.mopat.model.score.MultiExpression</class>
@@ -71,12 +71,9 @@
     <class>de.imi.mopat.model.SelectClinicConfiguration</class>
     <class>de.imi.mopat.model.ClinicConfigurationGroupMapping</class>
     <class>de.imi.mopat.model.QuestionnaireVersionGroup</class>
-    <class>de.imi.mopat.model.ExportRuleQuestion</class><exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <class>de.imi.mopat.model.ExportRuleQuestion</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
-      <!-- [bt] for developement porpuses: set 'ddl-generation' to 'create-tables' to tell the JPA provider to create tables on its own
-    	Don't forget to align this setting in the entityManagerDefinition.xml as well!
-        <property name="eclipselink.ddl-generation" value="none"/>
-    	 -->
       <property name="eclipselink.ddl-generation" value="create-tables"/>
       <property name="eclipselink.weaving" value="static"/>
     </properties>
