@@ -110,7 +110,9 @@
                         isModifiable=true,
                         headingText=${messages.get(#locale, 'clinic.heading.assignedBundles', 'Assigned bundles')},
                         headingInfoText=null,
-                        modalInfoText=${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Only published bundles with at least one questionnaire are shown.')},                        addButtonText=${messages.get(#locale, 'bundle.button.add', 'Add bundles')},
+                        itemTypeLabel=${messages.get(#locale, 'bundle.heading.title', 'bundles')},
+                        modalInfoText=${messages.get(#locale, 'clinic.heading.availableBundleInfo', 'Only published bundles with at least one questionnaire are shown.')},
+                        addButtonText=${messages.get(#locale, 'bundle.button.add', 'Add bundles')},
                         emptyStateText=${messages.get(#locale, 'clinic.table.bundlesEmpty', 'No bundles assigned')},
                         reorderText=${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')},
                         alreadyAddedText=${messages.get(#locale, 'questionnaire.label.alreadyAdded', 'Already added')},
@@ -137,6 +139,7 @@
                         headingText=${messages.get(#locale, 'clinic.heading.assignedUsers', 'Assigned users')},
                         headingInfoText=null,
                         modalInfoText=null,
+                        itemTypeLabel=${messages.get(#locale, 'user.heading.userList', 'users')},
                         addButtonText=${messages.get(#locale, 'user.button.add', 'Add users')},
                         emptyStateText=${messages.get(#locale, 'clinic.table.usersEmpty', 'No users assigned')},
                         reorderText=null,
@@ -210,5 +213,5 @@
             }
         }
     </script>
-    <script th:src="@{/js/helper/assignmentList.js?version=3.5.1}"></script>
+    <script th:src="@{/js/helper/assignmentList.js?version=3.5.2}"></script>
 </th:block>

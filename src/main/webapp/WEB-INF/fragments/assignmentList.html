@@ -13,7 +13,7 @@
 */-->
 <div th:fragment="assignmentList(componentId, assignedItems, availableItems, fieldPrefix, itemDtoField, itemNameField,
                                  isSortable, isModifiable,
-                                 headingText, headingInfoText, modalInfoText, addButtonText, emptyStateText,
+                                 headingText, headingInfoText, modalInfoText, itemTypeLabel, addButtonText, emptyStateText,
                                  reorderText, alreadyAddedText, disableWhenEmptySelector,
                                  itemMetaFragment, assignedDetailFragment, availableDetailFragment)"
      class="assignment-list"
@@ -111,6 +111,23 @@
         </div>
       </div>
     </div>
+  </div>
+
+
+  <!--/* Hidden by JS while the list is empty.
+       {0} in the confirm text is replaced by itemTypeLabel (e.g. "questionnaires, bundles or users"). */-->
+  <div class="text-end mt-2 assignment-list__remove-all-container"
+       th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''"
+       th:with="removeAllConfirmText=${#strings.replace(
+                  messages.get(#locale, 'assignmentList.confirm.removeAll', 'Do you really want to remove all assigned {0}?'),
+                  '{0}', itemTypeLabel ?: 'items')}">
+    <button type="button"
+            class="btn btn-sm btn-outline-danger assignment-list__remove-all"
+            th:disabled="${#bools.isFalse(isModifiable)}"
+            th:attr="data-confirm-text=${removeAllConfirmText}">
+      <span class="bi bi-trash" aria-hidden="true"></span>
+      <span th:text="${messages.get(#locale, 'button.removeAll', 'Remove all')}">Remove all</span>
+    </button>
   </div>
 
   <!--/* Modal sits inside the root element so the JS finds it via root.find()

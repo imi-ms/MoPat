@@ -14,6 +14,8 @@
     addButton:           '.assignment-list__add-selected',
     selectedCount:       '.assignment-list__selected-count',
     removeButton:        '.remove-assignment-item-button',
+    removeAllButton:     '.assignment-list__remove-all',
+    removeAllContainer:  '.assignment-list__remove-all-container',
     dragHandle:          '.assignment-drag-handle',
     itemTemplate:        '.assignment-item-template',
     itemPosition:        '.assignment-item-position',
@@ -64,7 +66,7 @@
     this.$selectionEmptyState = this.$in(SELECTORS.selectionEmptyState).first();
     this.$addButton           = this.$in(SELECTORS.addButton).first();
     this.$selectedCount       = this.$in(SELECTORS.selectedCount).first();
-
+    this.$removeAllContainer  = this.$in(SELECTORS.removeAllContainer).first();
     this.fieldPrefix              = this.$root.data('field-prefix') || 'assignedItems';
     this.alreadyAddedText         = this.$root.data('already-added-text') || 'Already added';
     this.disableWhenEmptySelector = this.$root.data('disable-when-empty');
@@ -105,6 +107,10 @@
         if (!self.owns(event.currentTarget)) { return; }
         self.removeItem(event);
       })
+      .on('click', SELECTORS.removeAllButton, function (event) {
+        if (!self.owns(event.currentTarget)) { return; }
+        self.removeAllItems(event.currentTarget);
+      })
       .on('change', SELECTORS.selectionCheckbox, function (event) {
         if (!self.owns(event.currentTarget)) { return; }
         self.updateSelectedCount();
@@ -136,6 +142,18 @@
     this.setSelectionRowAssigned(itemId, false);
     this.refreshState();
   };
+
+  AssignmentList.prototype.removeAllItems = function (button) {
+    const confirmText = $(button).data('confirm-text') || 'Do you really want to remove all assigned items?';
+
+    if (!window.confirm(confirmText)) {
+      return;
+    }
+
+    this.$assignedItems().remove();
+    this.refreshState();
+  };
+
 
   AssignmentList.prototype.addSelectedItems = function () {
     const self = this;
@@ -249,7 +267,10 @@
   };
 
   AssignmentList.prototype.updateAssignedEmptyState = function () {
-    this.$assignedEmptyState.toggle(this.$assignedItems().length === 0);
+    const isEmpty = this.$assignedItems().length === 0;
+
+    this.$assignedEmptyState.toggle(isEmpty);
+    this.$removeAllContainer.toggle(!isEmpty);
   };
 
   /**
