@@ -153,15 +153,22 @@
           />
         </div>
 
-
+        <!--/* componentId: unique namespace for this instance.
+               Must be different for each embedding on the same page.
+               On this page not necessary but its required bc on pages which contains multi-instances like clinic it's important*/-->
         <div th:replace="~{fragments/assignmentList :: assignmentList(
+            componentId='bundle-questionnaires',
             assignedItems=${bundleDTO.bundleQuestionnaireDTOs},
             availableItems=${availableQuestionnaireDTOs},
             fieldPrefix='bundleQuestionnaireDTOs',
             itemDtoField='questionnaireDTO',
+            itemNameField='name',
+            isSortable=true,
             isModifiable=${bundleDTO.isModifiable},
             headingText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 'Assigned questionnaires')},
-            headingInfoText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'Configure and reorder the questionnaires in this bundle.')},
+            headingInfoText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'For each questionnaire you can choose which export templates are exported.')},
+            modalInfoText=${messages.get(#locale, 'bundle.heading.availableQuestionnaireInfo', 'Only questionnaires with at least one question are shown.')},
+            itemTypeLabel=${messages.get(#locale, 'questionnaire.heading.title', 'questionnaires')},
             addButtonText=${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')},
             emptyStateText=${messages.get(#locale, 'bundle.table.bundleQuestionnairesEmpty', 'No questionnaires assigned')},
             reorderText=${messages.get(#locale, 'bundle.button.reorderQuestionnaire', 'Change order')},
@@ -202,8 +209,8 @@
   <script th:inline="javascript" type="text/javascript">
     var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
     $(() => {
-      Localization.initShowLocalizedPage(currentLanguage /*[[${vars['persistedOrErrors']}]]*/);
+      Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/ false);
     });
   </script>
-  <script th:src="@{/js/helper/assignmentList.js?version=3.4.0}"></script>
+  <script th:src="@{/js/helper/assignmentList.js?version=3.5.2}"></script>
 </th:block>
