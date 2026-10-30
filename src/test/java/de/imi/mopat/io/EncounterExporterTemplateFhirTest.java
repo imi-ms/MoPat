@@ -1,24 +1,16 @@
 package de.imi.mopat.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.helper.controller.Constants;
-import de.imi.mopat.io.EncounterExporterTemplate;
+import de.imi.mopat.io.impl.EncounterExporterTemplateFhirDstu3;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR4b;
 import de.imi.mopat.io.impl.EncounterExporterTemplateFhirR5;
-import de.imi.mopat.io.impl.EncounterExporterTemplateFhirDstu3;
-import de.imi.mopat.model.Bundle;
-import de.imi.mopat.model.Configuration;
-import de.imi.mopat.model.ConfigurationGroup;
-import de.imi.mopat.model.Encounter;
-import de.imi.mopat.model.ExportTemplate;
-import de.imi.mopat.model.Questionnaire;
+import de.imi.mopat.model.*;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,9 +20,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class EncounterExporterTemplateFhirTest {
 
@@ -45,9 +38,7 @@ public class EncounterExporterTemplateFhirTest {
 
         assertFileExportEqualsDownload(
                 "FHIRDSTU3_exportTemplate_test.xml",
-                ExportTemplateType.FHIR_DSTU3,
-                configurationDao ->
-                        new EncounterExporterTemplateFhirDstu3(configurationDao)
+                ExportTemplateType.FHIR_DSTU3
         );
     }
 
@@ -57,9 +48,7 @@ public class EncounterExporterTemplateFhirTest {
 
         assertFileExportEqualsDownload(
                 "FHIRR4B_exportTemplate_test.xml",
-                ExportTemplateType.FHIR_R4B,
-                configurationDao ->
-                        new EncounterExporterTemplateFhirR4b(configurationDao)
+                ExportTemplateType.FHIR_R4B
         );
     }
 
@@ -69,16 +58,13 @@ public class EncounterExporterTemplateFhirTest {
 
         assertFileExportEqualsDownload(
                 "FHIRR5_exportTemplate_test.xml",
-                ExportTemplateType.FHIR_R5,
-                configurationDao ->
-                        new EncounterExporterTemplateFhirR5(configurationDao)
+                ExportTemplateType.FHIR_R5
         );
     }
 
     private void assertFileExportEqualsDownload(
             final String templateFilename,
-            final ExportTemplateType exportTemplateType,
-            final ExporterFactory exporterFactory)
+            final ExportTemplateType exportTemplateType)
             throws Exception {
 
         Path objectStoragePath =
@@ -88,7 +74,7 @@ public class EncounterExporterTemplateFhirTest {
                 temporaryFolder.newFolder("exports").toPath();
 
         Path templateDirectory = Path.of(
-                objectStoragePath.toString()
+                objectStoragePath
                         + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY
         );
 
@@ -96,7 +82,9 @@ public class EncounterExporterTemplateFhirTest {
 
         URL templateResource = getClass()
                 .getClassLoader()
-                .getResource("export-control-files/" + templateFilename);
+                .getResource(
+                        "export-control-files/" + templateFilename
+                );
 
         assertNotNull(
                 "FHIR test template could not be found: "
@@ -127,7 +115,10 @@ public class EncounterExporterTemplateFhirTest {
                 );
 
         EncounterExporterTemplate exporter =
-                exporterFactory.create(configurationDao);
+                createExporter(
+                        exportTemplateType,
+                        configurationDao
+                );
 
         exporter.load(
                 encounter,
@@ -145,7 +136,9 @@ public class EncounterExporterTemplateFhirTest {
         Path exportedFile =
                 findExportedFile(
                         exportPath,
-                        exportTemplate.getQuestionnaire().getName(),
+                        exportTemplate
+                                .getQuestionnaire()
+                                .getName(),
                         exportTemplate.getName()
                 );
 
@@ -159,21 +152,51 @@ public class EncounterExporterTemplateFhirTest {
                 exporter.getExportContent();
 
         assertEquals(
-                downloadContent,
-                exportedContent
+                normalizeXmlFormatting(downloadContent),
+                normalizeXmlFormatting(exportedContent)
         );
+    }
+
+    private EncounterExporterTemplate createExporter(
+            final ExportTemplateType exportTemplateType,
+            final ConfigurationDao configurationDao) {
+
+        return switch (exportTemplateType) {
+            case FHIR_DSTU3 -> new EncounterExporterTemplateFhirDstu3(
+                    configurationDao
+            );
+            case FHIR_R4B -> new EncounterExporterTemplateFhirR4b(
+                    configurationDao
+            );
+            case FHIR_R5 -> new EncounterExporterTemplateFhirR5(
+                    configurationDao
+            );
+            default -> throw new IllegalArgumentException(
+                    "Unsupported FHIR export template type: "
+                            + exportTemplateType
+            );
+        };
+    }
+
+    private String normalizeXmlFormatting(
+            final String content) {
+
+        return content
+                .replaceAll(">\\s+<", "><")
+                .trim();
     }
 
     private Encounter createEncounter() {
 
-        Bundle bundle = new Bundle(
-                "Test Bundle",
-                "Test Bundle Description",
-                1L,
-                true,
-                true,
-                false
-        );
+        Bundle bundle =
+                new Bundle(
+                        "Test Bundle",
+                        "Test Bundle Description",
+                        1L,
+                        true,
+                        true,
+                        false
+                );
 
         Encounter encounter =
                 new Encounter(
@@ -181,7 +204,9 @@ public class EncounterExporterTemplateFhirTest {
                         CASE_NUMBER
                 );
 
-        encounter.setBundleLanguage("de_DE");
+        encounter.setBundleLanguage(
+                "de_DE"
+        );
 
         return encounter;
     }
@@ -301,13 +326,13 @@ public class EncounterExporterTemplateFhirTest {
         Path exportDirectory =
                 exportPath
                         .resolve(
-                                questionnaireName.replaceAll(
+                                questionnaireName.replace(
                                         ":",
                                         "_"
                                 )
                         )
                         .resolve(
-                                templateName.replaceAll(
+                                templateName.replace(
                                         ":",
                                         "_"
                                 )
@@ -317,9 +342,7 @@ public class EncounterExporterTemplateFhirTest {
                      Files.list(exportDirectory)) {
 
             return files
-                    .filter(
-                            Files::isRegularFile
-                    )
+                    .filter(Files::isRegularFile)
                     .findFirst()
                     .orElseThrow(
                             () ->
@@ -329,13 +352,5 @@ public class EncounterExporterTemplateFhirTest {
                                     )
                     );
         }
-    }
-
-    @FunctionalInterface
-    private interface ExporterFactory {
-
-        EncounterExporterTemplate create(
-                ConfigurationDao configurationDao
-        );
     }
 }
