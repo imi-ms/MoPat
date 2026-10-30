@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.imi.mopat.dao.ClinicConfigurationDao;

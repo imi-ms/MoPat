@@ -299,6 +299,11 @@ public class EncounterExporterTemplateFhirR4b implements EncounterExporterTempla
         return exportStatus;
     }
 
+    @Override
+    public String getExportContent() throws Exception {
+        return FhirR4bHelper.decodeResourceToString(questionnaireResponse, false);
+    }
+
     /**
      * Handles the HL7 export process by generating and transmitting an HL7 message.
      *

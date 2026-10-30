@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -79,7 +80,9 @@ public class Encounter implements Serializable {
     @NotNull(message = "{encounter.caseNumber.notNull}")
     @NotEmpty(message = "{encounter.caseNumber.notEmpty}")
     @Column(name = "case_number", nullable = false)
-    private String caseNumber; // case number or study number
+    private String caseNumber; // case nu
+
+    // mber or study number
     @OneToMany(mappedBy = "encounter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Response> responses = new HashSet<>();
     @Column(name = "last_seen_question_id")
@@ -232,8 +235,8 @@ public class Encounter implements Serializable {
     public void setBundleLanguage(final String bundleLanguage) {
         assert bundleLanguage != null : "The given bundle language was null";
         assert
-            bundleLanguage.trim().isEmpty() == false :
-            "The given bundle language was empty (after " + "trimming)";
+                bundleLanguage.trim().isEmpty() == false :
+                "The given bundle language was empty (after " + "trimming)";
         this.bundleLanguage = bundleLanguage;
     }
 
@@ -281,7 +284,7 @@ public class Encounter implements Serializable {
     public void setStartTime(final Timestamp startTime) {
         if (startTime != null && endTime != null) {
             assert startTime.before(endTime) :
-                "The given startTime was after" + " the encounter's end time";
+                    "The given startTime was after" + " the encounter's end time";
         }
         this.startTime = startTime;
     }
@@ -305,7 +308,7 @@ public class Encounter implements Serializable {
     public void setEndTime(final Timestamp endTime) {
         if (endTime != null && startTime != null) {
             assert endTime.after(startTime) :
-                "The given end time was before " + "the encounter's start time";
+                    "The given end time was before " + "the encounter's start time";
         }
         this.endTime = endTime;
     }
@@ -470,7 +473,7 @@ public class Encounter implements Serializable {
      *                                 objects.
      */
     public void addEncounterExportTemplates(
-        final Set<EncounterExportTemplate> encounterExportTemplates) {
+            final Set<EncounterExportTemplate> encounterExportTemplates) {
         assert encounterExportTemplates != null : "The given set was null";
         for (EncounterExportTemplate encounterExportTemplate : encounterExportTemplates) {
             addEncounterExportTemplate(encounterExportTemplate);
@@ -492,7 +495,7 @@ public class Encounter implements Serializable {
         }
         // take care the objects know each other
         if (encounterExportTemplate.getEncounter() == null
-            || !encounterExportTemplate.getEncounter().equals(this)) {
+                || !encounterExportTemplate.getEncounter().equals(this)) {
             encounterExportTemplate.setEncounter(this);
         }
     }
@@ -504,7 +507,7 @@ public class Encounter implements Serializable {
      *                                this {@link Encounter}.
      */
     public void removeEncounterExportTemplate(
-        final EncounterExportTemplate encounterExportTemplate) {
+            final EncounterExportTemplate encounterExportTemplate) {
         encounterExportTemplates.remove(encounterExportTemplate);
     }
 
@@ -574,14 +577,14 @@ public class Encounter implements Serializable {
     @JsonIgnore
     public int getNumberOfAssignedAndSuccessfullyExportedExportTemplates() {
         Set<ExportTemplate> assignedExportTemplates = this.getBundle()
-            .getAllAssignedExportTemplates();
+                .getAllAssignedExportTemplates();
         int exportTemplates = 0;
         // iterate over all existing encounter export template
         for (EncounterExportTemplate encounterExportTemplate : encounterExportTemplates) {
             // bundle questionnaire and export template are assigned and
             // export template was successfully exported
             if (assignedExportTemplates.contains(encounterExportTemplate.getExportTemplate())
-                && encounterExportTemplate.getExportStatus() == ExportStatus.SUCCESS) {
+                    && encounterExportTemplate.getExportStatus() == ExportStatus.SUCCESS) {
                 // add export template to the list of successfully exported
                 // templates
                 exportTemplates++;
@@ -603,7 +606,7 @@ public class Encounter implements Serializable {
     @JsonIgnore
     public List<EncounterExportTemplate> getNoLongerAssignedEncounterExportTemplates() {
         Set<ExportTemplate> assignedExportTemplates = this.getBundle()
-            .getAllAssignedExportTemplates();
+                .getAllAssignedExportTemplates();
         List<EncounterExportTemplate> assignedEncounterExportTemplates = new ArrayList<>();
         // iterate over all existing encounter export template
         for (EncounterExportTemplate encounterExportTemplate : this.encounterExportTemplates) {
@@ -615,7 +618,7 @@ public class Encounter implements Serializable {
         // remove all assigned encounter export template from the complete list
         // so only the no longer assigned are left
         List<EncounterExportTemplate> noLongerAssigned = new ArrayList<>(
-            this.getEncounterExportTemplates());
+                this.getEncounterExportTemplates());
         noLongerAssigned.removeAll(assignedEncounterExportTemplates);
         // sort by date asc
         Collections.sort(noLongerAssigned);
@@ -630,7 +633,7 @@ public class Encounter implements Serializable {
      * provided export template. Can not be <code>null</code>. Might be empty.
      */
     public List<EncounterExportTemplate> getEncounterExportTemplatesByExportTemplate(
-        ExportTemplate exportTemplate) {
+            ExportTemplate exportTemplate) {
         List<EncounterExportTemplate> encounterExportTemplateList = new ArrayList<>();
         for (EncounterExportTemplate encounterExportTemplate : this.encounterExportTemplates) {
             // return only encounter-exportTemplate associations with the
@@ -647,8 +650,8 @@ public class Encounter implements Serializable {
     @Override
     public String toString() {
         return "ID:" + this.getId() + " Case Number:" + this.getCaseNumber() + " Starttime:"
-            + this.getStartTime() + " Endtime: " + this.getEndTime() + ". PatientId: "
-            + this.getPatientID();
+                + this.getStartTime() + " Endtime: " + this.getEndTime() + ". PatientId: "
+                + this.getPatientID();
     }
 
 
@@ -673,28 +676,28 @@ public class Encounter implements Serializable {
      * @return True if the mail has been sent, false otherwise.
      */
     public Boolean sendMail(final ApplicationMailer applicationMailer,
-        final MessageSource messageSource, final String baseUrl) {
+                            final MessageSource messageSource, final String baseUrl) {
         // If this encounter is part of a schedueld encounter and not fully
         // answered
         if (this.endTime == null && this.encounterScheduled != null
-            && this.encounterScheduled.getMailStatus() == EncounterScheduledMailStatus.ACTIVE) {
+                && this.encounterScheduled.getMailStatus() == EncounterScheduledMailStatus.ACTIVE) {
             Locale locale = LocaleHelper.getLocaleFromString(
-                this.getEncounterScheduled().getLocale());
+                    this.getEncounterScheduled().getLocale());
 
             String footerEmail = applicationMailer.getMailFooterEMail();
             String footerPhone = applicationMailer.getMailFooterPhone();
 
             // Create links for the mail content
             String surveyLink = baseUrl + "/mobile/survey/encounter?hash=" + this.uuid + "&lang="
-                + locale.toString();
+                    + locale.toString();
             String cancelLink = baseUrl + "/encounter/deactivateMailStatusByPatient?hash="
-                + this.encounterScheduled.getUUID();
+                    + this.encounterScheduled.getUUID();
             String dates = "";
 
             // Create a string which contains the dates of following encounters
             String encounterDates = "";
             if (!this.encounterScheduled.getEncounterScheduledSerialType()
-                .equals(EncounterScheduledSerialType.UNIQUELY)) {
+                    .equals(EncounterScheduledSerialType.UNIQUELY)) {
                 // Set the date of the probable second encounter
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(new Date());
@@ -706,29 +709,29 @@ public class Encounter implements Serializable {
                     calendar.add(Calendar.DAY_OF_MONTH, this.encounterScheduled.getRepeatPeriod());
                 }
                 dates = messageSource.getMessage("mail.encounter.dates",
-                    new Object[]{encounterDates}, locale);
+                        new Object[]{encounterDates}, locale);
             }
 
             // Create mail content
             String personalText = "";
             if (this.encounterScheduled.getPersonalText() != null
-                && !this.encounterScheduled.getPersonalText().isEmpty()) {
+                    && !this.encounterScheduled.getPersonalText().isEmpty()) {
                 personalText = messageSource.getMessage("mail.encounter.personalText",
-                    new Object[]{this.encounterScheduled.getPersonalText()}, locale);
+                        new Object[]{this.encounterScheduled.getPersonalText()}, locale);
             }
             String content = messageSource.getMessage("mail.encounter.content",
-                new Object[]{personalText, surveyLink, dates, cancelLink}, locale);
+                    new Object[]{personalText, surveyLink, dates, cancelLink}, locale);
             String footer = messageSource.getMessage("mail.encounter.footer",
-                new Object[]{footerEmail, footerPhone}, locale);
+                    new Object[]{footerEmail, footerPhone}, locale);
             String subject = messageSource.getMessage("mail.encounter.subject", new Object[]{},
-                locale);
+                    locale);
 
             try {
                 applicationMailer.sendMail(this.encounterScheduled.getEmail(), null, subject,
-                    content + footer, this.encounterScheduled.getReplyMail());
+                        content + footer, this.encounterScheduled.getReplyMail());
             } catch (MailException e) {
                 this.encounterScheduled.setMailStatus(
-                    EncounterScheduledMailStatus.ADDRESS_REJECTED);
+                        EncounterScheduledMailStatus.ADDRESS_REJECTED);
                 LOGGER.debug("It wasn't possible to send email: " + e.getMessage());
                 return false;
             } catch (Exception ex) {
