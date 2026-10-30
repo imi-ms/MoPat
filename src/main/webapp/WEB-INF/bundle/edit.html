@@ -166,7 +166,7 @@
             isSortable=true,
             isModifiable=${bundleDTO.isModifiable},
             headingText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaires', 'Assigned questionnaires')},
-            headingInfoText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'Configure and reorder the questionnaires in this bundle.')},
+            headingInfoText=${messages.get(#locale, 'bundle.heading.assignedQuestionnaireInfo', 'For each questionnaire you can choose which export templates are exported.')},
             modalInfoText=${messages.get(#locale, 'bundle.heading.availableQuestionnaireInfo', 'Only questionnaires with at least one question are shown.')},
             itemTypeLabel=${messages.get(#locale, 'questionnaire.heading.title', 'questionnaires')},
             addButtonText=${messages.get(#locale, 'questionnaire.button.add', 'Add questionnaires')},
@@ -209,7 +209,8 @@
   <script th:inline="javascript" type="text/javascript">
     var currentLanguage = /*[[${vars['currentLanguage']}]]*/ "en_GB";
     $(() => {
-      Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/ false);    });
+      Localization.initShowLocalizedPage(currentLanguage, /*[[${vars['persistedOrErrors']}]]*/ false);
+    });
   </script>
   <script th:src="@{/js/helper/assignmentList.js?version=3.5.2}"></script>
 </th:block>
