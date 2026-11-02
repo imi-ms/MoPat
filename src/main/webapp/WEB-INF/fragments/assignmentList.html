@@ -160,37 +160,48 @@
             No matches
           </div>
 
-          <div class="list-group assignment-list__selection">
-            <!-- Already assigned items are shown, but disabled. -->
-            <div class="list-group-item assignment-selection-row"
-                 th:each="assignment : ${assignedItems}"
-                 th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
-                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}">
-              <div class="form-check">
-                <input class="form-check-input assignment-selection-checkbox"
-                       type="checkbox"
-                       disabled="disabled"
-                       th:id="|${cid}-select-item-${itemDto.id}|" />
-                <label class="form-check-label w-100"
-                       th:for="|${cid}-select-item-${itemDto.id}|">
-                  <span th:text="${itemDto[itemNameField]}">Item</span>
-                  <span class="badge bg-secondary float-end assignment-item-assigned-badge"
-                        th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
-                </label>
-              </div>
+          <!--/* Already added items: collapsible group, collapsed by default.
+       JS moves rows between this group and the available list and keeps the count up to date. */-->
+          <details class="mb-3 assignment-list__assigned-group"
+                   th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''">
+            <summary class="mb-2">
+              <span th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
+              (<span class="assignment-list__assigned-group-count"
+                     th:text="${assignedItems == null ? 0 : #lists.size(assignedItems)}">0</span>)
+            </summary>
 
-              <div class="assignment-item-template d-none">
-                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
-                        itemDto=${itemDto},
-                        itemDtoField=${itemDtoField},
-                        itemNameField=${itemNameField},
-                        isSortable=${sortable},
-                        reorderText=${reorderText},
-                        itemMetaFragment=${itemMetaFragment},
-                        availableDetailFragment=${availableDetailFragment})}"></div>
+            <div class="list-group assignment-list__selection-assigned">
+              <div class="list-group-item assignment-selection-row text-muted"
+                   th:each="assignment : ${assignedItems}"
+                   th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+                   th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}">
+                <div class="form-check">
+                  <input class="form-check-input assignment-selection-checkbox"
+                         type="checkbox"
+                         disabled="disabled"
+                         th:id="|${cid}-select-item-${itemDto.id}|" />
+                  <label class="form-check-label w-100"
+                         th:for="|${cid}-select-item-${itemDto.id}|">
+                    <span th:text="${itemDto[itemNameField]}">Item</span>
+                  </label>
+                </div>
+
+                <div class="assignment-item-template d-none">
+                  <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                          itemDto=${itemDto},
+                          itemDtoField=${itemDtoField},
+                          itemNameField=${itemNameField},
+                          isSortable=${sortable},
+                          reorderText=${reorderText},
+                          itemMetaFragment=${itemMetaFragment},
+                          availableDetailFragment=${availableDetailFragment})}"></div>
+                </div>
               </div>
             </div>
+          </details>
 
+          <!--/* Available items */-->
+          <div class="list-group assignment-list__selection">
             <div class="list-group-item assignment-selection-row"
                  th:each="itemDto : ${availableItems}"
                  th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}">

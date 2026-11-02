@@ -16,6 +16,10 @@
     removeButton:        '.remove-assignment-item-button',
     removeAllButton:     '.assignment-list__remove-all',
     removeAllContainer:  '.assignment-list__remove-all-container',
+    assignedGroup:       '.assignment-list__assigned-group',
+    assignedGroupCount:  '.assignment-list__assigned-group-count',
+    selectionAssigned:   '.assignment-list__selection-assigned',
+    selectionAvailable:  '.assignment-list__selection',
     dragHandle:          '.assignment-drag-handle',
     itemTemplate:        '.assignment-item-template',
     itemPosition:        '.assignment-item-position',
@@ -67,6 +71,10 @@
     this.$addButton           = this.$in(SELECTORS.addButton).first();
     this.$selectedCount       = this.$in(SELECTORS.selectedCount).first();
     this.$removeAllContainer  = this.$in(SELECTORS.removeAllContainer).first();
+    this.$assignedGroup       = this.$in(SELECTORS.assignedGroup).first();
+    this.$assignedGroupCount  = this.$in(SELECTORS.assignedGroupCount).first();
+    this.$selectionAssigned   = this.$in(SELECTORS.selectionAssigned).first();
+    this.$selectionAvailable  = this.$in(SELECTORS.selectionAvailable).first();
     this.fieldPrefix              = this.$root.data('field-prefix') || 'assignedItems';
     this.alreadyAddedText         = this.$root.data('already-added-text') || 'Already added';
     this.disableWhenEmptySelector = this.$root.data('disable-when-empty');
@@ -196,6 +204,7 @@
   AssignmentList.prototype.refreshState = function () {
     this.reindexAssignedItems();
     this.synchronizeSelectionRows();
+    this.updateAssignedGroup();
     this.updateAssignedEmptyState();
     this.updateDisableWhenEmptyTarget();
     this.updateSelectedCount();
@@ -236,28 +245,52 @@
 
   AssignmentList.prototype.setSelectionRowAssigned = function (itemId, assigned) {
     const attributeFilter = `[data-item-id="${escapeAttributeValue(itemId)}"]`;
+    const $selectionRow   = this.$in(SELECTORS.selectionRow + attributeFilter);
 
-    const $selectionRow  = this.$in(SELECTORS.selectionRow + attributeFilter);
-    const $checkbox      = $selectionRow.find(SELECTORS.selectionCheckbox);
-    const $assignedBadge = $selectionRow.find(SELECTORS.assignedBadge);
+    if (!$selectionRow.length) {
+      return;
+    }
 
-    $checkbox
+    $selectionRow.find(SELECTORS.selectionCheckbox)
       .prop('checked', false)
       .prop('disabled', assigned);
 
     $selectionRow.toggleClass('text-muted', assigned);
 
-    if (assigned) {
-      if (!$assignedBadge.length) {
-        const $badge = $(
-          '<span class="badge bg-secondary float-end assignment-item-assigned-badge"></span>'
-        ).text(this.alreadyAddedText);
+    // Move the row into the "already added" group or back to the available list.
+    const $targetList = assigned ? this.$selectionAssigned : this.$selectionAvailable;
 
-        $selectionRow.find('.form-check-label').first().append($badge);
-      }
-    } else {
-      $assignedBadge.remove();
+    if ($selectionRow.parent()[0] !== $targetList[0]) {
+      this.insertSorted($targetList, $selectionRow);
     }
+  };
+
+  /**
+   * Inserts the row alphabetically (by data-search-name) into the given list.
+   */
+  AssignmentList.prototype.insertSorted = function ($list, $row) {
+    const name = String($row.data('search-name') || '');
+    let $nextRow = null;
+
+    $list.children(SELECTORS.selectionRow).each(function () {
+      if (String($(this).data('search-name') || '').localeCompare(name) > 0) {
+        $nextRow = $(this);
+        return false; // stop the loop
+      }
+    });
+
+    if ($nextRow) {
+      $row.insertBefore($nextRow);
+    } else {
+      $list.append($row);
+    }
+  };
+
+  AssignmentList.prototype.updateAssignedGroup = function () {
+    const count = this.$selectionAssigned.children(SELECTORS.selectionRow).length;
+
+    this.$assignedGroupCount.text(count);
+    this.$assignedGroup.toggle(count > 0);
   };
 
   AssignmentList.prototype.isAssigned = function (itemId) {
@@ -307,23 +340,32 @@
   };
 
   AssignmentList.prototype.filterItems = function () {
-    const searchTerm = String(this.$filter.val() || '').trim().toLowerCase();
+    const searchTerm          = String(this.$filter.val() || '').trim().toLowerCase();
+    const assignedListElement = this.$selectionAssigned[0];
 
     let visibleItemCount = 0;
+    let hasAssignedHits  = false;
 
     this.$in(SELECTORS.selectionRow).each(function () {
-      const $selectionRow = $(this);
+      const $selectionRow  = $(this);
       const searchableName = String($selectionRow.data('search-name') || '');
-      const isVisible = searchTerm === '' || searchableName.includes(searchTerm);
+      const isVisible      = searchTerm === '' || searchableName.includes(searchTerm);
 
       $selectionRow.toggle(isVisible);
 
       if (isVisible) {
         visibleItemCount++;
+
+        if (this.parentElement === assignedListElement) {
+          hasAssignedHits = true;
+        }
       }
     });
 
     this.$selectionEmptyState.toggle(visibleItemCount === 0);
+
+    // Expand the "already added" group only while a search finds something in it.
+    this.$assignedGroup.prop('open', searchTerm !== '' && hasAssignedHits);
   };
 
   /* ---------- Bootstrapping ------------------------------------------ */
