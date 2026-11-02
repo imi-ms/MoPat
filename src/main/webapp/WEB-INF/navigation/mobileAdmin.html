@@ -136,6 +136,7 @@
 					<a
 						sec:authorize="hasRole('ROLE_ADMIN')"
 						class="link borderBottom"
+						th:unless="${isDemoInstance}"
 						th:href="@{/configuration/edit}"
 						th:text="${messages.get(#locale, 'admin.navigation.configuration', 'Configuration')}"
 					>

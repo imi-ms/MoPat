@@ -80,7 +80,7 @@ public class SelectAnswerValidatorTest {
         SelectAnswer selectAnswer = new SelectAnswer(
             new Question(localizedLabel, random.nextBoolean(), random.nextBoolean(),
                 Helper.getRandomEnum(QuestionType.class), random.nextInt(5) + 1,
-                QuestionnaireTest.getNewValidQuestionnaire()), random.nextBoolean(), localizedLabel,
+                QuestionnaireTest.getNewValidQuestionnaire(), false), random.nextBoolean(), localizedLabel,
             random.nextBoolean());
         String key = Helper.getRandomLocale();
 

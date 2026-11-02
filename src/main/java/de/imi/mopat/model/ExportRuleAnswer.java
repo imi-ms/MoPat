@@ -1,5 +1,7 @@
 package de.imi.mopat.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import java.io.Serializable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -27,6 +29,12 @@ public class ExportRuleAnswer extends ExportRule implements Serializable {
      */
     protected ExportRuleAnswer() {
 
+    }
+
+    @Override
+    @JsonProperty("type")
+    public ExportRuleType getType() {
+        return ExportRuleType.ANSWER;
     }
 
     /**

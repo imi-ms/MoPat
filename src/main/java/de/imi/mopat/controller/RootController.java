@@ -5,6 +5,7 @@ import de.imi.mopat.helper.controller.*;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -36,7 +37,11 @@ public class RootController {
 
     @Autowired
     private ServletContext context;
-    
+
+    @Value("${de.imi.mopat.isDemoInstance:false}")
+    private boolean isDemoInstance;
+
+
     /**
      * Globally set Form limit to more than 256
      * @param binder
@@ -126,33 +131,71 @@ public class RootController {
         return localeHelper;
     }
 
+    /**
+     * Adds context path for request to frontend
+     * @param request to process
+     * @return context path
+     */
     @ModelAttribute("contextPath")
     public String getRequestContextPath(HttpServletRequest request) {
         return request.getContextPath();
     }
 
+    /**
+     * Adds query string for request to frontend
+     * @param request to process
+     * @return query string for request
+     */
     @ModelAttribute("queryString")
     public String getQueryString(HttpServletRequest request) {
         return request.getQueryString();
     }
 
+    /**
+     * Adds request URL to frontend
+     * @param request to add url for
+     * @return URL for request
+     */
     @ModelAttribute("requestURL")
     public String getRequestURL(HttpServletRequest request) {
         return request.getRequestURL().toString();
     }
 
+    /**
+     * Adds the real path for the application to frontend
+     * @return real path
+     */
     @ModelAttribute("realPath")
     public String getRealPath() {
         return this.context.getRealPath("");
     }
 
+    /**
+     * Adds requestURI to frontend
+     * @param request to process
+     * @return URI for request
+     */
     @ModelAttribute("requestURI")
     public String getRequestURI(HttpServletRequest request) {
         return request.getRequestURI();
     }
 
+    /**
+     * Adds servlet path to frontend
+     * @param request to process this for
+     * @return servlet path
+     */
     @ModelAttribute("servletPath")
     public String getServletPath(HttpServletRequest request) {
         return request.getServletPath();
+    }
+
+    /**
+     * Adds a flag for the demo instance of MoPat
+     * @return true if instance should run in demo mode
+     */
+    @ModelAttribute("isDemoInstance")
+    public boolean isDemoInstance() {
+        return isDemoInstance;
     }
 }

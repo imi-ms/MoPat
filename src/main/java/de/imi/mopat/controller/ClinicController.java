@@ -151,7 +151,9 @@ public class ClinicController {
     @RequestMapping(value = "/clinic/list", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showClinics(final Model model) {
-        model.addAttribute("allClinics", clinicDao.getAllElements());
+        List<Clinic> clinics = clinicDao.getAllElements();
+
+        model.addAttribute("allClinics", clinicService.sortClinicsByNameAsc(clinics));
         return "clinic/list";
     }
 
@@ -448,7 +450,7 @@ public class ClinicController {
         final Model model) {
         Clinic clinic = clinicDao.getElementById(id);
         if (clinic != null) {
-            if(!encounterDao.getEncountersByClinicId(clinic.getId()).isEmpty()){
+            if(encounterDao.checkEncountersExistsByClinicId(clinic.getId())) {
                 model.addAttribute("messageFail", messageSource.getMessage(
                     "clinic.message.deleteFailure",
                     new Object[]{clinic.getName()}, LocaleContextHolder.getLocale()));

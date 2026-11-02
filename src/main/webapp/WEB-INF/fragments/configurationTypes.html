@@ -55,6 +55,7 @@
 		<input
 			th:id="${configuration.id}"
 			type="file"
+            class="dropzone-file-input"
 			accept=".png,.jpg,.jpeg"
 			th:attr="data-path=|${configuration.value ne null ? configuration.value : ''}|"
 			th:attrappend="name=files[__${configuration.id}__]"
@@ -202,7 +203,7 @@
 				th:id="${configuration.id}"
 				th:name="|files[${configuration.id}]|"
 				type="file"
-				class="file-input"
+				class="standard-file-input"
 			/>
 			<input
 				type="hidden"
@@ -211,5 +212,25 @@
 				value="false"
 			/>
 		</div>
+	</div>
+</th:block>
+<th:block layout:fragment="RICH_TEXT (configuration, selectionPath, idPath)">
+	<div class="form-group text" th:id="${configuration.attribute}">
+		<label
+				th:text="${messages.get(#locale, configuration.labelMessageCode, 'Missing configuration label')}"
+		></label>
+		<th:block th:if="${configuration.descriptionMessageCode ne null}">
+			<span
+					class="bi bi-info-circle-fill"
+					th:title="${messages.get(#locale, configuration.descriptionMessageCode, 'Missing description message')}"
+			></span>
+		</th:block>
+
+		<textarea
+				class="form-control wysiwyg"
+				th:name="|${selectionPath}.value|"
+				th:id="|${idPath}.value|"
+				th:text="${configuration.value}"
+		></textarea>
 	</div>
 </th:block>

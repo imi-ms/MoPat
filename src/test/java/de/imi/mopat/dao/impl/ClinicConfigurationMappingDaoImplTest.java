@@ -7,17 +7,12 @@ import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.ClinicConfigurationDao;
 import de.imi.mopat.dao.ClinicConfigurationMappingDao;
 import de.imi.mopat.dao.ClinicDao;
-import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.model.*;
-import de.imi.mopat.model.enumeration.ConfigurationType;
-import de.imi.mopat.utils.Helper;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -25,7 +20,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import static org.junit.Assert.*;
 

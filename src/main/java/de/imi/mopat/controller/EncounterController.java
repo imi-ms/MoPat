@@ -362,6 +362,7 @@ public class EncounterController {
         encounterScheduledDTOValidator.validate(encounterScheduledDTO, result);
 
         if (result.hasErrors()) {
+            addClinicInfoToModel(model, getCurrentUser());
             List<Bundle> bundles = bundleDao.getAllElements();
             List<BundleDTO> bundleDTOs = new ArrayList<>();
             for (Bundle bundle : bundles) {

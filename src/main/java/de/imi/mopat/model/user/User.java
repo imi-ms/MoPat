@@ -529,4 +529,7 @@ public class User implements Serializable, UserDetails {
         this.lastSelectedClinicId = lastSelectedClinicId;
     }
 
+    public void setId(long l) {
+        this.id = l;
+    }
 }

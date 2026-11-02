@@ -10,7 +10,9 @@ public abstract class Constants {
 
     public static final String CONFIGURATION = "configuration";
     public static final String EXPORT_TEMPLATE_SUB_DIRECTORY = "exporttemplates";
-    public static final String FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY = "fhir" + "-all-xsd";
+    public static final String FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY_DSTU3 = "fhir" + "-dstu3-xsd";
+    public static final String FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY_R4B = "fhir" + "-r4b-xsd";
+    public static final String FHIR_VALIDATION_SCHEMA_SUB_DIRECTORY_R5 = "fhir" + "-r5-xsd";
     public static final String IMAGE_QUESTIONNAIRE = "questionnaire";
     public static final int PASSWORD_MINIMUM_SIZE = 8;
     public static final int PASSWORD_MAXIMUM_SIZE = 255;
@@ -87,4 +89,7 @@ public abstract class Constants {
     public static final String WEBBAPP_ROOT_PATH = "webappRootPath";
 
     public static final String ENABLE_GLOBAL_PIN_AUTH = "enableGlobalPinAuth";
+
+    // Configuration: The name of the attribute for the Imprint text message
+    public static final String IMPRINT_TEXT = "imprintText";
 }

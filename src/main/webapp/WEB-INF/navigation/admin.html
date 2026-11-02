@@ -17,6 +17,7 @@
 					<th:block sec:authorize="hasRole('ROLE_EDITOR')">
 						<li class="nav-item dropdown">
 							<a
+								id="questionnaireDropdownLink"
 								class="nav-link d-flex align-items-center"
 								role="button"
 								data-bs-toggle="dropdown"
@@ -35,6 +36,7 @@
 							>
 								<li>
 									<a
+										id="manageQuestionnaireLink"
 										class="dropdown-item"
 										th:href="@{/questionnaire/list}"
 										th:text="${messages.get(#locale, 'admin.navigation.questionnaire', 'Manage questionnaires')}"
@@ -61,6 +63,7 @@
 						</li>
 						<li class="nav-item">
 							<a
+								id="bundleLink"
 								class="nav-link"
 								th:href="@{/bundle/list}"
 								th:text="#{admin.navigation.header.bundle}"
@@ -71,6 +74,7 @@
 					<th:block sec:authorize="hasRole('ROLE_ADMIN')">
 						<li class="nav-item">
 							<a
+								id="clinicLink"
 								class="nav-link"
 								th:href="@{/clinic/list}"
 								th:text="#{admin.navigation.header.clinic}"
@@ -80,6 +84,7 @@
 
 						<li class="nav-item dropdown">
 							<a
+								id="userDropdownLink"
 								class="nav-link d-flex align-items-center"
 								data-bs-toggle="dropdown"
 								role="button"
@@ -95,6 +100,7 @@
 							<ul class="dropdown-menu">
 								<li>
 									<a
+										id="managerUserLink"
 										class="dropdown-item"
 										th:href="@{/user/list}"
 										th:text="${messages.get(#locale, 'admin.navigation.user', 'Manage Users')}"
@@ -103,6 +109,7 @@
 								</li>
 								<li>
 									<a
+										id="mailToAllLink"
 										class="dropdown-item"
 										th:href="@{/user/mailtoall}"
 										th:text="#{admin.navigation.user.mailToAll}"
@@ -111,6 +118,7 @@
 								</li>
 								<li>
 									<a
+										id="manageInvitationLink"
 										class="dropdown-item"
 										th:href="@{/invitation/list}"
 										th:text="#{admin.navigation.user.editInvitation}"
@@ -125,6 +133,7 @@
 						class="nav-item dropdown"
 					>
 						<a
+							id="surveyDropdownLink"
 							class="nav-link d-flex align-items-center"
 							data-bs-toggle="dropdown"
 							role="button"
@@ -140,6 +149,7 @@
 						<ul class="dropdown-menu">
 							<li>
 								<a
+									id="manageSurveyLink"
 									class="dropdown-item"
 									th:href="@{/encounter/list}"
 									th:text="${messages.get(#locale, 'admin.navigation.manageSurveys', 'Manage surveys')}"
@@ -148,6 +158,7 @@
 							</li>
 							<li>
 								<a
+									id="scheduleSurveyLink"
 									class="dropdown-item"
 									th:href="@{/encounter/schedule}"
 									th:text="#{admin.navigation.scheduleSurvey}"
@@ -156,6 +167,7 @@
 							</li>
 							<li>
 								<a
+									id="executeSurveyLink"
 									class="dropdown-item"
 									th:href="@{/mobile/survey/index}"
 									th:text="#{admin.navigation.executeSurvey}"
@@ -177,6 +189,7 @@
 							data-bs-toggle="dropdown"
 							role="button"
 							aria-expanded="false"
+							id="statisticDropdownLink"
 						>
 							<span
 								th:text="${messages.get(#locale, 'admin.navigation.header.statistic', 'Statistics')}"
@@ -188,6 +201,7 @@
 						<ul class="dropdown-menu">
 							<li>
 								<a
+									id="manageStatisticLink"
 									class="dropdown-item"
 									th:href="@{/statistic/index}"
 									th:text="${messages.get(#locale, 'admin.navigation.statistics', 'Statistics')}"
@@ -196,6 +210,7 @@
 							</li>
 							<li>
 								<a
+									id="oneTimeStatisticLink"
 									class="dropdown-item"
 									th:href="@{/statistic/onetimestatistic}"
 									th:text="#{admin.navigation.statistics.oneTimeStatistics}"
@@ -204,9 +219,12 @@
 							</li>
 						</ul>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item"
+						th:unless="${isDemoInstance}"
+					>
 						<a
 							class="nav-link"
+							id="configurationLink"
 							th:href="@{/configuration/edit}"
 							th:text="#{admin.navigation.configuration}"
 							>Configuration</a

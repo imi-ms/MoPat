@@ -1,0 +1,33 @@
+[Unit]
+Description=Traefik reverse proxy for podman-network managed via qadlet
+
+[Service]
+Restart=always
+
+[Container]
+Image=docker.io/library/traefik:v3.6.6
+ContainerName=traefik
+SecurityLabelDisable=true
+Notify=true
+
+PublishPort=80:80
+PublishPort=443:443
+
+Environment=TRAEFIK_LOG_LEVEL=INFO
+Environment=TRAEFIK_PROVIDERS_FILE_DIRECTORY=/etc/traefik/dynamic
+Environment=TRAEFIK_PROVIDERS_FILE_WATCH=true
+Environment=TRAEFIK_PROVIDERS_DOCKER=true
+Environment=TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+Environment=TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+Environment=TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO=websecure
+Environment=TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME=https
+Environment=TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
+
+# Systempfade in container mounten
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro
+Volume=%h/.config/containers/systemd/mopat/traefik.yml:/etc/traefik/dynamic/traefik.yml:ro
+Volume=%h/.config/containers/systemd/mopat/ssl/:/etc/traefik/certs/:ro
+
+[Install]
+#Start by default on boot
+WantedBy=multi-user.target default.target

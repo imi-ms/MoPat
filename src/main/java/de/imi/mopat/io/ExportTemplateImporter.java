@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+
+import de.imi.mopat.io.impl.ExportTemplateImporterHL7;
 import org.xml.sax.SAXException;
 
 /**
@@ -12,14 +14,14 @@ import org.xml.sax.SAXException;
  * {@link de.imi.mopat.controller.ExportMappingController} and represents an export template for a
  * questionnaire.
  * <p>
- * See {@link de.imi.mopat.io.impl.ExportTemplateImporterOrbis} for reference.
+ * See {@link ExportTemplateImporterHL7} for reference.
  */
 public interface ExportTemplateImporter {
 
     /**
      * This method processes the given {@link InputStream} to a list of strings.
      * <p>
-     * See {@link de.imi.mopat.io.impl.ExportTemplateImporterOrbis} for reference.
+     * See {@link ExportTemplateImporterHL7} for reference.
      *
      * @param inputStream {@link InputStream} containing the uploaded file from
      *                    {@link

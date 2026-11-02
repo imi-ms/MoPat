@@ -71,7 +71,10 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
     @Override
     public EncounterDTO retrievePatientData(Clinic clinic, String patientNumber) {
         LOGGER.debug("patientNumber is: {}", patientNumber);
-        assert patientNumber != null : "The given patientNumber was null";
+        if(patientNumber==null){
+            throw new NullPointerException("patientNumber is null");
+        }
+
         patientNumber = patientNumber.trim();
         EncounterDTO result = null;
         String hostname = getHL7v22PatientInformationRetrieverHostname(clinic);
@@ -315,8 +318,12 @@ public class HL7v22PatientInformationRetrieverByPID extends PatientDataRetriever
             } finally {
                 if (connection != null) {
                     LOGGER.debug("Closing the connection...");
-                    connection.close();
-                    LOGGER.debug("Closing the connection...[DONE]");
+                    try {
+                        connection.close();
+                        LOGGER.debug("Closing the connection...[DONE]");
+                    } catch (Exception e) {
+                        LOGGER.error("Could not close connection. This could cause followup errors.", e);
+                    }
                 }
             }
         } else {

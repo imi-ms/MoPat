@@ -1,12 +1,13 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.*;
+import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
+import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.model.*;
-import de.imi.mopat.model.dto.export.SliderIconDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -17,22 +18,19 @@ import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.score.Score;
-import de.imi.mopat.validator.MoPatValidator;
 import de.imi.mopat.validator.QuestionDTOValidator;
 import de.imi.mopat.validator.QuestionValidator;
 import de.imi.mopat.validator.SliderAnswerValidator;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import javax.imageio.ImageIO;
-import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -42,12 +40,16 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
  */
 @Controller
 public class QuestionController {
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+        QuestionController.class);
 
     @Autowired
     private QuestionDao questionDao;
@@ -76,6 +78,41 @@ public class QuestionController {
 
     @Autowired
     private QuestionDTOMapper questionDTOMapper;
+
+    @Autowired
+    private QuestionnaireService questionnaireService;
+
+    private final QuestionType[] equalQuestionTypesSlider = {QuestionType.SLIDER,
+            QuestionType.NUMBER_CHECKBOX};
+    private final QuestionType[] equalQuestionTypesSelect = {QuestionType.MULTIPLE_CHOICE,
+            QuestionType.DROP_DOWN};
+    private final List<QuestionType> equalQuestiontypesSliderList = Arrays.asList(
+            equalQuestionTypesSlider);
+    private final List<QuestionType> equalQuestiontypesSelectList = Arrays.asList(
+            equalQuestionTypesSelect);
+    @Autowired
+    private BundleService bundleService;
+
+    public ConditionDao getConditionDao() {
+        return this.conditionDao;
+    }
+
+    public ConfigurationDao getConfigurationDao() {
+        return this.configurationDao;
+    }
+
+    public QuestionDao getQuestionDao() {
+        return this.questionDao;
+    }
+
+    public AnswerDao getAnswerDao() {
+        return this.answerDao;
+    }
+
+    public MessageSource getMessageSource() {
+        return this.messageSource;
+    }
+
     /**
      * @param id (<i>optional</i>) Id of the {@link Question} object
      * @return Returns a new {@link Question} object to the attribute
@@ -140,6 +177,15 @@ public class QuestionController {
             // Check if the question has any scores and set the boolean
             question.setHasScores(scoreDao.hasScore(question));
         }
+
+        Pair<Map<String, Long>, Map<String, Long>> availableBundlesSplitIntoAssignedAndUnassigned =
+            bundleService.getAvailableBundlesSplitIntoAssignedAndUnassigned(questionnaire);
+
+        model.addAttribute("assignedBundles",
+            availableBundlesSplitIntoAssignedAndUnassigned.getLeft());
+        model.addAttribute("unassignedBundles",
+            availableBundlesSplitIntoAssignedAndUnassigned.getRight());
+        model.addAttribute("languages", questionnaire.getAvailableQuestionLanguages());
         model.addAttribute("localizedQuestionTextsForQuestion", localizedQuestionTextsForQuestion);
         model.addAttribute("questionnaire", questionnaire);
         return "question/list";
@@ -182,6 +228,10 @@ public class QuestionController {
                     }
                 }
             }
+        }
+
+        if(questionDTO.getQuestionType() == null) {
+            questionDTO.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         }
 
         model.addAttribute("availableLocales", LocaleHelper.getAvailableLocales());
@@ -280,25 +330,7 @@ public class QuestionController {
         // edit page
         if (questionDTO.getId() != null) {
             question = questionDao.getElementById(questionDTO.getId());
-            if (questionDTO.getQuestionType()
-                           .equals(QuestionType.IMAGE) && question.getQuestionType()
-                                                                  .equals(QuestionType.IMAGE)) {
-                questionDTO.getAnswers()
-                           .get(0L)
-                           .setImagePath(((ImageAnswer) question.getAnswers()
-                                                                .get(0)).getImagePath());
-                try {
-                    String realPath = configurationDao.getImageUploadPath() + "/question/"+ ((ImageAnswer) question.getAnswers().get(0)).getImagePath();
-                    String fileName = realPath.substring(realPath.lastIndexOf("/"));
-                    questionDTO.getAnswers()
-                        .get(0L)
-                        .setImageBase64(
-                            StringUtilities.convertImageToBase64String(realPath, fileName));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
+            setImagePathForImageQuestion(questionDTO, question);
             if (!question.isModifiable()) {
                 return editQuestion(null, questionDTO.getId(), model);
             }
@@ -306,25 +338,7 @@ public class QuestionController {
 
         // Update the answerDTOs localizedLabels with the bodyPart label
         if (questionDTO.getQuestionType() == QuestionType.BODY_PART) {
-            if (questionDTO.getAnswers() != null && !questionDTO.getAnswers().isEmpty()) {
-                List<String> bodyPartImages = new ArrayList<>();
-                for (AnswerDTO answerDTO : questionDTO.getAnswers().values()) {
-                    //update images used in this question
-                    if (!bodyPartImages.contains(answerDTO.getBodyPartImage())) {
-                        bodyPartImages.add(answerDTO.getBodyPartImage());
-                    }
-                    if (answerDTO.getBodyPartMessageCode() != null) {
-                        //update localized label of select answer
-                        SortedMap<String, String> localizedLabel = new TreeMap<>();
-                        for (String locale : questionDTO.getLocalizedQuestionText().keySet()) {
-                            localizedLabel.put(locale,
-                                messageSource.getMessage(answerDTO.getBodyPartMessageCode(),
-                                    new Object[]{}, LocaleHelper.getLocaleFromString(locale)));
-                        }
-                        answerDTO.setLocalizedLabel(localizedLabel);
-                    }
-                }
-            }
+            updateBodyPartAttributes(questionDTO);
         }
 
         // Validate the question dto first
@@ -348,580 +362,17 @@ public class QuestionController {
             questionDTO.getQuestionnaireId());
         Integer minNumberAnswers = questionDTO.getMinNumberAnswers();
         Integer maxNumberAnswers = questionDTO.getMaxNumberAnswers();
+        Map<String, String> localizedQuestionText = removePTags(questionDTO);
         // If Question already exists
         if (questionDTO.getId() != null) {
-            // Check if the associated scores have to be deleted
-            if (scoreDao.hasScore(question)) {
-                List<QuestionType> validScoreQuestionTypes = new ArrayList<>(
-                    Arrays.asList(QuestionType.MULTIPLE_CHOICE, QuestionType.SLIDER,
-                        QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_CHECKBOX_TEXT,
-                        QuestionType.DROP_DOWN, QuestionType.NUMBER_INPUT));
-                // The associated scores have to be deleted if the question
-                // type does not support scores or the min or max number of
-                // answers is different to 1 when a multiple choice question
-                // is chosen
-                if (!validScoreQuestionTypes.contains(questionDTO.getQuestionType())
-                    || questionDTO.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE) && (
-                    questionDTO.getMinNumberAnswers() != 1
-                        || questionDTO.getMaxNumberAnswers() != 1)) {
-                    List<Score> scoresToDelete = scoreDao.getScores(question);
-                    for (Score scoreToDelete : scoresToDelete) {
-                        scoreDao.remove(scoreToDelete);
-                    }
-                }
-            }
-
-            if (question.getQuestionType().equals(QuestionType.IMAGE)) {
-                // Only delete image if it has changed or the question type
-                // has changed
-                if (!(questionDTO.getQuestionType().equals(QuestionType.IMAGE)
-                    && !questionDTO.getAnswers().get(0L).getImageFile().isEmpty())) {
-                    File deleteFile = new File(
-                        ((ImageAnswer) question.getAnswers().get(0)).getImagePath());
-                    deleteFile.delete();
-                    ((ImageAnswer) question.getAnswers().get(0)).setImagePath(null);
-                }
-            }
-
-            QuestionType[] equalQuestiontypesSlider = {QuestionType.SLIDER,
-                QuestionType.NUMBER_CHECKBOX};
-            QuestionType[] equalQuestiontypesSelect = {QuestionType.MULTIPLE_CHOICE,
-                QuestionType.DROP_DOWN};
-            List<QuestionType> equalQuestiontypesSliderList = Arrays.asList(
-                equalQuestiontypesSlider);
-            List<QuestionType> equalQuestiontypesSelectList = Arrays.asList(
-                equalQuestiontypesSelect);
-            if (equalQuestiontypesSliderList.contains(question.getQuestionType())) {
-                if (!equalQuestiontypesSliderList.contains(questionDTO.getQuestionType())) {
-                    question.removeAllAnswers();
-                }
-            } else if (equalQuestiontypesSelectList.contains(question.getQuestionType())) {
-                if (!equalQuestiontypesSelectList.contains(questionDTO.getQuestionType())) {
-                    question.removeAllAnswers();
-                }
-            } else if (question.getQuestionType() != questionDTO.getQuestionType()) {
-                question.removeAllAnswers();
-            }
-            // Update properties
-            question.setIsRequired(questionDTO.getIsRequired());
-            question.setIsEnabled(questionDTO.getIsEnabled());
-            question.setQuestionType(questionDTO.getQuestionType());
-
-            //Remove <p>-Tags set by summernote
-            SortedMap<String, String> localizedQuestionText = new TreeMap<>();
-            for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText()
-                .entrySet()) {
-                String formattedValue = entry.getValue();
-                if (formattedValue.startsWith("<p>")) {
-                    formattedValue = formattedValue.substring(3);
-                }
-                if (formattedValue.endsWith("</p>")) {
-                    formattedValue = formattedValue.substring(0, formattedValue.length() - 4);
-                }
-                localizedQuestionText.put(entry.getKey(), formattedValue);
-            }
-            question.setLocalizedQuestionText(localizedQuestionText);
-
-            // If multiple choice or dropdown question set min/max number of
-            // answers
-            // otherwise reset to null
-            if (equalQuestiontypesSelectList.contains(question.getQuestionType())
-                || question.getQuestionType() == QuestionType.BODY_PART) {
-                // If dropdown question set min/max number of answers to 1
-                if (question.getQuestionType() == QuestionType.DROP_DOWN) {
-                    minNumberAnswers = 1;
-                    maxNumberAnswers = 1;
-                } else if (questionDTO.getMaxNumberAnswers() == 0) {
-                    maxNumberAnswers = 1;
-                }
-                question.setMinMaxNumberAnswers(minNumberAnswers, maxNumberAnswers);
-                question.setCodedValueType(questionDTO.getCodedValueType());
-            } else {
-                question.setMinMaxNumberAnswers(null, null);
-            }
+            updatePropertiesOfExistingQuestion(questionDTO, question, localizedQuestionText, minNumberAnswers, maxNumberAnswers);
         } else {
-            //Remove <p>-Tags set by summernote
-            SortedMap<String, String> localizedQuestionText = new TreeMap<>();
-            for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText()
-                .entrySet()) {
-                String formattedValue = entry.getValue();
-                if (formattedValue.startsWith("<p>")) {
-                    formattedValue = formattedValue.substring(3);
-                }
-                if (formattedValue.endsWith("</p>")) {
-                    formattedValue = formattedValue.substring(0, formattedValue.length() - 4);
-                }
-                localizedQuestionText.put(entry.getKey(), formattedValue);
-            }
-
-            // Question is new
-            question = new Question(localizedQuestionText, questionDTO.getIsRequired(),
-                questionDTO.getIsEnabled(), questionDTO.getQuestionType(),
-                (questionnaire.getQuestions().size() + 1), questionnaire);
-            // If dropdown question set min/max number of answers to 1
-            if (question.getQuestionType() == QuestionType.DROP_DOWN) {
-                minNumberAnswers = 1;
-                maxNumberAnswers = 1;
-            } else if (questionDTO.getMaxNumberAnswers() == null
-                || questionDTO.getMaxNumberAnswers() == 0) {
-                maxNumberAnswers = 1;
-            }
-            question.setMinMaxNumberAnswers(minNumberAnswers, maxNumberAnswers);
-            question.setCodedValueType(questionDTO.getCodedValueType());
+            question = createQuestion(questionDTO, localizedQuestionText, questionnaire, minNumberAnswers, maxNumberAnswers);
             questionnaire.addQuestion(question);
         }
-
-        List<Answer> removalList = new ArrayList<>();
         // Creating or updating the answers for the question, depending on
         // the QuestionType
-        switch (questionDTO.getQuestionType()) {
-            case BODY_PART:
-                // Create a list to collect all answers which should be
-                // removed from the question
-                for (int i = 0; i < question.getAnswers().size(); i++) {
-                    BodyPartAnswer bodyPartAnswer = (BodyPartAnswer) question.getAnswers().get(i);
-                    AnswerDTO relatedAnswerDTO = null;
-                    for (AnswerDTO answerDTO : questionDTO.getAnswers().values()) {
-                        if (answerDTO.getId() != null && answerDTO.getId()
-                            .equals(bodyPartAnswer.getId())) {
-                            relatedAnswerDTO = answerDTO;
-                            break;
-                        }
-                    }
-                    if (relatedAnswerDTO == null) {
-                        // Add to answer removal list
-                        removalList.add(bodyPartAnswer);
-                    } else {
-                        bodyPartAnswer.setBodyPart(
-                            BodyPart.fromString(relatedAnswerDTO.getBodyPartMessageCode()));
-                        bodyPartAnswer.setIsEnabled(relatedAnswerDTO.getIsEnabled());
-                    }
-                }
-                // Remove answers from question
-                for (Answer removeAnswer : removalList) {
-                    // If the deleted answer has any associated conditions
-                    if (conditionDao.isConditionTarget(removeAnswer)) {
-                        // Delete the associated conditions
-                        for (Condition condition : conditionDao.getConditionsByTarget(
-                            removeAnswer)) {
-                            if (condition instanceof SelectAnswerCondition
-                                || condition instanceof SliderAnswerThresholdCondition) {
-                                // Refresh the trigger so that multiple
-                                // conditions of the same trigger will be
-                                // deleted correctly
-                                ConditionTrigger conditionTrigger = answerDao.getElementById(
-                                    condition.getTrigger().getId());
-                                conditionTrigger.removeCondition(condition);
-                                answerDao.merge((Answer) conditionTrigger);
-                            }
-                            conditionDao.remove(condition);
-                        }
-                    }
-                    question.removeAnswer(removeAnswer);
-                }
-                for (Long i : questionDTO.getAnswers().keySet()) {
-                    AnswerDTO answerDTO = questionDTO.getAnswers().get(i);
-                    // If answer existed before, do nothing
-                    if (answerDTO.getId() != null) {
-                        continue;
-                    }
-                    // Otherwise set localized labelsfor the answers
-                    if (answerDTO.getBodyPartMessageCode() != null) {
-                        SortedMap<String, String> localizedLabel = new TreeMap<>();
-                        for (String locale : questionDTO.getLocalizedQuestionText().keySet()) {
-                            localizedLabel.put(locale,
-                                messageSource.getMessage(answerDTO.getBodyPartMessageCode(),
-                                    new Object[]{}, LocaleHelper.getLocaleFromString(locale)));
-                        }
-                        answerDTO.setLocalizedLabel(localizedLabel);
-                    }
-
-                    // Create new answer
-                    BodyPartAnswer bodyPartAnswer = new BodyPartAnswer(
-                        BodyPart.fromString(answerDTO.getBodyPartMessageCode()), question,
-                        answerDTO.getIsEnabled());
-                }
-                break;
-            case MULTIPLE_CHOICE:
-            case DROP_DOWN: {
-                // Create a list to collect all answers which should be
-                // removed from the question
-                boolean hasIsOtherFlag = false;
-                boolean isIsOtherEnabled = true;
-                boolean freetextAnswerExists = false;
-                FreetextAnswer existingFreetextAnswer = null;
-
-                for (int i = 0; i < question.getAnswers().size(); i++) {
-                    if (question.getAnswers().get(i) instanceof SelectAnswer selectAnswer) {
-                        AnswerDTO relatedAnswerDTO = null;
-                        for (AnswerDTO answerDTO : questionDTO.getAnswers().values()) {
-                            if (answerDTO.getId() != null && answerDTO.getId()
-                                .equals(selectAnswer.getId())) {
-                                relatedAnswerDTO = answerDTO;
-                                break;
-                            }
-                        }
-                        if (relatedAnswerDTO == null) {
-                            // Add to answer removal list
-                            removalList.add(selectAnswer);
-                        } else {
-                            // Update answer
-                            selectAnswer.setLocalizedLabel(relatedAnswerDTO.getLocalizedLabel());
-                            selectAnswer.setIsEnabled(relatedAnswerDTO.getIsEnabled());
-                            selectAnswer.setIsOther(relatedAnswerDTO.getIsOther());
-                            selectAnswer.setValue(relatedAnswerDTO.getValue());
-                            selectAnswer.setCodedValue(relatedAnswerDTO.getCodedValue());
-                            // Check if one existing answer is marked as other
-                            if (selectAnswer.getIsOther()) {
-                                hasIsOtherFlag = true;
-                                isIsOtherEnabled = selectAnswer.getIsEnabled();
-                            }
-                        }
-                    } else {
-                        // If the current answer is no select answer, there
-                        // must be a freetext answer
-                        freetextAnswerExists = true;
-                        existingFreetextAnswer = (FreetextAnswer) question.getAnswers().get(i);
-                    }
-                }
-
-                // Remove answers from question
-                for (Answer removeAnswer : removalList) {
-                    // If the deleted answer has any associated conditions
-                    if (conditionDao.isConditionTarget(removeAnswer)) {
-                        // Delete the associated conditions
-                        for (Condition condition : conditionDao.getConditionsByTarget(
-                            removeAnswer)) {
-                            if (condition instanceof SelectAnswerCondition
-                                || condition instanceof SliderAnswerThresholdCondition) {
-                                // Refresh the trigger so that multiple
-                                // conditions of the same trigger will be
-                                // deleted correctly
-                                ConditionTrigger conditionTrigger = answerDao.getElementById(
-                                    condition.getTrigger().getId());
-                                conditionTrigger.removeCondition(condition);
-                                answerDao.merge((Answer) conditionTrigger);
-                            }
-                            conditionDao.remove(condition);
-                        }
-                    }
-                    question.removeAnswer(removeAnswer);
-                }
-                for (Long i : questionDTO.getAnswers().keySet()) {
-                    AnswerDTO answerDTO = questionDTO.getAnswers().get(i);
-
-                    if (answerDTO.getId() != null) {
-                        continue;
-                    }
-
-                    // Create new answer
-                    SelectAnswer selectAnswer = new SelectAnswer(question, answerDTO.getIsEnabled(),
-                        answerDTO.getLocalizedLabel(), answerDTO.getIsOther());
-                    selectAnswer.setValue(answerDTO.getValue());
-                    selectAnswer.setCodedValue(answerDTO.getCodedValue());
-                    // Check if one new answer is marked as other
-                    if (selectAnswer.getIsOther()) {
-                        hasIsOtherFlag = true;
-                        isIsOtherEnabled = selectAnswer.getIsEnabled();
-                    }
-                }
-
-                // Check if a freetext answer has to be created or removed or
-                // updated
-                if (hasIsOtherFlag && !freetextAnswerExists) {
-                    // Create new freetext answer
-                    FreetextAnswer freetextAnswer = new FreetextAnswer(question, isIsOtherEnabled);
-                } else if (!hasIsOtherFlag && freetextAnswerExists) {
-                    // Remove existing freetext answer
-                    question.removeAnswer(existingFreetextAnswer);
-                } else if (hasIsOtherFlag && freetextAnswerExists) {
-                    existingFreetextAnswer.setIsEnabled(isIsOtherEnabled);
-                }
-                break;
-            }
-            case SLIDER:
-            case NUMBER_CHECKBOX: {
-                // [bt] TODO add additional validation, since we know here
-                //  the question type (and at least one answer has to be
-                //  given, e.g.)
-                AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
-                SliderAnswer sliderAnswer;
-                Boolean vertical = answerDTO.getVertical();
-                // Slider cannot be vertical, only NumberCheckboxes can be
-                // displayed vertical
-                if (questionDTO.getQuestionType() == QuestionType.SLIDER) {
-                    vertical = false;
-                }
-                Boolean isEnabled = answerDTO.getIsEnabled();
-                Double minValue = answerDTO.getMinValue();
-                Double maxValue = answerDTO.getMaxValue();
-                Double stepsize = Double.parseDouble(answerDTO.getStepsize().replace(',', '.'));
-                Boolean showIcons = answerDTO.getShowIcons();
-                if (!question.getAnswers().isEmpty()) {
-                    // Update answer
-                    sliderAnswer = (SliderAnswer) question.getAnswers().get(0);
-                    sliderAnswer.setMinValue(minValue);
-                    sliderAnswer.setMaxValue(maxValue);
-                    sliderAnswer.setStepsize(stepsize);
-                    sliderAnswer.setVertical(vertical);
-                    sliderAnswer.setIsEnabled(isEnabled);
-                    sliderAnswer.setShowIcons(showIcons);
-                    //
-                    Set<SliderIcon> iconSet = new HashSet<>();
-                    for (SliderIconDTO icon : answerDTO.getIcons()) {
-                        SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                            sliderAnswer);
-                        iconSet.add(newIcon);
-                    }
-                    sliderAnswer.setIcons(iconSet);
-                } else {
-                    // Create new answer
-                    sliderAnswer = new SliderAnswer(question, isEnabled, minValue, maxValue,
-                        stepsize, vertical);
-                    sliderAnswer.setShowIcons(showIcons);
-                    Set<SliderIcon> iconSet = new HashSet<>();
-                    for (SliderIconDTO icon : answerDTO.getIcons()) {
-                        SliderIcon newIcon = new SliderIcon(icon.getPosition(), icon.getIcon(),
-                            sliderAnswer);
-                        iconSet.add(newIcon);
-                    }
-                    sliderAnswer.setIcons(iconSet);
-                }
-                if (answerDTO.getLocalizedMinimumText() != null) {
-                    for (Map.Entry<String, String> entry : answerDTO.getLocalizedMinimumText()
-                        .entrySet()) {
-                        if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                            || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                            entry.getValue())) {
-                            answerDTO.getLocalizedMinimumText().put(entry.getKey(), "");
-                        }
-                    }
-                    sliderAnswer.setLocalizedMinimumText(answerDTO.getLocalizedMinimumText());
-                } else {
-                    sliderAnswer.setLocalizedMinimumText(null);
-                }
-                if (answerDTO.getLocalizedMaximumText() != null) {
-                    for (Map.Entry<String, String> entry : answerDTO.getLocalizedMaximumText()
-                        .entrySet()) {
-                        if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                            || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                            entry.getValue())) {
-                            answerDTO.getLocalizedMaximumText().put(entry.getKey(), "");
-                        }
-                    }
-                    sliderAnswer.setLocalizedMaximumText(answerDTO.getLocalizedMaximumText());
-                } else {
-                    sliderAnswer.setLocalizedMaximumText(null);
-                }
-                if (answerDTO.getShowValueOnButton() != null) {
-                    sliderAnswer.setShowValueOnButton(answerDTO.getShowValueOnButton());
-                } else {
-                    sliderAnswer.setShowValueOnButton(false);
-                }
-                break;
-            }
-            case NUMBER_CHECKBOX_TEXT: {
-                AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
-                SliderFreetextAnswer sliderFreetextAnswer;
-                // Numbercheckbox with freetext is always horizontal
-                Boolean vertical = false;
-                Boolean isEnabled = answerDTO.getIsEnabled();
-                Double minValue = answerDTO.getMinValue();
-                Double maxValue = answerDTO.getMaxValue();
-                Double stepsize = Double.parseDouble(answerDTO.getStepsize().replace(',', '.'));
-                if (!question.getAnswers().isEmpty()) {
-                    // Create new answer
-                    sliderFreetextAnswer = (SliderFreetextAnswer) question.getAnswers().get(0);
-                    sliderFreetextAnswer.setQuestion(question);
-                    sliderFreetextAnswer.setMinValue(minValue);
-                    sliderFreetextAnswer.setMaxValue(maxValue);
-                    sliderFreetextAnswer.setStepsize(stepsize);
-                    sliderFreetextAnswer.setVertical(vertical);
-                    sliderFreetextAnswer.setIsEnabled(isEnabled);
-                } else {
-                    // Update answer
-                    sliderFreetextAnswer = new SliderFreetextAnswer(question, isEnabled, minValue,
-                        maxValue, stepsize, answerDTO.getLocalizedFreetextLabel(), vertical);
-                }
-                // Set or update minimum and maximum text
-                if (answerDTO.getLocalizedMinimumText() != null) {
-                    for (Map.Entry<String, String> entry : answerDTO.getLocalizedMinimumText()
-                        .entrySet()) {
-                        if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                            || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                            entry.getValue())) {
-                            answerDTO.getLocalizedMinimumText().put(entry.getKey(), "");
-                        }
-                    }
-                    sliderFreetextAnswer.setLocalizedMinimumText(
-                        answerDTO.getLocalizedMinimumText());
-                } else {
-                    sliderFreetextAnswer.setLocalizedMinimumText(null);
-                }
-                if (answerDTO.getLocalizedMaximumText() != null) {
-                    for (Map.Entry<String, String> entry : answerDTO.getLocalizedMaximumText()
-                        .entrySet()) {
-                        if (entry.getValue() == null || entry.getValue().trim().isEmpty()
-                            || Pattern.matches("<p>(<p>|</p>|\\s|&nbsp;|<br>)+<\\/p>",
-                            entry.getValue())) {
-                            answerDTO.getLocalizedMaximumText().put(entry.getKey(), "");
-                        }
-                    }
-                    sliderFreetextAnswer.setLocalizedMaximumText(
-                        answerDTO.getLocalizedMaximumText());
-                } else {
-                    sliderFreetextAnswer.setLocalizedMaximumText(null);
-                }
-                sliderFreetextAnswer.setLocalizedFreetextLabel(
-                    answerDTO.getLocalizedFreetextLabel());
-                break;
-            }
-            case FREE_TEXT:
-            case BARCODE: {
-                if (!question.getAnswers().isEmpty()) {
-                    // Update freetext answer
-                    FreetextAnswer freetextAnswer = (FreetextAnswer) question.getAnswers().get(0);
-                    freetextAnswer.setQuestion(question);
-                    freetextAnswer.setIsEnabled(true);
-                } else {
-                    // Create new answer
-                    FreetextAnswer freetextAnswer = new FreetextAnswer(question, true);
-                }
-                break;
-            }
-            case INFO_TEXT: {
-                // Nothing to do here, since the info text is within question
-                // .questionText
-                break;
-            }
-            case DATE: {
-                AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
-                SimpleDateFormat dateFormat = Constants.DATE_FORMAT;
-                Boolean isEnabled = answerDTO.getIsEnabled();
-                Date startDate = null;
-                Date endDate = null;
-                try {
-                    // Parse start and end date
-                    if (answerDTO.getStartDate() != null && !answerDTO.getStartDate().isEmpty()) {
-                        startDate = dateFormat.parse(answerDTO.getStartDate());
-                    }
-                    if (answerDTO.getEndDate() != null && !answerDTO.getEndDate().isEmpty()) {
-                        endDate = dateFormat.parse(answerDTO.getEndDate());
-                    }
-                } catch (ParseException ex) {
-                    // Exception already caught in validator
-                }
-                if (!question.getAnswers().isEmpty()) {
-                    // Update answer
-                    DateAnswer dateAnswer = (DateAnswer) question.getAnswers().get(0);
-                    dateAnswer.setQuestion(question);
-                    dateAnswer.setStartDate(startDate);
-                    dateAnswer.setEndDate(endDate);
-                    dateAnswer.setIsEnabled(isEnabled);
-                } else {
-                    // Create new answer
-                    DateAnswer dateAnswer = new DateAnswer(question, isEnabled, startDate, endDate);
-                }
-                break;
-            }
-            case NUMBER_INPUT: {
-                AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
-                Boolean isEnabled = answerDTO.getIsEnabled();
-                Double minValue = answerDTO.getMinValue();
-                Double maxValue = answerDTO.getMaxValue();
-                Double stepsize = null;
-                if (answerDTO.getStepsize() != null && !answerDTO.getStepsize().isEmpty()) {
-                    stepsize = Double.parseDouble(answerDTO.getStepsize().replace(',', '.'));
-                }
-
-                if (!question.getAnswers().isEmpty()) {
-                    // Update answer
-                    NumberInputAnswer numberInputAnswer = (NumberInputAnswer) question.getAnswers()
-                        .get(0);
-                    numberInputAnswer.setQuestion(question);
-                    numberInputAnswer.setMinValue(minValue);
-                    numberInputAnswer.setMaxValue(maxValue);
-                    numberInputAnswer.setStepsize(stepsize);
-                    numberInputAnswer.setIsEnabled(isEnabled);
-                } else {
-                    // Create new answer
-                    NumberInputAnswer numberInputAnswer = new NumberInputAnswer(question, isEnabled,
-                        minValue, maxValue, stepsize);
-                }
-                break;
-            }
-            case IMAGE: {
-                // Merge the question if it's new to get its ID to save the
-                // image with this specific ID
-                if (questionDTO.getId() == null) {
-                    questionDao.merge(question);
-                }
-                AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
-                Boolean isEnabled = answerDTO.getIsEnabled();
-
-                String storagePath;
-
-                // Upload the new Image if the question is new or the image
-                // has changed
-                if (!answerDTO.getImageFile().isEmpty()) {
-                    // Store the extension of the image and the path with the
-                    // questionnaire ID
-                    String imageExtension =
-                        FilenameUtils.getExtension(answerDTO.getImageFile()
-                                                            .getOriginalFilename());
-                    String imagePath =
-                        (configurationDao.getImageUploadPath()
-                            + "/question/" + questionnaire.getId());
-
-                    // Check if the upload dir exists. If not, create it
-                    File uploadDir = new File(imagePath);
-                    if (!uploadDir.isDirectory()) {
-                        uploadDir.mkdirs();
-                    }
-                    // Set the upload filename to question and its ID
-                    File uploadFile = new File(imagePath,
-                        "question" + question.getId() + "." + imageExtension);
-                    try {
-                        // Write the image to disk
-                        BufferedImage uploadImage = ImageIO.read(
-                            answerDTO.getImageFile().getInputStream());
-                        ImageIO.write(uploadImage, imageExtension, uploadFile);
-                    } catch (IOException ex) {
-                        // If an error occures while uploading, write it down
-                        // and delete the question if it was new
-                        result.pushNestedPath("answers[0]");
-                        result.rejectValue("imageFile", MoPatValidator.ERRORCODE_ERRORMESSAGE,
-                            messageSource.getMessage("imageAnswer.error.upload", new Object[]{},
-                                LocaleContextHolder.getLocale()));
-                        result.popNestedPath();
-                        if (questionDTO.getId() == null) {
-                            questionDao.remove(question);
-                        }
-                    }
-                    // Store the full storage path with name and extension
-                    storagePath =
-                        questionnaire.getId()
-                            + "/question" + question.getId()
-                            + "." + imageExtension;
-                } else {
-                    // If the image has not changed use the old image path
-                    storagePath = answerDTO.getImagePath();
-                }
-
-                if (!question.getAnswers().isEmpty()) {
-                    // Update answer
-                    ImageAnswer imageAnswer = (ImageAnswer) question.getAnswers().get(0);
-                    imageAnswer.setIsEnabled(isEnabled);
-                    imageAnswer.setImagePath(storagePath);
-                } else {
-                    // Create new answer
-                    ImageAnswer imageAnswer = new ImageAnswer(question, isEnabled, storagePath);
-                }
-                break;
-            }
-            default:
-                break;
-        }
+        questionDTO.getQuestionType().getStrategy().createOrUpdateAnswer(questionDTO, question, this, result, questionnaire);
 
         // Validate the question
         questionValidator.validate(question, result);
@@ -945,6 +396,355 @@ public class QuestionController {
         // of the URL
         model.asMap().clear();
         return "redirect:/question/list?id=" + question.getQuestionnaire().getId();
+    }
+
+    @PostMapping(value = "/question/previewDTO")
+    @PreAuthorize("hasRole('ROLE_EDITOR')")
+    @ResponseBody
+    public QuestionDTO previewDTO(
+                               @ModelAttribute("questionDTO") final QuestionDTO questionDTO, final BindingResult result,
+                               final Model model, final HttpServletRequest request) {
+
+        switch (questionDTO.getQuestionType()) {
+            case BODY_PART -> updateBodyPartAttributes(questionDTO);
+            case IMAGE -> applyPreviewImage(questionDTO);
+            default -> {}
+        }
+
+        return questionDTO;
+    }
+
+    /**
+     * Sets the image path and base64 representation for an image-type question in the DTO.
+     *
+     * @param questionDTO the question DTO object to update
+     * @param question the question entity object containing the image data
+     */
+    private void setImagePathForImageQuestion(QuestionDTO questionDTO, Question question) {
+        if (questionDTO.getQuestionType()
+                .equals(QuestionType.IMAGE) && question.getQuestionType()
+                .equals(QuestionType.IMAGE)) {
+            questionDTO.getAnswers()
+                    .get(0L)
+                    .setImagePath(((ImageAnswer) question.getAnswers()
+                            .get(0)).getImagePath());
+            try {
+                String realPath = configurationDao.getImageUploadPath() + "/question/"+ ((ImageAnswer) question.getAnswers().get(0)).getImagePath();
+                String fileName = realPath.substring(realPath.lastIndexOf("/"));
+                questionDTO.getAnswers()
+                        .get(0L)
+                        .setImageBase64(
+                                StringUtilities.convertImageToBase64String(realPath, fileName));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Applies a preview image to the first answer of an image-based question.
+     * Converts the image into a Base64 data URI, sourcing it either from the
+     * uploaded file in the current session or from the persisted file system.
+     *
+     * @param questionDTO The question data transfer object containing the
+     *        question type, answers, and image-related metadata.
+     */
+    private void applyPreviewImage(QuestionDTO questionDTO) {
+        if (questionDTO.getQuestionType() != QuestionType.IMAGE
+            || questionDTO.getAnswers() == null
+            || questionDTO.getAnswers().isEmpty()) {
+            return;
+        }
+
+        AnswerDTO answerDTO = questionDTO.getAnswers().get(0L);
+        if (answerDTO == null) {
+            return;
+        }
+
+        try {
+            MultipartFile imageFile = answerDTO.getImageFile();
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                // Uploaded in this session: encode in memory, nothing is persisted.
+                String extension = FilenameUtils.getExtension(imageFile.getOriginalFilename());
+                answerDTO.setImageBase64(toDataUri(imageFile.getBytes(), extension));
+            } else if (StringUtils.isNotBlank(answerDTO.getImagePath())) {
+                // Previously saved: same lookup as setImagePathForImageQuestion.
+                String realPath = configurationDao.getImageUploadPath()
+                    + "/question/" + answerDTO.getImagePath();
+                String fileName = realPath.substring(realPath.lastIndexOf("/"));
+                answerDTO.setImageBase64(
+                    StringUtilities.convertImageToBase64String(realPath, fileName));
+            }
+        } catch (IOException e) {
+            LOGGER.warn("Could not build preview image for question {}", questionDTO.getId(), e);
+            answerDTO.setImageBase64(null);
+        } finally {
+            // MultipartFile is not JSON-serializable.
+            answerDTO.setImageFile(null);
+        }
+    }
+
+    /**
+     * Converts a byte array into a Base64-encoded data URI string.
+     * The MIME type is determined by the provided file extension.
+     * Supported extensions are jpg, jpeg, gif, svg, and bmp.
+     * If the extension is null, unrecognized, or missing, the MIME type defaults to image/png.
+     *
+     * @param bytes the raw byte data to encode
+     * @param extension the file extension used to determine the MIME type
+     * @return the generated data URI string
+     */
+    private String toDataUri(byte[] bytes, String extension) {
+        String ext = extension == null ? "" : extension.toLowerCase(Locale.ROOT);
+        String mime;
+        switch (ext) {
+            case "jpg":
+            case "jpeg": mime = "image/jpeg"; break;
+            case "gif":  mime = "image/gif";  break;
+            case "svg":  mime = "image/svg+xml"; break;
+            case "bmp":  mime = "image/bmp";  break;
+            default:     mime = "image/png";  break;
+        }
+        return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
+    }
+
+    /**
+     * Sets the body part path, image path, and localized labels for the given answer based on the provided body part message code.
+     *
+     * If the answer contains a non-null body part message code, this method resolves the corresponding BodyPart enum constant and populates the answer
+     * with the body part path and image path. It also iterates through the locales defined in the question's localized text to generate a sorted map
+     * of localized labels. Each label is resolved using the message source with the provided locale. If the body part message code is null, no
+     * changes are made to the answer DTO.
+     *
+     * @param questionDTO the question DTO containing the set of locales for which localized labels are required
+     * @param answerDTO   the answer DTO which will be updated with the body part path, image path, and localized labels
+     */
+    public void setLocalizedLabelsAndAttributesForBodyPart(QuestionDTO questionDTO, AnswerDTO answerDTO) {
+        if (answerDTO.getBodyPartMessageCode() != null) {
+            BodyPart bodyPart = BodyPart.fromString(answerDTO.getBodyPartMessageCode());
+            answerDTO.setBodyPartPath(bodyPart.getPath());
+            answerDTO.setBodyPartImage(bodyPart.getImagePath());
+            SortedMap<String, String> localizedLabel = new TreeMap<>();
+            for (String locale : questionDTO.getLocalizedQuestionText().keySet()) {
+                localizedLabel.put(locale,
+                    messageSource.getMessage(answerDTO.getBodyPartMessageCode(),
+                        new Object[]{}, LocaleHelper.getLocaleFromString(locale)));
+            }
+            answerDTO.setLocalizedLabel(localizedLabel);
+        }
+    }
+
+    /**
+     * Updates the body part attributes for a given question DTO.
+     * This method iterates through the answers of the question to collect unique body part images
+     * and update localized labels and attributes for each body part.
+     * If the question contains answers, it sets the collected body part images on the question DTO.
+     *
+     * @param questionDTO the question data transfer object containing answers and body part information
+     */
+    private void updateBodyPartAttributes(QuestionDTO questionDTO) {
+        if (questionDTO.getAnswers() != null && !questionDTO.getAnswers().isEmpty()) {
+            List<String> bodyPartImages = new ArrayList<>();
+            for (AnswerDTO answerDTO : questionDTO.getAnswers().values()) {
+                //update images used in this question
+                if (!bodyPartImages.contains(answerDTO.getBodyPartImage())) {
+                    bodyPartImages.add(answerDTO.getBodyPartImage());
+                }
+                setLocalizedLabelsAndAttributesForBodyPart(questionDTO, answerDTO);
+            }
+            questionDTO.setBodyPartImages(bodyPartImages);
+        }
+    }
+
+    /**
+     * Deletes associated scores for a question if the current question configuration
+     * does not support them or if the answer constraints for a multiple choice question
+     * differ from exactly one.
+     *
+     * @param questionDTO the data transfer object containing the updated question details
+     * @param question    the persistent question entity used to query existing scores
+     */
+    private void deleteScoresIfNecessary(QuestionDTO questionDTO, Question question) {
+        // Check if the associated scores have to be deleted
+        if (scoreDao.hasScore(question)) {
+            List<QuestionType> validScoreQuestionTypes = new ArrayList<>(
+                Arrays.asList(QuestionType.MULTIPLE_CHOICE, QuestionType.SLIDER,
+                    QuestionType.NUMBER_CHECKBOX, QuestionType.NUMBER_CHECKBOX_TEXT,
+                    QuestionType.DROP_DOWN, QuestionType.NUMBER_INPUT));
+            // The associated scores have to be deleted if the question
+            // type does not support scores or the min or max number of
+            // answers is different to 1 when a multiple choice question
+            // is chosen
+            if (!validScoreQuestionTypes.contains(questionDTO.getQuestionType())
+                || questionDTO.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE) && (
+                questionDTO.getMinNumberAnswers() != 1
+                    || questionDTO.getMaxNumberAnswers() != 1)) {
+                List<Score> scoresToDelete = scoreDao.getScores(question);
+                for (Score scoreToDelete : scoresToDelete) {
+                    scoreDao.remove(scoreToDelete);
+                }
+            }
+        }
+    }
+
+    /**
+     * Deletes the image file associated with the question if the question type
+     * is IMAGE and the provided DTO does not retain a valid image reference.
+     * This method ensures that obsolete image files are removed from storage when
+     * the question type changes away from IMAGE or when the answer's image file
+     * is cleared in the DTO.
+     *
+     * @param questionDTO the data transfer object containing the updated question details
+     * @param question the persistent question entity currently in the database
+     */
+    private void deleteImageIfNecessary(QuestionDTO questionDTO, Question question) {
+        if (question.getQuestionType().equals(QuestionType.IMAGE)) {
+            // Only delete image if it has changed or the question type
+            // has changed
+            if (!(questionDTO.getQuestionType().equals(QuestionType.IMAGE)
+                    && !questionDTO.getAnswers().get(0L).getImageFile().isEmpty())) {
+                File deleteFile = new File(
+                        ((ImageAnswer) question.getAnswers().get(0)).getImagePath());
+                deleteFile.delete();
+                ((ImageAnswer) question.getAnswers().get(0)).setImagePath(null);
+            }
+        }
+    }
+
+    /**
+     * Removes all answers from the question if the question type changes to a type that requires different answer structures.
+     * Specifically, it clears answers if a slider or select type question is changed to a different type within the same category,
+     * or if the question type changes to any other different type entirely.
+     *
+     * @param questionDTO the question transfer object containing the updated question type
+     * @param question    the question entity from which answers will be removed if necessary
+     */
+    private void removeAnswersIfNecessary(QuestionDTO questionDTO, Question question) {
+        if (equalQuestiontypesSliderList.contains(question.getQuestionType())) {
+            if (!equalQuestiontypesSliderList.contains(questionDTO.getQuestionType())) {
+                question.removeAllAnswers();
+            }
+        } else if (equalQuestiontypesSelectList.contains(question.getQuestionType())) {
+            if (!equalQuestiontypesSelectList.contains(questionDTO.getQuestionType())) {
+                question.removeAllAnswers();
+            }
+        } else if (question.getQuestionType() != questionDTO.getQuestionType()) {
+            question.removeAllAnswers();
+        }
+    }
+
+    /**
+     * Removes <p> tags from the localized question text provided in the question DTO.
+     *
+     * @param questionDTO The QuestionDTO containing the localized question text to be processed.
+     * @return A SortedMap containing the localized question text with <p> and </p> tags removed.
+     */
+    private SortedMap<String, String> removePTags(QuestionDTO questionDTO) {
+        //Remove <p>-Tags set by summernote
+        SortedMap<String, String> localizedQuestionText = new TreeMap<>();
+        for (Map.Entry<String, String> entry : questionDTO.getLocalizedQuestionText()
+            .entrySet()) {
+            String formattedValue = entry.getValue();
+            if (formattedValue.startsWith("<p>")) {
+                formattedValue = formattedValue.substring(3);
+            }
+            if (formattedValue.endsWith("</p>")) {
+                formattedValue = formattedValue.substring(0, formattedValue.length() - 4);
+            }
+            localizedQuestionText.put(entry.getKey(), formattedValue);
+        }
+        return localizedQuestionText;
+    }
+
+    /**
+     * Sets the minimum and maximum number of answers for a question based on its type and the provided constraints.
+     * If the question type is in the allowed list or is a BODY_PART, the minimum and maximum values are adjusted
+     * according to specific rules for dropdown questions or zero maximum values, and the coded value type is set.
+     * Otherwise, the minimum and maximum number of answers are set to null.
+     *
+     * @param questionDTO the question data transfer object containing configuration details such as the coded value type
+     * @param equalQuestiontypesSelectList a list of question types for which the min/max answer limits should be applied
+     * @param question the question entity to be updated with the new min/max answer limits
+     * @param minNumberAnswers the minimum number of answers allowed
+     * @param maxNumberAnswers the maximum number of answers allowed
+     */
+    private void setMinMaxNumberOfAnswers(QuestionDTO questionDTO, List<QuestionType> equalQuestiontypesSelectList, Question question, Integer minNumberAnswers, Integer maxNumberAnswers) {
+        if (equalQuestiontypesSelectList.contains(question.getQuestionType())
+                || question.getQuestionType() == QuestionType.BODY_PART) {
+            // If dropdown question set min/max number of answers to 1
+            if (question.getQuestionType() == QuestionType.DROP_DOWN) {
+                minNumberAnswers = 1;
+                maxNumberAnswers = 1;
+            } else if (questionDTO.getMaxNumberAnswers() == 0) {
+                maxNumberAnswers = 1;
+            }
+            question.setMinMaxNumberAnswers(minNumberAnswers, maxNumberAnswers);
+            question.setCodedValueType(questionDTO.getCodedValueType());
+        } else {
+            question.setMinMaxNumberAnswers(null, null);
+        }
+    }
+
+    /**
+     * Updates the properties of an existing question based on the provided DTO and localized data.
+     * Handles the removal of scores, images, and answers as necessary before applying the new
+     * configuration settings. For multiple choice or dropdown question types, it sets the minimum
+     * and maximum number of allowed answers; otherwise, these values are reset to null.
+     *
+     * @param questionDTO the data transfer object containing the new property values for the question
+     * @param question the existing question entity to be updated
+     * @param localizedQuestionText the map containing the localized question text
+     * @param minNumberAnswers the minimum number of answers required for multiple choice or dropdown questions
+     * @param maxNumberAnswers the maximum number of answers allowed for multiple choice or dropdown questions
+     */
+    private void updatePropertiesOfExistingQuestion(QuestionDTO questionDTO, Question question, Map<String, String> localizedQuestionText, Integer minNumberAnswers, Integer maxNumberAnswers) {
+        deleteScoresIfNecessary(questionDTO, question);
+        deleteImageIfNecessary(questionDTO, question);
+        removeAnswersIfNecessary(questionDTO, question);
+        // Update properties
+        question.setIsRequired(questionDTO.getIsRequired());
+        question.setIsEnabled(questionDTO.getIsEnabled());
+        question.setQuestionType(questionDTO.getQuestionType());
+        question.setLocalizedQuestionText(localizedQuestionText);
+        question.setIsJustInfo(questionDTO.getIsJustInfo());
+
+        // If multiple choice or dropdown question set min/max number of
+        // answers
+        // otherwise reset to null
+        setMinMaxNumberOfAnswers(questionDTO, equalQuestiontypesSelectList, question, minNumberAnswers, maxNumberAnswers);
+    }
+
+    /**
+     * Creates a new Question instance from the provided DTO and associated parameters.
+     * Initializes the question with localized text, requirements, and type information.
+     * Adjusts the minimum and maximum number of answers based on the question type
+     * or defaults if the maximum is not specified.
+     *
+     * @param questionDTO              the DTO containing the question configuration data
+     * @param localizedQuestionText    the map of localized question texts
+     * @param questionnaire            the parent questionnaire to which this question belongs
+     * @param minNumberAnswers         the minimum number of answers allowed for the question
+     * @param maxNumberAnswers         the maximum number of answers allowed for the question
+     * @return the newly created and configured Question instance
+     */
+    private Question createQuestion(QuestionDTO questionDTO, Map<String, String> localizedQuestionText, Questionnaire questionnaire, Integer minNumberAnswers, Integer maxNumberAnswers) {
+        Question question;
+        // Question is new
+        question = new Question(localizedQuestionText, questionDTO.getIsRequired(),
+                questionDTO.getIsEnabled(), questionDTO.getQuestionType(),
+                (questionnaire.getQuestions().size() + 1), questionnaire, questionDTO.getIsJustInfo());
+        // If dropdown question set min/max number of answers to 1
+        if (question.getQuestionType() == QuestionType.DROP_DOWN) {
+            minNumberAnswers = 1;
+            maxNumberAnswers = 1;
+        } else if (questionDTO.getMaxNumberAnswers() == null
+                || questionDTO.getMaxNumberAnswers() == 0) {
+            maxNumberAnswers = 1;
+        }
+        question.setMinMaxNumberAnswers(minNumberAnswers, maxNumberAnswers);
+        question.setCodedValueType(questionDTO.getCodedValueType());
+        return question;
     }
 
     /**

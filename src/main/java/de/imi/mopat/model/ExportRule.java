@@ -1,8 +1,7 @@
 package de.imi.mopat.model;
 
 import de.imi.mopat.helper.model.UUIDGenerator;
-
-import java.io.Serializable;
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -16,6 +15,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
 
 /**
  * The database table model for table <i>export_rule</i>. An export rule object knows which
@@ -83,6 +83,22 @@ public abstract class ExportRule implements Serializable {
     }
 
     /**
+     * Method to return the type of the rule, i.e. the discriminator value.
+     *
+     * @return String representing the type of the rule.
+     */
+    public abstract ExportRuleType getType();
+
+    /**
+     * Returns the export field defined by the template.
+     *
+     * @return The export field. Can not be <code>null</code>.
+     */
+    public String getExportField() {
+        return exportField;
+    }
+
+    /**
      * Sets the export field.
      *
      * @param exportField An export field. Can not be <code>null</code>.
@@ -93,12 +109,13 @@ public abstract class ExportRule implements Serializable {
     }
 
     /**
-     * Returns the export field defined by the template.
+     * Returns the {@link ExportTemplate} object to which this export rule belongs.
      *
-     * @return The export field. Can not be <code>null</code>.
+     * @return The {@link ExportTemplate} object to which this export rule belongs. Can not be
+     * <code>null</code>.
      */
-    public String getExportField() {
-        return exportField;
+    public ExportTemplate getExportTemplate() {
+        return exportTemplate;
     }
 
     /**
@@ -116,16 +133,6 @@ public abstract class ExportRule implements Serializable {
         if (!exportTemplate.getExportRules().contains(this)) {
             exportTemplate.addExportRule(this);
         }
-    }
-
-    /**
-     * Returns the {@link ExportTemplate} object to which this export rule belongs.
-     *
-     * @return The {@link ExportTemplate} object to which this export rule belongs. Can not be
-     * <code>null</code>.
-     */
-    public ExportTemplate getExportTemplate() {
-        return exportTemplate;
     }
 
     /**

@@ -8,7 +8,9 @@
 	th:with="title=#{admin.navigation.configuration}"
 >
 	<th:block layout:fragment="content">
-		<div class="panel-body">
+		<div class="panel-body"
+			th:unless="${isDemoInstance}"
+		>
 			<form
 				th:object="${configurationComponentDTO}"
 				enctype="multipart/form-data"
@@ -31,6 +33,7 @@
 						<!--/* <c:set var="nameKey" value="${entry.key}" /> */-->
 						<div
 							class="configurationGroup"
+							th:id="${configurationGroup.labelMessageCode}"
 							th:attr="data-deletable=${configurationGroup.deletable}"
 						>
 							<th:block th:if="${configurationGroup.referringId != null}">

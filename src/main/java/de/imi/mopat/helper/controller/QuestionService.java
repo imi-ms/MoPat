@@ -88,7 +88,7 @@ public class QuestionService {
                 new HashMap<>(originalQuestion.getLocalizedQuestionText()),
                 originalQuestion.getIsRequired(), originalQuestion.getIsEnabled(),
                 originalQuestion.getQuestionType(), originalQuestion.getPosition(),
-                newQuestionnaire
+                newQuestionnaire,originalQuestion.getIsJustInfo()
             );
             
             newQuestion.setMinMaxNumberAnswers(

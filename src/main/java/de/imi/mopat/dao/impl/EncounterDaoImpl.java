@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import jakarta.persistence.PersistenceException;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -150,6 +151,30 @@ public class EncounterDaoImpl extends MoPatDaoImpl<Encounter> implements Encount
             Encounter.class);
 
         return query.getResultList();
+    }
+
+    @Override
+    public Boolean checkEncountersExistsByClinicId(Long clinicId) {
+
+        TypedQuery<Long> query = moPatEntityManager.createQuery(
+            "SELECT 1 FROM Encounter e WHERE e.clinic.id=" + clinicId,
+            Long.class).setMaxResults(1);
+
+        return !query.getResultList().isEmpty();
+
+    }
+
+    @Override
+    @Transactional("MoPat")
+    public void removeEncounterExportTemplatesForEncounter(Encounter encounter) {
+        moPatEntityManager.createQuery(
+                "delete from EncounterExportTemplate e where e.encounter.id = :encounterId"
+            )
+            .setParameter("encounterId", encounter.getId())
+            .executeUpdate();
+
+        moPatEntityManager.flush();
+        moPatEntityManager.clear();
     }
 
     @Override

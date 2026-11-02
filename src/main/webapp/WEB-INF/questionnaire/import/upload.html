@@ -2,111 +2,263 @@
     * View to upload an existing questionnaire    
 */-->
 <th:block
-	layout:decorate="~{layout/main}"
-	th:with="title=${messages.get(#locale, 'questionnaire.import.heading', 'Import questionnaire from file')}"
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'questionnaire.import.heading', 'Import questionnaire from file')}"
 >
-	<th:block layout:fragment="content">
-		<div class="panel-body">
-			<form
-				id="uploadForm"
-				th:object="${questionnaire}"
-				enctype="multipart/form-data"
-				method="POST"
-				action="upload"
-			>
-				<div class="row">
-					<div
-						class="col-xs-3"
-						th:utext="${messages.get(#locale, 'questionnaire.import.odm.infoText', 'File')}"
-					>
-					</div>
-					<div
-						class="col-xs-3"
-						th:utext="${messages.get(#locale, 'questionnaire.import.fhir.infoText', 'File')}"
-					>
-					</div>
-					<div
-						class="col-xs-3"
-						th:utext="${messages.get(#locale, 'questionnaire.import.mopat.infoText', 'File')}"
-					>
-					</div>
-				</div>
-				<div class="form-group">
-					<label
-						for="file"
-						th:text="${messages.get(#locale, 'questionnaire.import.label.file', 'File')}"
-					></label>
-					<br />
-					<input
-						type="file"
-						name="file"
-						accept=".json,.xml"
-						id="file"
-					/>
-				</div>
-				<div
-					th:if="${fileUpload == true}"
-					class="form-group"
-				>
-					<div class="alert alert-danger">
-						<div class="alert alert-danger">
-							<div
-								th:if="${#fields.hasErrors('*')}"
-								th:text="${#fields.errors('*')}"
-								style="color: red"
-							>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div
-					class="form-group"
-					th:utext="${messages.get(#locale, 'questionnaire.import.fhir.urlText', 'File')}"
-				>
-				</div>
-				<div class="form-group">
-					<label
-						for="url"
-						th:text="${messages.get(#locale, 'questionnaire.import.label.url', 'Url')}"
-					></label>
-					<br />
-					<input
-						type="text"
-						class="form-control"
-						name="url"
-						id="url"
-					/>
-				</div>
-				<div
-					th:if="${failure ne null}"
-					id="notification"
-					class="alert alert-danger"
-					th:text="${failure}"
-				>
-				</div>
-				<div
-					th:if="${fileUpload == false}"
-					class="form-group"
-				>
-					<div class="alert alert-danger">
-						<div
-							th:if="${#fields.hasErrors('*')}"
-							th:text="${#fields.errors('*')}"
-							style="color: red"
-						>
-						</div>
-					</div>
-				</div>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					value="import"
-					id="importButton"
-					name="action"
-					th:utext="${messages.get(#locale, 'questionnaire.import.button.import', 'Upload & Import')}"
-				>
-				</button>
-			</form>
-		</div>
-	</th:block>
+    <th:block layout:fragment="content">
+        <div class="panel-body d-flex align-items-center justify-content-center list-group">
+            <form
+                action="upload"
+                enctype="multipart/form-data"
+                id="uploadForm"
+                method="POST"
+                th:object="${questionnaire}"
+            >
+                <div
+                    class="form-group rounded"
+                    role="group"
+                >
+                    <div class="list-group-item">
+                        <b
+                            th:text="${messages.get(#locale, 'questionnaire.import.uploadType.text', 'Select the format of the uploaded file.')}"></b>
+                        <div class="d-flex w-100 justify-content-start flex-wrap">
+
+                            <input autocomplete="off"
+                                   checked
+                                   class="btn-check"
+                                   data-name="uploadType"
+                                   id="uploadTypeMoPat"
+                                   name="uploadType"
+                                   onchange="toggleUploadType(this)"
+                                   type="radio"
+                                   value="MoPat"
+                            >
+                            <label
+                                class="btn btn-outline-primary mx-1"
+                                th:for="uploadTypeMoPat"
+                            >MoPat</label>
+
+                            <input autocomplete="off"
+                                   class="btn-check"
+                                   data-name="uploadType"
+                                   id="uploadTypeODM"
+                                   name="uploadType"
+                                   onchange="toggleUploadType(this)"
+                                   type="radio"
+                                   value="ODM">
+                            <label
+                                class="btn btn-outline-primary mx-1"
+                                th:for="uploadTypeODM"
+                            >ODM</label>
+
+                            <input autocomplete="off"
+                                   class="btn-check"
+                                   data-name="uploadType"
+                                   id="uploadTypeFHIRSTU3"
+                                   name="uploadType"
+                                   onchange="toggleUploadType(this)"
+                                   type="radio"
+                                   value="FHIRDSTU3">
+                            <label
+                                class="btn btn-outline-primary mx-1"
+                                th:for="uploadTypeFHIRSTU3"
+                            >FHIR STU3</label>
+
+                            <input autocomplete="off"
+                                   class="btn-check"
+                                   data-name="uploadType"
+                                   id="uploadTypeFHIRR4B"
+                                   name="uploadType"
+                                   onchange="toggleUploadType(this)"
+                                   type="radio"
+                                   value="FHIRR4B">
+                            <label
+                                class="btn btn-outline-primary mx-1"
+                                th:for="uploadTypeFHIRR4B"
+                            >FHIR R4B</label>
+
+                            <input autocomplete="off"
+                                   class="btn-check"
+                                   data-name="uploadType"
+                                   id="uploadTypeFHIRR5"
+                                   name="uploadType"
+                                   onchange="toggleUploadType(this)"
+                                   type="radio"
+                                   value="FHIRR5">
+                            <label
+                                class="btn btn-outline-primary mx-1"
+                                th:for="uploadTypeFHIRR5"
+                            >FHIR R5</label>
+                        </div>
+                    </div>
+
+                    <div class="list-group-item">
+                        <div class="form-group"
+                             id="fileUploadContainer"
+                        >
+                            <label
+                                for="file"
+                                th:text="${messages.get(#locale, 'questionnaire.import.label.file', 'File')}"
+                            ></label>
+                            <br />
+
+                            <input
+                                id="file"
+                                type="file"
+                                class="dropzone-file-input"
+                                name="file"
+                                accept=".json,.xml"
+                                data-extensions='["json","xml"]'
+                            />
+
+                        </div>
+
+                        <div
+                            class="form-group"
+                            th:if="${#fields.hasAnyErrors()}"
+                        >
+                            <div class="alert alert-danger m-0 p-0">
+
+                                <div class="accordion" id="errorAccordion">
+                                    <div class="accordion-item bg-transparent border-0">
+                                        <h2 class="accordion-header" id="errorHeading">
+                                            <button
+                                                class="accordion-button bg-transparent text-danger"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#errorCollapse"
+                                                aria-expanded="true"
+                                                aria-controls="collapseOne"
+                                            >
+                                                <th:block
+                                                    th:text="${messages.get(#locale, 'questionnaire.import.failure', 'Errors')}"/>
+                                                <th:block
+                                                    th:text="${messages.get(#locale, 'questionnaire.import.failure.moreInfo', 'Errors')}"/>
+                                            </button>
+                                        </h2>
+
+                                        <div
+                                            id="errorCollapse"
+                                            class="accordion-collapse collapse"
+                                            aria-labelledby="errorHeading"
+                                            data-bs-parent="#errorAccordion"
+                                        >
+                                            <div class="accordion-body px-0 pt-2">
+                                                <ul>
+                                                    <li th:each="err : ${#fields.globalErrors()}"
+                                                        th:text="${err}"
+                                                        class="text-danger"
+                                                    >
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="alert alert-info d-flex align-items-start transition upload-info-box"
+                            id="infoBox"
+                        >
+                            <i class="bi bi-large bi-info-square-fill me-4"></i>
+                            <div
+                                id="mopatInfoText"
+                                th:utext="${messages.get(#locale, 'questionnaire.import.mopat.infoText', 'File')}"
+                            >
+                            </div>
+
+                            <div
+                                class="d-none"
+                                id="odmInfoText"
+                                th:utext="${messages.get(#locale, 'questionnaire.import.odm.infoText', 'File')}"
+                            >
+                            </div>
+
+                            <div
+                                class="d-none"
+                                id="fhirInfoText"
+                                th:utext="${messages.get(#locale, 'questionnaire.import.fhir.infoText', 'File')}"
+                            >
+                            </div>
+
+                        </div>
+
+                        <div class="form-group d-none"
+                             id="fhirUrlContainer">
+                            <div
+                                id="fhirUrlInfoText"
+                                th:utext="${messages.get(#locale, 'questionnaire.import.fhir.urlText', 'File')}"
+                            >
+                            </div>
+                            <label
+                                for="url"
+                                th:text="${messages.get(#locale, 'questionnaire.import.label.url', 'Url')}"
+                            ></label>
+                            <br />
+                            <input
+                                class="form-control"
+                                id="url"
+                                name="url"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    id="importButton"
+                    name="action"
+                    th:utext="${messages.get(#locale, 'questionnaire.import.button.import', 'Upload & Import')}"
+                    type="submit"
+                    value="import"
+                >
+                </button>
+            </form>
+        </div>
+        <script
+            th:inline="javascript"
+            type="text/javascript"
+        >
+            function toggleUploadType(element) {
+                disableAllInfoTexts();
+                let selectedType = $(element).val();
+
+                switch (selectedType) {
+                    case "MoPat": {
+                        $("#mopatInfoText").removeClass("d-none");
+                        break;
+                    }
+                    case "ODM": {
+                        $("#odmInfoText").removeClass("d-none");
+                        break;
+                    }
+                    case "FHIRDSTU3": {
+                        $("#fhirInfoText").removeClass("d-none");
+                        $("#fhirUrlContainer").removeClass("d-none");
+                        break;
+                    }
+                    case "FHIRR4B": {
+                        $("#fhirInfoText").removeClass("d-none");
+                        $("#fhirUrlContainer").removeClass("d-none");
+                        break;
+                    }
+                    case "FHIRR5": {
+                        $("#fhirInfoText").removeClass("d-none");
+                        $("#fhirUrlContainer").removeClass("d-none");
+                        break;
+                    }
+                }
+            }
+
+            function disableAllInfoTexts() {
+                $("#mopatInfoText").addClass("d-none");
+                $("#odmInfoText").addClass("d-none");
+                $("#fhirInfoText").addClass("d-none");
+                $("#fhirUrlContainer").addClass("d-none");
+            }
+
+        </script>
+    </th:block>
 </th:block>

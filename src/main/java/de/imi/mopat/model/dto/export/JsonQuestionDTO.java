@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.enumeration.QuestionType;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
@@ -27,6 +26,7 @@ public class JsonQuestionDTO {
     private Long id = null;
     private Map<String, String> localizedQuestionText = new HashMap<>();
     private Boolean isRequired = null;
+    private Boolean isJustInfo = null;
     private Boolean isEnabled = null;
     private QuestionType questionType = null;
     private Integer minNumberAnswers = null;
@@ -127,17 +127,41 @@ public class JsonQuestionDTO {
         this.position = position;
     }
 
-    public void setAnswers(long id, JsonAnswerDTO jsonAnswerDTO){
-        this.answers.put(
-            id,
-            jsonAnswerDTO);
+    public void setAnswers(long id, JsonAnswerDTO jsonAnswerDTO) {
+        this.answers.put(id, jsonAnswerDTO);
 
     }
+
+    public Boolean getIsJustInfo() {
+        return isJustInfo;
+    }
+
+    public void setIsJustInfo(Boolean justInfo) {
+        isJustInfo = justInfo;
+    }
+
     public Question convertToQuestion() {
         Question question = new Question();
         question.setLocalizedQuestionText(this.getLocalizedQuestionText());
-        question.setIsEnabled(this.getIsEnabled());
-        question.setIsRequired(this.getIsRequired());
+
+        if (this.getIsEnabled() == null) {
+            question.setIsEnabled(true);
+        } else {
+            question.setIsEnabled(this.getIsEnabled());
+        }
+
+        if (this.getIsRequired() == null) {
+            question.setIsRequired(false);
+        } else {
+            question.setIsRequired(this.getIsRequired());
+        }
+
+        if (this.isJustInfo == null) {
+            question.setIsJustInfo(false);
+        } else {
+            question.setIsJustInfo(this.getIsJustInfo());
+        }
+
         question.setMinMaxNumberAnswers(this.getMinNumberAnswers(), this.getMaxNumberAnswers());
         question.setCodedValueType(this.getCodedValueType());
         question.setPosition(this.getPosition());

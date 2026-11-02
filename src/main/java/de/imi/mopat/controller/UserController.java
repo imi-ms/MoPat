@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,7 +144,7 @@ public class UserController {
         @RequestParam(name = "userDeleteError", required = false) Boolean userDeleteError,
         final Model model
     ) {
-        model.addAttribute("allUsers", userDao.getAllElements());
+        model.addAttribute("allUsers", userService.sortUsersByNameAsc(userDao.getAllElements()));
         return "user/list";
     }
 
@@ -621,14 +622,24 @@ public class UserController {
             pinAuthorizationService.removePinAuthForUser(user);
         } else {
             pinAuthorizationService.decreaseRemainingTriesForUser(user);
-            //Refetch the entry
+            // Refetch the entry
             PinAuthorization pinAuthorization = pinAuthorizationDao.getEntriesForUser(user).stream()
-                .toList().get(0);
+                    .findFirst()
+                    .orElse(null);
 
-            model.addAttribute("message",
-                messageSource.getMessage("user.error.badPin", new Object[]{
-                    String.valueOf(pinAuthorization.getRemainingTries())
-                }, LocaleContextHolder.getLocale()));
+            String tries = Optional.ofNullable(pinAuthorization)
+                    .map(PinAuthorization::getRemainingTries)
+                    .map(String::valueOf)
+                    .orElse("0");
+
+            if (tries.equals("0")) {
+                return "redirect:/mobile/user/pinlogout";
+            }
+
+            model.addAttribute(
+                    "message",
+                    messageSource.getMessage(
+                            "user.error.badPin", new Object[] {tries}, LocaleContextHolder.getLocale()));
             return "mobile/user/pinlogin";
         }
 

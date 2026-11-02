@@ -328,7 +328,7 @@ public class QuestionnaireServiceTest {
      * Valid input: valid {@link QuestionnaireDTO} with ID, but admin can't edit the questionnaire with executed surveys
      */
     @Test
-    public void testSaveOrUpdateQuestionnaire_AdminModeratorCantEditQuestionnaireWithExecutedSurvey() {
+    public void testSaveOrUpdateQuestionnaire_AdminCantEditQuestionnaireWithExecutedSurvey() {
         // Arrange
         Questionnaire existingQUestionnaire = createAndPersistQuestionnaire();
         Question testQuestion = QuestionTest.getNewValidQuestion(existingQUestionnaire);
@@ -349,7 +349,7 @@ public class QuestionnaireServiceTest {
         Long userId = Helper.generatePositiveNonZeroLong();
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
 
-        when(authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)).thenReturn(true);
         when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(newQuestionnaire);
 
         // Mock question duplication with empty maps
@@ -370,6 +370,56 @@ public class QuestionnaireServiceTest {
         responseDao.remove(testResponse);
         encounterDao.remove(testEncounter);
         bundleDao.remove(testBundle);
+        questionnaireDao.remove(existingQUestionnaire);
+        questionnaireDao.remove(result);
+    }
+
+    /**
+     * Test of {@link QuestionnaireService#saveOrUpdateQuestionnaire}<br>
+     * Valid input: valid {@link QuestionnaireDTO} with ID, and moderator cannot edit the questionnaire if it has executed surveys
+     */
+    @Test
+    public void testSaveOrUpdateQuestionnaire_ModeratorCannotEditWithExecutedSurveys() {
+        // Arrange
+        Questionnaire existingQUestionnaire = createAndPersistQuestionnaire();
+        Question existingQuestion = QuestionTest.getNewValidQuestion(existingQUestionnaire);
+        questionDao.merge(existingQuestion);
+        SliderFreetextAnswer existingAnswer = SliderFreetextAnswerTest.getNewValidSliderFreetextAnswer();
+        existingAnswer.setQuestion(existingQuestion);
+        answerDao.merge(existingAnswer);
+        Bundle existingBundle = BundleTest.getNewValidBundle();
+        bundleDao.merge(existingBundle);
+        Encounter testEncounter = EncounterTest.getNewValidEncounter(existingBundle);
+        encounterDao.merge(testEncounter);
+        Response testResponse = new Response(existingAnswer, testEncounter);
+        responseDao.merge(testResponse);
+        questionnaireDao.merge(existingQUestionnaire);
+
+        QuestionnaireDTO questionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        questionnaireDTO.setId(existingQUestionnaire.getId());
+        Long userId = Helper.generatePositiveNonZeroLong();
+        Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        when(authService.hasExactRole(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(newQuestionnaire);
+
+        // Mock question duplication with empty maps
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class))).thenReturn(newQuestionnaire);
+        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class))).thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
+
+        // Act
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                questionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                userId
+        );
+
+        // Assert
+        Assert.assertNotNull("The created questionnaire should not be null", result);
+        verify(questionService, atLeastOnce()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure questions are copied, implying it's an update
+
+        responseDao.remove(testResponse);
+        encounterDao.remove(testEncounter);
+        bundleDao.remove(existingBundle);
         questionnaireDao.remove(existingQUestionnaire);
         questionnaireDao.remove(result);
     }
@@ -426,6 +476,51 @@ public class QuestionnaireServiceTest {
 
     /**
      * Test of {@link QuestionnaireService#saveOrUpdateQuestionnaire}<br>
+     * Valid input: valid {@link QuestionnaireDTO} with ID, and moderator cannot edit the questionnaire if it belongs to a bundle that is enabled
+     */
+    @Test
+    public void testSaveOrUpdateQuestionnaire_ModeratorCannotEditIfPartOfEnabledBundle() throws Exception {
+        // Arrange
+        Questionnaire testQuestionnaire = createAndPersistQuestionnaire();
+        QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(testQuestionnaire.getId());
+        Long validUserId = Helper.generatePositiveNonZeroLong();
+
+        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+
+        BundleQuestionnaire enabledBundleQuestionnaire = BundleQuestionnaireTest.getNewValidBundleQuestionnaire();
+        enabledBundleQuestionnaire.setIsEnabled(true);
+        List<BundleQuestionnaire> bundleQuestionnaireList = List.of(enabledBundleQuestionnaire);
+
+        when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
+        when(authService.hasExactRole(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
+        doReturn(true).when(existingQuestionnaire).isModifiable();
+        doReturn(Helper.generatePositiveNonZeroLong()).when(existingQuestionnaire).getId();
+
+        // Mock question duplication with empty maps
+        when(questionService.duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class))).thenReturn(copiedQuestionnaire);
+        when(questionService.getMappingForDuplicatedQuestions(any(Questionnaire.class), any(Questionnaire.class))).thenReturn(new MapHolder(Collections.emptyMap(), Collections.emptyMap()));
+
+        // Act
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
+
+        // Assert
+        Assert.assertNotNull("The created questionnaire should not be null", result);
+        verify(questionService, times(1)).duplicateQuestionsToNewQuestionnaire(anySet(), eq(copiedQuestionnaire)); // Ensure questions are copied to the new questionnaire
+
+        questionnaireDao.remove(testQuestionnaire);
+        questionnaireDao.remove(copiedQuestionnaire);
+
+    }
+
+    /**
+     * Test of {@link QuestionnaireService#saveOrUpdateQuestionnaire}<br>
      * Valid input: valid {@link QuestionnaireDTO} with ID, and editor cannot edit the questionnaire if it belongs to a bundle that is enabled
      */
     @Test
@@ -467,6 +562,47 @@ public class QuestionnaireServiceTest {
         questionnaireDao.remove(testQuestionnaire);
         questionnaireDao.remove(copiedQuestionnaire);
 
+    }
+
+    /**
+     * Test of {@link QuestionnaireService#saveOrUpdateQuestionnaire}<br>
+     * Valid input: valid {@link QuestionnaireDTO} with ID, and moderator can edit the questionnaire if it does not belong to a bundle that is enabled
+     */
+    @Test
+    public void testSaveOrUpdateQuestionnaire_ModeratorCanEditIfNotPartOfEnabledBundle() {
+        // Arrange
+        Questionnaire testQuestionnaire = createAndPersistQuestionnaire();
+        QuestionnaireDTO validQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
+        validQuestionnaireDTO.setId(testQuestionnaire.getId());
+        Long validUserId = Helper.generatePositiveNonZeroLong();
+
+        Questionnaire existingQuestionnaire = spy(QuestionnaireTest.getNewValidQuestionnaire());
+        Questionnaire copiedQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+
+        // Create a BundleQuestionnaire with isEnabled set to false
+        BundleQuestionnaire newValidBundleQuestionnaire = BundleQuestionnaireTest.getNewValidBundleQuestionnaire();
+        newValidBundleQuestionnaire.setIsEnabled(false);
+        List<BundleQuestionnaire> bundleQuestionnaireList = List.of(newValidBundleQuestionnaire);
+
+        when(bundleService.findByQuestionnaireId(any())).thenReturn(bundleQuestionnaireList);
+        when(authService.hasExactRole(UserRole.ROLE_MODERATOR)).thenReturn(true);
+        when(questionnaireFactory.createQuestionnaire(any(), any(), any(), any())).thenReturn(copiedQuestionnaire);
+        doReturn(true).when(existingQuestionnaire).isModifiable();
+        doReturn(1L).when(existingQuestionnaire).getId();
+
+        // Act
+        Questionnaire result = questionnaireService.saveOrUpdateQuestionnaire(
+                validQuestionnaireDTO,
+                MultipartFileUtils.getEmptyLogo(),
+                validUserId
+        );
+
+        // Assert
+        Assert.assertNotNull("The updated questionnaire should not be null", result);
+        verify(questionService, never()).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class)); // Ensure no questions are copied, implying it's an update
+
+        questionnaireDao.remove(testQuestionnaire);
+        questionnaireDao.remove(copiedQuestionnaire);
     }
 
     /**

@@ -41,7 +41,7 @@ public class EncounterDTO {
     private String backImage;
 
     @JsonIgnore
-    private Long patientID; //ORBIS patient number, exclusively for export
+    private Long patientID; // patient number, exclusively for export
     @JsonIgnore
     @NotNull(message = "{encounter.caseNumber.notNull}")
     @NotEmpty(message = "{encounter.caseNumber.notEmpty}")

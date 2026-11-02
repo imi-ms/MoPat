@@ -1,9 +1,9 @@
 package de.imi.mopat.model.dto;
 
+import de.imi.mopat.model.enumeration.ExportRuleType;
 import de.imi.mopat.model.enumeration.ExportDateFormatType;
 import de.imi.mopat.model.enumeration.ExportEncounterFieldType;
 import de.imi.mopat.model.enumeration.ExportScoreFieldType;
-
 import java.util.List;
 
 /**
@@ -20,6 +20,7 @@ public class ExportRuleDTO {
     private Long scoreId = null;
     private ExportDateFormatType encounterDateFormat = null;
     private Boolean useFreetextValue = Boolean.FALSE;
+    private ExportRuleType type = null;
 
     /**
      * Returns an {@link de.imi.mopat.model.Answer} object id
@@ -151,5 +152,23 @@ public class ExportRuleDTO {
 
     public void setScoreId(final Long scoreId) {
         this.scoreId = scoreId;
+    }
+
+    /**
+     * Returns the type of the export rule
+     *
+     * @return ExportRuleType
+     */
+    public ExportRuleType getType() {
+        return type;
+    }
+
+    /**
+     * Setter for the type of the export rule
+     *
+     * @param type ExportRuleType
+     */
+    public void setType(ExportRuleType type) {
+        this.type = type;
     }
 }

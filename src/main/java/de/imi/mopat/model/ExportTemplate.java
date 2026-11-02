@@ -2,17 +2,10 @@ package de.imi.mopat.model;
 
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
-import de.imi.mopat.model.enumeration.ExportTemplateType;
-import de.imi.mopat.model.enumeration.ExportEncounterFieldType;
 import de.imi.mopat.helper.model.UUIDGenerator;
+import de.imi.mopat.model.enumeration.ExportEncounterFieldType;
 import de.imi.mopat.model.enumeration.ExportScoreFieldType;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import de.imi.mopat.model.enumeration.ExportTemplateType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +21,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -321,9 +320,7 @@ public class ExportTemplate implements Serializable {
      */
     public void addExportRule(final ExportRule exportRule) {
         assert exportRule != null : "The given ExportRule was null";
-        if (!exportRules.contains(exportRule)) {
-            exportRules.add(exportRule);
-        }
+        exportRules.add(exportRule);
         // make sure the objects know each other
         if (exportRule.getExportTemplate() == null || !exportRule.getExportTemplate()
             .equals(this)) {
@@ -380,7 +377,7 @@ public class ExportTemplate implements Serializable {
         for (ExportRule rule : this.exportRules) {
             if (rule instanceof ExportRuleEncounter
                 && ((ExportRuleEncounter) rule).getEncounterField() == encounterField) {
-                exportFields.add(((ExportRuleEncounter) rule).getExportField());
+                exportFields.add(rule.getExportField());
             }
         }
         return exportFields;
@@ -416,8 +413,7 @@ public class ExportTemplate implements Serializable {
     public ExportRuleFormat getExportRuleFormatFromScoreField(final ExportScoreFieldType scoreField,
         final Long scoreId) {
         for (ExportRule rule : this.exportRules) {
-            if (rule instanceof ExportRuleScore) {
-                ExportRuleScore exportRuleScore = (ExportRuleScore) rule;
+            if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
                     && exportRuleScore.getScoreField() == scoreField) {
                     return rule.getExportRuleFormat();
@@ -441,11 +437,10 @@ public class ExportTemplate implements Serializable {
         Set<String> exportFields = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
 
-            if (rule instanceof ExportRuleScore) {
-                ExportRuleScore exportRuleScore = (ExportRuleScore) rule;
+            if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
                     && exportRuleScore.getScoreField() == scoreField) {
-                    exportFields.add(((ExportRuleScore) rule).getExportField());
+                    exportFields.add(rule.getExportField());
                 }
             }
         }
@@ -466,8 +461,7 @@ public class ExportTemplate implements Serializable {
         final Long scoreId) {
         Set<ExportRuleScore> exportRuleSet = new HashSet<>();
         for (ExportRule rule : this.exportRules) {
-            if (rule instanceof ExportRuleScore) {
-                ExportRuleScore exportRuleScore = (ExportRuleScore) rule;
+            if (rule instanceof ExportRuleScore exportRuleScore) {
                 if (exportRuleScore.getScore().getId().equals(scoreId)
                     && exportRuleScore.getScoreField() == scoreField) {
                     exportRuleSet.add(((ExportRuleScore) rule));
@@ -627,10 +621,9 @@ public class ExportTemplate implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof ExportTemplate)) {
+        if (!(obj instanceof ExportTemplate other)) {
             return false;
         }
-        ExportTemplate other = (ExportTemplate) obj;
         return getUuid().equals(other.getUuid());
     }
 

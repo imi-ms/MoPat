@@ -1,0 +1,83 @@
+<!-- Invalid FHIR Questionnaire for validation testing (R4B) -->
+<Questionnaire xmlns="http://hl7.org/fhir">
+   <!-- Missing resource id (often required in production) -->
+   <language value="english"></language> <!-- Invalid code, should be 'en' per BCP-47 -->
+
+   <name value="Demo Questionnaire"></name>
+
+   <!-- Invalid element: 'titel' instead of 'title' -->
+   <titel value="Demo Questionnaire">
+      <extension url="http://hl7.org/fhir/StructureDefinition/translation">
+         <extension url="lang">
+            <valueCode value="de-DE"></valueCode>
+         </extension>
+         <extension url="content">
+            <valueString value="Demo Fragebogen"></valueString>
+         </extension>
+      </extension>
+   </titel>
+
+   <!-- Wrong datatype: status should be a code from allowed values -->
+   <status value="drafted"></status> <!-- allowed: draft | active | retired | unknown -->
+
+   <!-- Invalid date format -->
+   <date value="30-06-2025"></date>
+
+   <!-- Missing description value -->
+   <description></description>
+
+   <!-- Repeated linkId (should be unique per Questionnaire) -->
+   <item>
+      <linkId value="Question/19"></linkId>
+      <text value="This question has invalid coding system"></text>
+      <type value="choice"></type>
+      <answerOption>
+         <valueCoding>
+            <!-- Invalid system URL -->
+            <system value="htp://invalid-url"></system>
+            <code value="MoPat/Answer/99"></code>
+         </valueCoding>
+      </answerOption>
+   </item>
+
+   <item>
+      <!-- Duplicate linkId (violates uniqueness constraint) -->
+      <linkId value="Question/19"></linkId>
+      <!-- Missing 'type' -->
+      <text value="This item has no type and violates cardinality"></text>
+      <!-- repeats as string instead of boolean -->
+      <repeats value="yes"></repeats>
+   </item>
+
+   <!-- Invalid extension URL -->
+   <item>
+      <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-nonExistingExtension">
+         <valueInteger value="1"></valueInteger>
+      </extension>
+      <linkId value="Question/20"></linkId>
+      <text value="Invalid extension test"></text>
+      <type value="choice"></type>
+      <!-- Invalid code system + display missing -->
+      <answerOption>
+         <valueCoding>
+            <system value="http://example.org/bad-system"></system>
+            <code value="BADCODE"></code>
+         </valueCoding>
+      </answerOption>
+   </item>
+
+   <!-- Group without items (constraint violation) -->
+   <item>
+      <linkId value="Question/21"></linkId>
+      <text value="Group without sub-items"></text>
+      <type value="group"></type>
+   </item>
+
+   <!-- Choice without any options (violates structure rules) -->
+   <item>
+      <linkId value="Question/22"></linkId>
+      <text value="Choice without options"></text>
+      <type value="choice"></type>
+   </item>
+
+</Questionnaire>

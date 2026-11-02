@@ -162,4 +162,11 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      * @return true, if pin auth is enabled, false otherwise
      */
     Boolean isGlobalPinAuthEnabled();
+
+    /**
+     * Returns the imprint text to display.
+     *
+     * @return The imprint text to display.
+     */
+    String getImprintText();
 }

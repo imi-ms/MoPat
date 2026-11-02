@@ -76,7 +76,7 @@ public class QuestionnaireTest {
      * <code>null</code>, is valid due to these test cases
      */
     public static Questionnaire getNewValidQuestionnaire() {
-        String name = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
+        String name = Helper.getRandomAlphanumericString(random.nextInt(200) + 3);
         String description = Helper.getRandomAlphanumericString(random.nextInt(252) + 3);
         Long changedBy = Math.abs(random.nextLong());
 

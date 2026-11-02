@@ -1,20 +1,23 @@
 package de.imi.mopat.dao.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import de.imi.mopat.config.AppConfig;
 import de.imi.mopat.config.ApplicationSecurityConfig;
 import de.imi.mopat.config.MvcWebApplicationInitializer;
 import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.ConfigurationDao;
+import de.imi.mopat.dao.ConfigurationGroupDao;
+import de.imi.mopat.model.Configuration;
+import de.imi.mopat.model.ConfigurationGroup;
+import java.util.List;
 import java.util.Locale;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -30,8 +33,37 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @WebAppConfiguration
 public class ConfigurationDaoImplTest {
 
+    @Qualifier("ConfigurationDao")
     @Autowired
     ConfigurationDao testConfigurationDao;
+
+    @Autowired
+    ConfigurationGroupDao configurationGroupDao;
+
+    @Before
+    public void setup() {
+        updateStoragePath();
+    }
+
+    /**
+     * Helper function that sets the path in the testConfigurationDao to the standard
+     * /var/lib/tomcat10/upload/
+     */
+    private void updateStoragePath() {
+        List<ConfigurationGroup> configurationGroups = configurationGroupDao.getConfigurationGroups(
+            "configurationGroup.label.general"
+        );
+
+        ConfigurationGroup objectStoragePath = configurationGroups.stream().filter(
+            group -> group.getConfigurations().stream()
+                .anyMatch(config -> config.getAttribute().equals("objectStoragePath"))
+        ).toList().get(0);
+
+        Configuration objectStoragePathConfig = objectStoragePath.getConfigurations().stream()
+            .filter(config -> config.getAttribute().equals("objectStoragePath")).toList().get(0);
+        objectStoragePathConfig.setValue("/var/lib/tomcat10/upload/");
+        testConfigurationDao.merge(objectStoragePathConfig);
+    }
 
     /**
      * Test of {@link ConfigurationDaoImpl#getConfigurationByAttributeAndClass}.<br>

@@ -15,13 +15,13 @@ import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.conditions.Condition;
+import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.conditions.ConditionTrigger;
 import de.imi.mopat.model.conditions.SelectAnswerCondition;
 import de.imi.mopat.model.conditions.SliderAnswerThresholdCondition;
 import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.Questionnaire;
-import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.score.BinaryExpression;
 import de.imi.mopat.model.score.BinaryOperator;
 import de.imi.mopat.model.score.Expression;
@@ -34,21 +34,31 @@ import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
+import java.util.TreeMap;
 import javax.imageio.ImageIO;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
@@ -100,13 +110,13 @@ public class QuestionnaireService {
 
     @Autowired
     private FileUtils fileUtils;
-    
-    @Autowired
-    private ConditionService conditionService;
 
     @Autowired
     private ReviewService reviewService;
-    
+
+    @Autowired
+    private ConditionService conditionService;
+
     @Autowired
     private ConditionDTOMapper conditionDTOMapper;
 
@@ -120,16 +130,16 @@ public class QuestionnaireService {
     private BundleDao bundleDao;
 
     /**
-     * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}.
-     * It removes unnecessary HTML tags such as "<p><br></p>", "<br>".
+     * Processes the localized welcome and final texts in the given {@link QuestionnaireDTO}. It removes unnecessary
+     * HTML tags such as "<p><br></p>", "<br>".
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing localized texts to be processed.
      */
     public void processLocalizedText(QuestionnaireDTO questionnaireDTO) {
         questionnaireDTO.setLocalizedWelcomeText(
-                processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
+            processLocalizedMap(questionnaireDTO.getLocalizedWelcomeText()));
         questionnaireDTO.setLocalizedFinalText(
-                processLocalizedMap(questionnaireDTO.getLocalizedFinalText()));
+            processLocalizedMap(questionnaireDTO.getLocalizedFinalText()));
     }
 
     /**
@@ -139,8 +149,8 @@ public class QuestionnaireService {
      */
     public List<QuestionnaireDTO> getAllQuestionnaireDTOs() {
         return questionnaireDao.getAllElements().stream()
-                .map(questionnaireDTOMapper)
-                .collect(Collectors.toList());
+            .map(questionnaireDTOMapper)
+            .collect(Collectors.toList());
     }
 
     public List<Questionnaire> getAllQuestionnaires() {
@@ -160,10 +170,10 @@ public class QuestionnaireService {
     }
 
     /**
-     * Saves or updates a {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
-     * If the questionnaire ID is null, a new questionnaire is created.
-     * If the questionnaire ID is not null and editing is allowed, the existing questionnaire is updated.
-     * If the questionnaire ID is not null and editing is not allowed, a copy of the questionnaire is created.
+     * Saves or updates a {@link Questionnaire} based on the given {@link QuestionnaireDTO}. If the questionnaire ID is
+     * null, a new questionnaire is created. If the questionnaire ID is not null and editing is allowed, the existing
+     * questionnaire is updated. If the questionnaire ID is not null and editing is not allowed, a copy of the
+     * questionnaire is created.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
      * @param logo             The logo file associated with the questionnaire.
@@ -190,14 +200,15 @@ public class QuestionnaireService {
      * Retrieves a {@link QuestionnaireDTO} by its ID.
      *
      * @param questionnaireId The ID of the {@link Questionnaire} to retrieve.
-     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional} otherwise.
+     * @return An {@link Optional} containing the {@link QuestionnaireDTO} if found, or an empty {@link Optional}
+     * otherwise.
      */
     public Optional<QuestionnaireDTO> getQuestionnaireDTOById(Long questionnaireId) {
         if (questionnaireId == null || questionnaireId <= 0) {
             return Optional.empty();
         }
         return Optional.ofNullable(questionnaireDao.getElementById(questionnaireId))
-                .map(questionnaireDTOMapper);
+            .map(questionnaireDTOMapper);
     }
 
     /**
@@ -209,7 +220,7 @@ public class QuestionnaireService {
     public boolean editingQuestionnaireAllowed(QuestionnaireDTO questionnaireDTO) {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
-        // Admins and moderators can edit if there are no encounters
+        // Admins can edit if there are no encounters
         if (authService.hasRoleOrAbove(UserRole.ROLE_ADMIN)) {
             return questionnaire.isModifiable();
         }
@@ -224,12 +235,12 @@ public class QuestionnaireService {
     }
 
     /**
-     * Determines if editing the given {@link QuestionnaireDTO} is allowed.
-     * Provides specific reasons if editing is not allowed.
+     * Determines if editing the given {@link QuestionnaireDTO} is allowed. Provides specific reasons if editing is not
+     * allowed.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} to check.
-     * @return A {@link Pair} containing a boolean indicating if editing is allowed.
-     *         and a message explaining why editing is not allowed (if applicable).
+     * @return A {@link Pair} containing a boolean indicating if editing is allowed. and a message explaining why
+     * editing is not allowed (if applicable).
      */
     public Pair<Boolean, String> canEditQuestionnaireWithReason(QuestionnaireDTO questionnaireDTO) {
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
@@ -268,17 +279,17 @@ public class QuestionnaireService {
      */
     private SortedMap<String, String> processLocalizedMap(SortedMap<String, String> localizedTextMap) {
         return localizedTextMap.entrySet().stream()
-                .peek(entry -> {
-                    if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
-                        entry.setValue("");
-                    }
-                })
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        TreeMap::new
-                ));
+            .peek(entry -> {
+                if ("<p><br></p>".equals(entry.getValue()) || "<br>".equals(entry.getValue())) {
+                    entry.setValue("");
+                }
+            })
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (e1, e2) -> e1,
+                TreeMap::new
+            ));
     }
 
     /**
@@ -300,7 +311,7 @@ public class QuestionnaireService {
     private boolean isQuestionnairePartOfEnabledBundle(Questionnaire questionnaire) {
         List<BundleQuestionnaire> bundleQuestionnaires = bundleService.findByQuestionnaireId(questionnaire.getId());
         for (BundleQuestionnaire bundleQuestionnaire : bundleQuestionnaires) {
-            if(bundleQuestionnaire.getIsEnabled()){
+            if (bundleQuestionnaire.getIsEnabled()) {
                 return true;
             }
         }
@@ -308,8 +319,8 @@ public class QuestionnaireService {
     }
 
     /**
-     * Creates a new {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
-     * This includes setting the initial details and handling logo upload.
+     * Creates a new {@link Questionnaire} based on the given {@link QuestionnaireDTO}. This includes setting the
+     * initial details and handling logo upload.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
      * @param logo             The logo file associated with the questionnaire.
@@ -318,10 +329,10 @@ public class QuestionnaireService {
      */
     private Questionnaire createNewQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
-                questionnaireDTO.getName(),
-                questionnaireDTO.getDescription(),
-                userId,
-                Boolean.TRUE
+            questionnaireDTO.getName(),
+            questionnaireDTO.getDescription(),
+            userId,
+            Boolean.TRUE
         );
         if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             newQuestionnaire.setStatusApprove();
@@ -337,15 +348,16 @@ public class QuestionnaireService {
     }
 
     /**
-     * Updates an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
-     * This includes setting the updated details and handling logo upload.
+     * Updates an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}. This includes setting the
+     * updated details and handling logo upload.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
      * @param logo             The logo file associated with the questionnaire.
      * @param userId           The ID of the user performing the action.
      * @return The updated {@link Questionnaire}.
      */
-    private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+    private Questionnaire updateExistingQuestionnaire(QuestionnaireDTO questionnaireDTO, MultipartFile logo,
+        Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
 
         existingQuestionnaire.setDescription(questionnaireDTO.getDescription());
@@ -362,8 +374,8 @@ public class QuestionnaireService {
     }
 
     /**
-     * Creates a copy of an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}.
-     * This includes setting the new version, copying questions, and handling logo upload.
+     * Creates a copy of an existing {@link Questionnaire} based on the given {@link QuestionnaireDTO}. This includes
+     * setting the new version, copying questions, and handling logo upload.
      *
      * @param questionnaireDTO The {@link QuestionnaireDTO} containing the questionnaire data.
      * @param logo             The logo file associated with the questionnaire.
@@ -374,10 +386,10 @@ public class QuestionnaireService {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(
-                newName,
-                questionnaireDTO.getDescription(),
-                userId,
-                Boolean.TRUE
+            newName,
+            questionnaireDTO.getDescription(),
+            userId,
+            Boolean.TRUE
         );
         if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
             newQuestionnaire.setStatusApprove();
@@ -385,8 +397,10 @@ public class QuestionnaireService {
 
         questionnaireDao.merge(newQuestionnaire);
 
-        newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(), newQuestionnaire);
-        MapHolder questionCopyMaps = questionService.getMappingForDuplicatedQuestions(existingQuestionnaire, newQuestionnaire);
+        newQuestionnaire = questionService.duplicateQuestionsToNewQuestionnaire(existingQuestionnaire.getQuestions(),
+            newQuestionnaire);
+        MapHolder questionCopyMaps = questionService.getMappingForDuplicatedQuestions(existingQuestionnaire,
+            newQuestionnaire);
         Map<Question, Question> questionMap = questionCopyMaps.questionMap();
         Map<Question, Map<Answer, Answer>> oldQuestionToNewAnswerMap = questionCopyMaps.oldQuestionToNewAnswerMap();
 
@@ -406,29 +420,31 @@ public class QuestionnaireService {
         questionnaireVersionGroupService.addQuestionnaireToGroup(existingGroup, newQuestionnaire);
 
         questionnaireDao.merge(newQuestionnaire);
-        
+
         //Apparently Conditions are already persisted with the previous merge command
         //for(Condition condition : clonedConditions)
         //    conditionService.mergeCondition(conditionDTOMapper.apply(condition));
-        
+
         return newQuestionnaire;
     }
 
 
     /**
-     * Sets the version for the new {@link Questionnaire} based on the existing {@link Questionnaire}.
-     * If the existing questionnaire is part of a group, the new version will be incremented based on the maximum version in the group.
+     * Sets the version for the new {@link Questionnaire} based on the existing {@link Questionnaire}. If the existing
+     * questionnaire is part of a group, the new version will be incremented based on the maximum version in the group.
      * If not, the new version will be incremented based on the version of the existing questionnaire.
      *
      * @param newQuestionnaire      The new {@link Questionnaire} to set the version for.
      * @param existingQuestionnaire The existing {@link Questionnaire} used as a reference for the version.
      * @throws IllegalStateException    if the new questionnaire has not been persisted (i.e., its ID is null).
-     * @throws IllegalArgumentException if the existing questionnaire is null or has not been persisted (i.e., its ID is null).
+     * @throws IllegalArgumentException if the existing questionnaire is null or has not been persisted (i.e., its ID is
+     *                                  null).
      */
     private void setVersionForNewQuestionnaire(Questionnaire newQuestionnaire, Questionnaire existingQuestionnaire) {
         // Ensure the new questionnaire is persisted
         if (newQuestionnaire.getId() == null) {
-            throw new IllegalStateException("The new questionnaire must be persisted before saving versioning information.");
+            throw new IllegalStateException(
+                "The new questionnaire must be persisted before saving versioning information.");
         }
 
         // Ensure the existing questionnaire is not null and is persisted
@@ -437,7 +453,8 @@ public class QuestionnaireService {
         }
 
         int version;
-        Optional<QuestionnaireVersionGroup> groupForQuestionnaire = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> groupForQuestionnaire = questionnaireVersionGroupService.findGroupForQuestionnaire(
+            existingQuestionnaire);
 
         if (groupForQuestionnaire.isPresent()) {
             int maxVersionInGroup = groupForQuestionnaire.get().getHighestVersionInGroup();
@@ -451,15 +468,16 @@ public class QuestionnaireService {
 
 
     /**
-     * Copies scores from the original questionnaire to the new questionnaire.
-     * This method should handle the copying in memory and return a set of copied scores.
+     * Copies scores from the original questionnaire to the new questionnaire. This method should handle the copying in
+     * memory and return a set of copied scores.
      *
-     * @param originalScores  The set of original scores to copy.
+     * @param originalScores   The set of original scores to copy.
      * @param newQuestionnaire The new questionnaire to which scores are being copied.
      * @param questionMap      A map of original questions to copied questions.
      * @return A set of copied scores.
      */
-    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire, Map<Question, Question> questionMap) {
+    private Set<Score> copyScores(Set<Score> originalScores, Questionnaire newQuestionnaire,
+        Map<Question, Question> questionMap) {
         Set<Score> copiedScores = new HashSet<>();
         Map<Score, Score> scoreMap = new HashMap<>();
 
@@ -481,21 +499,23 @@ public class QuestionnaireService {
     }
 
     /**
-     * Copies a set of {@link ExportTemplate} objects from the source to a new destination while modifying
-     * the filenames to include the new {@link Questionnaire} ID. Each copied export template's data is cloned
-     * from the existing templates, but associated with a new {@link Questionnaire} and stored under a newly generated filename.
-     * The method also copies the file data from the old storage path to a new path with the new filename.
+     * Copies a set of {@link ExportTemplate} objects from the source to a new destination while modifying the filenames
+     * to include the new {@link Questionnaire} ID. Each copied export template's data is cloned from the existing
+     * templates, but associated with a new {@link Questionnaire} and stored under a newly generated filename. The
+     * method also copies the file data from the old storage path to a new path with the new filename.
      *
-     * @param exportTemplates the set of {@link ExportTemplate} to be copied.
+     * @param exportTemplates  the set of {@link ExportTemplate} to be copied.
      * @param newQuestionnaire the {@link Questionnaire} to associate with the copied export templates.
      * @return a {@link Set} of {@link ExportTemplate} that contains the cloned copies of the provided export templates.
      */
-    public Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates, Questionnaire newQuestionnaire){
+    public Set<ExportTemplate> copyExportTemplates(Set<ExportTemplate> exportTemplates,
+        Questionnaire newQuestionnaire) {
         Set<ExportTemplate> copiedExportTemplates = new HashSet<>();
-        for(ExportTemplate templateToCopy : exportTemplates){
+        for (ExportTemplate templateToCopy : exportTemplates) {
             ExportTemplate copiedTemplate = createExportTemplate(templateToCopy, newQuestionnaire);
             exportTemplateDao.merge(copiedTemplate);  // Persist to DB to get the ID
-            String newFileName = fileUtils.generateFileNameForExportTemplate(templateToCopy.getFilename(), copiedTemplate.getId());
+            String newFileName = fileUtils.generateFileNameForExportTemplate(templateToCopy.getFilename(),
+                copiedTemplate.getId());
             copiedTemplate.setFilename(newFileName);
             try {
                 // Copy the file
@@ -519,14 +539,15 @@ public class QuestionnaireService {
      * it with a new {@link Questionnaire}. The ID is not copied, and a new ID will be generated when the new template
      * is persisted in the database.
      *
-     * @param templateToCopy the {@link ExportTemplate} that should be copied.
+     * @param templateToCopy   the {@link ExportTemplate} that should be copied.
      * @param newQuestionnaire the {@link Questionnaire} that will be associated with the new template.
-     * @return a new {@link ExportTemplate} instance with the same attributes as the original, but associated with the provided {@link Questionnaire}.
+     * @return a new {@link ExportTemplate} instance with the same attributes as the original, but associated with the
+     * provided {@link Questionnaire}.
      */
     private ExportTemplate createExportTemplate(ExportTemplate templateToCopy, Questionnaire newQuestionnaire) {
         ExportTemplate newExportTemplate = new ExportTemplate();
         newExportTemplate.setName(templateToCopy.getName());
-        if(templateToCopy.getOriginalFilename() != null){
+        if (templateToCopy.getOriginalFilename() != null) {
             newExportTemplate.setOriginalFilename(templateToCopy.getOriginalFilename());
         }
         newExportTemplate.setExportTemplateType(templateToCopy.getExportTemplateType());
@@ -538,8 +559,8 @@ public class QuestionnaireService {
     /**
      * Copies the localized text fields from the {@link QuestionnaireDTO} to the {@link Questionnaire}.
      *
-     * @param questionnaire      The target {@link Questionnaire} to copy text to.
-     * @param questionnaireDTO   The source {@link QuestionnaireDTO} containing the text.
+     * @param questionnaire    The target {@link Questionnaire} to copy text to.
+     * @param questionnaireDTO The source {@link QuestionnaireDTO} containing the text.
      */
     private void copyLocalizedTextsToQuestionnaire(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO) {
         if (questionnaire == null || questionnaireDTO == null) {
@@ -551,8 +572,8 @@ public class QuestionnaireService {
         questionnaire.setLocalizedFinalText(new TreeMap<>(questionnaireDTO.getLocalizedFinalText()));
     }
 
-    public Boolean hasQuestionnaireConditions(Questionnaire questionnaire){
-        if (questionnaire == null){
+    public Boolean hasQuestionnaireConditions(Questionnaire questionnaire) {
+        if (questionnaire == null) {
             return false;
         }
         for (Question originalQuestion : questionnaire.getQuestions()) {
@@ -564,26 +585,27 @@ public class QuestionnaireService {
         }
         return false;
     }
+
     /**
      * Handles the upload and deletion of the questionnaire's logo.
      *
-     * @param questionnaire      The {@link Questionnaire} entity to update.
-     * @param questionnaireDTO   The {@link QuestionnaireDTO} containing the logo information.
-     * @param logo               The {@link MultipartFile} containing the new logo file.
+     * @param questionnaire    The {@link Questionnaire} entity to update.
+     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the logo information.
+     * @param logo             The {@link MultipartFile} containing the new logo file.
      */
     public void handleLogoUpload(Questionnaire questionnaire, QuestionnaireDTO questionnaireDTO, MultipartFile logo) {
         try {
             String imagePath = configurationDao.getImageUploadPath() + "/" + Constants.IMAGE_QUESTIONNAIRE + "/"
                 + questionnaire.getId().toString();
-            
+
             if (questionnaireDTO.isDeleteLogo() || !logo.isEmpty()) {
                 deleteExistingLogo(questionnaire, imagePath);
             }
-            
+
             if (!logo.isEmpty()) {
                 uploadNewLogo(questionnaire, logo, imagePath);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Could not upload file", e);
         }
     }
@@ -604,14 +626,15 @@ public class QuestionnaireService {
         if (!uploadDir.exists() && !uploadDir.mkdirs()) {
             LOGGER.warn("Failed to create directory for questionnaire with id {}", questionnaire.getId());
         }
-        
+
         File uploadFile = new File(imagePath, logoFilename);
         try {
             BufferedImage uploadImage = ImageIO.read(logo.getInputStream());
             BufferedImage resizedImage = GraphicsUtilities.resizeImage(uploadImage, 300);
             ImageIO.write(resizedImage, logoExtension, uploadFile);
         } catch (IOException ex) {
-            LOGGER.error("Error uploading the picture for the questionnaire with id {}: {}", questionnaire.getId(), ex.getLocalizedMessage());
+            LOGGER.error("Error uploading the picture for the questionnaire with id {}: {}", questionnaire.getId(),
+                ex.getLocalizedMessage());
         }
     }
 
@@ -634,7 +657,7 @@ public class QuestionnaireService {
     /**
      * Generates a unique name for the new questionnaire version.
      *
-     * @param questionnaireDTO The {@link QuestionnaireDTO} containing the new name.
+     * @param questionnaireDTO      The {@link QuestionnaireDTO} containing the new name.
      * @param existingQuestionnaire The existing {@link Questionnaire} to be copied.
      * @return The unique name for the new questionnaire version.
      */
@@ -668,7 +691,8 @@ public class QuestionnaireService {
      * @return The next available version number.
      */
     private int determineNextAvailableVersion(Questionnaire existingQuestionnaire) {
-        Optional<QuestionnaireVersionGroup> group = questionnaireVersionGroupService.findGroupForQuestionnaire(existingQuestionnaire);
+        Optional<QuestionnaireVersionGroup> group = questionnaireVersionGroupService.findGroupForQuestionnaire(
+            existingQuestionnaire);
         if (group.isPresent()) {
             return group.get().getHighestVersionInGroup() + 1;
         } else {
@@ -708,10 +732,10 @@ public class QuestionnaireService {
      * @param originalExpression The original {@link Expression} to copy.
      * @param questionMap        The map of original to copied {@link Question} objects.
      * @param scoreMap           The map of original to copied {@link Score} objects.
-     *
      * @return The copied {@link Expression}.
      */
-    private Expression copyExpression(Expression originalExpression, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+    private Expression copyExpression(Expression originalExpression, Map<Question, Question> questionMap,
+        Map<Score, Score> scoreMap) {
         if (originalExpression instanceof UnaryExpression unary) {
             return copyUnaryExpression(unary, questionMap, scoreMap);
         } else if (originalExpression instanceof BinaryExpression binary) {
@@ -731,7 +755,8 @@ public class QuestionnaireService {
      * @param scoreMap      The map of original to copied {@link Score} objects.
      * @return The copied {@link UnaryExpression}.
      */
-    private UnaryExpression copyUnaryExpression(UnaryExpression originalUnary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+    private UnaryExpression copyUnaryExpression(UnaryExpression originalUnary, Map<Question, Question> questionMap,
+        Map<Score, Score> scoreMap) {
         UnaryExpression copyUnary = new UnaryExpression();
         copyUnary.setOperator((UnaryOperator) originalUnary.getOperator());
         if (originalUnary.getQuestion() != null) {
@@ -752,7 +777,8 @@ public class QuestionnaireService {
      * @param scoreMap       The map of original to copied {@link Score} objects.
      * @return The copied {@link BinaryExpression}.
      */
-    private BinaryExpression copyBinaryExpression(BinaryExpression originalBinary, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+    private BinaryExpression copyBinaryExpression(BinaryExpression originalBinary, Map<Question, Question> questionMap,
+        Map<Score, Score> scoreMap) {
         BinaryExpression copyBinary = new BinaryExpression();
         copyBinary.setOperator((BinaryOperator) originalBinary.getOperator());
         List<Expression> copiedChildren = new ArrayList<>();
@@ -773,7 +799,8 @@ public class QuestionnaireService {
      * @param scoreMap      The map of original to copied {@link Score} objects.
      * @return The copied {@link MultiExpression}.
      */
-    private MultiExpression copyMultiExpression(MultiExpression originalMulti, Map<Question, Question> questionMap, Map<Score, Score> scoreMap) {
+    private MultiExpression copyMultiExpression(MultiExpression originalMulti, Map<Question, Question> questionMap,
+        Map<Score, Score> scoreMap) {
         MultiExpression copyMulti = new MultiExpression();
         copyMulti.setOperator((MultiOperator) originalMulti.getOperator());
         List<Expression> copiedChildren = new ArrayList<>();
@@ -785,23 +812,34 @@ public class QuestionnaireService {
         copyMulti.setExpressions(copiedChildren);
         return copyMulti;
     }
-    
+
     /**
-     * Returns a set of unique {@link Questionnaire}-IDs for a list of {@link Questionnaire}
-     * instances
+     * Returns a set of unique {@link Questionnaire}-IDs for a list of {@link Questionnaire} instances
+     *
      * @param questionnaires to get ids for
      * @return {@link Set} with Ids
      */
     public Set<Long> getUniqueQuestionnaireIds(List<Questionnaire> questionnaires) {
         Set<Long> resultSet = new HashSet<>();
-        for (Questionnaire questionnaire: questionnaires) {
+        for (Questionnaire questionnaire : questionnaires) {
             resultSet.add(questionnaire.getId());
         }
         return resultSet;
     }
-    
+
+    public Set<String> getUniqueLanguages(Questionnaire questionnaire) {
+        Set<String> resultSet = new HashSet<>();
+
+        for (Question question: questionnaire.getQuestions()) {
+            resultSet.addAll(question.getLocalizedQuestionText().keySet());
+        }
+
+        return resultSet;
+    }
+
     /**
      * Returns the list of questionnaires sorted by their id property (ascending)
+     *
      * @param questionnaires to sort
      * @return List<Questionnaire>
      */
@@ -809,9 +847,10 @@ public class QuestionnaireService {
         questionnaires.sort((q1, q2) -> Long.compare(q1.getId(), q2.getId()));
         return questionnaires;
     }
-    
+
     /**
      * Returns the list of questionnaires sorted by their id property (descending)
+     *
      * @param questionnaires to sort
      * @return List<Questionnaire>
      */
@@ -819,9 +858,10 @@ public class QuestionnaireService {
         questionnaires.sort((q1, q2) -> Long.compare(q2.getId(), q1.getId()));
         return questionnaires;
     }
-    
+
     /**
      * Returns the list of questionnaires sorted by their createdAt property (ascending)
+     *
      * @param questionnaires to sort
      * @return sorted List<Questionnaire>
      */
@@ -829,14 +869,27 @@ public class QuestionnaireService {
         questionnaires.sort((q1, q2) -> q1.getCreatedAt().compareTo(q2.getCreatedAt()));
         return questionnaires;
     }
-    
+
     /**
      * Returns the list of questionnaires sorted by their createdAt property (descending)
+     *
      * @param questionnaires to sort
      * @return sorted List<Questionnaire>
      */
     public List<Questionnaire> sortQuestionnairesByCreatedAtDesc(List<Questionnaire> questionnaires) {
         questionnaires.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+        return questionnaires;
+    }
+
+
+    /**
+     * Returns the list of questionnaires sorted by their name property (ascending).
+     *
+     * @param questionnaires to sort
+     * @return sorted List<Questionnaire>
+     */
+    public List<Questionnaire> sortQuestionnairesByNameAsc(List<Questionnaire> questionnaires) {
+        questionnaires.sort(Comparator.comparing(Questionnaire::getName));
         return questionnaires;
     }
 
@@ -852,21 +905,21 @@ public class QuestionnaireService {
     public void disapproveQuestionnaire(Long questionnaireId, Locale locale) {
         if (!authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
             throw new AccessDeniedException(
-                    messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
+                messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
         }
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
         if (questionnaire == null){
             throw new EntityNotFoundException(messageSource.getMessage(
-                    "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
+                "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
         }
         if (!questionnaire.isApproved()){
             throw new IllegalStateException(messageSource.getMessage(
-                    "questionnaire.error.notApproved", null, locale));
+                "questionnaire.error.notApproved", null, locale));
         }
 
         if (isQuestionnairePartOfEnabledBundle(questionnaire)){
             throw new IllegalStateException(messageSource.getMessage(
-                    "questionnaire.error.enabledBundle", new Object[]{questionnaire.getName()}, locale));
+                "questionnaire.error.enabledBundle", new Object[]{questionnaire.getName()}, locale));
         }
         questionnaire.setStatusDraft();
         questionnaireDao.merge(questionnaire);
@@ -876,12 +929,12 @@ public class QuestionnaireService {
     public void approveQuestionnaire(Long questionnaireId, Locale locale) {
         if (!authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
             throw new AccessDeniedException(
-                    messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
+                messageSource.getMessage("questionnaire.error.unauthorized", null, locale));
         }
         Questionnaire questionnaire = questionnaireDao.getElementById(questionnaireId);
         if (questionnaire == null){
             throw new EntityNotFoundException(messageSource.getMessage(
-                    "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
+                "questionnaire.error.notFound", new Object[]{questionnaireId}, locale));
         }
         questionnaire.setStatusApprove();
         questionnaireDao.merge(questionnaire);
@@ -905,19 +958,20 @@ public class QuestionnaireService {
 
         if (!questionnaire.isDeletable()){
             return Pair.of(false,
-                    messageSource.getMessage("questionnaire.error.deleteQuestionnaireNotPossible", new Object[]{questionnaire.getName()}, locale)
+                messageSource.getMessage("questionnaire.error.deleteQuestionnaireNotPossible", new Object[]{questionnaire.getName()}, locale)
             );
         }
 
         if (!questionnaire.getCreatedBy().equals(currentUserId) && !authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)){
             return Pair.of(false,
-                    messageSource.getMessage("questionnaire.error.unauthorized", new Object[]{questionnaireId}, locale)
+                messageSource.getMessage("questionnaire.error.unauthorized", new Object[]{questionnaireId}, locale)
             );
         }
 
         // Delete the associated conditions
         conditionDao.getConditionsByTarget(questionnaire).forEach(condition -> {
-            if (condition instanceof SelectAnswerCondition || condition instanceof SliderAnswerThresholdCondition) {
+            if (condition instanceof SelectAnswerCondition
+                || condition instanceof SliderAnswerThresholdCondition) {
                 // Refresh the trigger so that multiple conditions of the same trigger will be deleted correctly
                 ConditionTrigger conditionTrigger = answerDao.getElementById(condition.getTrigger().getId());
                 conditionTrigger.removeCondition(condition);
@@ -959,7 +1013,8 @@ public class QuestionnaireService {
         questionnaireDao.remove(questionnaire);
 
         return Pair.of(true,
-                messageSource.getMessage("questionnaire.error.deleteQuestionnairePossible", new Object[]{questionnaire.getName()}, locale)
+            messageSource.getMessage("questionnaire.error.deleteQuestionnairePossible", new Object[]{questionnaire.getName()}, locale)
         );
     }
+
 }

@@ -61,7 +61,7 @@ public class Encounter implements Serializable {
     private String uuid = UUIDGenerator.createUUID();
     @JsonIgnore
     @Column(name = "patient_id")
-    private Long patientID; //ORBIS patient number, exclusively for export
+    private Long patientID; // patient number, exclusively for export
 
     @Column(name = "bundle_language")
     private String bundleLanguage;
@@ -79,7 +79,7 @@ public class Encounter implements Serializable {
     @NotNull(message = "{encounter.caseNumber.notNull}")
     @NotEmpty(message = "{encounter.caseNumber.notEmpty}")
     @Column(name = "case_number", nullable = false)
-    private String caseNumber; // ORBIS case number or study number
+    private String caseNumber; // case number or study number
     @OneToMany(mappedBy = "encounter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Response> responses = new HashSet<>();
     @Column(name = "last_seen_question_id")
@@ -328,10 +328,14 @@ public class Encounter implements Serializable {
      *                   <code>null</code>. Must not be empty (after trimming).
      */
     public void setCaseNumber(final String caseNumber) {
-        assert caseNumber != null : "The given case number is null";
-        assert !caseNumber.trim().isEmpty() :
-            "The given case number is empty (after" + " trimming)";
-        this.caseNumber = caseNumber.trim();
+        if (caseNumber == null) {
+            throw new IllegalArgumentException("The given case number is null");
+        }
+        String trimmedCaseNumber = caseNumber.trim();
+        if (trimmedCaseNumber.isEmpty()) {
+            throw new IllegalArgumentException("The given case number is empty (after trimming)");
+        }
+        this.caseNumber = trimmedCaseNumber;
     }
 
     /**

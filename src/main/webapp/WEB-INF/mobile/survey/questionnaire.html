@@ -218,6 +218,11 @@
 		var defaultLanguage =
 			/*[[${configurationDao?.defaultLanguage != null} ? ${configurationDao.defaultLanguage} : 'en_GB']]*/ "en_GB";
 
+		/*[- Get the performExportTest flag. Variable is used in survey.js -]*/
+		var performExportTest =
+				/*[[${performExportTest != null ? performExportTest : false}]]*/ false;
+
+
 		/*[- Merge the JSON String into the Encounter object, and perform a deep copy (first parameter). -]*/
 		var encounter = $.extend(
 			true,
@@ -226,6 +231,8 @@
 		);
 		/*[- Mark the encounter as incomplete -]*/
 		encounter.isCompleted = false;
+
+		encounter.caseNumber = /*[[${encounterDTO.caseNumber}]]*/ "test";
 
 		$(function () {
 			/*[- Wait for the page to be loaded to that the jQuery selector has something to select -]*/

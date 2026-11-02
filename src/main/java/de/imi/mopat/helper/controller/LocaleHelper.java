@@ -1,9 +1,12 @@
 package de.imi.mopat.helper.controller;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -93,4 +96,60 @@ public class LocaleHelper {
         }
         return locale;
     }
+
+    /**
+     * Formats a {@link Timestamp} object into a date string.
+     * Uses "dd-MM-yyyy" format for German locale, otherwise ISO "yyyy-MM-dd".
+     *
+     * @param timestamp the {@link Timestamp} to format
+     * @return formatted date string
+     */
+    public static String formatDate(Timestamp timestamp) {
+        if (timestamp == null) {
+            throw new NullPointerException("Timestamp cannot be null.");
+        }
+        Locale locale = Locale.getDefault();
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(timestamp);
+    }
+
+    /**
+     * Formats a {@link Date} object into a date string.
+     * Uses "dd-MM-yyyy" format for German locale, otherwise ISO "yyyy-MM-dd".
+     *
+     * @param date the {@link Date} to format
+     * @return formatted date string
+     */
+    public static String formatDate(Date date) {
+        if (date == null) {
+            throw new NullPointerException("Date cannot be null.");
+        }
+        Locale locale = Locale.getDefault();
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy" : "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(date);
+    }
+
+    /**
+     * Formats a {@link Timestamp} object into a date-time string.
+     * Uses "dd-MM-yyyy'T'HH:mm:ss" format for German locale, otherwise ISO "yyyy-MM-dd'T'HH:mm:ss".
+     *
+     * @param timestamp the {@link Timestamp} to format
+     * @return formatted date-time string
+     */
+    public static String formatDateTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            throw new NullPointerException("Timestamp cannot be null.");
+        }
+        Locale locale = Locale.getDefault();
+        String pattern = isGermanLocale(locale) ? "dd.MM.yyyy' - 'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm:ss";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(timestamp);
+    }
+
+    private static boolean isGermanLocale(Locale locale) {
+        return locale != null && ("de".equals(locale.getLanguage()) || Locale.GERMANY.equals(locale));
+    }
+
 }

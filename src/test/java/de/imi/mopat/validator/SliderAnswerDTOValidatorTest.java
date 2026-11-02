@@ -12,8 +12,8 @@ import de.imi.mopat.model.dto.AnswerDTO;
 import de.imi.mopat.utils.Helper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,5 +220,44 @@ public class SliderAnswerDTOValidatorTest {
         assertEquals(
             "Validation of sliderAnswerDTO failed for invalid instance with minValue null. The returned error message didn't match the expected one.",
             message, testErrorMessage);
+//        case 7: localizedMinimum and MaximumText longer than 255 characters
+        result = new MapBindingResult(new HashMap<>(),
+                Helper.getRandomAlphabeticString(random.nextInt(13)));
+
+        SortedMap<String,String> textTooLong = new TreeMap<>();
+        textTooLong.put("de_DE", "abc".repeat(100));
+        answerDTO.setMinValue(0.0);
+        answerDTO.setMaxValue(10.0);
+        answerDTO.setStepsize("1");
+
+        answerDTO.setLocalizedMinimumText(textTooLong);
+
+        sliderAnswerDTOValidator.validate(answerDTO, result);
+
+        assertTrue("Validation of sliderAnswerDTO failed for invalid instance with LocalizedMaximumText longer than 255 characters." +
+                "The result hasn't caught errors except it was expected to do.", result.hasErrors());
+
+        message = messageSource.getMessage(
+                "sliderAnswer.validator.localizedMinMaxText",
+                new Object[]{}, LocaleContextHolder.getLocale()
+        );
+        testErrorMessage = result.getAllErrors().get(0).getDefaultMessage();
+        assertEquals("Validation of sliderAnswerDTO failed for invalid instance with LocalizedMaximumText longer than 255 characters.", message, testErrorMessage);
+
+
+        //MaximumText
+        result = new MapBindingResult(new HashMap<>(), "answerDTO");
+        answerDTO.setLocalizedMinimumText(null);
+        answerDTO.setLocalizedMaximumText(textTooLong);
+
+
+        sliderAnswerDTOValidator.validate(answerDTO, result);
+
+        assertTrue("Validation of sliderAnswerDTO failed for invalid instance with LocalizedMaximumText longer than 255 characters." +
+                "The result hasn't caught errors except it was expected to do.", result.hasErrors());
+
+        testErrorMessage = result.getAllErrors().get(0).getDefaultMessage();
+        assertEquals("Validation of sliderAnswerDTO failed for invalid instance with LocalizedMaximumText longer than 255 characters.", message, testErrorMessage);
+
     }
 }
