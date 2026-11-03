@@ -18,6 +18,7 @@ import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
@@ -143,6 +144,8 @@ public class QuestionnaireController {
     private ReviewService reviewService;
 
     private final DocumentParser documentParser = new DocumentParser();
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
 
     /**
@@ -269,6 +272,24 @@ public class QuestionnaireController {
             hasQuestionnaireConditions);
 
         return "redirect:/question/list?id=" + questionnaire.getId();
+    }
+
+    @RequestMapping(value = "/questionnaire/newVersion")
+    @PreAuthorize("hasRole('ROLE_EDITOR')")
+    public String duplicate(@ModelAttribute("id") final Long id) {
+        Questionnaire questionnaireToCopy = questionnaireDao.getElementById(id);
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaireToCopy);
+
+        Long principalId = authService.getAuthenticatedUserId();
+
+        Questionnaire newVersion = questionnaireService
+            .createQuestionnaireCopy(
+                questionnaireDTO,
+            null,
+                principalId
+        );
+
+        return "redirect:/questionnaire/fill?id=" + newVersion.getId();
     }
 
     /**
