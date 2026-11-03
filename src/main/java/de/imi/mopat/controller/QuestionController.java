@@ -7,7 +7,9 @@ import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.model.QuestionDTOMapper;
 import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.model.*;
+import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.QuestionType;
 import de.imi.mopat.model.conditions.Condition;
 import de.imi.mopat.model.conditions.ConditionTrigger;
@@ -92,6 +94,8 @@ public class QuestionController {
             equalQuestionTypesSelect);
     @Autowired
     private BundleService bundleService;
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
 
     public ConditionDao getConditionDao() {
         return this.conditionDao;
@@ -181,13 +185,15 @@ public class QuestionController {
         Pair<Map<String, Long>, Map<String, Long>> availableBundlesSplitIntoAssignedAndUnassigned =
             bundleService.getAvailableBundlesSplitIntoAssignedAndUnassigned(questionnaire);
 
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
+
         model.addAttribute("assignedBundles",
             availableBundlesSplitIntoAssignedAndUnassigned.getLeft());
         model.addAttribute("unassignedBundles",
             availableBundlesSplitIntoAssignedAndUnassigned.getRight());
         model.addAttribute("languages", questionnaire.getAvailableQuestionLanguages());
         model.addAttribute("localizedQuestionTextsForQuestion", localizedQuestionTextsForQuestion);
-        model.addAttribute("questionnaire", questionnaire);
+        model.addAttribute("questionnaire", questionnaireDTO);
         return "question/list";
     }
 

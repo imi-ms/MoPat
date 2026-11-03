@@ -5,6 +5,7 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
@@ -17,6 +18,8 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.enumeration.FhirVersion;
+import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +30,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +58,8 @@ public class FhirImporter {
     private QuestionnaireVersionGroupService questionnaireVersionGroupService;
     @Autowired
     FhirVersionHelper fhirVersionHelper;
+    @Autowired
+    AuthService authService;
 
     /**
      * Function to handle the file upload of a FHIR questionnaire document. Determines the FHIR
@@ -165,13 +171,18 @@ public class FhirImporter {
                 String.format("%s %s", questionnaire.getName(), currentTimestamp));
         }
 
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        questionnaire.setChangedBy(currentUser.getId());
+        questionnaire.setCreatedBy(currentUser.getId());
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+            questionnaire.setStatusApprove();
+        }
+
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup group = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(
+            questionnaire);
         questionnaire.setQuestionnaireVersionGroup(group);
-        group.addQuestionnaire(questionnaire);
-        questionnaireVersionGroupService.add(group);
 
         for (ExportTemplate exportTemplate : templates) {
             exportTemplate.setQuestionnaire(questionnaire);

@@ -61,6 +61,7 @@ public class QuestionDTOMapper implements Function<Question, QuestionDTO> {
         questionDTO.setQuestionnaireId(question.getQuestionnaire().getId());
         questionDTO.setAnswers(answerDTOs);
         questionDTO.setBodyPartImages(images);
+        questionDTO.setHasConditionsAsTarget(question.hasConditionsAsTarget());
         questionDTO.setImageType(determineImageType(images));
         return questionDTO;
     }

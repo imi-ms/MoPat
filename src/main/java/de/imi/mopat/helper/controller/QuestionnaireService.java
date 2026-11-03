@@ -61,6 +61,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -382,7 +383,8 @@ public class QuestionnaireService {
      * @param userId           The ID of the user performing the action.
      * @return The newly created copy of the {@link Questionnaire}.
      */
-    private Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO, MultipartFile logo, Long userId) {
+    public Questionnaire createQuestionnaireCopy(QuestionnaireDTO questionnaireDTO,
+        MultipartFile logo, Long userId) {
         Questionnaire existingQuestionnaire = questionnaireDao.getElementById(questionnaireDTO.getId());
         String newName = generateUniqueName(questionnaireDTO, existingQuestionnaire);
         Questionnaire newQuestionnaire = questionnaireFactory.createQuestionnaire(

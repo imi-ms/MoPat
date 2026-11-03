@@ -4,6 +4,7 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
@@ -13,6 +14,7 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODM;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionFormDef;
 import de.unimuenster.imi.org.cdisc.odm.v132.ODMcomplexTypeDefinitionMetaDataVersion;
@@ -58,6 +60,9 @@ public class OdmQuestionnaireImporter {
 
     @Autowired
     private StringUtilities stringUtilityHelper;
+
+    @Autowired
+    private AuthService authService;
 
     public ImportQuestionnaireResult importOdmQuestionnaire(MultipartFile file, List<String> errorMessages) {
         Questionnaire questionnaire;
@@ -158,13 +163,19 @@ public class OdmQuestionnaireImporter {
                 LocaleContextHolder.getLocale()).format(Calendar.getInstance().getTime());
             questionnaire.setName(questionnaire.getName() + " " + timestamp);
         }
+
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        questionnaire.setChangedBy(currentUser.getId());
+        questionnaire.setCreatedBy(currentUser.getId());
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+            questionnaire.setStatusApprove();
+        }
+
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup versionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup versionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(
+            questionnaire);
         questionnaire.setQuestionnaireVersionGroup(versionGroup);
-        versionGroup.addQuestionnaire(questionnaire);
-        questionnaireVersionGroupService.add(versionGroup);
 
         for (ExportTemplate exportTemplate : exportTemplates) {
             exportTemplate.setQuestionnaire(questionnaire);
