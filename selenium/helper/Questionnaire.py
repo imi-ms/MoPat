@@ -43,6 +43,8 @@ class QuestionnaireSelectors:
     SEARCH_BOX = (By.CSS_SELECTOR, "#questionnaireTable_filter input[type='search']")
     ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > div.btn-group > a.link")
     LANGUAGE_FLAG_ICONS = (By.CSS_SELECTOR, ".languageLabel img")
+    QUESTIONNAIRE_STATUS_BADGE = lambda questionnaire_id, status_class: (
+        By.CSS_SELECTOR, f"tr#{questionnaire_id} .badge.{status_class}")
 
 class QuestionnaireHelper:
 
@@ -241,6 +243,26 @@ class QuestionnaireHelper:
 
 
 class QuestionnaireAssertHelper(QuestionnaireHelper):
+
+    def assert_questionnaire_status(self, questionnaire_id, questionnaire_name, expected_status):
+        status_classes = {
+            "draft": "btn-red",
+            "under_review": "btn-yellow",
+            "approved": "btn-green"
+        }
+        if expected_status not in status_classes:
+            raise ValueError(f"Unknown questionnaire status: {expected_status}")
+
+        self.navigation_helper.navigate_to_manage_questionnaires()
+        search_box = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(
+            QuestionnaireSelectors.SEARCH_BOX))
+        search_box.clear()
+        search_box.send_keys(questionnaire_name)
+        status_badge = WebDriverWait(self.driver, 15).until(EC.visibility_of_element_located(
+            QuestionnaireSelectors.QUESTIONNAIRE_STATUS_BADGE(
+                questionnaire_id, status_classes[expected_status])))
+        assert status_badge.is_displayed(), (
+            f"Questionnaire {questionnaire_id} does not have status '{expected_status}'.")
 
     def assert_questionnaire_list(self):
         try:

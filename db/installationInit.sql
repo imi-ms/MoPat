@@ -384,7 +384,10 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
 
 INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`, `use_pin`, `pin`) VALUES
 (1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1, 0, NULL),
-(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1, 0, NULL);
+(2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1, 0, NULL),
+(3, 1, 'moderator', '$2a$10$yGj12GpHVRDE520RmMWlDOymMka21yv3MNPwk8tfGNr8uuS27vSc6', null, '02823dd4-09f0-4518-9999-d3da45107669', 'moderator@mopat.com', 'Moderator', 'User', 1, null, 0),
+(4, 1, 'editor', '$2a$10$vjGOfzpRYSzu5vw2ApHl9OVHMYgfQcUDJTKg3Zsb/Aap0ACSP/qrG', null, 'cba1697c-078a-4fee-88b2-87acf8406476', 'editor@mopat.com', 'Editor', 'User', 1, null, 0);
+
 
 -- --------------------------------------------------------
 
@@ -422,7 +425,9 @@ CREATE TABLE IF NOT EXISTS `userroles` (
 
 INSERT INTO `userroles` (`id`, `user`, `authority`,`uuid`) VALUES
 (1, 1,'ROLE_ADMIN','9d84a79b-aa42-40c5-93d7-46713f9138de'),
-(2, 2,'ROLE_USER','e1e33ac2-3f4a-467d-a213-8521e014ac87');
+(2, 2,'ROLE_USER','e1e33ac2-3f4a-467d-a213-8521e014ac87'),
+(3, 3,'ROLE_MODERATOR','4c67376e-4d9f-416e-a577-8a850346fb0a'),
+(4, 4,'ROLE_EDITOR','8130e77f-c8cb-4a71-b96d-408bb39092fa');
 
 --
 -- Tabellenstruktur für Tabelle `invitation`

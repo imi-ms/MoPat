@@ -37,6 +37,7 @@ from helper.Statistic import StatisticSelector
 from helper.Dashboard import DashboardHelper, DashboardSelectors
 from helper.ExportMapper import ExportHelper, ExportSelectors
 from helper.Preview import PreviewHelper, PreviewAssertHelper, PreviewSelectors, PREVIEW_PRESETS
+from helper.Review import ReviewHelper, ReviewAssertHelper
 
 loginHelper = LoginHelper()
 
@@ -176,6 +177,8 @@ class IMISeleniumBaseTest(ABC):
       self.dashboard_helper = DashboardHelper(self.driver, self.navigation_helper)
       self.export_helper = ExportHelper(self.driver, self.navigation_helper)
       self.preview_assert_helper = PreviewAssertHelper(self.driver, self.navigation_helper)
+      self.review_helper = ReviewHelper(self.driver, self.navigation_helper)
+      self.review_assert_helper = ReviewAssertHelper(self.driver, self.navigation_helper)
 
 
     @abstractmethod
@@ -290,4 +293,3 @@ class CustomTestResult(unittest.TextTestResult):
             print(" None")
 
         print("\n---\n")
-
