@@ -101,19 +101,33 @@ public class BundleService {
                 .map(this::getUnassignedQuestionnaires)
                 .orElseGet(() -> questionnaireService.getAllQuestionnaires());
 
+        if (unassignedQuestionnaires == null) {
+            return Collections.emptyList();
+        }
+
         return unassignedQuestionnaires.stream()
-                .filter(questionnaire -> !questionnaire.getQuestions().isEmpty())
-                .filter(Questionnaire::isApproved)
-                .map(questionnaire -> {
-                    QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
-                    questionnaireDTO.setHasScores(scoreDao.hasScore(questionnaire));
-                    return questionnaireDTO;
-                })
-                .sorted(
-                        Comparator.comparing(QuestionnaireDTO::getQuestionnaireVersionGroupName, String::compareToIgnoreCase)
-                                .thenComparing(QuestionnaireDTO::getQuestionnaireVersionGroupId)
-                                .thenComparing(QuestionnaireDTO::getVersion))
-                .collect(Collectors.toList());
+            .filter(Objects::nonNull)
+            .filter(questionnaire -> questionnaire.getQuestions() != null && !questionnaire.getQuestions().isEmpty())
+            .filter(Questionnaire::isApproved)
+            .map(questionnaire -> {
+                QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaire);
+                Boolean hasScore = scoreDao.hasScore(questionnaire);
+                questionnaireDTO.setHasScores(hasScore != null && hasScore);
+                return questionnaireDTO;
+            })
+            .sorted(
+                Comparator.comparing(
+                    QuestionnaireDTO::getQuestionnaireVersionGroupName,
+                    Comparator.nullsLast(String::compareToIgnoreCase)
+                ).thenComparing(
+                    QuestionnaireDTO::getQuestionnaireVersionGroupId,
+                    Comparator.nullsLast(Comparator.naturalOrder())
+                ).thenComparing(
+                    QuestionnaireDTO::getVersion,
+                    Comparator.nullsLast(Comparator.naturalOrder())
+                )
+            )
+            .collect(Collectors.toList());
     }
 
     /**
