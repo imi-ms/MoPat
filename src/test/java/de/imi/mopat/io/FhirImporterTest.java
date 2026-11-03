@@ -151,8 +151,8 @@ public class FhirImporterTest {
         when(questionnaireDao.isQuestionnaireNameUnique(any(String.class),
             any(Long.class))).thenReturn(true);
 
-        when(questionnaireVersionGroupService.createQuestionnaireGroup(
-            any(String.class))).thenReturn(new QuestionnaireVersionGroup());
+        when(questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(
+            any(Questionnaire.class))).thenReturn(new QuestionnaireVersionGroup());
 
         when(configurationGroupDao.getConfigurationGroups(any(String.class))).thenReturn(
             new ArrayList<>());
