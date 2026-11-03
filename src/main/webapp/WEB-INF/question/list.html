@@ -71,6 +71,16 @@
                     th:text="${messages.get(#locale, 'question.button.editDescription', 'Edit description')}"
                 />
             </a>
+                <a
+                    th:href="@{/questionnaire/newVersion?id=__${questionnaire.id}__}"
+                    class="btn btn-primary"
+                    id="newVersion"
+                >
+                    <i class="bi bi-copy"></i>
+                    <th:block
+                        th:text="${messages.get(#locale, 'questionnaire.button.newVersion', 'Create new Version')}"
+                    />
+                </a>
             <a
                 class="btn btn-primary"
                 id="manageExports"
@@ -239,7 +249,7 @@
                                 />
                             </td>
                         </tr>
-                        <th:block th:each="item, questionCounter: ${questionnaire.questions}">
+                        <th:block th:each="item, questionCounter: ${questionnaire.questionDTOs}">
                             <tr
                                 th:data-question-type="${item.questionType.name}"
                                 th:id="${item.id}"
@@ -273,7 +283,7 @@
                                             class="form-control form-control-sm position-input"
                                             th:value="${item.position}"
                                             min="1"
-                                            max="${questionnaire.questions.size()}"
+                                            max="${questionnaire.questionDTOs.size()}"
                                         />
                                         <button
                                             class="btn btn-sm btn-success position-save-btn"
@@ -412,7 +422,7 @@
                                             >
                                             </addVar>
                                             <th:block
-                                                th:if="${item.position eq questionnaire.questions.size()}"
+                                                th:if="${item.position eq questionnaire.questionDTOs.size()}"
                                             >
                                                 <th:block
                                                     th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
@@ -446,7 +456,7 @@
 														item.questionType.name == 'NUMBER_CHECKBOX' or
 														item.questionType.name == 'NUMBER_INPUT' or
 														item.questionType.name == 'DROP_DOWN') or
-														item.position == questionnaire.questions.size()} ? ' btn-crossed' : ''"
+														item.position == questionnaire.questionDTOs.size()} ? ' btn-crossed' : ''"
                                                     th:data-question-id="${item.id}"
                                                     th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
                                                 >
@@ -461,7 +471,7 @@
                                                 data-bs-toggle="modal"
                                                 th:classappend="${item.isDeletable() ? '' : 'btn-crossed'}"
                                                 th:data-bs-target="|#deleteModal_${item.id}|"
-                                                th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
+                                                th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRules()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
                                             >
                                                 <i
                                                     class="bi-trash-fill bi-list-icon"
@@ -516,7 +526,7 @@
                                                 >
                                                 </addVar>
                                                 <th:block
-                                                    th:if="${item.position eq questionnaire.questions.size()}"
+                                                    th:if="${item.position eq questionnaire.questionDTOs.size()}"
                                                 >
                                                     <th:block
                                                         th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
@@ -546,7 +556,7 @@
                                                     item.questionType.name  == 'NUMBER_CHECKBOX' or
                                                     item.questionType.name == 'NUMBER_INPUT' or
                                                     item.questionType.name == 'DROP_DOWN'}"
-                                                    th:style="${item.position == questionnaire.questions.size() ? 'display: none;' : ''}"
+                                                    th:style="${item.position == questionnaire.questionDTOs.size() ? 'display: none;' : ''}"
                                                     th:text="${messages.get(#locale, 'questionnaire.button.editConditions', 'Edit conditions')}"
                                                 >
                                                 </a>
