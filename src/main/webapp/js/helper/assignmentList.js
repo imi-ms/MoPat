@@ -134,6 +134,8 @@
 
     this.$modal.on('show.bs.modal', function () {
       self.synchronizeSelectionRows();
+      self.sortSelectionList(self.$selectionAssigned);
+      self.sortSelectionList(self.$selectionAvailable);
       self.$filter.val('');
       self.filterItems();
       self.updateSelectedCount();
@@ -261,29 +263,27 @@
     const $targetList = assigned ? this.$selectionAssigned : this.$selectionAvailable;
 
     if ($selectionRow.parent()[0] !== $targetList[0]) {
-      this.insertSorted($targetList, $selectionRow);
+      $targetList.append($selectionRow);
     }
   };
 
   /**
-   * Inserts the row alphabetically (by data-search-name) into the given list.
+   * Sorts the rows of a modal list alphabetically (by data-search-name).
+   * Spaces are ignored and numbers are compared as numbers ("Test 9" before "Test10").
+   * Only the modal is affected; the order on the page stays as it is.
    */
-  AssignmentList.prototype.insertSorted = function ($list, $row) {
-    const name = String($row.data('search-name') || '');
-    let $nextRow = null;
+  AssignmentList.prototype.sortSelectionList = function ($list) {
+    const sortKey = function (row) {
+      return String($(row).data('search-name') || '').replace(/\s+/g, '');
+    };
 
-    $list.children(SELECTORS.selectionRow).each(function () {
-      if (String($(this).data('search-name') || '').localeCompare(name) > 0) {
-        $nextRow = $(this);
-        return false; // stop the loop
-      }
+    const rows = $list.children(SELECTORS.selectionRow).get();
+
+    rows.sort(function (a, b) {
+      return sortKey(a).localeCompare(sortKey(b), undefined, { numeric: true });
     });
 
-    if ($nextRow) {
-      $row.insertBefore($nextRow);
-    } else {
-      $list.append($row);
-    }
+    $list.append(rows);
   };
 
   AssignmentList.prototype.updateAssignedGroup = function () {
