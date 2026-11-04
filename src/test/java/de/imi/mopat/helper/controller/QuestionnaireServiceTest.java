@@ -269,6 +269,11 @@ public class QuestionnaireServiceTest {
         QuestionnaireDTO newQuestionnaireDTO = QuestionnaireDTOTest.getNewValidQuestionnaireDTO();
         newQuestionnaireDTO.setId(null);
         Questionnaire newQuestionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        newQuestionnaire.setQuestionnaireVersionGroup(null);
+        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
+        group.setName(newQuestionnaire.getName());
+        questionnaireVersionGroupDao.merge(group);
+        when(questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(newQuestionnaire)).thenReturn(group);
         Long validUserId = Helper.generatePositiveNonZeroLong();
 
         when(questionnaireFactory.createQuestionnaire(
@@ -288,8 +293,12 @@ public class QuestionnaireServiceTest {
         // Assert
         verify(questionService, times(0)).duplicateQuestionsToNewQuestionnaire(anySet(), any(Questionnaire.class));
         Assert.assertNotNull("The created questionnaire should not be null", createdQuestionnaire);
+        Assert.assertNotNull("The created questionnaire should have a version group", createdQuestionnaire.getQuestionnaireVersionGroupId());
+        assertEquals(createdQuestionnaire.getQuestionnaireVersionGroupId(),
+                questionnaireDao.getElementById(createdQuestionnaire.getId()).getQuestionnaireVersionGroupId());
 
         questionnaireDao.remove(createdQuestionnaire);
+        questionnaireVersionGroupDao.remove(group);
     }
 
     /**

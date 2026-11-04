@@ -341,6 +341,7 @@ public class QuestionnaireService {
         questionnaireDao.merge(newQuestionnaire);
 
         QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(newQuestionnaire);
+        newQuestionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
 
         copyLocalizedTextsToQuestionnaire(newQuestionnaire, questionnaireDTO);
         handleLogoUpload(newQuestionnaire, questionnaireDTO, logo);

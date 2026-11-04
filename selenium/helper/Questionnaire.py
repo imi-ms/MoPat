@@ -44,7 +44,7 @@ class QuestionnaireSelectors:
     ACTION_BUTTONS = (By.CSS_SELECTOR, "td.actionColumn > div.d-none.d-xl-block > div.btn-group > a.link")
     LANGUAGE_FLAG_ICONS = (By.CSS_SELECTOR, ".languageLabel img")
     QUESTIONNAIRE_STATUS_BADGE = lambda questionnaire_id, status_class: (
-        By.CSS_SELECTOR, f"tr#{questionnaire_id} .badge.{status_class}")
+        By.CSS_SELECTOR, f"tr[id='{questionnaire_id}'] .badge.{status_class}")
 
 class QuestionnaireHelper:
 
