@@ -15,6 +15,8 @@ import de.imi.mopat.model.BundleQuestionnaire;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireTest;
 import de.imi.mopat.utils.Helper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -35,6 +38,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("MoPat")
 public class MoPatDaoImplTest {
 
     private static final Random random = new Random();
@@ -44,6 +48,8 @@ public class MoPatDaoImplTest {
     BundleQuestionnaireDao bundleQuestionnaireDao;
     @Autowired
     UserDao userDao;
+    @PersistenceContext(unitName = "MoPat")
+    EntityManager entityManager;
 
     /**
      * Test of {@link MoPatDaoImpl#getEntityClass}.<br> Valid input: {@link QuestionnaireDao}
@@ -129,6 +135,8 @@ public class MoPatDaoImplTest {
     }
 
     private void clearQuestionnaireTable() {
+        DaoTestCleanup.clearQuestionReferences(entityManager);
+        DaoTestCleanup.clearReviews(entityManager);
         List<BundleQuestionnaire> allBundleQuestionnaires = bundleQuestionnaireDao.getAllElements();
         for (BundleQuestionnaire bundleQuestionnaire : allBundleQuestionnaires) {
             bundleQuestionnaireDao.remove(bundleQuestionnaire);

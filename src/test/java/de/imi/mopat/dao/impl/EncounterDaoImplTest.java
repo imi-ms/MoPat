@@ -14,6 +14,8 @@ import de.imi.mopat.model.BundleTest;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.EncounterTest;
 import de.imi.mopat.utils.Helper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -37,6 +40,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("MoPat")
 public class EncounterDaoImplTest {
 
     private static final Random random = new Random();
@@ -44,6 +48,8 @@ public class EncounterDaoImplTest {
     EncounterDao testEncounterDao;
     @Autowired
     BundleDao bundleDao;
+    @PersistenceContext(unitName = "MoPat")
+    EntityManager entityManager;
 
     /**
      * Test of {@link EncounterDaoImpl#getIncompleteEncounters}.<br> Invalid input:
@@ -507,6 +513,7 @@ public class EncounterDaoImplTest {
      * Deletes all {@link Encounter Encounters} from the database.
      */
     private void clearTable() {
+        DaoTestCleanup.clearResponses(entityManager);
         List<Encounter> allEncounter = testEncounterDao.getAllElements();
         for (Encounter encounter : allEncounter) {
             testEncounterDao.remove(encounter);
