@@ -71,16 +71,16 @@
                     th:text="${messages.get(#locale, 'question.button.editDescription', 'Edit description')}"
                 />
             </a>
-                <a
-                    th:href="@{/questionnaire/newVersion?id=__${questionnaire.id}__}"
-                    class="btn btn-primary"
-                    id="newVersion"
-                >
-                    <i class="bi bi-copy"></i>
-                    <th:block
-                        th:text="${messages.get(#locale, 'questionnaire.button.newVersion', 'Create new Version')}"
-                    />
-                </a>
+            <a
+                th:href="@{/questionnaire/newVersion?id=__${questionnaire.id}__}"
+                class="btn btn-primary"
+                id="newVersion"
+            >
+                <i class="bi bi-copy"></i>
+                <th:block
+                    th:text="${messages.get(#locale, 'questionnaire.button.newVersion', 'Create new Version')}"
+                />
+            </a>
             <a
                 class="btn btn-primary"
                 id="manageExports"
@@ -242,7 +242,7 @@
                         >
                             <td
                                 class="text-center"
-                                colspan="100%"
+                                colspan="7"
                             >
                                 <th:block
                                     th:text="${messages.get(#locale, 'questionnaire.questions.none', 'There are no questions within this questionnaire')}"
@@ -415,34 +415,6 @@
                                                 ></i>
                                             </a>
 
-                                            <addVar
-                                                layout:replace="~{helper/var :: add(
-                                            key='questionConditionable',
-                                            value=false)}"
-                                            >
-                                            </addVar>
-                                            <th:block
-                                                th:if="${item.position eq questionnaire.questionDTOs.size()}"
-                                            >
-                                                <th:block
-                                                    th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
-                                                >
-                                                    <th:block
-                                                        th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
-                                                    >
-                                                        <th:block
-                                                            th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
-                                                        >
-                                                            <addVar
-                                                                layout:replace="~{helper/var :: add(
-                                                            key='questionConditionable',
-                                                            value=true)}"
-                                                            >
-                                                            </addVar>
-                                                        </th:block>
-                                                    </th:block>
-                                                </th:block>
-                                            </th:block>
                                             <th:block>
                                                 <a
                                                     class="btn btn-sm btn-primary-list link condition-button"
@@ -519,35 +491,6 @@
                                                 >
                                                 </a>
 
-                                                <addVar
-                                                    layout:replace="~{helper/var :: add(
-                                                key='questionConditionable', 
-                                                value=false)}"
-                                                >
-                                                </addVar>
-                                                <th:block
-                                                    th:if="${item.position eq questionnaire.questionDTOs.size()}"
-                                                >
-                                                    <th:block
-                                                        th:each="bundleQuestionnaire: ${questionnaire.bundleQuestionnaires}"
-                                                    >
-                                                        <th:block
-                                                            th:each="comparedBundleQuestionnaire: ${bundleQuestionnaire.bundle.bundleQuestionnaires}"
-                                                        >
-                                                            <th:block
-                                                                th:if="${comparedBundleQuestionnaire.position > bundleQuestionnaire.position}"
-                                                            >
-                                                                <addVar
-                                                                    layout:replace="~{helper/var :: add(
-                                                                key='questionConditionable', 
-                                                                value=true)}"
-                                                                >
-                                                                </addVar>
-                                                            </th:block>
-                                                        </th:block>
-                                                    </th:block>
-                                                </th:block>
-
                                                 <a
                                                     class="link"
                                                     th:href="@{/condition/listQuestionConditions?questionId=__${item.id}__}"
@@ -566,7 +509,7 @@
                                                     data-bs-toggle="modal"
                                                     th:classappend="${item.isDeletable() ? '' : 'd-none'}"
                                                     th:data-bs-target="|#deleteModal_${item.id}|"
-                                                    th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRule()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
+                                                    th:onclick="|checkQuestionDelete(${item.id}, ${item.hasExportRules()}, ${item.hasConditionsAsTrigger()}, ${item.hasConditionsAsTarget()}, ${item.hasScores()});|"
                                                     th:text="${messages.get(#locale, 'question.button.remove', 'Remove')}"
                                                 >
                                                 </a>
