@@ -18,6 +18,7 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.impl.MetadataExporterFhirDstu3;
 import de.imi.mopat.io.impl.MetadataExporterFhirR4b;
@@ -116,6 +117,8 @@ public class FhirImporterTest {
     private QuestionDao questionDao;
     @Mock
     private ScoreDao scoreDao;
+    @Mock
+    private AuthService authService;
     @Mock
     private ExportTemplate exportTemplate;
     @InjectMocks
