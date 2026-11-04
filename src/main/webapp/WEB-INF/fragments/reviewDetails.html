@@ -1,0 +1,452 @@
+<!-- =====================================================================
+     CONTENT FRAGMENT
+     mode = 'pending' | 'completed'
+     ===================================================================== -->
+<th:block
+    th:fragment="content(mode)"
+    th:with="isPending=${mode == 'pending'}"
+>
+    <div class="panel-body">
+        <div class="form-group">
+            <label
+                for="questionnaire"
+                th:text="${messages.get(#locale, 'review.details.label.questionnaire', 'Questionnaire')}"
+            ></label>
+            <div
+                id="questionnaire"
+                class="form-control"
+            >
+                <a
+                    th:href="@{/questionnaire/fill(id=${review.questionnaireId})}"
+                    th:text="${review.questionnaireName}"
+                    class="text-primary text-decoration-none"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                ></a>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label
+                for="editor"
+                th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}"
+            ></label>
+            <div
+                id="editor"
+                class="form-control"
+                th:text="${review.editorName}"
+            ></div>
+        </div>
+
+        <div class="form-group">
+            <label
+                for="reviewer"
+                th:text="${messages.get(#locale, 'review.label.reviewer', 'Reviewer')}"
+            ></label>
+
+            <div
+                th:unless="${isPending}"
+                id="reviewer"
+                class="form-control"
+                th:text="${review.reviewerName}"
+            ></div>
+
+            <th:block
+                th:if="${isPending}"
+                th:object="${reviewDecisionForm}"
+            >
+                <select
+                    id="reviewer"
+                    class="form-control"
+                    th:disabled="${!isReviewer || currentUserId == review.editorId}"
+                    onchange="handleReviewerChange()"
+                    th:data-current-reviewer-id="${review.reviewerId}"
+                >
+                    <option
+                        th:each="reviewer : ${reviewers}"
+                        th:value="${reviewer.id}"
+                        th:selected="${reviewer.id == review.reviewerId}"
+                        th:text="${reviewer.firstname + ' ' + reviewer.lastname +
+                            (reviewer.id == review.reviewerId
+                                ? ' (' + messages.get(#locale, 'review.details.label.currentReviewer', 'Current') + ')'
+                                : '')}"
+                    ></option>
+                </select>
+                <div
+                    class="text-danger"
+                    th:if="${#fields.hasErrors('reviewerId')}"
+                    th:errors="*{reviewerId}"
+                ></div>
+            </th:block>
+        </div>
+
+        <div class="form-group">
+            <label
+                th:text="${messages.get(#locale, 'review.details.label.conversation', 'Conversation')}"
+            ></label>
+            <div
+                id="conversation"
+                class="card"
+            >
+                <div class="card-body">
+                    <div
+                        th:each="reviewMessage : ${review.conversation}"
+                        th:with="isOwn=${reviewMessage.senderId == currentUserId}"
+                    >
+                        <div
+                            class="d-flex mb-4"
+                            th:classappend="${isOwn ? 'justify-content-end' : 'justify-content-start'}"
+                        >
+                            <div class="d-flex align-items-center">
+                                <div
+                                    th:unless="${isOwn}"
+                                    class="circle bg-secondary text-white fw-bold d-flex align-items-center justify-content-center me-3"
+                                    th:title="${reviewMessage.senderName}"
+                                >
+                                    <span th:text="${reviewMessage.senderInitials}"></span>
+                                </div>
+
+                                <div class="w-auto">
+                                    <p
+                                        class="message p-2 rounded-3 mb-1"
+                                        th:classappend="${isOwn ? 'bg-primary text-white' : 'bg-body-tertiary'}"
+                                        th:text="${reviewMessage.message}"
+                                    ></p>
+                                    <p
+                                        class="text-muted small mb-0"
+                                        th:classappend="${isOwn ? 'text-end' : 'text-start'}"
+                                        th:text="${#dates.format(reviewMessage.sentAt, 'dd.MM.yyyy HH:mm')}"
+                                    ></p>
+                                </div>
+
+                                <div
+                                    th:if="${isOwn}"
+                                    class="circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center ms-3"
+                                    th:title="${reviewMessage.senderName}"
+                                >
+                                    <span th:text="${reviewMessage.senderInitials}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form
+            th:if="${isPending}"
+            th:action="@{/review/details}"
+            method="POST"
+            th:object="${reviewDecisionForm}"
+            th:with="isEditor=${currentUserId == review.editorId},
+                     canDecide=${(currentUserId == review.reviewerId || isAdmin) && currentUserId != review.editorId}"
+        >
+            <input
+                type="hidden"
+                th:field="*{reviewId}"
+            />
+            <input
+                type="hidden"
+                id="hiddenReviewerId"
+                name="reviewerId"
+                value=""
+            />
+
+            <div
+                id="approvalAndMainVersionContainer"
+                th:if="${canDecide}"
+            >
+                <div class="form-group">
+                    <label
+                        class="form-label d-block mb-2"
+                        th:text="${messages.get(#locale, 'review.details.label.approvalActions', 'Select an Action')}"
+                    ></label>
+                    <div
+                        id="approvalOptions"
+                        class="btn-group"
+                        role="group"
+                        aria-label="Approval options"
+                    >
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="approvalOptions"
+                            id="approveOption"
+                            value="approve"
+                            autocomplete="off"
+                            checked
+                            onclick="updateApprovalUI()"
+                        />
+                        <label
+                            class="btn btn-outline-success"
+                            for="approveOption"
+                            th:text="${messages.get(#locale, 'review.details.label.approve', 'Approve')}"
+                        ></label>
+
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="approvalOptions"
+                            id="rejectOption"
+                            value="reject"
+                            autocomplete="off"
+                            onclick="updateApprovalUI()"
+                        />
+                        <label
+                            class="btn btn-outline-danger"
+                            for="rejectOption"
+                            th:text="${messages.get(#locale, 'review.details.label.reject', 'Reject')}"
+                        ></label>
+                    </div>
+                </div>
+
+                <div
+                    id="mainVersionCheckbox"
+                    class="form-group mt-3"
+                >
+                    <input
+                        type="checkbox"
+                        th:field="*{isMainVersion}"
+                    />
+                    <label
+                        th:for="${#ids.prev('isMainVersion')}"
+                        th:text="${messages.get(#locale, 'review.details.label.mainVersion', 'Set Version as Main Version')}"
+                    ></label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label
+                    class="required"
+                    for="language"
+                    th:text="${messages.get(#locale, 'review.create.label.language', 'Language')}"
+                    th:title="${messages.get(#locale, 'review.create.label.language.title', 'Select mail language')}"
+                ></label>
+                <select
+                    id="language"
+                    class="form-control"
+                    th:field="*{language}"
+                >
+                    <option value="en_GB">English (GB)</option>
+                    <option value="de_DE">Deutsch (DE)</option>
+                </select>
+                <div
+                    class="text-danger"
+                    th:if="${#fields.hasErrors('language')}"
+                    th:errors="*{language}"
+                ></div>
+            </div>
+
+            <div class="form-group">
+                <label
+                    for="description"
+                    id="descriptionLabel"
+                    th:classappend="${isEditor && currentUserId != review.reviewerId} ? 'required'"
+                    th:text="${messages.get(#locale, 'review.label.description', 'Description of changes')}"
+                    th:title="${messages.get(#locale, 'review.label.description.title', 'Will be displayed in the conversation of the review')}"
+                ></label>
+                <textarea
+                    id="description"
+                    class="form-control"
+                    rows="3"
+                    th:field="*{description}"
+                    th:required="${isEditor}"
+                ></textarea>
+                <div
+                    class="text-danger"
+                    th:if="${#fields.hasErrors('description')}"
+                    th:errors="*{description}"
+                ></div>
+            </div>
+
+            <div class="form-group">
+                <label
+                    for="personalMessage"
+                    th:text="${messages.get(#locale, 'review.label.personalMessage', 'Personal Message (Email only)')}"
+                ></label>
+                <textarea
+                    id="personalMessage"
+                    class="form-control"
+                    rows="3"
+                    th:field="*{personalMessage}"
+                ></textarea>
+                <div
+                    class="text-danger"
+                    th:if="${#fields.hasErrors('personalMessage')}"
+                    th:errors="*{personalMessage}"
+                ></div>
+            </div>
+
+            <div
+                id="previewArea"
+                style="display: none; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px"
+            >
+                <h4
+                    th:text="${messages.get(#locale, 'review.create.label.previewArea', 'Preview')}"
+                ></h4>
+                <div class="form-group">
+                    <label
+                        th:text="${messages.get(#locale, 'review.create.label.previewSubject', 'Subject')}"
+                    ></label>
+                    <pre
+                        id="previewSubject"
+                        style="white-space: pre; padding: 10px; overflow-x: auto"
+                    ></pre>
+                </div>
+                <div class="form-group">
+                    <label
+                        th:text="${messages.get(#locale, 'review.create.label.previewContent', 'Content')}"
+                    ></label>
+                    <pre
+                        id="previewContent"
+                        style="white-space: pre; padding: 10px; overflow-x: auto"
+                    ></pre>
+                </div>
+            </div>
+
+            <div
+                id="approvalButtonGroup"
+                class="mt-3"
+                th:if="${canDecide}"
+            >
+                <div id="submitApproveContainer">
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                        name="action"
+                        value="approve"
+                        th:text="${messages.get(#locale, 'review.details.button.approve', 'Submit approve')}"
+                    ></button>
+                    <button
+                        type="button"
+                        class="btn btn-primary preview-button"
+                        data-action="approve"
+                        th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"
+                    ></button>
+                </div>
+                <div
+                    id="submitRejectContainer"
+                    style="display: none"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                        name="action"
+                        value="reject"
+                        th:text="${messages.get(#locale, 'review.details.button.reject', 'Submit rejection')}"
+                    ></button>
+                    <button
+                        type="button"
+                        class="btn btn-primary preview-button"
+                        data-action="reject"
+                        th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"
+                    ></button>
+                </div>
+            </div>
+
+            <div
+                id="assign-button"
+                style="display: none"
+            >
+                <button
+                    type="submit"
+                    class="btn btn-warning w-45"
+                    name="action"
+                    value="assignReviewer"
+                    th:text="${messages.get(#locale, 'review.details.label.assignReviewer', 'Assign New Reviewer')}"
+                ></button>
+                <button
+                    type="button"
+                    class="btn btn-primary preview-button"
+                    data-action="assignReviewer"
+                    th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"
+                ></button>
+            </div>
+
+            <div
+                class="mt-3"
+                th:if="${isEditor}"
+            >
+                <button
+                    type="submit"
+                    class="btn btn-primary w-45"
+                    name="action"
+                    value="review"
+                    th:text="${messages.get(#locale, 'review.details.label.resubmitReview', 'Resubmit')}"
+                ></button>
+                <button
+                    type="button"
+                    class="btn btn-primary preview-button"
+                    data-action="resubmit"
+                    th:text="${messages.get(#locale, 'review.create.button.preview', 'Preview')}"
+                ></button>
+            </div>
+        </form>
+    </div>
+</th:block>
+
+<th:block th:fragment="scripts(mode)">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const conversation = document.querySelector("#conversation .card-body");
+            if (conversation) {
+                conversation.scrollTo({ top: conversation.scrollHeight, behavior: "smooth" });
+            }
+        });
+    </script>
+
+    <script th:if="${mode == 'pending'}">
+        document.querySelectorAll(".preview-button").forEach((button) => {
+            button.addEventListener("click", function () {
+                const params = new URLSearchParams({
+                    language: document.getElementById("language")?.value || "default",
+                    action: this.getAttribute("data-action"),
+                    questionnaireName:
+                        document.querySelector("#questionnaire a")?.textContent.trim() || "",
+                    description: document.getElementById("description")?.value.trim() || "",
+                    personalMessage: document.getElementById("personalMessage")?.value.trim() || "",
+                });
+
+                fetch(`/review/preview-email?${params}`)
+                    .then((response) => {
+                        if (!response.ok) throw new Error("Failed to load email preview");
+                        return response.json();
+                    })
+                    .then((preview) => {
+                        document.getElementById("previewSubject").textContent = preview.subject;
+                        document.getElementById("previewContent").textContent = preview.content;
+                        document.getElementById("previewArea").style.display = "block";
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        alert("Failed to load email preview. Please try again.");
+                    });
+            });
+        });
+
+        function handleReviewerChange() {
+            const reviewerSelect = document.getElementById("reviewer");
+            const currentReviewerId = reviewerSelect.dataset.currentReviewerId;
+            const selectedReviewerId = reviewerSelect.value;
+
+            document.getElementById("hiddenReviewerId").value = selectedReviewerId;
+
+            const changed = selectedReviewerId !== currentReviewerId;
+            $("#assign-button")[changed ? "slideDown" : "slideUp"]();
+            $("#approvalAndMainVersionContainer")[changed ? "slideUp" : "slideDown"]();
+            $("#approvalButtonGroup")[changed ? "slideUp" : "slideDown"]();
+        }
+
+        function updateApprovalUI() {
+            const approve = document.getElementById("approveOption").checked;
+            const descriptionField = document.getElementById("description");
+            const descriptionLabel = document.getElementById("descriptionLabel");
+
+            descriptionLabel.classList.toggle("required", !approve);
+            descriptionField.required = !approve;
+            $("#submitApproveContainer").toggle(approve);
+            $("#submitRejectContainer").toggle(!approve);
+            $("#mainVersionCheckbox")[approve ? "slideDown" : "slideUp"]();
+        }
+    </script>
+</th:block>

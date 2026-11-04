@@ -1,22 +1,21 @@
 <th:block
-        layout:decorate="~{layout/main}"
-        th:with="title=${messages.get(#locale, 'review.completed.label.heading', 'Completed questionnaire reviews')}"
-        xmlns:th="http://www.w3.org/1999/xhtml">
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'review.completed.label.heading', 'Completed questionnaire reviews')}"
+>
     <th:block layout:fragment="content">
-
         <!-- Success and Fail Notifications -->
         <th:block th:if="${messageSuccess != null}">
             <div
-                    id="successNotification"
-                    class="alert alert-success"
+                id="successNotification"
+                class="alert alert-success"
             >
                 <th:block th:text="${messageSuccess}" />
             </div>
         </th:block>
         <th:block th:if="${messageFail != null}">
             <div
-                    id="failNotification"
-                    class="alert alert-danger"
+                id="failNotification"
+                class="alert alert-danger"
             >
                 <th:block th:text="${messageFail}" />
             </div>
@@ -24,128 +23,245 @@
 
         <!-- Tabs for Assigned Reviews -->
         <ul
-                class="nav nav-tabs"
-                id="reviewTabs"
-                role="tablist"
+            class="nav nav-tabs"
+            id="reviewTabs"
+            role="tablist"
         >
-            <li class="nav-item" role="presentation">
+            <li
+                class="nav-item"
+                role="presentation"
+            >
                 <button
-                        class="nav-link active"
-                        id="assigned-reviews-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#assigned-reviews"
-                        type="button"
-                        role="tab"
-                        aria-controls="assigned-reviews"
-                        aria-selected="true"
+                    class="nav-link active"
+                    id="assigned-reviews-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#assigned-reviews"
+                    type="button"
+                    role="tab"
+                    aria-controls="assigned-reviews"
+                    aria-selected="true"
                 >
-                    <th:block th:text="${messages.get(#locale, 'review.list.label.assignedReviews', 'Assigned Reviews')}"/>
+                    <th:block
+                        th:text="${messages.get(#locale, 'review.list.label.assignedReviews', 'Assigned Reviews')}"
+                    />
                 </button>
             </li>
             <!-- Tabs for All Reviews -->
-            <li class="nav-item" role="presentation" sec:authorize="hasRole('ROLE_ADMIN')">
+            <li
+                class="nav-item"
+                role="presentation"
+                sec:authorize="hasRole('ROLE_ADMIN')"
+            >
                 <button
-                        class="nav-link"
-                        id="all-reviews-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#all-reviews"
-                        type="button"
-                        role="tab"
-                        aria-controls="all-reviews"
-                        aria-selected="false"
+                    class="nav-link"
+                    id="all-reviews-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#all-reviews"
+                    type="button"
+                    role="tab"
+                    aria-controls="all-reviews"
+                    aria-selected="false"
                 >
-                    <th:block th:text="${messages.get(#locale, 'review.list.label.allReviews', 'All Reviews')}"/>
+                    <th:block
+                        th:text="${messages.get(#locale, 'review.list.label.allReviews', 'All Reviews')}"
+                    />
                 </button>
             </li>
             <!--Tab for Pending Reviews -->
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="archived-reviews-tab" href="/review/pending/list">
-                    <th:block th:text="${messages.get(#locale, 'review.completed.list.label.pendingReviews', 'Pending Reviews')}"/>
+            <li
+                class="nav-item"
+                role="presentation"
+            >
+                <a
+                    class="nav-link"
+                    id="archived-reviews-tab"
+                    href="/review/pending/list"
+                >
+                    <th:block
+                        th:text="${messages.get(#locale, 'review.completed.list.label.pendingReviews', 'Pending Reviews')}"
+                    />
                 </a>
             </li>
         </ul>
 
-        <div class="tab-content" id="reviewTabsContent">
+        <div
+            class="tab-content"
+            id="reviewTabsContent"
+        >
             <!-- Assigned Reviews Tab -->
             <div
-                    class="tab-pane fade show active"
-                    id="assigned-reviews"
-                    role="tabpanel"
-                    aria-labelledby="assigned-reviews-tab"
+                class="tab-pane fade show active"
+                id="assigned-reviews"
+                role="tabpanel"
+                aria-labelledby="assigned-reviews-tab"
             >
                 <div class="table-responsive">
+                    <div
+                        id="assignedReviewLoadingContainer"
+                        class="d-flex flex-column align-items-center justify-content-center vh-50"
+                    >
+                        <div
+                            class="spinner-border"
+                            id="assignedReviewLoadingSpinner"
+                            role="status"
+                        >
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                     <table
-                            id="pendingReviewTable"
-                            class="table table-hover responsive"
-                            style="width: 100%; display: none;"
+                        id="pendingReviewTable"
+                        class="table table-hover responsive"
+                        style="width: 100%; display: none"
                     >
                         <thead>
-                        <tr>
-                            <th th:text="${messages.get(#locale, 'review.list.label.name', 'Name')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}" th:title="${messages.get(#locale, 'review.list.label.editor.title', 'Creator of the review request')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.label.reviewer', 'Reviewer')}" th:title="${messages.get(#locale, 'review.list.label.reviewer.title', 'Reviewer currently assigned to the review')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.status', 'Status')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.lastUpdate', 'Last Update')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.actions', 'Actions')}"></th>
-                        </tr>
+                            <tr>
+                                <th
+                                    data-priority="1"
+                                    th:text="${messages.get(#locale, 'review.list.label.name', 'Name')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}"
+                                    th:title="${messages.get(#locale, 'review.list.label.editor.title', 'Creator of the review request')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.label.reviewer', 'Reviewer')}"
+                                    th:title="${messages.get(#locale, 'review.list.label.reviewer.title', 'Reviewer currently assigned to the review')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.list.label.status', 'Status')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.list.label.lastUpdate', 'Last Update')}"
+                                ></th>
+                                <th
+                                    data-priority="2"
+                                    class="actionColumn"
+                                    th:text="${messages.get(#locale, 'review.list.label.actions', 'Actions')}"
+                                ></th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <th:block th:if="not ${#lists.isEmpty(assignedReviews)}">
-                            <th:block th:each="item: ${assignedReviews}">
-                                <tr>
-                                    <td>
-                                        <a class="link" th:href="@{details?id=__${item.id}__}">
-                                            <th:block th:text="${item.getQuestionnaireName}" />
-                                        </a>
-                                    </td>
-                                    <td>
-										<span
+                            <th:block th:if="not ${#lists.isEmpty(assignedReviews)}">
+                                <th:block th:each="item: ${assignedReviews}">
+                                    <tr>
+                                        <td>
+                                            <a
+                                                class="link"
+                                                th:href="@{details?id=__${item.id}__}"
+                                            >
+                                                <th:block th:text="${item.getQuestionnaireName}" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span
                                                 th:text="${item.getEditorInitials()}"
-                                                th:attr="data-bs-toggle='tooltip', title=${item.getEditorName()}">
-										</span>
-                                    </td>
-                                    <td>
-										<span
+                                                th:attr="data-bs-toggle='tooltip', title=${item.getEditorName()}"
+                                            >
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span
                                                 th:text="${item.getReviewerInitials()}"
-                                                th:attr="data-bs-toggle='tooltip', title=${item.getReviewerName()}">
-										</span>
-                                    </td>
-                                    <td>
-                                        <i th:class="${item.getStatus().name() == 'PENDING' ? 'bi-hourglass-split text-primary' :
-													 (item.getStatus().name() == 'REJECTED' ? 'bi-x-circle-fill text-danger' :
-													 (item.getStatus().name() == 'APPROVED' ? 'bi-check-circle-fill text-success' : ''))}"
-                                           th:attr="data-bs-toggle='tooltip', data-bs-placement='top'"
-                                           th:title="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}">
-                                        </i>
-                                    </td>
-                                    <td>
-                                        <span th:text="${#dates.format(item.getUpdatedAt(), 'dd.MM.yyyy HH:mm')}" />
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <!-- Details-Button -->
-                                            <a
-                                                    class="btn btn-sm btn-primary"
-                                                    th:href="@{details?id=__${item.id}__}"
-                                                    th:title="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                th:attr="data-bs-toggle='tooltip', title=${item.getReviewerName()}"
                                             >
-                                                <i class="bi-eye"></i>
-                                            </a>
-
-                                            <!-- Remove-Button -->
-                                            <a
-                                                    class="btn btn-sm btn-danger"
-                                                    th:href="@{/review/remove?id=__${item.id}__}"
-                                                    th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'PENDING'}"
                                             >
-                                                <i class="bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-
-                                </tr>
+                                                <a class="link">
+                                                    <div class="badge btn-yellow shadow-sm">
+                                                        <i class="bi bi-hourglass-split me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'REJECTED'}"
+                                            >
+                                                <a class="link">
+                                                    <div class="badge btn-red shadow-sm">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'APPROVED'}"
+                                            >
+                                                <a class="link">
+                                                    <div class="badge btn-green shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                        </td>
+                                        <td>
+                                            <span
+                                                th:text="${#dates.format(item.getUpdatedAt(), 'dd.MM.yyyy HH:mm')}"
+                                            />
+                                        </td>
+                                        <td class="actionColumn">
+                                            <div class="d-none d-xl-block">
+                                                <div
+                                                    class="btn-group"
+                                                    role="group"
+                                                >
+                                                    <a
+                                                        class="btn btn-sm btn-primary-list link"
+                                                        th:href="@{details?id=__${item.id}__}"
+                                                        th:title="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                    >
+                                                        <i class="bi-eye-fill bi-list-icon"></i>
+                                                    </a>
+                                                    <a
+                                                        class="btn btn-sm btn-red btn-primary-list link"
+                                                        th:href="@{/review/remove?id=__${item.id}__}"
+                                                        th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                                    >
+                                                        <i class="bi-trash-fill bi-list-icon"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="d-block d-xl-none">
+                                                <a
+                                                    class="link"
+                                                    data-bs-toggle="offcanvas"
+                                                    th:href="|#${item.id}_assignedReviewOffcanvas|"
+                                                    ><i
+                                                        class="bi bi-three-dots"
+                                                        style="font-size: 1.5rem"
+                                                    ></i
+                                                ></a>
+                                                <th:block
+                                                    layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${item.getQuestionnaireName}, id=|${item.id}_assignedReviewOffcanvas|)}"
+                                                >
+                                                    <th:block layout:fragment="optionsContent">
+                                                        <a
+                                                            class="link"
+                                                            th:href="@{details?id=__${item.id}__}"
+                                                            th:text="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                        ></a>
+                                                        <a
+                                                            class="link"
+                                                            th:href="@{/review/remove?id=__${item.id}__}"
+                                                            th:text="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                                        ></a>
+                                                    </th:block>
+                                                </th:block>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
                             </th:block>
-                        </th:block>
                         </tbody>
                     </table>
                 </div>
@@ -153,93 +269,188 @@
                 <!-- Create Review Button -->
                 <div class="d-flex justify-content-start mt-3">
                     <a
-                            href="/review/create"
-                            class="btn btn-primary"
-                            id="createReviewAssigned"
-                            th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
+                        href="/review/create"
+                        class="btn btn-primary"
+                        id="createReviewAssigned"
+                        th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
                     ></a>
                 </div>
             </div>
 
             <!-- All Reviews Tab -->
             <div
-                    class="tab-pane fade"
-                    id="all-reviews"
-                    role="tabpanel"
-                    aria-labelledby="all-reviews-tab"
+                class="tab-pane fade"
+                id="all-reviews"
+                role="tabpanel"
+                aria-labelledby="all-reviews-tab"
             >
                 <div class="table-responsive">
+                    <div
+                        id="allReviewLoadingContainer"
+                        class="d-flex flex-column align-items-center justify-content-center vh-50"
+                    >
+                        <div
+                            class="spinner-border"
+                            id="allReviewLoadingSpinner"
+                            role="status"
+                        >
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                     <table
-                            id="allReviewTable"
-                            class="table table-hover responsive"
-                            style="width: 100%; display: none;"
+                        id="allReviewTable"
+                        class="table table-hover responsive"
+                        style="width: 100%; display: none"
                     >
                         <thead>
-                        <tr>
-                            <th th:text="${messages.get(#locale, 'review.list.label.name', 'Name')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}" th:title="${messages.get(#locale, 'review.list.label.editor.title', 'Creator of the review request')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.reviewer', 'Reviewer')}" th:title="${messages.get(#locale, 'review.list.label.reviewer.title', 'Reviewer currently assigned to the review')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.status', 'Status')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.lastUpdate', 'Last Update')}"></th>
-                            <th th:text="${messages.get(#locale, 'review.list.label.actions', 'Actions')}"></th>
-                        </tr>
+                            <tr>
+                                <th
+                                    data-priority="1"
+                                    th:text="${messages.get(#locale, 'review.list.label.name', 'Name')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.label.editor', 'Editor')}"
+                                    th:title="${messages.get(#locale, 'review.list.label.editor.title', 'Creator of the review request')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.list.reviewer', 'Reviewer')}"
+                                    th:title="${messages.get(#locale, 'review.list.label.reviewer.title', 'Reviewer currently assigned to the review')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.list.label.status', 'Status')}"
+                                ></th>
+                                <th
+                                    th:text="${messages.get(#locale, 'review.list.label.lastUpdate', 'Last Update')}"
+                                ></th>
+                                <th
+                                    data-priority="2"
+                                    class="actionColumn"
+                                    th:text="${messages.get(#locale, 'review.list.label.actions', 'Actions')}"
+                                ></th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <th:block th:if="not ${#lists.isEmpty(allReviews)}">
-                            <th:block th:each="item: ${allReviews}">
-                                <tr>
-                                    <td>
-                                        <a class="link" th:href="@{details?id=__${item.id}__}">
-                                            <th:block th:text="${item.getQuestionnaireName}" />
-                                        </a>
-                                    </td>
-                                    <td>
-										<span
+                            <th:block th:if="not ${#lists.isEmpty(allReviews)}">
+                                <th:block th:each="item: ${allReviews}">
+                                    <tr>
+                                        <td>
+                                            <a
+                                                class="link"
+                                                th:href="@{details?id=__${item.id}__}"
+                                            >
+                                                <th:block th:text="${item.getQuestionnaireName}" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span
                                                 th:text="${item.getEditorInitials()}"
-                                                th:attr="data-bs-toggle='tooltip', title=${item.getEditorName()}">
-										</span>
-                                    </td>
-                                    <td>
-										<span
+                                                th:attr="data-bs-toggle='tooltip', title=${item.getEditorName()}"
+                                            >
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span
                                                 th:text="${item.getReviewerInitials()}"
-                                                th:attr="data-bs-toggle='tooltip', title=${item.getReviewerName()}">
-										</span>
-                                    </td>
-                                    <td>
-                                        <i th:class="${item.getStatus().name() == 'PENDING' ? 'bi-hourglass-split text-primary' :
-													 (item.getStatus().name() == 'REJECTED' ? 'bi-x-circle-fill text-danger' :
-													 (item.getStatus().name() == 'APPROVED' ? 'bi-check-circle-fill text-success' : ''))}"
-                                           th:attr="data-bs-toggle='tooltip', data-bs-placement='top'"
-                                           th:title="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}">
-                                        </i>
-                                    </td>
-                                    <td>
-                                        <span th:text="${#dates.format(item.getUpdatedAt(), 'dd.MM.yyyy HH:mm')}" />
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <!-- Details-Button -->
-                                            <a
-                                                    class="btn btn-sm btn-primary"
-                                                    th:href="@{details?id=__${item.id}__}"
-                                                    th:title="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                th:attr="data-bs-toggle='tooltip', title=${item.getReviewerName()}"
                                             >
-                                                <i class="bi-eye"></i>
-                                            </a>
-
-                                            <!-- Remove-Button -->
-                                            <a
-                                                    class="btn btn-sm btn-danger"
-                                                    th:href="@{/review/remove?id=__${item.id}__}"
-                                                    th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                            </span>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'PENDING'}"
                                             >
-                                                <i class="bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                <a class="link">
+                                                    <div class="badge btn-yellow shadow-sm">
+                                                        <i class="bi bi-hourglass-split me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'REJECTED'}"
+                                            >
+                                                <a class="link">
+                                                    <div class="badge btn-red shadow-sm">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                            <th:block
+                                                th:if="${item.getStatus().name() == 'APPROVED'}"
+                                            >
+                                                <a class="link">
+                                                    <div class="badge btn-green shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                                        <th:block
+                                                            th:text="${messages.get(#locale, 'review.list.label.status.' + item.getStatus().name().toLowerCase(), item.getStatus().name())}"
+                                                        ></th:block>
+                                                    </div>
+                                                </a>
+                                            </th:block>
+                                        </td>
+                                        <td>
+                                            <span
+                                                th:text="${#dates.format(item.getUpdatedAt(), 'dd.MM.yyyy HH:mm')}"
+                                            />
+                                        </td>
+                                        <td class="actionColumn">
+                                            <div class="d-none d-xl-block">
+                                                <div
+                                                    class="btn-group"
+                                                    role="group"
+                                                >
+                                                    <a
+                                                        class="btn btn-sm btn-primary-list link"
+                                                        th:href="@{details?id=__${item.id}__}"
+                                                        th:title="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                    >
+                                                        <i class="bi-eye-fill bi-list-icon"></i>
+                                                    </a>
+                                                    <a
+                                                        class="btn btn-sm btn-red btn-primary-list link"
+                                                        th:href="@{/review/remove?id=__${item.id}__}"
+                                                        th:title="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                                    >
+                                                        <i class="bi-trash-fill bi-list-icon"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="d-block d-xl-none">
+                                                <a
+                                                    class="link"
+                                                    data-bs-toggle="offcanvas"
+                                                    th:href="|#${item.id}_allReviewOffcanvas|"
+                                                    ><i
+                                                        class="bi bi-three-dots"
+                                                        style="font-size: 1.5rem"
+                                                    ></i
+                                                ></a>
+                                                <th:block
+                                                    layout:insert="~{fragments/structures :: mobileOptionsMenu(itemName=${item.getQuestionnaireName}, id=|${item.id}_allReviewOffcanvas|)}"
+                                                >
+                                                    <th:block layout:fragment="optionsContent">
+                                                        <a
+                                                            class="link"
+                                                            th:href="@{details?id=__${item.id}__}"
+                                                            th:text="${messages.get(#locale, 'review.list.label.viewDetails', 'View details')}"
+                                                        ></a>
+                                                        <a
+                                                            class="link"
+                                                            th:href="@{/review/remove?id=__${item.id}__}"
+                                                            th:text="${messages.get(#locale, 'review.list.label.deleteReview', 'Delete review')}"
+                                                        ></a>
+                                                    </th:block>
+                                                </th:block>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
                             </th:block>
-                        </th:block>
                         </tbody>
                     </table>
                 </div>
@@ -247,45 +458,60 @@
                 <!-- Create Review Button -->
                 <div class="d-flex justify-content-start mt-3">
                     <a
-                            href="/review/create"
-                            class="btn btn-primary"
-                            id="createReviewAll"
-                            th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
+                        href="/review/create"
+                        class="btn btn-primary"
+                        id="createReviewAll"
+                        th:text="${messages.get(#locale, 'review.list.button.requestReview', 'Request Review')}"
                     ></a>
                 </div>
             </div>
-
         </div>
     </th:block>
 </th:block>
 
 <th:block layout:fragment="scriptContainer">
-    <script th:inline="javascript" type="text/javascript">
-        $(document).ready(function() {
+    <script
+        th:inline="javascript"
+        type="text/javascript"
+    >
+        $(document).ready(function () {
             // Initialize tables for Assigned Reviews
-            $('#pendingReviewTable').DataTable({
-                "deferRender": true,
-                "paging": true,
-                "autoWidth" : false,
-                "ordering": false,
-                "initComplete": function(settings, json) {
-                    $('#pendingReviewTable').fadeIn();
-                }
+            $("#pendingReviewTable").DataTable({
+                deferRender: true,
+                paging: true,
+                autoWidth: false,
+                ordering: false,
+                initComplete: function (settings, json) {
+                    $("#assignedReviewLoadingSpinner").fadeOut();
+                    $("#assignedReviewLoadingContainer").addClass("d-none");
+                    $("#pendingReviewTable").fadeIn();
+                },
             });
 
             // Initialize table for All Reviews
-            $('#allReviewTable').DataTable({
-                "deferRender": true,
-                "paging": true,
-                "ordering": false,
-                "autoWidth" : false,
-                "initComplete": function(settings, json) {
-                    $('#allReviewTable').fadeIn();
+            $("#allReviewTable").DataTable({
+                deferRender: true,
+                paging: true,
+                ordering: false,
+                autoWidth: false,
+                initComplete: function (settings, json) {
+                    $("#allReviewLoadingSpinner").fadeOut();
+                    $("#allReviewLoadingContainer").addClass("d-none");
+                    $("#allReviewTable").fadeIn();
+                },
+            });
+
+            $("#reviewTabs button[data-bs-toggle='tab']").on("shown.bs.tab", function (event) {
+                const table = $($(event.target).attr("data-bs-target")).find("table");
+                if (table.length && $.fn.DataTable.isDataTable(table[0])) {
+                    table.DataTable().columns.adjust().draw(false);
                 }
             });
 
             // Initialize Bootstrap Tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipTriggerList = [].slice.call(
+                document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+            );
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });

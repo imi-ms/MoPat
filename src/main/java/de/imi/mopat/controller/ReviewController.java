@@ -146,11 +146,12 @@ public class ReviewController {
         model.addAttribute("reviewers", userService.getAllReviewers());
         model.addAttribute("review", reviewDTO);
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
+        model.addAttribute("mode", "pending");
 
         if (!model.containsAttribute("reviewDecisionForm")) {
             model.addAttribute("reviewDecisionForm", new ReviewDecisionForm(id, null, null, null, false, null, null));
         }
-        return "review/pending-details";
+        return "review/details";
     }
 
     @GetMapping("/completed/details")
@@ -172,8 +173,9 @@ public class ReviewController {
         model.addAttribute("language", currentLanguage);
         model.addAttribute("review", reviewDTO);
         model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
+        model.addAttribute("mode", "completed");
 
-        return "review/completed-details";
+        return "review/details";
     }
 
     @PostMapping("/details")
