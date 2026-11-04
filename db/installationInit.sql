@@ -385,8 +385,8 @@ CREATE TABLE IF NOT EXISTS `acl_sid` (
 INSERT INTO `acl_sid` (`id`, `principal`, `sid`, `password`, `salt`, `uuid`, `email`, `firstname`, `lastname`, `is_enabled`, `use_pin`, `pin`) VALUES
 (1,1,'admin','$2a$10$Ooo1W1Ym7aa7iECp/KbRSO6sEKf7RaIr5JZt8zi7STBw9fdy7u5Di',NULL,'10ab9c09-6e0b-4e2d-b8f8-a93ec452a44e','admin@mopat.com','admin','admin',1, 0, NULL),
 (2,1,'user','$2a$10$AkrCrkk3WPvje.Pa8yRwH.dvLjWpHBtcE/.MXOQWturYRf0BGfDia',NULL,'94ebebf1-03b6-4d10-8156-c117514caff3','user@mopat.com','user','user',1, 0, NULL),
-(3, 1, 'moderator', '$2a$10$yGj12GpHVRDE520RmMWlDOymMka21yv3MNPwk8tfGNr8uuS27vSc6', null, '02823dd4-09f0-4518-9999-d3da45107669', 'moderator@mopat.com', 'Moderator', 'User', 1, null, 0),
-(4, 1, 'editor', '$2a$10$vjGOfzpRYSzu5vw2ApHl9OVHMYgfQcUDJTKg3Zsb/Aap0ACSP/qrG', null, 'cba1697c-078a-4fee-88b2-87acf8406476', 'editor@mopat.com', 'Editor', 'User', 1, null, 0);
+(3, 1, 'moderator', '$2b$10$P7QGs.QD/iTMHoI.gLnrEOVUj0Z/DqwF0.YS7xfgYP4CpxfkCdoX6', null, '02823dd4-09f0-4518-9999-d3da45107669', 'moderator@mopat.com', 'Moderator', 'User', 1, null, 0),
+(4, 1, 'editor', '$2b$10$ku6wrsU57dmSWoV9rLFKG.8M223SzGmXxpyORbh50iLRY8nFzQDNS', null, 'cba1697c-078a-4fee-88b2-87acf8406476', 'editor@mopat.com', 'Editor', 'User', 1, null, 0);
 
 
 -- --------------------------------------------------------
