@@ -11,12 +11,24 @@ import de.imi.mopat.config.PersistenceConfig;
 import de.imi.mopat.dao.BundleQuestionnaireDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.model.Bundle;
 import de.imi.mopat.model.BundleQuestionnaire;
+import de.imi.mopat.model.BundleTest;
+import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.Question;
 import de.imi.mopat.model.QuestionTest;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.QuestionnaireTest;
+import de.imi.mopat.model.Response;
+import de.imi.mopat.model.Review;
+import de.imi.mopat.model.ReviewMessage;
+import de.imi.mopat.model.SelectAnswer;
+import de.imi.mopat.model.SelectAnswerTest;
+import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.utils.Helper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,6 +40,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -37,6 +50,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("MoPat")
 public class QuestionnaireDaoImplTest {
 
     private static final Random random = new Random();
@@ -46,6 +60,42 @@ public class QuestionnaireDaoImplTest {
     QuestionDao questionDao;
     @Autowired
     BundleQuestionnaireDao bundleQuestionnaireDao;
+    @PersistenceContext(unitName = "MoPat")
+    EntityManager entityManager;
+
+    @Test
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
+    public void testClearTableWithReferences() {
+        Questionnaire questionnaire = QuestionnaireTest.getNewValidQuestionnaire();
+        Question question = QuestionTest.getNewValidQuestion(questionnaire);
+        SelectAnswer answer = SelectAnswerTest.getNewValidSelectAnswer();
+        question.addAnswer(answer);
+        questionnaire.addQuestion(question);
+        entityManager.persist(questionnaire);
+
+        Bundle bundle = BundleTest.getNewValidBundle();
+        entityManager.persist(bundle);
+        Encounter encounter = new Encounter(bundle, "cleanup-test");
+        entityManager.persist(encounter);
+        entityManager.persist(new Response(answer, encounter));
+
+        Review review = new Review(questionnaire, 1L, 2L);
+        review.getConversation().add(new ReviewMessage(review, 1L, 2L, "test"));
+        entityManager.persist(review);
+
+        UnaryExpression expression = new UnaryExpression();
+        expression.setQuestion(question);
+        Score score = new Score();
+        score.setQuestionnaire(questionnaire);
+        score.setExpression(expression);
+        entityManager.persist(score);
+        entityManager.flush();
+        entityManager.clear();
+
+        clearTable();
+        entityManager.flush();
+        assertTrue(testQuestionnaireDao.getAllElements().isEmpty());
+    }
 
     /**
      * Test of {@link QuestionnaireDaoImpl#remove}.<br> Valid input: random number of
@@ -119,6 +169,8 @@ public class QuestionnaireDaoImplTest {
      * {@link Questionnaire Questionnaires} from the database.
      */
     private void clearTable() {
+        DaoTestCleanup.clearQuestionReferences(entityManager);
+        DaoTestCleanup.clearReviews(entityManager);
         List<BundleQuestionnaire> allBundleQuestionnaires = bundleQuestionnaireDao.getAllElements();
         for (BundleQuestionnaire bundleQuestionnaire : allBundleQuestionnaires) {
             bundleQuestionnaireDao.remove(bundleQuestionnaire);

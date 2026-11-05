@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionnaireDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
@@ -24,6 +25,7 @@ import de.imi.mopat.model.score.Operator;
 import de.imi.mopat.model.score.Score;
 import de.imi.mopat.model.score.UnaryExpression;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.model.user.UserRole;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -53,6 +55,9 @@ public class MoPatQuestionnaireImporter {
     @Autowired
     ConfigurationDao configurationDao;
 
+    @Autowired
+    AuthService authService;
+
     public Questionnaire importQuestionnaire(MultipartFile file) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -70,9 +75,10 @@ public class MoPatQuestionnaireImporter {
         Questionnaire questionnaire = jsonQuestionnaireDTO.convertToQuestionnaire();
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         questionnaire.setChangedBy(currentUser.getId());
-        // Collect all questions and answers in a map to access those
-        // ones who are target and trigger of a condition easily
-
+        questionnaire.setCreatedBy(currentUser.getId());
+        if (authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR)) {
+            questionnaire.setStatusApprove();
+        }
 
         // Convert all jsonQuestionDTOs and all jsonAnswerDTOs to
         // their database model counterparts and collect them in a
@@ -181,11 +187,9 @@ public class MoPatQuestionnaireImporter {
 
         questionnaireDao.merge(questionnaire);
 
-        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.createQuestionnaireGroup(
-            questionnaire.getName());
+        QuestionnaireVersionGroup questionnaireVersionGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(
+            questionnaire);
         questionnaire.setQuestionnaireVersionGroup(questionnaireVersionGroup);
-        questionnaireVersionGroup.addQuestionnaire(questionnaire);
-        questionnaireVersionGroupService.add(questionnaireVersionGroup);
 
         //Loop through all persisted questions to get the
         // imageAnswers and save the images

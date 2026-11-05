@@ -62,31 +62,20 @@ public class QuestionnaireVersionGroupServiceTest {
     }
 
     @Test
-    public void testCreateQuestionnaireGroup() {
-        // Act
-        QuestionnaireVersionGroup createdGroup = questionnaireVersionGroupService.createQuestionnaireGroup("Test Group");
-
-        // Assert
-        assertEquals("Test Group", createdGroup.getName());
-
-        questionnaireVersionGroupDao.remove(createdGroup);
-    }
-
-    @Test
     public void testCreateOrFindQuestionnaireGroup_NewGroup() {
         // Arrange
-        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
-        questionnaireDTO.setName("New Questionnaire");
-        QuestionnaireVersionGroupDTO questionnaireVersionGroupDTO = new QuestionnaireVersionGroupDTO();
-        questionnaireDTO.setQuestionnaireGroupDTO(questionnaireVersionGroupDTO);
+        String name = "Test Create QuestionnaireGroup";
+        Questionnaire validQuestionnaire = new Questionnaire(name, "description", 1L, false);
+        questionnaireDao.merge(validQuestionnaire);
 
         // Act
-        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+        QuestionnaireVersionGroup createdGroup = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(validQuestionnaire);
 
         // Assert
-        assertEquals("New Questionnaire", group.getName());
+        assertEquals(name, createdGroup.getName());
 
-        questionnaireVersionGroupDao.remove(group);
+        questionnaireVersionGroupDao.remove(createdGroup);
+        questionnaireDao.remove(validQuestionnaire);
     }
 
     @Test
@@ -96,16 +85,13 @@ public class QuestionnaireVersionGroupServiceTest {
         existingGroup.setName("Existing Group");
         questionnaireVersionGroupDao.merge(existingGroup);
 
-        QuestionnaireVersionGroupDTO existingGroupDTO = new QuestionnaireVersionGroupDTO();
-        existingGroupDTO.setGroupId(existingGroup.getId());
 
-        QuestionnaireDTO questionnaireDTO = new QuestionnaireDTO();
-        questionnaireDTO.setId(existingGroup.getId());
-        questionnaireDTO.setName("Existing Questionnaire");
-        questionnaireDTO.setQuestionnaireGroupDTO(existingGroupDTO);
+        Questionnaire questionnaire = new Questionnaire();
+        questionnaire.setName("Existing Questionnaire");
+        questionnaire.setQuestionnaireVersionGroup(existingGroup);
 
         // Act
-        QuestionnaireVersionGroup group = questionnaireVersionGroupService.createOrFindQuestionnaireGroup(questionnaireDTO);
+        QuestionnaireVersionGroup group = questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(questionnaire);
 
         // Assert
         assertEquals(existingGroup.getId(), group.getId());
@@ -146,30 +132,5 @@ public class QuestionnaireVersionGroupServiceTest {
         assertEquals(group.getId(), result.get().getId());
 
         questionnaireDao.remove(questionnaire);
-    }
-
-    @Test
-    public void testFindMaxVersionInGroup() {
-        // Arrange
-        Questionnaire questionnaire1 = QuestionnaireTest.getNewValidQuestionnaire();
-        questionnaire1.setVersion(1);
-
-        Questionnaire questionnaire2 = QuestionnaireTest.getNewValidQuestionnaire();
-        questionnaire2.setVersion(2);
-
-        QuestionnaireVersionGroup group = new QuestionnaireVersionGroup();
-        group.getQuestionnaires().add(questionnaire1);
-        group.getQuestionnaires().add(questionnaire2);
-        questionnaireDao.merge(questionnaire1);
-        questionnaireDao.merge(questionnaire2);
-
-        // Act
-        int maxVersion = questionnaireVersionGroupService.findMaxVersionInGroup(group);
-
-        // Assert
-        assertEquals(2, maxVersion);
-
-        questionnaireDao.remove(questionnaire1);
-        questionnaireDao.remove(questionnaire2);
     }
 }

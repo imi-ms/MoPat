@@ -162,6 +162,7 @@ jobs:
           - test_git_info.py
           - test_question_preview_modal.py
           - test_questionnaire_export_automatic_mapping.py
+          - test_questionnaire_review.py
 
     env:
       VIDEO_DIR: ${{ github.workspace }}/video

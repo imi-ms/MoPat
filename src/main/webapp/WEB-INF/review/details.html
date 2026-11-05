@@ -1,0 +1,12 @@
+<th:block
+    layout:decorate="~{layout/main}"
+    th:with="title=${messages.get(#locale, 'review.details.heading', 'Review Details')}"
+>
+    <th:block layout:fragment="content">
+        <th:block th:replace="~{fragments/reviewDetails :: content(mode=${mode})}"></th:block>
+    </th:block>
+</th:block>
+
+<th:block layout:fragment="scriptContainer">
+    <th:block th:replace="~{fragments/reviewDetails :: scripts(mode=${mode})}"></th:block>
+</th:block>

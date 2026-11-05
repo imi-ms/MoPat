@@ -18,6 +18,7 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
+import de.imi.mopat.helper.controller.AuthService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.impl.MetadataExporterFhirDstu3;
 import de.imi.mopat.io.impl.MetadataExporterFhirR4b;
@@ -117,6 +118,8 @@ public class FhirImporterTest {
     @Mock
     private ScoreDao scoreDao;
     @Mock
+    private AuthService authService;
+    @Mock
     private ExportTemplate exportTemplate;
     @InjectMocks
     private MopatCompleteQuestionnaireImporter mopatCompleteQuestionnaireImporter;
@@ -151,8 +154,8 @@ public class FhirImporterTest {
         when(questionnaireDao.isQuestionnaireNameUnique(any(String.class),
             any(Long.class))).thenReturn(true);
 
-        when(questionnaireVersionGroupService.createQuestionnaireGroup(
-            any(String.class))).thenReturn(new QuestionnaireVersionGroup());
+        when(questionnaireVersionGroupService.getOrCreateQuestionnaireGroup(
+            any(Questionnaire.class))).thenReturn(new QuestionnaireVersionGroup());
 
         when(configurationGroupDao.getConfigurationGroups(any(String.class))).thenReturn(
             new ArrayList<>());

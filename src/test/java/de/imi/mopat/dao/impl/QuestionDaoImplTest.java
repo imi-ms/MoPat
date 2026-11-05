@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
     MvcWebApplicationInitializer.class, PersistenceConfig.class})
 @TestPropertySource(locations = {"classpath:mopat-test.properties"})
 @WebAppConfiguration
+@Transactional("MoPat")
 public class QuestionDaoImplTest {
 
     private static final Random random = new Random();
@@ -53,6 +54,9 @@ public class QuestionDaoImplTest {
 
     @Autowired
     QuestionnaireDao questionnaireDao;
+
+    @PersistenceContext(unitName = "MoPat")
+    EntityManager entityManager;
 
     /**
      * Test of {@link QuestionDaoImpl#remove}.<br> Valid input: random number of
@@ -100,6 +104,7 @@ public class QuestionDaoImplTest {
      * Deletes all exportTemplates, Answers and Questions from the database
      */
     private void clearTable() {
+        DaoTestCleanup.clearQuestionReferences(entityManager);
         List<ExportTemplate> exportTemplates = testExportTemplateDao.getAllElements();
         for (ExportTemplate exportTemplate : exportTemplates) {
             testExportTemplateDao.remove(exportTemplate);

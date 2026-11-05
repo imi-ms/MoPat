@@ -32,6 +32,8 @@
     <class>de.imi.mopat.model.ExportRuleScore</class>
     <class>de.imi.mopat.model.ExportRuleFormat</class>
     <class>de.imi.mopat.model.EncounterExportTemplate</class>
+    <class>de.imi.mopat.model.Review</class>
+    <class>de.imi.mopat.model.ReviewMessage</class>
     <class>de.imi.mopat.model.conditions.Condition</class>
     <class>de.imi.mopat.model.conditions.SelectAnswerCondition</class>
     <class>de.imi.mopat.model.conditions.SliderAnswerThresholdCondition</class>

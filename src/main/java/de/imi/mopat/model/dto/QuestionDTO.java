@@ -4,6 +4,7 @@ import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.enumeration.QuestionType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -36,6 +37,7 @@ public class QuestionDTO {
     private Long questionnaireId = null;
     private Integer position;
     private boolean hasScores;
+    private Boolean hasConditionsAsTarget;
     private List<String> bodyPartImages;
     private String imageType = "FRONT";
     private CodedValueType codedValueType = null; // Type of the coded value
@@ -133,7 +135,7 @@ public class QuestionDTO {
         this.questionnaireId = questionnaireId;
     }
 
-    public boolean isHasScores() {
+    public boolean hasScores() {
         return hasScores;
     }
 
@@ -199,5 +201,23 @@ public class QuestionDTO {
             }
         }
         return Boolean.FALSE;
+    }
+
+    public Boolean hasConditionsAsTarget() {
+        return hasConditionsAsTarget;
+    }
+
+    public void setHasConditionsAsTarget(Boolean hasConditionsAsTarget) {
+        this.hasConditionsAsTarget = hasConditionsAsTarget;
+    }
+
+    public boolean isDeletable() {
+        for (Map.Entry<Long, AnswerDTO> entry : this.getAnswers().entrySet()) {
+            AnswerDTO answerDTO = entry.getValue();
+            if (!answerDTO.getHasResponse()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

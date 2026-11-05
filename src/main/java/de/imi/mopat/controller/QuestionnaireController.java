@@ -16,7 +16,9 @@ import de.imi.mopat.helper.controller.FhirVersionHelper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
 import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.helper.controller.ReviewService;
 import de.imi.mopat.helper.controller.StringUtilities;
+import de.imi.mopat.helper.model.QuestionnaireDTOMapper;
 import de.imi.mopat.io.MetadataExporter;
 import de.imi.mopat.io.impl.MetadataExporterFactory;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
@@ -40,6 +42,7 @@ import de.imi.mopat.model.dto.QuestionnaireDTO;
 import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.enumeration.MetadataFormat;
 import de.imi.mopat.model.score.Score;
+import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.QuestionValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -137,8 +140,13 @@ public class QuestionnaireController {
     private FhirVersionHelper fhirVersionHelper;
     @Autowired
     private MetadataExporterFactory metadataExporterFactory;
+    @Autowired
+    private ReviewService reviewService;
 
     private final DocumentParser documentParser = new DocumentParser();
+    @Autowired
+    private QuestionnaireDTOMapper questionnaireDTOMapper;
+
 
     /**
      * Controls the HTTP GET requests for the URL <i>/questionnaire/list</i>. Shows the list of
@@ -180,6 +188,8 @@ public class QuestionnaireController {
             questionnaire.setHasConditions(questionnaireTargetIds.contains(questionnaire.getId()));
         }
 
+        model.addAttribute("isModOrAbove", authService.hasRoleOrAbove(UserRole.ROLE_MODERATOR));
+        model.addAttribute("currentUserId", authService.getAuthenticatedUserId());
         model.addAttribute("allQuestionnaires",
             questionnaireService.sortQuestionnairesByNameAsc(allQuestionnaires));
         model.addAttribute("availableLanguagesInQuestionForQuestionnaires",
@@ -262,6 +272,24 @@ public class QuestionnaireController {
             hasQuestionnaireConditions);
 
         return "redirect:/question/list?id=" + questionnaire.getId();
+    }
+
+    @RequestMapping(value = "/questionnaire/newVersion")
+    @PreAuthorize("hasRole('ROLE_EDITOR')")
+    public String duplicate(@ModelAttribute("id") final Long id) {
+        Questionnaire questionnaireToCopy = questionnaireDao.getElementById(id);
+        QuestionnaireDTO questionnaireDTO = questionnaireDTOMapper.apply(questionnaireToCopy);
+
+        Long principalId = authService.getAuthenticatedUserId();
+
+        Questionnaire newVersion = questionnaireService
+            .createQuestionnaireCopy(
+                questionnaireDTO,
+            null,
+                principalId
+        );
+
+        return "redirect:/questionnaire/fill?id=" + newVersion.getId();
     }
 
     /**
@@ -691,4 +719,35 @@ public class QuestionnaireController {
         model.addAttribute("currentLanguage", locale.toString());
         return "questionnaire/import/result";
     }
+
+    @RequestMapping("/questionnaire/disapprove")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    public String disapproveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                          RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.disapproveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.disapproved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
+    @RequestMapping("/questionnaire/approve")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    public String approveQuestionnaire(@RequestParam("id") final Long questionnaireId,
+                                       RedirectAttributes redirectAttributes) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            questionnaireService.approveQuestionnaire(questionnaireId, locale);
+            String successMessage = messageSource.getMessage("questionnaire.success.approved", null, locale);
+            redirectAttributes.addFlashAttribute("messageSuccess", successMessage);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("messageFail", e.getMessage());
+        }
+        return "redirect:/questionnaire/list";
+    }
+
 }

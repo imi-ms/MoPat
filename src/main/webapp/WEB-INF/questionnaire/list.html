@@ -49,10 +49,11 @@
                 <colgroup>
                     <col width="20%" />
                     <col width="15%" />
+                    <col width="14%" />
                     <col width="15%" />
-                    <col width="16%" />
-                    <col width="16%" />
-                    <col width="18%" />
+                    <col width="15%" />
+					<col width="6%" />
+                    <col width="15%" />
                 </colgroup>
                 <thead>
                     <tr>
@@ -72,6 +73,9 @@
                         <th
                             th:text="${messages.get(#locale, 'questionnaire.label.createdAt', 'Created At')}"
                         ></th>
+						<th
+							th:text="${messages.get(#locale, 'questionnaire.label.status', 'Status')}">
+						</th>
                         <th
                             data-priority="2"
                             class="actionColumn"
@@ -90,7 +94,7 @@
                                 </td>
                                 <td style="text-align: left">
                                     <th:block
-                                        layout:insert="~{helper/var :: add(key='groupedLocalizedTextByCountries', 
+                                        layout:insert="~{helper/var :: add(key='groupedLocalizedTextByCountries',
                                                             value=${localizedDisplayNamesForQuestionnaire[item.id]})}"
                                     />
                                     <a
@@ -104,7 +108,7 @@
                                 </td>
                                 <td style="text-align: left">
                                     <th:block
-                                        layout:insert="~{helper/var :: add(key='localeCodes', 
+                                        layout:insert="~{helper/var :: add(key='localeCodes',
                                                             value=${availableLanguagesInQuestionForQuestionnaires[item.id]})}"
                                     />
                                     <th:block
@@ -136,6 +140,28 @@
                                         />
                                     </th:block>
                                 </td>
+								<td style="text-align: left">
+									<th:block th:if="${item.isDraft()}">
+										<a th:if="${isModOrAbove or item.isCreatedOrModifiedBy(currentUserId)}"
+										   class="badge btn-red shadow-sm"
+										   th:href="@{/review/create(questionnaireId=${item.id})}"
+										   th:title="${messages.get(#locale, 'questionnaire.requestReview', 'Request Review')}">
+											<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
+										</a>
+										<span th:unless="${isModOrAbove or item.isCreatedOrModifiedBy(currentUserId)}"
+											  class="badge btn-red shadow-sm">
+												<th:block th:text="${messages.get(#locale, 'questionnaire.status.draft', 'Not Approved')}" />
+										</span>
+									</th:block>
+									<span th:if="${item.isUnderReview()}"
+										  class="badge btn-yellow shadow-sm">
+                        				<th:block th:text="${messages.get(#locale, 'questionnaire.status.underReview', 'Under Review')}" />
+                    				</span>
+									<span th:if="${item.isApproved()}"
+										  class="badge btn-green shadow-sm">
+										<th:block th:text="${messages.get(#locale, 'questionnaire.status.approved', 'Approved')}" />
+									</span>
+								</td>
                                 <td class="actionColumn">
                                     <div class="d-none d-xl-block">
                                         <th:block th:fragment="actionFragment">
@@ -180,7 +206,26 @@
                                                 >
                                                     <i class="bi-download bi-list-icon"></i>
                                                 </a>
+												<th:block>
+													<a class="btn btn-sm btn-green btn-primary-list link"
+                                                       th:classappend="${isModOrAbove == false} ? 'btn-crossed' : ''"
+													   th:if="${!item.isApproved()}"
+													   th:href="@{/questionnaire/approve(id=${item.id})}">
+														<i class="bi-check-circle-fill bi-list-icon"
+														   th:title="${messages.get(#locale, 'questionnaire.button.approve', 'Approve questionnaire')}"
+														></i>
+													</a>
+													<a class="btn btn-sm btn-red btn-primary-list link"
+                                                       th:classappend="${isModOrAbove == false} ? 'btn-crossed' : ''"
+													   th:if="${item.isApproved()}"
+													   th:href="@{/questionnaire/disapprove(id=${item.id})}">
+														<i class="bi-x-circle-fill bi-list-icon"
+														   th:title="${messages.get(#locale, 'questionnaire.button.disapprove', 'Disapprove questionnaire')}"
+														></i>
+													</a>
+												</th:block>
                                                 <a
+                                                    th:classappend="${isModOrAbove == true or item.getCreatedBy() == currentUserId} ? '' : 'btn-crossed'"
                                                     th:id="'removeQuestionnaire_' + ${item.id}"
                                                     class="btn btn-sm btn-primary-list link removeQuestionnaireLink btn-red"
                                                     th:attr="data-hasConditions=${item.isHasConditions()}"
@@ -236,7 +281,21 @@
                                                     th:attr="data-bs-target=|#downloadPopup__${item.id}__|"
                                                     th:text="${messages.get(#locale, 'questionnaire.button.download', 'Download')}"
                                                 ></a>
+												<th:block sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_MODERATOR')">
+													<a
+														class="link"
+														th:if="${!item.isApproved()}"
+														th:href="@{/questionnaire/approve(id=${item.id})}"
+														th:text="${messages.get(#locale, 'questionnaire.button.approve', 'Approve Questionnaire')}"
+													></a>
+													<a class="link"
+													   th:if="${item.isApproved()}"
+													   th:href="@{/questionnaire/disapprove(id=${item.id})}"
+													   th:text="${messages.get(#locale, 'questionnaire.button.approve', 'Disapprove Questionnaire')}"
+													></a>
+												</th:block>
                                                 <a
+													th:if="${isModOrAbove or item.getCreatedBy() == currentUserId}"
                                                     class="link"
                                                     th:attr="data-hasConditions=${item.isHasConditions()}"
                                                     data-bs-toggle="modal"
@@ -362,6 +421,25 @@
             $('input[data-name="downloadType"]').prop("checked", false);
             $('button[data-name="confirmDownload"]').attr("disabled", "disabled");
         });
+
+		function disapproveQuestionnaire(questionnaireId) {
+			if (!confirm('Are you sure you want to disapprove this questionnaire?')) {
+				return;
+			}
+
+			fetch(`/questionnaire/disapprove?id=${questionnaireId}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+			})
+			.then(response => {
+				if (response.ok) {
+					location.reload();
+				} else {
+					alert('Error disapproving questionnaire.');
+				}
+			})
+			.catch(error => alert('Request failed: ' + error));
+		}
         /*]]>*/
     </script>
     <th:block layout:replace="~{fragments/deleteModal :: deleteModalScript}"></th:block>

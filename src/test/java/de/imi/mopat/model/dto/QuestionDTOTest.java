@@ -174,7 +174,7 @@ public class QuestionDTOTest {
     }
 
     /**
-     * Test of {@link QuestionDTO#isHasScores} and {@link QuestionDTO#setHasScores}.<br> Valid
+     * Test of {@link QuestionDTO#hasScores} and {@link QuestionDTO#setHasScores}.<br> Valid
      * input: random boolean
      */
     @Test
@@ -182,7 +182,7 @@ public class QuestionDTOTest {
         boolean testHasScores = random.nextBoolean();
         testQuestionDTO.setHasScores(testHasScores);
         assertEquals("The getting hasScores value was not the expected one", testHasScores,
-            testQuestionDTO.isHasScores());
+            testQuestionDTO.hasScores());
     }
 
     /**
