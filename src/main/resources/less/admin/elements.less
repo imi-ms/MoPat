@@ -515,3 +515,44 @@ legend {
     }
     
 }
+
+
+/* Assignment list: collapsible "already added" group in the selection modal.
+   Closed: outlined in MoPat blue. Open: tinted background, like an opened accordion. */
+.assignment-list__assigned-group {
+    > summary {
+        list-style: none;               // hide the browser's default arrow
+        cursor: pointer;
+        padding: .5rem 1rem;
+        color: @color-blue-dark;
+        background-color: @color-white;
+        border: 1px solid @color-blue-light;    // border settings manually to ensure its visible
+        // border: @border-width solid @color-blue-light;
+        border-radius: @border-radius;
+        transition: @transition-value;
+
+        &::-webkit-details-marker {     // hide the default arrow in Safari
+            display: none;
+        }
+
+        // own arrow, rotated when the group is open
+        &::before {
+            content: "\25B8";           // ▸
+            display: inline-block;
+            margin-right: .5rem;
+            transition: transform .15s;
+        }
+
+        &:hover {
+            background-color: @color-blue-tinted;
+        }
+    }
+
+    &[open] > summary {
+        background-color: @color-blue-tinted;
+
+        &::before {
+            transform: rotate(90deg);   // ▸ becomes ▾
+        }
+    }
+}
