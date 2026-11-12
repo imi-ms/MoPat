@@ -547,13 +547,16 @@ legend {
             transition: transform .15s;
         }
 
-        &:hover {
+        &:hover {   //
             background-color: @color-blue-tinted;
+            color: black;
         }
     }
 
     &[open] > summary {
         background-color: @color-blue-tinted;
+        color: black;
+        font-weight: 700;
 
         &::before {
             transform: rotate(90deg);   // ▸ becomes ▾
