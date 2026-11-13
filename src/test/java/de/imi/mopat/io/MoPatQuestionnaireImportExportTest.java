@@ -45,14 +45,12 @@ import de.imi.mopat.model.user.User;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Before;
@@ -250,7 +248,10 @@ public class MoPatQuestionnaireImportExportTest {
         exportTemplateDao.merge(template);
 
         // Create template file
-        createTemplateFile(template, Path.of(URI.create("file://" + configurationDao.getObjectStoragePath())));
+        createTemplateFile(
+                template,
+                Path.of(configurationDao.getObjectStoragePath())
+        );
 
         // Add export rules for all answers in questionnaire
         addExportRulesToTemplate(template);
