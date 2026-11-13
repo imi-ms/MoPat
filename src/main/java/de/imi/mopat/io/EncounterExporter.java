@@ -52,17 +52,17 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 /**
- * This class provides the functionality to start an export. It is possible to export an complete
- * {@link Encounter Encounter} with all assigned {@link ExportTemplate ExportTemplate}. In addition
- * it is possible to export a list of {@link Questionnaire Questionnaire} object, a single
+ * This class provides the functionality to start an export. It is possible to export a complete
+ * {@link Encounter Encounter} with all assigned {@link ExportTemplate ExportTemplate}. In addition,
+ * it is possible to export a list of {@link Questionnaire Questionnaire} objects, a single
  * questionnaire object or a single export template which all need to belong to the given encounter.
  * Based on the export template a specialized exporter (implements
  * {@link EncounterExporterTemplate EncounterExporterTemplate}) will be executed. The values from
- * the {@link Response Response} objects from the encounter, and the meta data from the encounter
+ * the {@link Response Response} objects from the encounter, and the metadata from the encounter
  * will be formatted based on the {@link ExportRule ExportRule} objects from the export templates.
  * Those formatted values will be forwarded to the specialized exporter which fills the template and
  * exports it. Every export (successful or failed) will be saved as an
- * {@link EncounterExportTemplate EncounterExportTemplate} object to provide a export history.
+ * {@link EncounterExportTemplate EncounterExportTemplate} object to provide an export history.
  */
 @Component
 public class EncounterExporter {
@@ -90,7 +90,8 @@ public class EncounterExporter {
      * @return <code>true</code> if exporting the given {@link Questionnaire}
      * object worked, <code>false</code> otherwise.
      */
-    public boolean export(final Encounter encounter, final Questionnaire questionnaire, boolean isTest) {
+    public boolean export(final Encounter encounter, final Questionnaire questionnaire,
+        boolean isTest) {
         assert encounter != null : "The Encounter was null";
         assert questionnaire != null : "The Questionnaire was null";
         Set<ExportTemplate> exportTemplates = new HashSet<>();
@@ -102,10 +103,11 @@ public class EncounterExporter {
         boolean allSucceeded = true;
         boolean exportSucceeded;
         for (ExportTemplate exportTemplate : exportTemplates) {
-            if(isTest)
+            if (isTest) {
                 exportSucceeded = exportTest(encounter, exportTemplate);
-            else
+            } else {
                 exportSucceeded = export(encounter, exportTemplate);
+            }
 
             if (!exportSucceeded) {
                 allSucceeded = false;
@@ -186,7 +188,7 @@ public class EncounterExporter {
         answerResponseMap = null;
 
         try {
-           exportEncounter(encounter, exportTemplate);
+            exportEncounter(encounter, exportTemplate);
         } catch (Exception ex) {
             LOGGER.error(MarkerFactory.getMarker("FATAL"),
                 "fatal error while exporting test [exportTemplate={}, " + "Encounter={}]: {}",
@@ -194,6 +196,52 @@ public class EncounterExporter {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Builds and returns the export content for given {@link Encounter} ans {@link ExportTemplate}
+     * without persisting or transmitting it and without recording an export history entry.
+     *
+     * @param encounter      the {@link Encounter} whose responses should be exported. Must not be
+     *                       {@code null}.
+     * @param exportTemplate the {@link ExportTemplate} to export. Must not be {@code null}.
+     * @return the assembled export content as a {@link String}
+     * @throws Exception if no exporter implementation exists for the export template's type, or if
+     *                    preparing or building the export content fails
+     */
+    public String buildExportContent(Encounter encounter, ExportTemplate exportTemplate)
+        throws Exception {
+        return prepareExporter(encounter, exportTemplate).getExportContent();
+    }
+
+    /**
+     * @param encounter
+     * @param exportTemplate
+     */
+    private EncounterExporterTemplate prepareExporter(Encounter encounter,
+        ExportTemplate exportTemplate) throws Exception {
+        ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
+        // Instantiate a new object based on the type of the export template
+        // with the ConfigurationGroupDao and ConfigurationDao from the
+        // context
+        EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
+            configurationDao);
+
+        if (exporter == null) {
+            LOGGER.error("No Implementation found for {}", exportTemplate.getExportTemplateType());
+            throw new Exception(
+                "No Implementation found for " + exportTemplate.getExportTemplateType());
+        }
+
+        // Initialize the exporter
+        exporter.load(encounter, exportTemplate);
+
+        LOGGER.info("Export Encounter: {}", encounter);
+        for (ExportRule rule : exportTemplate.getExportRules()) {
+            String value = this.getFormattedValue(encounter, rule);
+            exporter.write(rule.getExportField(), value);
+        }
+        return exporter;
     }
 
     /**
@@ -205,31 +253,11 @@ public class EncounterExporter {
      *                       <code>null</code>.
      * @return {@link ExportStatus} for the given {@link ExportTemplate}.
      */
-    private ExportStatus exportEncounter(final Encounter encounter, final ExportTemplate exportTemplate) throws Exception{
+    private ExportStatus exportEncounter(final Encounter encounter,
+        final ExportTemplate exportTemplate) throws Exception {
         ExportTemplateType exportTemplateType = exportTemplate.getExportTemplateType();
-        // Instantiate a new object based on the type of the export template
-        // with the ConfigurationGroupDao and ConfigurationDao from the
-        // context
-        EncounterExporterTemplate exporter = exportTemplateType.createNewExporterInstance(
-            configurationDao);
-        // If no implementation for the exporter exists throw an exception
-        if (exporter == null) {
-            LOGGER.error("No Implementation found for {}",
-                exportTemplate.getExportTemplateType());
-            throw new Exception(
-                "No Implementation found for " + exportTemplate.getExportTemplateType());
-        }
-        // Initialize the exporter
-        exporter.load(encounter, exportTemplate);
-
-        LOGGER.info("Export Encounter: {}", encounter);
-        for (ExportRule rule : exportTemplate.getExportRules()) {
-            String value = this.getFormattedValue(encounter, rule);
-            exporter.write(rule.getExportField(), value);
-        }
-
         // Flush out the export template to the export folder
-        return exporter.flush();
+        return prepareExporter(encounter, exportTemplate).flush();
     }
 
     /**
@@ -254,7 +282,7 @@ public class EncounterExporter {
         String value = "";
         // rule is of the type answer
         if (exportRule instanceof ExportRuleAnswer ruleAnswer) {
-            // there exists an response to the answer
+            // there exists a response to the answer
             if (answerResponseMap.containsKey(ruleAnswer.getAnswer())) {
                 // get the response value based on the export rule
                 value = this.getAnswerValue(ruleAnswer,

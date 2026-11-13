@@ -4,7 +4,7 @@ import de.imi.mopat.dao.ConfigurationDao;
 import de.imi.mopat.dao.ConfigurationGroupDao;
 import de.imi.mopat.dao.ExportTemplateDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.helper.controller.QuestionnaireVersionGroupService;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.helper.controller.StringUtilities;
 import de.imi.mopat.io.importer.ImportQuestionnaireResult;
 import de.imi.mopat.model.ExportTemplate;

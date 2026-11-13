@@ -169,4 +169,6 @@ public interface ConfigurationDao extends MoPatDao<Configuration> {
      * @return The imprint text to display.
      */
     String getImprintText();
+
+    Boolean isEncounterTemplateDownloadEnabled();
 }

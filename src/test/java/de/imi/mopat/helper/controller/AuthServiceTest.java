@@ -4,6 +4,7 @@ import de.imi.mopat.model.user.Authority;
 import de.imi.mopat.model.user.User;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.model.user.UserTest;
+import de.imi.mopat.service.AuthService;
 import de.imi.mopat.utils.Helper;
 import org.junit.Before;
 import org.junit.Test;
