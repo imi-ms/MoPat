@@ -17,6 +17,7 @@ import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,7 +36,7 @@ public class EncounterExporterTemplateODMTest {
             "export-control-files/ODMExportTemplate_test.xml";
 
     private static final String TEMPLATE_FILENAME =
-            "export-control-files/ODMExportTemplate_test.xml";
+            "ODMExportTemplate_test.xml";
 
     private static final String CASE_NUMBER = "CASE-001";
 

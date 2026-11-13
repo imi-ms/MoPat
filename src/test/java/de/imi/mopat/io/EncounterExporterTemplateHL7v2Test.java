@@ -33,7 +33,7 @@ public class EncounterExporterTemplateHL7v2Test {
 
     private static final String HL7_TEMPLATE_RESOURCE = "export-control-files/HL7_export-test.xml";
 
-    private static final String TEMPLATE_FILENAME = "export-control-files/HL7_export-test.xml";
+    private static final String TEMPLATE_FILENAME = "HL7_export-test.xml";
 
     private static final String CASE_NUMBER = "CASE-001";
 
