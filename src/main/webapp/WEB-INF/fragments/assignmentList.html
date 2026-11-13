@@ -197,53 +197,71 @@
                         No matches
                     </div>
 
-                    <!--/* Already added items: collapsible group, collapsed by default.
-                 JS moves rows between this group and the available list and keeps the count up to date. */-->
-                    <details class="mb-3 assignment-list__assigned-group"
-                             th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''"
+                    <!--/* Already added items: Now uses Bootstraps accordion (same component as "Clinic configuration"),
+                           collapsed by default. JS moves rows between this group and the available list.
+                           The collapse id is prefixed with componentId because Bootstrap resolves
+                           data-bs-target globally by id (rule B). */-->
+                    <div class="accordion mb-3 assignment-list__assigned-group"
+                         th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''"
+                         th:with="assignedGroupId=|${cid}-assigned-group|"
                     >
-                        <summary class="mb-2">
-                            <span th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
-                            (
-                            <span class="assignment-list__assigned-group-count"
-                                  th:text="${assignedItems == null ? 0 : #lists.size(assignedItems)}"
-                            >0</span>
-                            )
-                        </summary>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button aria-expanded="false"
+                                        class="accordion-button collapsed assignment-list__assigned-group-toggle"
+                                        data-bs-toggle="collapse"
+                                        th:attr="data-bs-target=|#${assignedGroupId}|,aria-controls=${assignedGroupId}"
+                                        type="button"
+                                >
+                  <span>
+                    <span th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
+                    (<span class="assignment-list__assigned-group-count"
+                           th:text="${assignedItems == null ? 0 : #lists.size(assignedItems)}"
+                  >0</span>)
+                  </span>
+                                </button>
+                            </h3>
 
-                        <div class="list-group assignment-list__selection-assigned">
-                            <div class="list-group-item assignment-selection-row text-muted"
-                                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}"
-                                 th:each="assignment : ${assignedItems}"
-                                 th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+                            <div class="accordion-collapse collapse assignment-list__assigned-group-collapse"
+                                 th:id="${assignedGroupId}"
                             >
-                                <div class="form-check">
-                                    <input class="form-check-input assignment-selection-checkbox"
-                                           disabled="disabled"
-                                           th:id="|${cid}-select-item-${itemDto.id}|"
-                                           type="checkbox"
-                                    />
-                                    <label class="form-check-label w-100"
-                                           th:for="|${cid}-select-item-${itemDto.id}|"
-                                    >
-                                        <span th:text="${itemDto[itemNameField]}">Item</span>
-                                    </label>
-                                </div>
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush assignment-list__selection-assigned">
+                                        <div class="list-group-item assignment-selection-row text-muted"
+                                             th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}"
+                                             th:each="assignment : ${assignedItems}"
+                                             th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+                                        >
+                                            <div class="form-check">
+                                                <input class="form-check-input assignment-selection-checkbox"
+                                                       disabled="disabled"
+                                                       th:id="|${cid}-select-item-${itemDto.id}|"
+                                                       type="checkbox"
+                                                />
+                                                <label class="form-check-label w-100"
+                                                       th:for="|${cid}-select-item-${itemDto.id}|"
+                                                >
+                                                    <span th:text="${itemDto[itemNameField]}">Item</span>
+                                                </label>
+                                            </div>
 
-                                <div class="assignment-item-template d-none">
-                                    <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
-                          itemDto=${itemDto},
-                          itemDtoField=${itemDtoField},
-                          itemNameField=${itemNameField},
-                          isSortable=${sortable},
-                          reorderText=${reorderText},
-                          itemMetaFragment=${itemMetaFragment},
-                          availableDetailFragment=${availableDetailFragment})}"
-                                    ></div>
+                                            <div class="assignment-item-template d-none">
+                                                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                                itemDto=${itemDto},
+                                itemDtoField=${itemDtoField},
+                                itemNameField=${itemNameField},
+                                isSortable=${sortable},
+                                reorderText=${reorderText},
+                                itemMetaFragment=${itemMetaFragment},
+                                availableDetailFragment=${availableDetailFragment})}"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </details>
+                    </div>
 
                     <!--/* Available items */--> <!-- Dieses Element zu Table adden -->
                     <div class="list-group assignment-list__selection">
