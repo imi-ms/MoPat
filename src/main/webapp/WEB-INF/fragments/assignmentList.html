@@ -1,228 +1,390 @@
 <!--/*
     Reusable assignment list fragment.
 
-    Generic module for assigning “items” (questionnaires, clinics, users, etc.)
-    to a parent object (bundle, clinic, invitation, etc.).
+    componentId:   unique namespace per instance on the page.
+                   Only used for real DOM ids (label/for, Bootstrap targets).
+                   Falls back to fieldPrefix when not set.
+    itemDtoField:  name of the property inside each assigned entry that holds the item
+                   (e.g. 'questionnaireDTO'). null = "flat mode": the assigned entry IS the item
+                   (e.g. a plain List<UserDTO>).
+    itemNameField: property of the item that is displayed and searched (e.g. 'name', 'username').
+    isSortable:    true = drag handle, numbering and position field are rendered.
+                   false = list order is fixed, no position is submitted.
 */-->
-<th:block th:fragment="assignmentList(assignedItems, availableItems, fieldPrefix, itemDtoField, isModifiable,
-                                      headingText, headingInfoText, addButtonText, emptyStateText,
-                                      reorderText, alreadyAddedText, disableWhenEmptySelector,
-                                      itemMetaFragment, assignedDetailFragment, availableDetailFragment)">
-  <div id="assignmentList"
-       th:attr="data-field-prefix=${fieldPrefix},
-                data-disable-when-empty=${disableWhenEmptySelector},
-                data-already-added-text=${alreadyAddedText ?: 'Already added'}">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div>
-        <h3 class="h5 mb-0" th:text="${headingText ?: 'Assigned items'}">Assigned items</h3>
-        <small class="text-muted" th:text="${headingInfoText}"></small>
-      </div>
-      <button type="button"
-              class="btn btn-primary"
-              id="openItemSelectionButton"
-              data-bs-toggle="modal"
-              data-bs-target="#itemSelectionModal"
-              th:disabled="${#bools.isFalse(isModifiable)}">
-        <span class="bi bi-plus-lg" aria-hidden="true"></span>
-        <span th:text="${addButtonText ?: 'Add items'}">Add items</span>
-      </button>
+<div class="assignment-list"
+     th:attr="data-component-id=${cid},
+              data-field-prefix=${fieldPrefix},
+              data-sortable=${sortable},
+              data-disable-when-empty=${disableWhenEmptySelector},
+              data-already-added-text=${alreadyAddedText ?: 'Already added'}"
+     th:fragment="assignmentList(componentId, assignedItems, availableItems, fieldPrefix, itemDtoField, itemNameField,
+                                 isSortable, isModifiable,
+                                 headingText, headingInfoText, modalInfoText, itemTypeLabel, addButtonText, emptyStateText,
+                                 reorderText, alreadyAddedText, disableWhenEmptySelector,
+                                 itemMetaFragment, assignedDetailFragment, availableDetailFragment)"
+     th:with="cid=${componentId ?: fieldPrefix},
+              modalId=|${cid}-item-selection-modal|,
+              modalLabelId=|${cid}-item-selection-modal-label|,
+              fieldPath=${itemDtoField == null ? '' : itemDtoField + '.'},
+              sortable=${#bools.isTrue(isSortable)}"
+>
+
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+        <h3 class="h5 mb-0"
+            th:text="${headingText ?: 'Assigned items'}"
+        >Assigned items</h3>
+        <!--/* No own id needed; data-bs-target must point at the prefixed modal id. */-->
+        <button class="btn btn-primary text-nowrap flex-shrink-0 assignment-list__open-modal"
+                data-bs-toggle="modal"
+                th:attr="data-bs-target=|#${modalId}|"
+                th:disabled="${#bools.isFalse(isModifiable)}"
+                type="button"
+        >
+            <span aria-hidden="true"
+                  class="bi bi-plus-lg"
+            ></span>
+            <span th:text="${addButtonText ?: 'Add items'}">Add items</span>
+        </button>
     </div>
 
-    <div id="assignedItemEmptyState"
-         class="alert alert-light border"
+
+    <p class="small text-muted mb-2"
+       th:text="${headingInfoText}"
+       th:unless="${#strings.isEmpty(headingInfoText)}"
+    ></p>
+
+    <div class="alert alert-light border assignment-list__assigned-empty"
          th:style="${#lists.isEmpty(assignedItems)} ? '' : 'display:none;'"
-         th:text="${emptyStateText ?: 'No items assigned'}">
-      No items assigned
+         th:text="${emptyStateText ?: 'No items assigned'}"
+    >
+        No items assigned
     </div>
 
-    <div id="assignedItemList" class="list-group">
-      <div class="list-group-item assignment-list-item"
-           th:each="assignment, status : ${assignedItems}"
-           th:with="itemDto=${assignment.__${itemDtoField}__}"
-           th:attr="data-item-id=${itemDto.id}">
-        <div class="row align-items-start g-2">
-          <div class="col-auto pt-2">
-            <button type="button"
-                    class="btn btn-sm btn-link text-body assignment-drag-handle"
-                    th:disabled="${#bools.isFalse(isModifiable)}"
-                    th:title="${reorderText ?: 'Change order'}">
-              <span class="bi bi-grip-vertical" aria-hidden="true"></span>
-            </button>
-          </div>
+    <div class="list-group assignment-list__assigned">
+        <div class="list-group-item assignment-list-item"
+             th:attr="data-item-id=${itemDto.id}"
+             th:each="assignment, status : ${assignedItems}"
+             th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+        >
+            <div class="row align-items-start g-2">
+                <th:block th:if="${sortable}">
+                    <div class="col-auto pt-2 me-2 text-end assignment-item-position"
+                         style="min-width: 1.5em;"
+                    >
+                        <span th:text="|${status.index + 1}.|">1.</span>
+                        <input data-field="position"
+                               th:name="|${fieldPrefix}[${status.index}].position|"
+                               th:value="${status.index + 1}"
+                               type="hidden"
+                        />
+                    </div>
 
-          <div class="col-auto pt-2 assignment-item-position">
-            <span th:text="|${status.index + 1}.|">1.</span>
-            <input type="hidden"
-                   data-field="position"
-                   th:name="|${fieldPrefix}[${status.index}].position|"
-                   th:value="${status.index + 1}" />
-          </div>
+                    <div class="col-auto pt-1 me-2">
+                        <button class="btn btn-sm btn-link text-body assignment-drag-handle"
+                                th:disabled="${#bools.isFalse(isModifiable)}"
+                                th:title="${reorderText ?: 'Change order'}"
+                                type="button"
+                        >
+                            <span aria-hidden="true"
+                                  class="bi bi-grip-vertical"
+                            ></span>
+                        </button>
+                    </div>
+                </th:block>
 
-          <div class="col">
-            <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
-            <th:block th:if="${itemMetaFragment != null}">
-              <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
-            </th:block>
+                <div class="col pt-2">
+                    <div class="fw-semibold"
+                         th:text="${itemDto[itemNameField]}"
+                    >Item
+                    </div>
+                    <th:block th:if="${itemMetaFragment != null}">
+                        <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+                    </th:block>
 
-            <input type="hidden"
-                   th:attr="data-field=${itemDtoField + '.name'}"
-                   th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.name|"
-                   th:value="${itemDto.name}" />
-            <input type="hidden"
-                   th:attr="data-field=${itemDtoField + '.id'}"
-                   th:name="|${fieldPrefix}[${status.index}].${itemDtoField}.id|"
-                   th:value="${itemDto.id}" />
-          </div>
+                    <input th:attr="data-field=${fieldPath + itemNameField}"
+                           th:name="|${fieldPrefix}[${status.index}].${fieldPath}${itemNameField}|"
+                           th:value="${itemDto[itemNameField]}"
+                           type="hidden"
+                    />
+                    <input th:attr="data-field=${fieldPath + 'id'}"
+                           th:name="|${fieldPrefix}[${status.index}].${fieldPath}id|"
+                           th:value="${itemDto.id}"
+                           type="hidden"
+                    />
+                </div>
 
-          <th:block th:if="${assignedDetailFragment != null}">
-            <th:block th:replace="~{__${assignedDetailFragment}__ (assignment=${assignment},
-                                     itemDto=${itemDto},
-                                     index=${status.index},
-                                     fieldPrefix=${fieldPrefix},
-                                     isModifiable=${isModifiable})}"></th:block>
-          </th:block>
+                <th:block th:if="${assignedDetailFragment != null}">
+                    <th:block th:replace="~{__${assignedDetailFragment}__ (assignment=${assignment},
+                                   itemDto=${itemDto},
+                                   index=${status.index},
+                                   fieldPrefix=${fieldPrefix},
+                                   isModifiable=${isModifiable})}"
+                    ></th:block>
+                </th:block>
 
-          <div class="col-auto pt-1">
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger remove-assignment-item-button"
-                    th:disabled="${#bools.isFalse(isModifiable)}"
-                    th:title="${messages.get(#locale, 'button.remove', 'Remove')}">
-              <span class="bi bi-trash" aria-hidden="true"></span>
-            </button>
-          </div>
+                <div class="col-auto pt-1">
+                    <button class="btn btn-sm btn-outline-danger remove-assignment-item-button"
+                            th:disabled="${#bools.isFalse(isModifiable)}"
+                            th:title="${messages.get(#locale, 'button.remove', 'Remove')}"
+                            type="button"
+                    >
+                        <span aria-hidden="true"
+                              class="bi bi-trash"
+                        ></span>
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <div class="modal fade" id="itemSelectionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title h5" th:text="${addButtonText ?: 'Add items'}">
-            Add items
-          </h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
 
-        <div class="modal-body">
-          <input id="itemSelectionFilter"
-                 class="form-control mb-3"
-                 type="search"
-                 th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}" />
+    <!--/* Hidden by JS while the list is empty.
+         {0} in the confirm text is replaced by itemTypeLabel (e.g. "questionnaires, bundles or users"). */-->
+    <div class="text-end mt-2 assignment-list__remove-all-container"
+         th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''"
+         th:with="removeAllConfirmText=${#strings.replace(
+                  messages.get(#locale, 'assignmentList.confirm.removeAll', 'Do you really want to remove all assigned {0}?'),
+                  '{0}', itemTypeLabel ?: 'items')}"
+    >
+        <button class="btn btn-sm btn-outline-danger assignment-list__remove-all"
+                th:attr="data-confirm-text=${removeAllConfirmText}"
+                th:disabled="${#bools.isFalse(isModifiable)}"
+                type="button"
+        >
+            <span aria-hidden="true"
+                  class="bi bi-trash"
+            ></span>
+            <span th:text="${messages.get(#locale, 'button.removeAll', 'Remove all')}">Remove all</span>
+        </button>
+    </div>
 
-          <div id="itemSelectionEmptyState"
-               class="alert alert-light border"
-               style="display:none;"
-               th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}">
-            No matches
-          </div>
+    <!--/* Modal sits inside the root element so the JS finds it via root.find()
+           instead of a global lookup. */-->
+    <div aria-hidden="true"
+         class="modal fade assignment-list__modal"
+         tabindex="-1"
+         th:attr="aria-labelledby=${modalLabelId}"
+         th:id="${modalId}"
+    >
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5"
+                        th:id="${modalLabelId}"
+                        th:text="${addButtonText ?: 'Add items'}"
+                    >Add items</h2>
+                    <button aria-label="Close"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            type="button"
+                    ></button>
+                </div>
 
-          <div id="itemSelectionList" class="list-group">
-            <!-- Bereits zugewiesene Items werden angezeigt, aber deaktiviert. -->
-            <div class="list-group-item assignment-selection-row"
-                 th:each="assignment : ${assignedItems}"
-                 th:with="itemDto=${assignment.__${itemDtoField}__}"
-                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
-              <div class="form-check">
-                <input class="form-check-input assignment-selection-checkbox"
-                       type="checkbox"
-                       disabled="disabled"
-                       th:id="|select_item_${itemDto.id}|" />
-                <label class="form-check-label w-100"
-                       th:for="|select_item_${itemDto.id}|">
-                  <span th:text="${itemDto.name}">Item</span>
-                  <span class="badge bg-secondary float-end assignment-item-assigned-badge"
-                        th:text="${alreadyAddedText ?: 'Already added'}">
-                    Already added
+                <div class="modal-body">
+                    <p class="small text-muted mb-2"
+                       th:text="${modalInfoText}"
+                       th:unless="${#strings.isEmpty(modalInfoText)}"
+                    ></p>
+                    <input class="form-control mb-3 assignment-list__filter"
+                           th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+                           type="search"
+                    />
+
+                    <div class="alert alert-light border assignment-list__selection-empty"
+                         style="display:none;"
+                         th:text="${messages.get(#locale, 'filter.label.noHits', 'Search didn''t match any results')}"
+                    >
+                        No matches
+                    </div>
+
+                    <!--/* Already added items: Now uses Bootstraps accordion (same component as "Clinic configuration"),
+                           collapsed by default. JS moves rows between this group and the available list.
+                           The collapse id is prefixed with componentId because Bootstrap resolves
+                           data-bs-target globally by id (rule B). */-->
+                    <div class="accordion mb-3 assignment-list__assigned-group"
+                         th:style="${#lists.isEmpty(assignedItems)} ? 'display:none;' : ''"
+                         th:with="assignedGroupId=|${cid}-assigned-group|"
+                    >
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button aria-expanded="false"
+                                        class="accordion-button collapsed assignment-list__assigned-group-toggle"
+                                        data-bs-toggle="collapse"
+                                        th:attr="data-bs-target=|#${assignedGroupId}|,aria-controls=${assignedGroupId}"
+                                        type="button"
+                                >
+                  <span>
+                    <span th:text="${alreadyAddedText ?: 'Already added'}">Already added</span>
+                    (<span class="assignment-list__assigned-group-count"
+                           th:text="${assignedItems == null ? 0 : #lists.size(assignedItems)}"
+                  >0</span>)
                   </span>
-                </label>
-              </div>
+                                </button>
+                            </h3>
 
-              <div class="assignment-item-template d-none">
-                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                            <div class="accordion-collapse collapse assignment-list__assigned-group-collapse"
+                                 th:id="${assignedGroupId}"
+                            >
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush assignment-list__selection-assigned">
+                                        <div class="list-group-item assignment-selection-row text-muted"
+                                             th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}"
+                                             th:each="assignment : ${assignedItems}"
+                                             th:with="itemDto=${itemDtoField == null ? assignment : assignment[itemDtoField]}"
+                                        >
+                                            <div class="form-check">
+                                                <input class="form-check-input assignment-selection-checkbox"
+                                                       disabled="disabled"
+                                                       th:id="|${cid}-select-item-${itemDto.id}|"
+                                                       type="checkbox"
+                                                />
+                                                <label class="form-check-label w-100"
+                                                       th:for="|${cid}-select-item-${itemDto.id}|"
+                                                >
+                                                    <span th:text="${itemDto[itemNameField]}">Item</span>
+                                                </label>
+                                            </div>
+
+                                            <div class="assignment-item-template d-none">
+                                                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
+                                itemDto=${itemDto},
+                                itemDtoField=${itemDtoField},
+                                itemNameField=${itemNameField},
+                                isSortable=${sortable},
+                                reorderText=${reorderText},
+                                itemMetaFragment=${itemMetaFragment},
+                                availableDetailFragment=${availableDetailFragment})}"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--/* Available items */--> <!-- Dieses Element zu Table adden -->
+                    <div class="list-group assignment-list__selection">
+                        <div class="list-group-item assignment-selection-row"
+                             th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto[itemNameField])}"
+                             th:each="itemDto : ${availableItems}"
+                        >
+                            <div class="form-check">
+                                <input class="form-check-input assignment-selection-checkbox"
+                                       th:id="|${cid}-select-item-${itemDto.id}|"
+                                       type="checkbox"
+                                />
+                                <label class="form-check-label w-100"
+                                       th:for="|${cid}-select-item-${itemDto.id}|"
+                                >
+                                    <span th:text="${itemDto[itemNameField]}">Item</span>
+                                    <th:block th:if="${itemMetaFragment != null}">
+                                        <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+                                    </th:block>
+                                </label>
+                            </div>
+
+                            <div class="assignment-item-template d-none">
+                                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
                         itemDto=${itemDto},
                         itemDtoField=${itemDtoField},
+                        itemNameField=${itemNameField},
+                        isSortable=${sortable},
                         reorderText=${reorderText},
                         itemMetaFragment=${itemMetaFragment},
-                        availableDetailFragment=${availableDetailFragment})}"></div>
-              </div>
-            </div>
+                        availableDetailFragment=${availableDetailFragment})}"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="list-group-item assignment-selection-row"
-                 th:each="itemDto : ${availableItems}"
-                 th:attr="data-item-id=${itemDto.id},data-search-name=${#strings.toLowerCase(itemDto.name)}">
-              <div class="form-check">
-                <input class="form-check-input assignment-selection-checkbox"
-                       type="checkbox"
-                       th:id="|select_item_${itemDto.id}|" />
-                <label class="form-check-label w-100"
-                       th:for="|select_item_${itemDto.id}|">
-                  <span th:text="${itemDto.name}">Item</span>
-                  <th:block th:if="${itemMetaFragment != null}">
-                    <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
-                  </th:block>
-                </label>
-              </div>
-
-              <div class="assignment-item-template d-none">
-                <div th:replace="~{fragments/assignmentList :: assignmentItemTemplate(
-                        itemDto=${itemDto},
-                        itemDtoField=${itemDtoField},
-                        reorderText=${reorderText},
-                        itemMetaFragment=${itemMetaFragment},
-                        availableDetailFragment=${availableDetailFragment})}"></div>
-              </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary"
+                            data-bs-dismiss="modal"
+                            th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}"
+                            type="button"
+                    >Cancel
+                    </button>
+                    <button class="btn btn-primary assignment-list__add-selected"
+                            disabled="disabled"
+                            type="button"
+                    >
+                        <span th:text="${messages.get(#locale, 'button.addSelection', 'Add selected')}">Add selected</span>
+                        <span class="assignment-list__selected-count">(0)</span>
+                    </button>
+                </div>
             </div>
-          </div>
+        </div>
+    </div>
+</div>
+
+<!--/* Cloned once per added item, so this markup exists n times in the DOM.
+       Ids must stay out entirely: a componentId prefix makes ids unique
+       across instances, but not across clones within one instance.
+       Labels therefore wrap their input instead of using for/id. */-->
+<div class="list-group-item assignment-list-item"
+     th:attr="data-item-id=${itemDto.id}"
+     th:fragment="assignmentItemTemplate(itemDto, itemDtoField, itemNameField, isSortable, reorderText,
+                                         itemMetaFragment, availableDetailFragment)"
+     th:with="fieldPath=${itemDtoField == null ? '' : itemDtoField + '.'}"
+>
+    <div class="row align-items-start g-2">
+        <th:block th:if="${#bools.isTrue(isSortable)}">
+            <div class="col-auto pt-2 me-2 text-end assignment-item-position"
+                 style="min-width: 1.5em;"
+            >
+                <span>0.</span>
+                <input data-field="position"
+                       disabled="disabled"
+                       type="hidden"
+                       value="0"
+                />
+            </div>
+            <div class="col-auto pt-1 me-2">
+                <button class="btn btn-sm btn-link text-body assignment-drag-handle"
+                        th:title="${reorderText ?: 'Change order'}"
+                        type="button"
+                >
+                    <span aria-hidden="true"
+                          class="bi bi-grip-vertical"
+                    ></span>
+                </button>
+            </div>
+        </th:block>
+        <div class="col pt-2">
+            <div class="fw-semibold"
+                 th:text="${itemDto[itemNameField]}"
+            >Item
+            </div>
+            <th:block th:if="${itemMetaFragment != null}">
+                <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
+            </th:block>
+            <input disabled="disabled"
+                   th:attr="data-field=${fieldPath + itemNameField}"
+                   th:value="${itemDto[itemNameField]}"
+                   type="hidden"
+            />
+            <input disabled="disabled"
+                   th:attr="data-field=${fieldPath + 'id'}"
+                   th:value="${itemDto.id}"
+                   type="hidden"
+            />
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                  th:text="${messages.get(#locale, 'button.cancel', 'Cancel')}">Cancel</button>
-          <button type="button" class="btn btn-primary" id="addSelectedItemsButton" disabled="disabled">
-            <span th:text="${messages.get(#locale, 'button.addSelection', 'Add selected')}">Add selected</span>
-            <span id="selectedItemCount">(0)</span>
-          </button>
+        <th:block th:if="${availableDetailFragment != null}">
+            <th:block th:replace="~{__${availableDetailFragment}__ (itemDto=${itemDto})}"></th:block>
+        </th:block>
+
+        <div class="col-auto pt-1">
+            <button class="btn btn-sm btn-outline-danger remove-assignment-item-button"
+                    th:title="${messages.get(#locale, 'button.remove', 'Remove')}"
+                    type="button"
+            >
+                <span aria-hidden="true"
+                      class="bi bi-trash"
+                ></span>
+            </button>
         </div>
-      </div>
     </div>
-  </div>
-</th:block>
-
-<!-- Template that is cloned when an available item is added to the list. -->
-<div th:fragment="assignmentItemTemplate(itemDto, itemDtoField, reorderText, itemMetaFragment, availableDetailFragment)"
-     class="list-group-item assignment-list-item"
-     th:attr="data-item-id=${itemDto.id}">
-  <div class="row align-items-start g-2">
-    <div class="col-auto pt-2">
-      <button type="button" class="btn btn-sm btn-link text-body assignment-drag-handle"
-              th:title="${reorderText ?: 'Change order'}">
-        <span class="bi bi-grip-vertical" aria-hidden="true"></span>
-      </button>
-    </div>
-    <div class="col-auto pt-2 assignment-item-position">
-      <span>0.</span>
-      <input type="hidden" data-field="position" value="0" disabled="disabled" />
-    </div>
-    <div class="col">
-      <div class="fw-semibold" th:text="${itemDto.name}">Item</div>
-      <th:block th:if="${itemMetaFragment != null}">
-        <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
-      </th:block>
-      <input type="hidden" th:attr="data-field=${itemDtoField + '.name'}" th:value="${itemDto.name}" disabled="disabled" />
-      <input type="hidden" th:attr="data-field=${itemDtoField + '.id'}" th:value="${itemDto.id}" disabled="disabled" />
-    </div>
-
-    <th:block th:if="${availableDetailFragment != null}">
-      <th:block th:replace="~{__${availableDetailFragment}__ (itemDto=${itemDto})}"></th:block>
-    </th:block>
-
-    <div class="col-auto pt-1">
-      <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-item-button"
-              th:title="${messages.get(#locale, 'button.remove', 'Remove')}">
-        <span class="bi bi-trash" aria-hidden="true"></span>
-      </button>
-    </div>
-  </div>
 </div>

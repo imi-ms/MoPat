@@ -1,4 +1,6 @@
 <!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
+<!--/*  Checkbox labels wrap their input (label.form-check) instead of using id/for,
+        because this markup is cloned and ids would not be unique.  */-->
 <th:block>
 
   <!-- additional info below the name: version -->
@@ -19,16 +21,16 @@
           (Manage scores)
         </a>
       </div>
-      <div class="form-check" th:if="${itemDto.hasScores}">
+      <label class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input"
                type="checkbox"
                data-field="showScores"
                th:name="|${fieldPrefix}[${index}].showScores|"
                th:checked="${assignment.showScores}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
+      </label>
       <span class="text-muted small fst-italic"
             th:unless="${itemDto.hasScores}"
             th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
@@ -39,8 +41,8 @@
     <div class="col-md-4">
       <div class="small fw-semibold mb-1"
            th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-      <div class="form-check"
-           th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+      <label class="form-check"
+             th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
                th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
                th:name="|${fieldPrefix}[${index}].questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
@@ -52,25 +54,25 @@
                th:value="${exportTemplate.id}"
                th:checked="${assignment.exportTemplates.contains(exportTemplate.id)}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+        <span class="form-check-label"
+              th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
-        </label>
-      </div>
+        </span>
+      </label>
       <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
     </div>
 
     <div class="col-md-2">
-      <div class="form-check mt-2">
+      <label class="form-check mt-2">
         <input class="form-check-input"
                type="checkbox"
                data-field="isEnabled"
                th:name="|${fieldPrefix}[${index}].isEnabled|"
                th:checked="${assignment.isEnabled}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</span>
+      </label>
     </div>
   </th:block>
 
@@ -86,11 +88,11 @@
           (Manage scores)
         </a>
       </div>
-      <div class="form-check" th:if="${itemDto.hasScores}">
+      <label class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
+      </label>
       <span class="text-muted small fst-italic"
             th:unless="${itemDto.hasScores}"
             th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
@@ -101,7 +103,7 @@
     <div class="col-md-4">
       <div class="small fw-semibold mb-1"
            th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-      <div class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+      <label class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
                th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
                th:value="${exportTemplate.id}"
@@ -111,20 +113,20 @@
                data-field="exportTemplates"
                th:value="${exportTemplate.id}"
                disabled="disabled" />
-        <label class="form-check-label"
-               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+        <span class="form-check-label"
+              th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
-        </label>
-      </div>
+        </span>
+      </label>
       <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
     </div>
 
     <div class="col-md-2">
-      <div class="form-check mt-2">
+      <label class="form-check mt-2">
         <input class="form-check-input" type="checkbox" data-field="isEnabled" checked="checked" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</span>
+      </label>
     </div>
   </th:block>
 
