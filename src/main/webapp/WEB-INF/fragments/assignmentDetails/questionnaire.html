@@ -1,4 +1,4 @@
-<!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
+<<!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
 <!--/*  Checkbox labels wrap their input (label.form-check) instead of using id/for,
         because this markup is cloned and ids would not be unique.  */-->
 <th:block>
@@ -12,9 +12,9 @@
   <!-- additional columns for assigned rows -->
   <th:block th:fragment="questionnaireAssignedDetail(assignment, itemDto, index, fieldPrefix, isModifiable)">
     <div class="col-md-2">
-      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+      <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small"
+        <a class="small fw-normal ms-1"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
@@ -39,7 +39,7 @@
     </div>
 
     <div class="col-md-4">
-      <div class="small fw-semibold mb-1"
+      <div class="fw-bold mb-1"
            th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
       <label class="form-check"
              th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
@@ -54,12 +54,16 @@
                th:value="${exportTemplate.id}"
                th:checked="${assignment.exportTemplates.contains(exportTemplate.id)}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <span class="form-check-label"
+        <span class="form-check-label fw-normal"
               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
         </span>
       </label>
-      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+      <span class="text-muted small fst-italic"
+            th:if="${#sets.isEmpty(itemDto.exportTemplates)}"
+            th:text="${messages.get(#locale, 'bundle.table.noExportTemplates', 'No templates available')}">
+        No templates available
+      </span>
     </div>
 
     <div class="col-md-2">
@@ -79,9 +83,9 @@
   <!-- additional columns for the template row (disabled defaults; JS enables + names on add) -->
   <th:block th:fragment="questionnaireAvailableDetail(itemDto)">
     <div class="col-md-2">
-      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+      <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small"
+        <a class="small fw-normal ms-1"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
@@ -101,7 +105,7 @@
     </div>
 
     <div class="col-md-4">
-      <div class="small fw-semibold mb-1"
+      <div class="fw-bold mb-1"
            th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
       <label class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
@@ -113,12 +117,16 @@
                data-field="exportTemplates"
                th:value="${exportTemplate.id}"
                disabled="disabled" />
-        <span class="form-check-label"
+        <span class="form-check-label fw-normal"
               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
         </span>
       </label>
-      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+      <span class="text-muted small fst-italic"
+            th:if="${#sets.isEmpty(itemDto.exportTemplates)}"
+            th:text="${messages.get(#locale, 'bundle.table.noExportTemplates', 'No templates available')}">
+        No templates available
+      </span>
     </div>
 
     <div class="col-md-2">
@@ -130,4 +138,4 @@
     </div>
   </th:block>
 
-</th:block>
+</th:block>>
