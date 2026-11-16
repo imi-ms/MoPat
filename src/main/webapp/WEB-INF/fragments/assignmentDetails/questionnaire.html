@@ -28,7 +28,7 @@
                th:name="|${fieldPrefix}[${index}].showScores|"
                th:checked="${assignment.showScores}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <span class="form-check-label"
+        <span class="form-check-label fw-normal"
               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
       </label>
       <span class="text-muted small fst-italic"
@@ -94,7 +94,7 @@
       </div>
       <label class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
-        <span class="form-check-label"
+        <span class="form-check-label fw-normal"
               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
       </label>
       <span class="text-muted small fst-italic"
