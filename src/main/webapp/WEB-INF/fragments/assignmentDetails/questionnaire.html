@@ -14,7 +14,7 @@
     <div class="col-md-2">
       <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small fw-normal ms-1"
+        <a class="small fw-normal ms-1 link"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
@@ -85,7 +85,7 @@
     <div class="col-md-2">
       <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small fw-normal ms-1"
+        <a class="small fw-normal ms-1 link"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">

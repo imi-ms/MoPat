@@ -67,8 +67,13 @@ table.dataTable tbody td {
             text-decoration: underline;
         }
     }
-    
-} 
+    /* Small variant of .link: use class="link small".
+        Its needed bc .link sets a fixed font-size that would override .small.
+        &. -> only used when small is also called*/
+    &.small{
+        font-size: .875em;
+    }
+}
 
 .dropdown {
     position: relative;
