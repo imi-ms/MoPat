@@ -1,4 +1,6 @@
-<!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
+<<!--/*  specific adjustments for assignmentLists which belong to questionnaires  */-->
+<!--/*  Checkbox labels wrap their input (label.form-check) instead of using id/for,
+        because this markup is cloned and ids would not be unique.  */-->
 <th:block>
 
   <!-- additional info below the name: version -->
@@ -10,25 +12,25 @@
   <!-- additional columns for assigned rows -->
   <th:block th:fragment="questionnaireAssignedDetail(assignment, itemDto, index, fieldPrefix, isModifiable)">
     <div class="col-md-2">
-      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+      <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small"
+        <a class="small fw-normal ms-1 link"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
           (Manage scores)
         </a>
       </div>
-      <div class="form-check" th:if="${itemDto.hasScores}">
+      <label class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input"
                type="checkbox"
                data-field="showScores"
                th:name="|${fieldPrefix}[${index}].showScores|"
                th:checked="${assignment.showScores}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
-      </div>
+        <span class="form-check-label fw-normal"
+              th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
+      </label>
       <span class="text-muted small fst-italic"
             th:unless="${itemDto.hasScores}"
             th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
@@ -37,10 +39,17 @@
     </div>
 
     <div class="col-md-4">
-      <div class="small fw-semibold mb-1"
-           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-      <div class="form-check"
-           th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+      <div class="fw-bold mb-1">
+        <span th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</span>
+        <a class="small fw-normal ms-1 link text-nowrap"
+           th:href="@{/mapping/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageExportTemplates', '(Manage templates)')}">
+          (Manage templates)
+        </a>
+      </div>
+      <label class="form-check"
+             th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
                th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
                th:name="|${fieldPrefix}[${index}].questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
@@ -52,45 +61,49 @@
                th:value="${exportTemplate.id}"
                th:checked="${assignment.exportTemplates.contains(exportTemplate.id)}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+        <span class="form-check-label fw-normal"
+              th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
-        </label>
-      </div>
-      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+        </span>
+      </label>
+      <span class="text-muted small fst-italic"
+            th:if="${#sets.isEmpty(itemDto.exportTemplates)}"
+            th:text="${messages.get(#locale, 'bundle.table.noExportTemplates', 'No templates available')}">
+        No templates available
+      </span>
     </div>
 
     <div class="col-md-2">
-      <div class="form-check mt-2">
+      <label class="form-check mt-2">
         <input class="form-check-input"
                type="checkbox"
                data-field="isEnabled"
                th:name="|${fieldPrefix}[${index}].isEnabled|"
                th:checked="${assignment.isEnabled}"
                th:disabled="${#bools.isFalse(isModifiable)}" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</span>
+      </label>
     </div>
   </th:block>
 
   <!-- additional columns for the template row (disabled defaults; JS enables + names on add) -->
   <th:block th:fragment="questionnaireAvailableDetail(itemDto)">
     <div class="col-md-2">
-      <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+      <div class="fw-bold mb-1">
         <span th:text="${messages.get(#locale, 'bundle.table.score', 'Score')}">Score</span>
-        <a class="small"
+        <a class="small fw-normal ms-1 link"
            th:href="@{/score/list(id=${itemDto.id})}"
            target="_blank"
            th:text="${messages.get(#locale, 'bundle.table.manageScores', '(Manage scores)')}">
           (Manage scores)
         </a>
       </div>
-      <div class="form-check" th:if="${itemDto.hasScores}">
+      <label class="form-check" th:if="${itemDto.hasScores}">
         <input class="form-check-input" type="checkbox" data-field="showScores" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</label>
-      </div>
+        <span class="form-check-label fw-normal"
+              th:text="${messages.get(#locale, 'bundle.table.showScores', 'Show score')}">Show score</span>
+      </label>
       <span class="text-muted small fst-italic"
             th:unless="${itemDto.hasScores}"
             th:text="${messages.get(#locale, 'bundle.table.noScores', 'No scores available')}">
@@ -99,9 +112,16 @@
     </div>
 
     <div class="col-md-4">
-      <div class="small fw-semibold mb-1"
-           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
-      <div class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
+      <div class="fw-bold mb-1">
+        <span th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</span>
+        <a class="small fw-normal ms-1 link text-nowrap"
+           th:href="@{/mapping/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageExportTemplates', '(Manage templates)')}">
+          (Manage templates)
+        </a>
+      </div>
+      <label class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
                th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
                th:value="${exportTemplate.id}"
@@ -111,21 +131,25 @@
                data-field="exportTemplates"
                th:value="${exportTemplate.id}"
                disabled="disabled" />
-        <label class="form-check-label"
-               th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
+        <span class="form-check-label fw-normal"
+              th:text="|(${exportTemplate.exportTemplateType}:${exportTemplate.configurationGroup.name}) ${exportTemplate.name}|">
           Export template
-        </label>
-      </div>
-      <span class="text-muted small" th:if="${#sets.isEmpty(itemDto.exportTemplates)}">–</span>
+        </span>
+      </label>
+      <span class="text-muted small fst-italic"
+            th:if="${#sets.isEmpty(itemDto.exportTemplates)}"
+            th:text="${messages.get(#locale, 'bundle.table.noExportTemplates', 'No templates available')}">
+        No templates available
+      </span>
     </div>
 
     <div class="col-md-2">
-      <div class="form-check mt-2">
+      <label class="form-check mt-2">
         <input class="form-check-input" type="checkbox" data-field="isEnabled" checked="checked" disabled="disabled" />
-        <label class="form-check-label"
-               th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</label>
-      </div>
+        <span class="form-check-label"
+              th:text="${messages.get(#locale, 'bundle.table.isEnabled', 'Enabled')}">Enabled</span>
+      </label>
     </div>
   </th:block>
 
-</th:block>
+</th:block>>

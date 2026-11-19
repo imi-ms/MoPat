@@ -385,8 +385,8 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PUBLISH, "Failed to locate publish checkbox")
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_NAME_PROGRESS, "Failed to locate name progress checkbox")
         self.utils.check_visibility_of_element(BundleSelectors.CHECKBOX_PROGRESS_WHOLE_PACKAGE, "Failed to locate progress whole package checkbox")
-        self.utils.check_visibility_of_element(BundleSelectors.TABLE_AVAILABLE_QUESTIONNAIRES, "Available questionnaires table not found")
-        self.utils.check_visibility_of_element(BundleSelectors.TABLE_ASSIGNED_QUESTIONNAIRES, "Assigned questionnaires table not found")
+        self.utils.check_visibility_of_element(BundleSelectors.QUESTIONNAIRE_ASSIGNMENT_LIST, "Questionnaire assignment list not found")
+        self.utils.check_visibility_of_element(BundleSelectors.BUTTON_OPEN_QUESTIONNAIRE_MODAL, "Add questionnaires button not found")
 
         #Assert - Test for assigning questionnaire to bundle
         try:
@@ -474,7 +474,7 @@ class CustomTest(IMISeleniumBaseTest):
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_NAME, "Clinic name input not found")
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_EDITABLE_DESCRIPTION, "Clinic description input not found")
         self.utils.check_visibility_of_element(ClinicSelectors.INPUT_CLINIC_EMAIL, "Clinic email input not found")
-        
+
         #Assert - Check if the clinic configuration is displayed
         try:
             WebDriverWait(self.driver, 10).until(
@@ -486,17 +486,16 @@ class CustomTest(IMISeleniumBaseTest):
         except:
             self.fail(
                 f"Clinic configuration not found")
-            
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_BUNDLES, "Available bundles table not found")
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_BUNDLES, "Assigned bundles table not found")            
 
-                    
+        self.utils.check_visibility_of_element(ClinicSelectors.BUNDLE_ASSIGNMENT_LIST, "Bundle assignment list not found")
+        self.utils.check_visibility_of_element(ClinicSelectors.BUTTON_OPEN_BUNDLE_MODAL, "Add bundles button not found")
+
         #Assert - Check if the bundles can be added to the clinic
         try:
             self.clinic_helper.assign_multiple_bundes_to_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
         except Exception as e:
             self.fail(f"Failed to assign bundle to clinic: {e}")
-        
+
         #Assert - Check if the bundles can be removed from the clinic
         try:
             self.clinic_helper.remove_multiple_bundes_from_clinic([{'id': bundle["id"], 'name': bundle["name"]}])
@@ -504,7 +503,7 @@ class CustomTest(IMISeleniumBaseTest):
             self.fail(f"Failed to remove bundle from clinic: {e}")
 
         self.utils.check_visibility_of_element(ClinicSelectors.TABLE_AVAIALBLE_USERS, "Available users table not found")
-        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_USERS, "Assigned users table not found") 
+        self.utils.check_visibility_of_element(ClinicSelectors.TABLE_ASSIGNED_USERS, "Assigned users table not found")
 
         #Assert - Check if the users can be added to the clinic
         try:
