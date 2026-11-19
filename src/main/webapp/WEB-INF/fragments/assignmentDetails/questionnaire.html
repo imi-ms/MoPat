@@ -39,8 +39,15 @@
     </div>
 
     <div class="col-md-4">
-      <div class="fw-bold mb-1"
-           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
+      <div class="fw-bold mb-1">
+        <span th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</span>
+        <a class="small fw-normal ms-1 link text-nowrap"
+           th:href="@{/mapping/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageExportTemplates', '(Manage templates)')}">
+          (Manage templates)
+        </a>
+      </div>
       <label class="form-check"
              th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
@@ -105,8 +112,15 @@
     </div>
 
     <div class="col-md-4">
-      <div class="fw-bold mb-1"
-           th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</div>
+      <div class="fw-bold mb-1">
+        <span th:text="${messages.get(#locale, 'bundle.table.export', 'Export')}">Export</span>
+        <a class="small fw-normal ms-1 link text-nowrap"
+           th:href="@{/mapping/list(id=${itemDto.id})}"
+           target="_blank"
+           th:text="${messages.get(#locale, 'bundle.table.manageExportTemplates', '(Manage templates)')}">
+          (Manage templates)
+        </a>
+      </div>
       <label class="form-check" th:each="exportTemplate, templateStatus : ${itemDto.exportTemplates}">
         <input type="hidden"
                th:attr="data-field=|questionnaireDTO.exportTemplate[${templateStatus.index}].id|"
