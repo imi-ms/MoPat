@@ -181,14 +181,17 @@
                 </div>
 
                 <div class="modal-body">
-                    <p class="mb-2"
-                       th:text="${modalInfoText}"
-                       th:unless="${#strings.isEmpty(modalInfoText)}"
-                    ></p>
-                    <input class="form-control mb-3 assignment-list__filter"
-                           th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
-                           type="search"
-                    />
+                    <!--/* Stays at the top while the list below is scrollable */-->
+                    <div class="assignment-list__sticky-header">
+                        <p class="mb-2"
+                           th:text="${modalInfoText}"
+                           th:unless="${#strings.isEmpty(modalInfoText)}"
+                        ></p>
+                        <input class="form-control mb-3 assignment-list__filter"
+                               th:placeholder="${messages.get(#locale, 'filter.label.placeholder', 'Search for...')}"
+                               type="search"
+                        />
+                    </div>
 
                     <div class="alert alert-light border assignment-list__selection-empty"
                          style="display:none;"
@@ -196,6 +199,8 @@
                     >
                         No matches
                     </div>
+
+                    <!-- A -->
 
                     <!--/* Already added items: Now uses Bootstraps accordion (same component as "Clinic configuration"),
                            collapsed by default. JS moves rows between this group and the available list.

@@ -519,3 +519,13 @@ legend {
 .accordion {
     --bs-accordion-active-bg: @color-blue-tinted;
 }
+
+
+/* Assignment modal: info text and search field stays sticky at the top,
+   the list below scrolls*/
+.assignment-list__sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;                              // above the list and the accordion button
+    background-color: var(--bs-modal-bg);    // lists scroll underneath, not visible through it
+}
