@@ -519,3 +519,12 @@ legend {
 .accordion {
     --bs-accordion-active-bg: @color-blue-tinted;
 }
+
+
+/* Assignment modal: info text and search field stay at the top while  list scrolls.
+   Pulled up over the modal body padding (1rem) so no rows are visible above the search field */
+.assignment-list__sticky-header {
+    top: -1rem;
+    margin-top: -1rem;
+    padding-top: 1rem;
+}
