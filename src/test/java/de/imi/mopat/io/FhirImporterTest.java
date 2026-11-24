@@ -18,7 +18,6 @@ import de.imi.mopat.dao.OperatorDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
 import de.imi.mopat.dao.ScoreDao;
-import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import de.imi.mopat.io.impl.MetadataExporterFhirDstu3;
 import de.imi.mopat.io.impl.MetadataExporterFhirR4b;
 import de.imi.mopat.io.impl.MetadataExporterFhirR5;
@@ -36,6 +35,7 @@ import de.imi.mopat.model.QuestionnaireVersionGroup;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
 import de.imi.mopat.model.enumeration.FhirVersion;
 import de.imi.mopat.model.user.User;
+import de.imi.mopat.service.QuestionnaireVersionGroupService;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -178,7 +178,8 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(
+            multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);
@@ -206,7 +207,8 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(
+            multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);
@@ -234,7 +236,8 @@ public class FhirImporterTest {
         MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain",
             IOUtils.toByteArray(input));
 
-        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(multipartFile);
+        Questionnaire questionnaire = mopatCompleteQuestionnaireImporter.importQuestionnaire(
+            multipartFile);
 
         LocalDateTime dateTime = LocalDateTime.of(2000, 1, 1, 20, 0, 0, 0);
         Timestamp timestamp = Timestamp.valueOf(dateTime);
@@ -380,7 +383,8 @@ public class FhirImporterTest {
             assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(
+                checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
@@ -437,7 +441,8 @@ public class FhirImporterTest {
             assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(
+                checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
@@ -488,7 +493,8 @@ public class FhirImporterTest {
             assertTrue(checkIfErrorIsPresent(result, "error", 9, "/f:Questionnaire"));
 
             //<!-- Missing description value -->
-            assertTrue(checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
+            assertTrue(
+                checkIfErrorIsPresent(result, "error", 27, "/f:Questionnaire/f:description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
             assertTrue(checkIfErrorIsPresent(result, "error", 27, "Questionnaire.description"));
 
@@ -539,19 +545,19 @@ public class FhirImporterTest {
 
     private boolean checkIfErrorIsPresent(ImportQuestionnaireValidation result, String type,
         int lineNumber, String fhirPath) {
-            boolean match = false;
+        boolean match = false;
 
-            for (ImportQuestionnaireError error : filterValidationByIndex(result, lineNumber)) {
-                Object[] arguments = error.getErrorArguments();
-                try {
-                    if (arguments[0].equals(type) && lineNumber == ((int) arguments[1])
-                        && arguments[2].equals(fhirPath)) {
-                        match = true;
-                    }
-                } catch (Exception ignored) {
+        for (ImportQuestionnaireError error : filterValidationByIndex(result, lineNumber)) {
+            Object[] arguments = error.getErrorArguments();
+            try {
+                if (arguments[0].equals(type) && lineNumber == ((int) arguments[1])
+                    && arguments[2].equals(fhirPath)) {
+                    match = true;
                 }
+            } catch (Exception ignored) {
             }
-            return match;
+        }
+        return match;
     }
 
     private List<ImportQuestionnaireError> filterValidationByIndex(

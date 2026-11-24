@@ -11,12 +11,10 @@ import de.imi.mopat.io.impl.EncounterExporterTemplateREDCap;
 import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -24,18 +22,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 public class EncounterExporterTemplateREDCapTest {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     /**
-     * Provides a temporary directory for the exported test file.
-     * The directory is automatically removed after the test.
+     * Provides a temporary directory for the exported test file. The directory is automatically
+     * removed after the test.
      */
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     /**
-     * Verifies that the REDCap file that is being exported and the REDCap file that can be downloaded
-     * contain the same data, even though the data format differs.
+     * Verifies that the REDCap file that is being exported and the REDCap file that can be
+     * downloaded contain the same data, even though the data format differs.
      *
      * @throws Exception if preparing, reading or writing the export fails
      */
@@ -57,15 +54,15 @@ public class EncounterExporterTemplateREDCapTest {
 
         // Create actual REDCap exporter
         EncounterExporterTemplateREDCap exporter =
-                new EncounterExporterTemplateREDCap(configurationDao);
+            new EncounterExporterTemplateREDCap(configurationDao);
 
         //Set internal exporter state directly
         ReflectionTestUtils.setField(exporter, "encounter", encounter);
         ReflectionTestUtils.setField(exporter, "exportTemplate", exportTemplate);
         ReflectionTestUtils.setField(
-                exporter,
-                "exportJSON",
-                Map.of("record_id", "test")
+            exporter,
+            "exportJSON",
+            Map.of("record_id", "test")
         );
 
         // Use temporary directory as the destination for the regular file export
@@ -75,9 +72,9 @@ public class EncounterExporterTemplateREDCapTest {
         exporter.exportToDirectory(exportPath);
 
         Path exportDirectory = Path.of(
-                exportPath,
-                "TestQuestionnaire",
-                "TestTemplate"
+            exportPath,
+            "TestQuestionnaire",
+            "TestTemplate"
         );
 
         // Locate file
@@ -89,8 +86,8 @@ public class EncounterExporterTemplateREDCapTest {
 
         // Read content
         String exportedContent = Files.readString(
-                exportedFile,
-                StandardCharsets.UTF_8
+            exportedFile,
+            StandardCharsets.UTF_8
         );
 
         // Act: generate the download-content
@@ -108,12 +105,13 @@ public class EncounterExporterTemplateREDCapTest {
     }
 
 
-     /** Converts plain JSON returned by the download into the serialized
-     * string representation used by the regular REDCap file export.
-*/
+    /**
+     * Converts plain JSON returned by the download into the serialized string representation used
+     * by the regular REDCap file export.
+     */
 
     private String convertDownloadContentToExportFormat(
-            final String downloadContent) throws Exception {
+        final String downloadContent) throws Exception {
 
         return objectMapper.writeValueAsString(downloadContent);
     }

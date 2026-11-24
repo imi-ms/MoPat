@@ -85,48 +85,33 @@ import org.springframework.web.multipart.MultipartFile;
 public class MoPatQuestionnaireImportExportTest {
 
     private static final Random random = new Random();
-    private Questionnaire testQuestionnaire;
-    private Questionnaire testQuestionnaireWithoutExportTemplates;
-
-    private MetadataExporterMoPatComplete exporter;
-
-
-    @Autowired
-    private ConfigurationGroupDao configurationGroupDao;
-
-    @Autowired
-    private ExportTemplateDao exportTemplateDao;
-
-    @Autowired
-    private ExportRuleDao exportRuleDao;
-
-    @Autowired
-    private ExportRuleFormatDao exportRuleFormatDao;
-
-    @Autowired
-    private QuestionnaireDao questionnaireDao;
-
-    @Autowired
-    private QuestionDao questionDao;
-
-    @Autowired
-    private AnswerDao answerDao;
-
-    @Autowired
-    private ScoreDao scoreDao;
-
-    @Autowired
-    private ConfigurationDao configurationDao;
-
-    @Mock
-    private MessageSource messageSource;
-
-    @Autowired
-    private MopatCompleteQuestionnaireImporter importer;
-
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
-
+    private Questionnaire testQuestionnaire;
+    private Questionnaire testQuestionnaireWithoutExportTemplates;
+    private MetadataExporterMoPatComplete exporter;
+    @Autowired
+    private ConfigurationGroupDao configurationGroupDao;
+    @Autowired
+    private ExportTemplateDao exportTemplateDao;
+    @Autowired
+    private ExportRuleDao exportRuleDao;
+    @Autowired
+    private ExportRuleFormatDao exportRuleFormatDao;
+    @Autowired
+    private QuestionnaireDao questionnaireDao;
+    @Autowired
+    private QuestionDao questionDao;
+    @Autowired
+    private AnswerDao answerDao;
+    @Autowired
+    private ScoreDao scoreDao;
+    @Autowired
+    private ConfigurationDao configurationDao;
+    @Mock
+    private MessageSource messageSource;
+    @Autowired
+    private MopatCompleteQuestionnaireImporter importer;
 
     @Before
     public void setUp() throws IOException {
@@ -179,11 +164,12 @@ public class MoPatQuestionnaireImportExportTest {
         );
 
         ConfigurationGroup objectStoragePath = configurationGroups.stream().filter(
-                group -> group.getConfigurations().stream()
-                    .anyMatch(config -> config.getAttribute().equals("objectStoragePath"))
-            ).toList().get(0);
+            group -> group.getConfigurations().stream()
+                .anyMatch(config -> config.getAttribute().equals("objectStoragePath"))
+        ).toList().get(0);
 
-        Configuration objectStoragePathConfig = objectStoragePath.getConfigurations().stream().filter(config -> config.getAttribute().equals("objectStoragePath")).toList().get(0);
+        Configuration objectStoragePathConfig = objectStoragePath.getConfigurations().stream()
+            .filter(config -> config.getAttribute().equals("objectStoragePath")).toList().get(0);
         objectStoragePathConfig.setValue(tempFolder.getRoot().getAbsolutePath() + File.separator);
         configurationDao.merge(objectStoragePathConfig);
 
@@ -249,8 +235,8 @@ public class MoPatQuestionnaireImportExportTest {
 
         // Create template file
         createTemplateFile(
-                template,
-                Path.of(configurationDao.getObjectStoragePath())
+            template,
+            Path.of(configurationDao.getObjectStoragePath())
         );
 
         // Add export rules for all answers in questionnaire
@@ -387,12 +373,13 @@ public class MoPatQuestionnaireImportExportTest {
         assertFalse("Import failed. Export templates were empty.",
             imported.getExportTemplates().isEmpty());
 
+        Collection<ExportTemplate> exportTemplates = exportTemplateDao.getElementsById(
+            imported.getExportTemplates().stream()
+                .map(ExportTemplate::getId)
+                .toList());
 
-        Collection<ExportTemplate> exportTemplates = exportTemplateDao.getElementsById(imported.getExportTemplates().stream()
-            .map(ExportTemplate::getId)
-            .toList());
-
-        ExportTemplate updatedExportTemplate = exportTemplates.stream().filter(x->!x.getExportRules().isEmpty()).findFirst().get();
+        ExportTemplate updatedExportTemplate = exportTemplates.stream()
+            .filter(x -> !x.getExportRules().isEmpty()).findFirst().get();
 
         mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
 
@@ -402,7 +389,8 @@ public class MoPatQuestionnaireImportExportTest {
         assertFalse("Import failed. Export rules were empty.",
             updatedExportTemplate.getExportRules().isEmpty());
 
-        try(InputStream input = getClass().getClassLoader().getResourceAsStream("Sample_exported.json")){
+        try (InputStream input = getClass().getClassLoader()
+            .getResourceAsStream("Sample_exported.json")) {
 
             String sampleExportFile = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             JsonCompleteQuestionnaireDTO expectedDTO = mapper.readValue(sampleExportFile,

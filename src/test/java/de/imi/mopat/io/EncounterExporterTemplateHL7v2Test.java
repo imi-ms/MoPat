@@ -15,7 +15,7 @@ import de.imi.mopat.model.Encounter;
 import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.enumeration.ExportStatus;
-
+import de.imi.mopat.model.enumeration.ExportTemplateType;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.imi.mopat.model.enumeration.ExportTemplateType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -41,8 +39,8 @@ public class EncounterExporterTemplateHL7v2Test {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     /**
-     * Verifies that the regular HL7v2 file export and the download
-     * contain exactly the same content.
+     * Verifies that the regular HL7v2 file export and the download contain exactly the same
+     * content.
      */
     @Test
     public void exportedFileAndDownloadShouldContainSameData() throws Exception {
@@ -52,16 +50,19 @@ public class EncounterExporterTemplateHL7v2Test {
 
         Path exportPath = temporaryFolder.newFolder("exports").toPath();
 
-        Path templateDirectory = Path.of(objectStoragePath.toString() + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY);
+        Path templateDirectory = Path.of(
+            objectStoragePath + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY);
 
         Files.createDirectories(templateDirectory);
 
         // Copy the existing test template into the expected object storage location.
         URL templateResource = getClass().getClassLoader().getResource(HL7_TEMPLATE_RESOURCE);
 
-        assertNotNull("HL7 test template could not be found: " + HL7_TEMPLATE_RESOURCE, templateResource);
+        assertNotNull("HL7 test template could not be found: " + HL7_TEMPLATE_RESOURCE,
+            templateResource);
 
-        Files.copy(Path.of(templateResource.toURI()), templateDirectory.resolve(TEMPLATE_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(Path.of(templateResource.toURI()), templateDirectory.resolve(TEMPLATE_FILENAME),
+            StandardCopyOption.REPLACE_EXISTING);
 
         ConfigurationDao configurationDao = mock(ConfigurationDao.class);
 
@@ -71,7 +72,8 @@ public class EncounterExporterTemplateHL7v2Test {
 
         ExportTemplate exportTemplate = createExportTemplate(exportPath);
 
-        EncounterExporterTemplateHL7v2 exporter = new EncounterExporterTemplateHL7v2(configurationDao);
+        EncounterExporterTemplateHL7v2 exporter = new EncounterExporterTemplateHL7v2(
+            configurationDao);
 
         exporter.load(encounter, exportTemplate);
 
@@ -80,7 +82,8 @@ public class EncounterExporterTemplateHL7v2Test {
 
         assertEquals(ExportStatus.SUCCESS, exportStatus);
 
-        Path exportedFile = findExportedFile(exportPath, exportTemplate.getQuestionnaire().getName(), exportTemplate.getName());
+        Path exportedFile = findExportedFile(exportPath,
+            exportTemplate.getQuestionnaire().getName(), exportTemplate.getName());
 
         String exportedContent = Files.readString(exportedFile, StandardCharsets.UTF_8);
 
@@ -88,7 +91,8 @@ public class EncounterExporterTemplateHL7v2Test {
         String downloadContent = exporter.getExportContent();
 
         // Assert: both output paths must produce exactly the same content.
-        assertEquals(normalizeHl7Timestamp(downloadContent), normalizeHl7Timestamp(exportedContent));
+        assertEquals(normalizeHl7Timestamp(downloadContent),
+            normalizeHl7Timestamp(exportedContent));
     }
 
     private Encounter createEncounter() {
@@ -104,7 +108,8 @@ public class EncounterExporterTemplateHL7v2Test {
 
     private ExportTemplate createExportTemplate(final Path exportPath) {
 
-        Questionnaire questionnaire = new Questionnaire("Test Questionnaire", "Test Questionnaire Description", 1L, true);
+        Questionnaire questionnaire = new Questionnaire("Test Questionnaire",
+            "Test Questionnaire Description", 1L, true);
 
         ExportTemplate exportTemplate = new ExportTemplate();
 
@@ -157,12 +162,15 @@ public class EncounterExporterTemplateHL7v2Test {
         return configuration;
     }
 
-    private Path findExportedFile(final Path exportPath, final String questionnaireName, final String templateName) throws Exception {
+    private Path findExportedFile(final Path exportPath, final String questionnaireName,
+        final String templateName) throws Exception {
 
-        Path exportDirectory = exportPath.resolve(questionnaireName.replaceAll(":", "_")).resolve(templateName.replaceAll(":", "_"));
+        Path exportDirectory = exportPath.resolve(questionnaireName.replaceAll(":", "_"))
+            .resolve(templateName.replaceAll(":", "_"));
 
         try (var files = Files.list(exportDirectory)) {
-            return files.filter(Files::isRegularFile).findFirst().orElseThrow(() -> new AssertionError("No HL7 export file found in " + exportDirectory));
+            return files.filter(Files::isRegularFile).findFirst().orElseThrow(
+                () -> new AssertionError("No HL7 export file found in " + exportDirectory));
         }
     }
 

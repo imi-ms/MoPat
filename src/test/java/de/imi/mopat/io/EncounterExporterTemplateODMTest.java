@@ -16,8 +16,6 @@ import de.imi.mopat.model.ExportTemplate;
 import de.imi.mopat.model.Questionnaire;
 import de.imi.mopat.model.enumeration.ExportStatus;
 import de.imi.mopat.model.enumeration.ExportTemplateType;
-
-import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -33,10 +30,10 @@ import org.junit.rules.TemporaryFolder;
 public class EncounterExporterTemplateODMTest {
 
     private static final String ODM_TEMPLATE_RESOURCE =
-            "export-control-files/ODMExportTemplate_test.xml";
+        "export-control-files/ODMExportTemplate_test.xml";
 
     private static final String TEMPLATE_FILENAME =
-            "ODMExportTemplate_test.xml";
+        "ODMExportTemplate_test.xml";
 
     private static final String CASE_NUMBER = "CASE-001";
 
@@ -44,57 +41,56 @@ public class EncounterExporterTemplateODMTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     /**
-     * Verifies that the regular ODM file export and the download
-     * contain exactly the same content.
+     * Verifies that the regular ODM file export and the download contain exactly the same content.
      */
     @Test
     public void exportedFileAndDownloadShouldContainSameData()
-            throws Exception {
+        throws Exception {
 
         // Arrange: create isolated object storage and export directories.
         Path objectStoragePath =
-                temporaryFolder.newFolder("object-storage").toPath();
+            temporaryFolder.newFolder("object-storage").toPath();
 
         Path exportPath =
-                temporaryFolder.newFolder("exports").toPath();
+            temporaryFolder.newFolder("exports").toPath();
 
         Path templateDirectory = Path.of(
-                objectStoragePath.toString()
-                        + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY
+            objectStoragePath
+                + Constants.EXPORT_TEMPLATE_SUB_DIRECTORY
         );
 
         Files.createDirectories(templateDirectory);
 
         // Copy the existing ODM test template into the expected storage location.
         URL templateResource = getClass()
-                .getClassLoader()
-                .getResource(ODM_TEMPLATE_RESOURCE);
+            .getClassLoader()
+            .getResource(ODM_TEMPLATE_RESOURCE);
 
         assertNotNull(
-                "ODM test template could not be found: "
-                        + ODM_TEMPLATE_RESOURCE,
-                templateResource
+            "ODM test template could not be found: "
+                + ODM_TEMPLATE_RESOURCE,
+            templateResource
         );
 
         Files.copy(
-                Path.of(templateResource.toURI()),
-                templateDirectory.resolve(TEMPLATE_FILENAME),
-                StandardCopyOption.REPLACE_EXISTING
+            Path.of(templateResource.toURI()),
+            templateDirectory.resolve(TEMPLATE_FILENAME),
+            StandardCopyOption.REPLACE_EXISTING
         );
 
         ConfigurationDao configurationDao =
-                mock(ConfigurationDao.class);
+            mock(ConfigurationDao.class);
 
         when(configurationDao.getObjectStoragePath())
-                .thenReturn(objectStoragePath.toString());
+            .thenReturn(objectStoragePath.toString());
 
         Encounter encounter = createEncounter();
 
         ExportTemplate exportTemplate =
-                createExportTemplate(exportPath);
+            createExportTemplate(exportPath);
 
         EncounterExporterTemplateODM exporter =
-                new EncounterExporterTemplateODM(configurationDao);
+            new EncounterExporterTemplateODM(configurationDao);
 
         // Load the actual ODM test template.
         exporter.load(encounter, exportTemplate);
@@ -103,45 +99,45 @@ public class EncounterExporterTemplateODMTest {
         ExportStatus exportStatus = exporter.flush();
 
         assertEquals(
-                ExportStatus.SUCCESS,
-                exportStatus
+            ExportStatus.SUCCESS,
+            exportStatus
         );
 
         Path exportedFile = findExportedFile(
-                exportPath,
-                exportTemplate.getQuestionnaire().getName(),
-                exportTemplate.getName()
+            exportPath,
+            exportTemplate.getQuestionnaire().getName(),
+            exportTemplate.getName()
         );
 
         String exportedContent = Files.readString(
-                exportedFile,
-                StandardCharsets.UTF_8
+            exportedFile,
+            StandardCharsets.UTF_8
         );
 
         // Act: create the content used for the download.
         String downloadContent =
-                exporter.getExportContent();
+            exporter.getExportContent();
 
         // Assert: both output paths must produce exactly the same ODM XML.
         assertEquals(
-                downloadContent,
-                exportedContent
+            downloadContent,
+            exportedContent
         );
     }
 
     private Encounter createEncounter() {
 
         Bundle bundle = new Bundle(
-                "Test Bundle",
-                "Test Bundle Description",
-                1L,
-                true,
-                true,
-                false
+            "Test Bundle",
+            "Test Bundle Description",
+            1L,
+            true,
+            true,
+            false
         );
 
         Encounter encounter =
-                new Encounter(bundle, CASE_NUMBER);
+            new Encounter(bundle, CASE_NUMBER);
 
         encounter.setBundleLanguage("de_DE");
 
@@ -149,110 +145,110 @@ public class EncounterExporterTemplateODMTest {
     }
 
     private ExportTemplate createExportTemplate(
-            final Path exportPath) {
+        final Path exportPath) {
 
         Questionnaire questionnaire =
-                new Questionnaire(
-                        "Test Questionnaire",
-                        "Test Questionnaire Description",
-                        1L,
-                        true
-                );
+            new Questionnaire(
+                "Test Questionnaire",
+                "Test Questionnaire Description",
+                1L,
+                true
+            );
 
         ExportTemplate exportTemplate =
-                new ExportTemplate();
+            new ExportTemplate();
 
         exportTemplate.setName("ODM Test Template");
         exportTemplate.setFilename(TEMPLATE_FILENAME);
         exportTemplate.setOriginalFilename("odm-test-template");
         exportTemplate.setQuestionnaire(questionnaire);
         exportTemplate.setExportTemplateType(
-                ExportTemplateType.ODM
+            ExportTemplateType.ODM
         );
 
         exportTemplate.setConfigurationGroup(
-                createConfigurationGroup(exportPath)
+            createConfigurationGroup(exportPath)
         );
 
         return exportTemplate;
     }
 
     private ConfigurationGroup createConfigurationGroup(
-            final Path exportPath) {
+        final Path exportPath) {
 
         ConfigurationGroup configurationGroup =
-                new ConfigurationGroup();
+            new ConfigurationGroup();
 
         configurationGroup.setName(
-                "ODM Test Configuration"
+            "ODM Test Configuration"
         );
 
         configurationGroup.setLabelMessageCode(
-                "test.odm.configuration"
+            "test.odm.configuration"
         );
 
         List<Configuration> configurations =
-                new ArrayList<>();
+            new ArrayList<>();
 
         configurations.add(
-                config("exportInDirectory", "true")
+            config("exportInDirectory", "true")
         );
 
         configurations.add(
-                config("exportPath", exportPath.toString())
+            config("exportPath", exportPath.toString())
         );
 
         configurations.add(
-                config("exportViaRest", "false")
+            config("exportViaRest", "false")
         );
 
         configurations.add(
-                config("exportODMviaHL7", "false")
+            config("exportODMviaHL7", "false")
         );
 
         configurationGroup.setConfigurations(
-                configurations
+            configurations
         );
 
         return configurationGroup;
     }
 
     private Configuration config(
-            final String attribute,
-            final String value) {
+        final String attribute,
+        final String value) {
 
         Configuration configuration =
-                mock(Configuration.class);
+            mock(Configuration.class);
 
         when(configuration.getAttribute())
-                .thenReturn(attribute);
+            .thenReturn(attribute);
 
         when(configuration.getValue())
-                .thenReturn(value);
+            .thenReturn(value);
 
         return configuration;
     }
 
     private Path findExportedFile(
-            final Path exportPath,
-            final String questionnaireName,
-            final String templateName)
-            throws Exception {
+        final Path exportPath,
+        final String questionnaireName,
+        final String templateName)
+        throws Exception {
 
         Path exportDirectory = exportPath
-                .resolve(questionnaireName.replaceAll(":", "_"))
-                .resolve(templateName.replaceAll(":", "_"));
+            .resolve(questionnaireName.replaceAll(":", "_"))
+            .resolve(templateName.replaceAll(":", "_"));
 
         try (var files = Files.list(exportDirectory)) {
             return files
-                    .filter(Files::isRegularFile)
-                    .findFirst()
-                    .orElseThrow(
-                            () -> new AssertionError(
-                                    "No ODM export file found in "
-                                            + exportDirectory
-                            )
-                    );
+                .filter(Files::isRegularFile)
+                .findFirst()
+                .orElseThrow(
+                    () -> new AssertionError(
+                        "No ODM export file found in "
+                            + exportDirectory
+                    )
+                );
         }
     }
 }
