@@ -235,4 +235,11 @@ public class ConfigurationDaoImpl extends MoPatDaoImpl<Configuration> implements
             Constants.CLASS_GLOBAL);
         return configuration.getValue();
     }
+
+    @Override
+    public Boolean isEncounterTemplateDownloadEnabled(){
+        Configuration configuration = getConfigurationByAttributeAndClass(Constants.ENABLE_ENCOUNTER_TEMPLATE_DOWNLOAD,
+            Constants.CLASS_GLOBAL);
+        return Boolean.valueOf(configuration.getValue());
+    }
 }

@@ -26,6 +26,7 @@ import de.imi.mopat.model.score.UnaryOperator;
 import de.imi.mopat.model.user.UserRole;
 import de.imi.mopat.validator.LogoValidator;
 import de.imi.mopat.validator.QuestionnaireDTOValidator;
+import de.imi.mopat.service.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

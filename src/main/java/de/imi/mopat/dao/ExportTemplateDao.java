@@ -18,4 +18,12 @@ public interface ExportTemplateDao extends MoPatDao<ExportTemplate> {
      * @return Count of all exports done yesterday of the given {@link ExportTemplateType}.
      */
     long getExportCount(ExportTemplateType type);
+
+    /**
+     * Deletes the associated {@link de.imi.mopat.model.EncounterExportTemplate}
+     * instances for the {@link ExportTemplate}.
+     *
+     * @param exportTemplate The export template to process
+     */
+    void removeEncounterExportTemplatesForExportTemplate(ExportTemplate exportTemplate);
 }

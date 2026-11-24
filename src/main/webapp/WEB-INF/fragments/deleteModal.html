@@ -57,6 +57,20 @@
             </addVar>
         </th:block>
 
+        <th:block th:case="exportTemplate">
+            <addVar
+                    layout:replace="~{helper/var :: add(
+                key='deleteMessage',
+                value=${messages.get(
+                        #locale,
+                        'modal.delete.question.exportTemplate',
+                        messages.buildArguments('__${name}__'),
+                        'Are you sure you want to delete export template'
+                    )}
+                )}">
+            </addVar>
+        </th:block>
+
     </th:block>
 
     <!-- Delete Confirmation Modal -->

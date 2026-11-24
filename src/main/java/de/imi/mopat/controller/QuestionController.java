@@ -1,7 +1,6 @@
 package de.imi.mopat.controller;
 
 import de.imi.mopat.dao.*;
-import de.imi.mopat.helper.controller.BundleService;
 import de.imi.mopat.helper.controller.Constants;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.helper.controller.QuestionnaireService;
@@ -18,6 +17,7 @@ import de.imi.mopat.model.dto.QuestionDTO;
 import de.imi.mopat.model.enumeration.BodyPart;
 import de.imi.mopat.model.enumeration.CodedValueType;
 import de.imi.mopat.model.score.Score;
+import de.imi.mopat.service.BundleService;
 import de.imi.mopat.validator.QuestionDTOValidator;
 import de.imi.mopat.validator.QuestionValidator;
 import de.imi.mopat.validator.SliderAnswerValidator;

@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import de.imi.mopat.service.ApplicationContextService;
 import org.slf4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder;
 

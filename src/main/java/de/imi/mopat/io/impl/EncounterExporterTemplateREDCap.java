@@ -179,6 +179,11 @@ public class EncounterExporterTemplateREDCap implements EncounterExporterTemplat
         return exportStatus;
     }
 
+    @Override
+    public String getExportContent() throws Exception {
+        return mapper.writeValueAsString(List.of(exportJSON));
+    }
+
     /**
      * Exports the resultant REDCap JSON to a given path
      *

@@ -5,7 +5,7 @@ import de.imi.mopat.dao.BundleDao;
 import de.imi.mopat.dao.ConditionDao;
 import de.imi.mopat.dao.QuestionDao;
 import de.imi.mopat.dao.QuestionnaireDao;
-import de.imi.mopat.helper.controller.ConditionService;
+import de.imi.mopat.service.ConditionService;
 import de.imi.mopat.helper.model.BundleDTOMapper;
 import de.imi.mopat.helper.model.ConditionDTOMapper;
 import de.imi.mopat.model.Answer;

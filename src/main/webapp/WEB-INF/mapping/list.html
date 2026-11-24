@@ -9,6 +9,22 @@
                     + ${questionnaire.name} + '&rdquo;'"
 >
     <th:block layout:fragment="content">
+        <th:block th:if="${messageSuccess ne null}">
+            <div
+                    class="alert alert-success alert-dismissible fade show"
+                    id="notification"
+                    role="alert"
+            >
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <th:block th:text="${messageSuccess}"></th:block>
+                <button
+                        aria-label="Close"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        type="button"
+                ></button>
+            </div>
+        </th:block>
         <div class="panel-body mb-3">
             <a
                 class="link"
@@ -90,18 +106,28 @@
                                         >
                                         </i>
                                     </a>
-                                    <a
-                                        class="btn btn-sm btn-primary-list link btn-red"
-                                        th:href="@{remove?id=__${item.id}__}"
+
+                                    <button
+                                            class="btn btn-sm btn-primary-list btn-red"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="|#deleteModal_${item.id}|"
+                                            type="button"
                                     >
                                         <i
-                                            class="bi-trash-fill bi-list-icon"
-                                            th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
+                                                class="bi-trash-fill bi-list-icon"
+                                                th:title="${messages.get(#locale, 'questionnaire.button.remove', 'Delete')}"
                                         ></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
+                        </tr>
+                        <deleteModal layout:replace="~{fragments/deleteModal :: deleteModal(
+                            type='exportTemplate',
+                            id=${item.id},
+                            name=${#strings.isEmpty(item.name) ? item.originalFilename : item.name},
+                            deleteUrl='remove?id=__${item.id}__')}">
+                        </deleteModal>
                     </th:block>
                 </tbody>
             </table>

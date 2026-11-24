@@ -1,4 +1,4 @@
-package de.imi.mopat.helper.controller;
+package de.imi.mopat.service;
 
 import de.imi.mopat.model.user.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;

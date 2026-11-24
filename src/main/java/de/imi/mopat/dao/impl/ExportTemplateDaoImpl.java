@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -47,6 +48,19 @@ public class ExportTemplateDaoImpl extends MoPatDaoImpl<ExportTemplate> implemen
         long count = query.getSingleResult();
 
         return count;
+    }
+
+    @Override
+    @Transactional("MoPat")
+    public void removeEncounterExportTemplatesForExportTemplate(ExportTemplate exportTemplate) {
+        moPatEntityManager.createQuery(
+                "delete from EncounterExportTemplate e where e.exportTemplate.id = :exportTemplateId"
+                )
+                .setParameter("exportTemplateId", exportTemplate.getId())
+                .executeUpdate();
+
+        moPatEntityManager.flush();
+        moPatEntityManager.clear();
     }
 
 }

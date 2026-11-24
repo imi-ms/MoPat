@@ -94,6 +94,24 @@ public enum ExportTemplateType {
     }
 
     /**
+     * getFileExtension() provides dynamic file-name-ending based on the used export template. Used in Controller.
+     */
+    public String getFileExtension() {
+        switch (this) {
+            case HL7v2:
+                return "hl7";
+            case FHIR_DSTU3:
+            case FHIR_R4B:
+            case FHIR_R5, ODM:
+                return "xml";
+            case REDCap:
+                return "json";
+            default:
+                return "txt";
+        }
+    }
+
+    /**
      * Creates a new {@link ExportTemplateImporter} instance.
      *
      * @return A new {@link ExportTemplateImporter} instance. Can be

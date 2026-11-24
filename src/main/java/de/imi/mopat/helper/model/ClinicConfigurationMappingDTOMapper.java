@@ -1,8 +1,8 @@
 package de.imi.mopat.helper.model;
 
 import de.imi.mopat.dao.ConfigurationGroupDao;
-import de.imi.mopat.helper.controller.ClinicConfigurationMappingService;
-import de.imi.mopat.helper.controller.ConfigurationService;
+import de.imi.mopat.service.ClinicConfigurationMappingService;
+import de.imi.mopat.service.ConfigurationService;
 import de.imi.mopat.model.ClinicConfigurationMapping;
 import de.imi.mopat.model.Configuration;
 import de.imi.mopat.model.ConfigurationGroup;

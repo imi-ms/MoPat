@@ -8,7 +8,7 @@ import de.imi.mopat.dao.user.ForgotPasswordTokenDao;
 import de.imi.mopat.dao.user.InvitationDao;
 import de.imi.mopat.dao.user.UserDao;
 import de.imi.mopat.helper.controller.ApplicationMailer;
-import de.imi.mopat.helper.controller.InvitationService;
+import de.imi.mopat.service.InvitationService;
 import de.imi.mopat.helper.model.ClinicDTOMapper;
 import de.imi.mopat.helper.controller.LocaleHelper;
 import de.imi.mopat.model.Clinic;
