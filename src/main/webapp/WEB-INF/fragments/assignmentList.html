@@ -52,8 +52,8 @@
        th:text="${headingInfoText}"
        th:unless="${#strings.isEmpty(headingInfoText)}"
     ></p>
-
-    <div class="alert alert-light border assignment-list__assigned-empty"
+    <!-- Removed Shaddow manually only here -->
+    <div class="alert alert-light border shadow-none assignment-list__assigned-empty"
          th:style="${#lists.isEmpty(assignedItems)} ? '' : 'display:none;'"
          th:text="${emptyStateText ?: 'No items assigned'}"
     >
