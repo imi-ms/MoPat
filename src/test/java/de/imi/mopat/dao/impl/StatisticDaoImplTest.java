@@ -54,7 +54,6 @@ public class StatisticDaoImplTest {
     @Test
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetEarliestDate() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
         clearTable();
 
         LocalDate base = LocalDate.of(2025, 11, 28);
@@ -85,7 +84,6 @@ public class StatisticDaoImplTest {
     @Test
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetLatestDate() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
         clearTable();
 
         LocalDate base = LocalDate.of(2025, 11, 28);
@@ -116,7 +114,6 @@ public class StatisticDaoImplTest {
     @Test
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "MoPatUserDetailsService")
     public void testGetStatisticsByDates() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
         clearTable();
         int countStatistics = random.nextInt(50) + 1;
         long testDateInMillis = System.currentTimeMillis() - random.nextInt(250) * 86400000L;
