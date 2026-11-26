@@ -8,6 +8,9 @@ jobs:
       checks: write
       pull-requests: write
     runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Berlin
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Europe/Berlin
     outputs:
       unittest-results: ${{ steps.decode-results.outputs.content }}
     services:
@@ -15,6 +18,7 @@ jobs:
         image: mariadb:latest
         env:
           MARIADB_ROOT_PASSWORD: root
+          TZ: Europe/Berlin
         ports:
           - 3306:3306
         options: >-
