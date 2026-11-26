@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -70,7 +71,8 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getEarliestDate();
-        String actualStr = new java.sql.Date(actualFromDb.getTime()).toString();
+        LocalDate actualDate = actualFromDb.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+        String actualStr = actualDate.toString();
         String expectedStr = "2025-11-28";
 
         assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
@@ -100,7 +102,8 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getLatestDate();
-        String actualStr = new java.sql.Date(actualFromDb.getTime()).toString();
+        LocalDate actualDate = actualFromDb.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+        String actualStr = actualDate.toString();
         String expectedStr = "2025-11-28";
 
         assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
