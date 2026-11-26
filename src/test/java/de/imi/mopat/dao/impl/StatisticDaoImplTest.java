@@ -70,11 +70,8 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getEarliestDate();
-        LocalDate actualDate = actualFromDb.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
-        String actualStr = actualDate.toString();
-        String expectedStr = "2025-11-28";
-
-        assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
+        assertEquals("The getting Date was not the expected one",
+            base, toLocalDate(actualFromDb));
     }
 
     /**
@@ -100,12 +97,21 @@ public class StatisticDaoImplTest {
         }
 
         java.util.Date actualFromDb = testStatisticDao.getLatestDate();
-        LocalDate actualDate = actualFromDb.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
-        String actualStr = actualDate.toString();
-        String expectedStr = "2025-11-28";
+        assertEquals("The getting Date was not the expected one",
+            base, toLocalDate(actualFromDb));
 
-        assertEquals("The getting Date was not the expected one", expectedStr, actualStr);
     }
+
+    private static LocalDate toLocalDate(java.util.Date date) {
+        if (date instanceof java.sql.Date) {
+            return ((java.sql.Date) date).toLocalDate();
+        }
+        if (date instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) date).toLocalDateTime().toLocalDate();
+        }
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
 
     /**
      * Test of {@link StatisticDaoImpl#getStatisticsByDates}.<br> Valid input: random list of
