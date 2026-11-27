@@ -21,7 +21,7 @@
                                  isSortable, isModifiable,
                                  headingText, headingInfoText, modalInfoText, itemTypeLabel, addButtonText, emptyStateText,
                                  reorderText, alreadyAddedText, disableWhenEmptySelector,
-                                 itemMetaFragment, assignedDetailFragment, availableDetailFragment)"
+                                 itemMetaFragment, assignedDetailFragment, availableDetailFragment, idParamName)"
      th:with="cid=${componentId ?: fieldPrefix},
               modalId=|${cid}-item-selection-modal|,
               modalLabelId=|${cid}-item-selection-modal-label|,
@@ -52,7 +52,7 @@
        th:text="${headingInfoText}"
        th:unless="${#strings.isEmpty(headingInfoText)}"
     ></p>
-    <!-- Removed Shaddow manually only here -->
+    <!-- Removed Shadow manually only here -->
     <div class="alert alert-light border shadow-none assignment-list__assigned-empty"
          th:style="${#lists.isEmpty(assignedItems)} ? '' : 'display:none;'"
          th:text="${emptyStateText ?: 'No items assigned'}"
@@ -101,16 +101,23 @@
                         <th:block th:replace="~{__${itemMetaFragment}__ (itemDto=${itemDto})}"></th:block>
                     </th:block>
 
-                    <input th:attr="data-field=${fieldPath + itemNameField}"
-                           th:name="|${fieldPrefix}[${status.index}].${fieldPath}${itemNameField}|"
-                           th:value="${itemDto[itemNameField]}"
+                    <!--/* Adjustment for Userside Compatibility */-->
+                    <th:block th:if="${idParamName == null}">
+                        <!-- Fragment uses format for bundles/clinics -->
+                        <input type="hidden"
+                               th:attr="data-field=${fieldPath + itemNameField}"
+                               th:name="|${fieldPrefix}[${status.index}].${fieldPath}${itemNameField}|"
+                               th:value="${itemDto[itemNameField]}" />
+                        <input type="hidden"
+                               th:attr="data-field=${fieldPath + 'id'}"
+                               th:name="|${fieldPrefix}[${status.index}].${fieldPath}id|"
+                               th:value="${itemDto.id}" />
+                    </th:block>
+                    <!-- Fragment uses format for user rights -->
+                    <input th:if="${idParamName != null}"
                            type="hidden"
-                    />
-                    <input th:attr="data-field=${fieldPath + 'id'}"
-                           th:name="|${fieldPrefix}[${status.index}].${fieldPath}id|"
-                           th:value="${itemDto.id}"
-                           type="hidden"
-                    />
+                           th:name="${idParamName}"
+                           th:value="${itemDto.id}" />
                 </div>
 
                 <th:block th:if="${assignedDetailFragment != null}">
